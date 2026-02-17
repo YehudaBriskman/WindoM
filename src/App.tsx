@@ -4,6 +4,7 @@ import { FocusTimerProvider } from './contexts/FocusTimerContext';
 import { BackgroundOverlay } from './components/background/BackgroundOverlay';
 import { PhotographerCredit } from './components/background/PhotographerCredit';
 import { TopBar } from './components/layout/TopBar';
+import { DockBar } from './components/links/DockBar';
 import { CenterContent } from './components/layout/CenterContent';
 import { BottomSection } from './components/layout/BottomSection';
 import { RightSidebar } from './components/layout/RightSidebar';
@@ -18,6 +19,7 @@ export function App() {
         <FocusTimerProvider>
           <BackgroundOverlay />
           <TopBar />
+          <DockBar />
           <SettingsButton />
           <CenterContent />
           <BottomSection />

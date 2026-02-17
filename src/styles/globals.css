@@ -245,41 +245,157 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* ============================================================
-   Quick Links
+   Dock Bar (macOS-style, pure CSS magnification)
    ============================================================ */
-.quick-links {
-  display: flex;
-  gap: 12px;
+.glass-dock {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.link-item {
+.dock-wrapper {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.dock-bar {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s;
-  text-decoration: none;
-  color: white;
-  font-size: 14px;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 8px 12px;
+  border-radius: 18px;
 }
-.link-item:hover {
-  background: rgba(255, 255, 255, 0.16);
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-.link-item-icon {
+
+.dock-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: white;
+  background: none;
+  border: none;
+  font-family: inherit;
+  transition: transform 0.2s ease;
+  transform-origin: center center;
 }
-.link-item-favicon {
-  width: 16px;
-  height: 16px;
+
+/* Hovered item scales up */
+.dock-item:hover {
+  transform: scale(1.45);
+}
+
+/* Direct neighbors scale a bit */
+.dock-item:has(+ .dock-item:hover),
+.dock-item:hover + .dock-item {
+  transform: scale(1.2);
+}
+
+/* Two away scale slightly */
+.dock-item:has(+ .dock-item + .dock-item:hover),
+.dock-item:hover + .dock-item + .dock-item {
+  transform: scale(1.08);
+}
+
+.dock-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dock-item-favicon {
+  width: 28px;
+  height: 28px;
   object-fit: contain;
+  border-radius: 6px;
+}
+
+.dock-fallback-hidden {
+  display: none;
+}
+
+/* Add button */
+.dock-add-btn {
+  opacity: 0.4;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+.dock-add-btn:hover {
+  opacity: 0.9;
+}
+
+/* Dock Add-Link Form */
+.dock-form-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.dock-form {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 30px 20px 20px;
+  border-radius: 16px;
+  width: 280px;
+}
+
+.dock-form-close {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  transition: color 0.2s;
+}
+.dock-form-close:hover {
+  color: white;
+}
+
+.dock-form-input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+.dock-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.dock-form-submit {
+  padding: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dock-form-submit:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* ============================================================
@@ -1001,6 +1117,7 @@ input[type="file"]::file-selector-button:hover {
    Focus Active — hide all UI except overlay
    ============================================================ */
 body.focus-active .top-bar,
+body.focus-active .dock-wrapper,
 body.focus-active .bottom-section,
 body.focus-active .right-sidebar,
 body.focus-active .settings-btn,

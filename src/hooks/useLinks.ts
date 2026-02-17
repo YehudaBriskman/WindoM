@@ -15,9 +15,11 @@ export function useLinks() {
 
   const setLinks = (newLinks: QuickLink[]) => update('quickLinks', newLinks);
 
-  const addLink = () => {
+  const addLink = (link?: QuickLink | unknown) => {
     if (links.length >= 10) return;
-    setLinks([...links, { name: 'New Link', url: 'https://', icon: 'link' }]);
+    const isLink = (v: unknown): v is QuickLink =>
+      typeof v === 'object' && v !== null && 'url' in v && 'name' in v;
+    setLinks([...links, isLink(link) ? link : { name: 'New Link', url: 'https://', icon: '' }]);
   };
 
   const removeLink = (index: number) => {
