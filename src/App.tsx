@@ -11,12 +11,14 @@ import { RightSidebar } from './components/layout/RightSidebar';
 import { SettingsButton } from './components/settings/SettingsButton';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { FocusOverlay } from './components/focus/FocusOverlay';
+import { GlassFilters } from './components/GlassFilters';
 
 export function App() {
   return (
     <SettingsProvider>
       <BackgroundProvider>
         <FocusTimerProvider>
+          <GlassFilters />
           <BackgroundOverlay />
           <TopBar />
           <DockBar />

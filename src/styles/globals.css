@@ -50,64 +50,152 @@ select option {
 }
 
 input[type="file"]::file-selector-button {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   margin-right: 10px;
-  transition: background 0.3s;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
 }
 input[type="file"]::file-selector-button:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 /* ============================================================
-   Glass Utilities
+   Liquid Glass Utilities (iOS-style with SVG distortion)
    ============================================================ */
+
+/* Shared base — positioning + stacking context for pseudo-elements */
+.glass-panel,
+.glass-sidebar,
+.glass-settings,
+.glass-quote,
+.glass-credit,
+.glass-dock {
+  position: relative;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Inner glow layer — liquid highlight edges */
+.glass-panel::before,
+.glass-sidebar::before,
+.glass-settings::before,
+.glass-quote::before,
+.glass-credit::before,
+.glass-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Backdrop distortion layer — shared base */
+.glass-panel::after,
+.glass-sidebar::after,
+.glass-settings::after,
+.glass-quote::after,
+.glass-credit::after,
+.glass-dock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Per-element blur + distortion filter */
+.glass-panel::after {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  filter: url(#glass-distort);
+}
 .glass-panel {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
+.glass-sidebar::after {
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  filter: url(#glass-distort);
+}
 .glass-sidebar {
-  background: rgba(0, 0, 0, 0.06);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
 }
 
+.glass-settings::after {
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  filter: url(#glass-distort);
+}
 .glass-settings {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(32px);
-  -webkit-backdrop-filter: blur(32px);
   border-right: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
 }
 
+.glass-quote::after {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  filter: url(#glass-distort-sm);
+}
 .glass-quote {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+.glass-credit::after {
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  filter: url(#glass-distort-sm);
+}
 .glass-credit {
-  background: rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.glass-input {
-  background: rgba(255, 255, 255, 0.1);
+.glass-dock::after {
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  filter: url(#glass-distort-sm);
+}
+.glass-dock {
   border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Glass input — inputs can't use pseudo-elements, inline liquid glass */
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.25s ease;
 }
 .glass-input:focus {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================================
@@ -247,12 +335,7 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Dock Bar (macOS-style, pure CSS magnification)
    ============================================================ */
-.glass-dock {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
+/* glass-dock styles are defined in the Liquid Glass Utilities section above */
 
 .dock-wrapper {
   position: absolute;
@@ -373,29 +456,38 @@ input[type="file"]::file-selector-button:hover {
 
 .dock-form-input {
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   font-size: 14px;
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
 .dock-form-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .dock-form-submit {
   padding: 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: white;
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
 .dock-form-submit:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.4);
 }
 
 /* ============================================================
@@ -452,19 +544,26 @@ input[type="file"]::file-selector-button:hover {
 
 .focus-preset-btn {
   padding: 10px 20px;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 20px;
   color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .focus-preset-btn:hover {
   color: white;
-  border-color: rgba(255, 255, 255, 0.4);
-  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================================
@@ -492,20 +591,28 @@ input[type="file"]::file-selector-button:hover {
 
 .focus-stop-btn {
   padding: 12px 32px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 24px;
   color: white;
   font-size: 16px;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.4);
 }
 .focus-stop-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.5);
 }
 
 /* ============================================================
@@ -568,8 +675,12 @@ input[type="file"]::file-selector-button:hover {
   transition: all 0.3s;
 }
 .sidebar-toggle:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
 
 .sidebar-content {
@@ -602,13 +713,17 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  transition: background-color 0.3s;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .todo-item:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
 }
 .todo-item input[type="checkbox"] {
   cursor: pointer;
@@ -637,34 +752,47 @@ input[type="file"]::file-selector-button:hover {
 
 .todo-input {
   flex: 1;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 8px 12px;
   color: white;
   font-size: 14px;
   outline: none;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .todo-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 .todo-input:focus {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.25);
 }
 
 .todo-add-btn {
   width: 36px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   font-size: 20px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
 }
 .todo-add-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.25);
 }
 
@@ -682,10 +810,13 @@ input[type="file"]::file-selector-button:hover {
   font-weight: 500;
   margin-bottom: 20px;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   text-align: center;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 
 .calendar-upcoming-title {
@@ -702,10 +833,13 @@ input[type="file"]::file-selector-button:hover {
 
 .event-item {
   padding: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   font-size: 13px;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .event-item-title {
   margin-bottom: 4px;
@@ -744,8 +878,12 @@ input[type="file"]::file-selector-button:hover {
 }
 .settings-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
 
 /* ============================================================
@@ -825,14 +963,18 @@ input[type="file"]::file-selector-button:hover {
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(40px);
-  -webkit-backdrop-filter: blur(40px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
   position: sticky;
   top: 0;
   z-index: 10;
   flex-shrink: 0;
+  box-shadow:
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .settings-header h2 {
   font-size: 20px;
@@ -845,15 +987,20 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   opacity: 0.7;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.06);
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .settings-close:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* Settings Body */
@@ -886,43 +1033,65 @@ input[type="file"]::file-selector-button:hover {
 .settings-input {
   width: 100%;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   font-size: 14px;
   outline: none;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .settings-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
 }
 .settings-input:focus {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.25);
 }
 
 .settings-select {
   width: 100%;
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   color: white;
   font-size: 14px;
   outline: none;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .settings-select:focus {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.25);
 }
 
 .settings-file-input {
   width: 100%;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   color: white;
   font-size: 13px;
   outline: none;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
 }
 
 .settings-checkbox-label {
@@ -957,50 +1126,69 @@ input[type="file"]::file-selector-button:hover {
 .settings-save-btn {
   flex: 1;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   color: white;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.35);
 }
 .settings-save-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.45);
 }
 
 .settings-reset-btn {
   flex: 1;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   color: white;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
 }
 .settings-reset-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
 }
 
 /* Settings Message */
 .settings-message {
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 20px;
   font-size: 14px;
   text-align: center;
 }
 .settings-message.success {
-  background: rgba(34, 197, 94, 0.25);
-  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow:
+    0 2px 8px rgba(34, 197, 94, 0.08),
+    inset 2px 2px 0px -2px rgba(34, 197, 94, 0.5),
+    inset 0 0 2px 1px rgba(34, 197, 94, 0.2);
 }
 .settings-message.error {
-  background: rgba(239, 68, 68, 0.25);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow:
+    0 2px 8px rgba(239, 68, 68, 0.08),
+    inset 2px 2px 0px -2px rgba(239, 68, 68, 0.5),
+    inset 0 0 2px 1px rgba(239, 68, 68, 0.2);
 }
 
 /* ============================================================
@@ -1022,30 +1210,43 @@ input[type="file"]::file-selector-button:hover {
   gap: 8px;
   align-items: center;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  transition: background-color 0.3s;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
 }
 .link-editor-item:hover {
   background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .link-editor-input {
   width: 100%;
   padding: 8px 10px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: white;
   font-size: 13px;
   outline: none;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
 }
 .link-editor-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.35);
 }
 .link-editor-input:focus {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
 }
 .link-editor-input.icon-input {
   text-align: center;
@@ -1058,39 +1259,50 @@ input[type="file"]::file-selector-button:hover {
 .link-add-btn {
   width: 100%;
   padding: 10px;
-  background: rgba(34, 197, 94, 0.15);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 10px;
   color: white;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 8px rgba(34, 197, 94, 0.08),
+    inset 2px 2px 0px -2px rgba(34, 197, 94, 0.5),
+    inset 0 0 2px 1px rgba(34, 197, 94, 0.2);
 }
 .link-add-btn:hover {
-  background: rgba(34, 197, 94, 0.25);
-  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow:
+    0 4px 12px rgba(34, 197, 94, 0.12),
+    inset 2px 2px 0px -2px rgba(34, 197, 94, 0.6),
+    inset 0 0 3px 1px rgba(34, 197, 94, 0.3);
   transform: translateY(-1px);
 }
 
 .link-remove-btn {
   width: 36px;
   height: 36px;
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
   color: white;
   font-size: 24px;
   line-height: 1;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.25s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(239, 68, 68, 0.5),
+    inset 0 0 2px 1px rgba(239, 68, 68, 0.2);
 }
 .link-remove-btn:hover {
-  background: rgba(239, 68, 68, 0.35);
-  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.45);
   transform: scale(1.05);
 }
 
@@ -1104,7 +1316,7 @@ input[type="file"]::file-selector-button:hover {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: 10px;
   z-index: 50;
   transition: opacity 0.3s;
 }
