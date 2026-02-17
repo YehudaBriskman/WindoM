@@ -1,0 +1,49 @@
+name: Publish to Chrome Web Store
+
+# Only runs when you push a version tag like v1.0.0, v1.2.3, etc.
+on:
+  push:
+    tags:
+      - 'v*'
+
+# Restrict the GITHUB_TOKEN to read-only — this workflow only needs
+# to build code and call the Chrome Web Store API, never write back to the repo.
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    # Use a dedicated "chrome-store" environment so you can add
+    # reviewer approval rules & limit which branches/tags can deploy.
+    environment: chrome-store
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build extension
+        run: npm run build
+
+      - name: Zip dist folder
+        run: cd dist && zip -r ../extension.zip . && cd ..
+
+      - name: Upload to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: extension.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          publish: true
