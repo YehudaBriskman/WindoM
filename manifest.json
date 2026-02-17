@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Momentum Clone - New Tab Dashboard",
+  "version": "1.0.0",
+  "description": "A beautiful new tab page with background images, clock, weather, todos, and calendar",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.unsplash.com/*",
+    "https://api.openweathermap.org/*",
+    "https://api.quotable.io/*",
+    "https://www.google.com/*"
+  ],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
