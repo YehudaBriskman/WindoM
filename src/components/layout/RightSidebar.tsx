@@ -20,22 +20,24 @@ export function RightSidebar() {
   }, [isOpen, close]);
 
   return (
-    <div
-      ref={sidebarRef}
-      className={`right-sidebar glass-sidebar ${isOpen ? 'open' : 'closed'}`}
-    >
-      {/* Toggle button */}
+    <>
+      {/* Toggle button is a sibling — outside the sidebar to avoid overflow clipping */}
       <div
         onClick={(e) => { e.stopPropagation(); toggle(); }}
-        className="sidebar-toggle glass-panel"
+        className={`sidebar-toggle glass-panel ${isOpen ? 'open' : ''}`}
       >
         <LayoutList size={20} />
       </div>
 
-      <div className="sidebar-content">
-        <TodoSection />
-        <CalendarSection />
+      <div
+        ref={sidebarRef}
+        className={`right-sidebar glass-sidebar ${isOpen ? 'open' : 'closed'}`}
+      >
+        <div className="sidebar-content">
+          <TodoSection />
+          <CalendarSection />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
