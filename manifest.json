@@ -1,10 +1,11 @@
 {
   "manifest_version": 3,
-  "name": "Momentum Clone - New Tab Dashboard",
+  "name": "WindoM",
   "version": "1.0.0",
   "description": "A beautiful new tab page with background images, clock, weather, todos, and calendar",
   "permissions": [
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "host_permissions": [
     "https://api.unsplash.com/*",
