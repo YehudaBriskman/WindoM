@@ -41,6 +41,54 @@ export function GeneralSettings({ formRef }: Props) {
           <option value="C">Celsius (&deg;C)</option>
         </select>
       </div>
+
+      <div className="settings-group" style={{ marginTop: 28 }}>
+        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+          Widget Visibility
+        </label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <label className="settings-checkbox-label">
+            <input
+              type="checkbox"
+              defaultChecked={settings.showWeather}
+              onChange={(e) => (formRef.current.showWeather = e.target.checked)}
+            />
+            Weather
+          </label>
+          <label className="settings-checkbox-label">
+            <input
+              type="checkbox"
+              defaultChecked={settings.quotesEnabled}
+              onChange={(e) => (formRef.current.quotesEnabled = e.target.checked)}
+            />
+            Quotes
+          </label>
+          <label className="settings-checkbox-label">
+            <input
+              type="checkbox"
+              defaultChecked={settings.showLinks}
+              onChange={(e) => (formRef.current.showLinks = e.target.checked)}
+            />
+            Quick Links
+          </label>
+          <label className="settings-checkbox-label">
+            <input
+              type="checkbox"
+              defaultChecked={settings.showFocus}
+              onChange={(e) => (formRef.current.showFocus = e.target.checked)}
+            />
+            Focus / Goals
+          </label>
+          <label className="settings-checkbox-label">
+            <input
+              type="checkbox"
+              defaultChecked={settings.showGreeting}
+              onChange={(e) => (formRef.current.showGreeting = e.target.checked)}
+            />
+            Greeting
+          </label>
+        </div>
+      </div>
     </div>
   );
 }

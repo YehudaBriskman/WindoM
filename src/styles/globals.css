@@ -18,6 +18,10 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
+  transition: background-size 3s ease;
+}
+body.focus-zoomed {
+  background-size: 110%;
 }
 
 a {
@@ -580,6 +584,31 @@ input[type="file"]::file-selector-button:hover {
   background: rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.5s ease;
+}
+/* During step 1 of enter (UI fading out), overlay stays invisible */
+.focus-overlay.entering {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Step 2 of enter: overlay fades in */
+.focus-overlay.entering-overlay,
+.focus-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* Step 1 of exit: overlay fades out */
+.focus-overlay.exiting-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Step 2 of exit (UI fading in): overlay already gone */
+.focus-overlay.exiting {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
 }
 
 .focus-remaining {
@@ -1326,8 +1355,38 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* ============================================================
-   Focus Active — hide all UI except overlay
+   Focus Active — sequential enter/exit animations
+   Enter:  UI fades out (1.5s) → overlay fades in (1.5s)
+   Exit:   overlay fades out (1.5s) → UI fades in (1.5s)
+   Background zoom spans the full 3s of each sequence.
    ============================================================ */
+.top-bar,
+.dock-wrapper,
+.bottom-section,
+.right-sidebar,
+.settings-btn,
+.center-content {
+  transition: opacity 1.5s ease;
+}
+
+/* Step 1 of enter: UI fades out */
+body.focus-entering .top-bar,
+body.focus-entering .dock-wrapper,
+body.focus-entering .bottom-section,
+body.focus-entering .right-sidebar,
+body.focus-entering .settings-btn,
+body.focus-entering .center-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Steps 2+3 of enter and active: UI stays hidden */
+body.focus-entering-overlay .top-bar,
+body.focus-entering-overlay .dock-wrapper,
+body.focus-entering-overlay .bottom-section,
+body.focus-entering-overlay .right-sidebar,
+body.focus-entering-overlay .settings-btn,
+body.focus-entering-overlay .center-content,
 body.focus-active .top-bar,
 body.focus-active .dock-wrapper,
 body.focus-active .bottom-section,
@@ -1336,7 +1395,102 @@ body.focus-active .settings-btn,
 body.focus-active .center-content {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.4s ease;
+  transition: none;
+}
+
+/* Step 1 of exit (overlay fading out): UI stays hidden */
+body.focus-exiting-overlay .top-bar,
+body.focus-exiting-overlay .dock-wrapper,
+body.focus-exiting-overlay .bottom-section,
+body.focus-exiting-overlay .right-sidebar,
+body.focus-exiting-overlay .settings-btn,
+body.focus-exiting-overlay .center-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+/* Step 2 of exit: UI fades back in */
+body.focus-exiting .top-bar,
+body.focus-exiting .dock-wrapper,
+body.focus-exiting .bottom-section,
+body.focus-exiting .right-sidebar,
+body.focus-exiting .settings-btn,
+body.focus-exiting .center-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   Photo Grid (Photos Settings Tab)
+   ============================================================ */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.photo-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.25s ease, transform 0.2s ease;
+}
+.photo-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.03);
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-thumb-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 6px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.photo-thumb:hover .photo-thumb-overlay {
+  opacity: 1;
+}
+.photo-thumb-credit {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.photo-like-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.photo-like-btn.liked {
+  color: #ef4444;
+  background: rgba(0, 0, 0, 0.6);
+}
+.photo-like-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.15);
 }
 
 /* ============================================================

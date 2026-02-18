@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocus } from '../../hooks/useFocus';
+import { useSettings } from '../../contexts/SettingsContext';
 
 export function FocusInput() {
+  const { settings } = useSettings();
   const { text, completed, setText, toggleCompleted } = useFocus();
   const [editing, setEditing] = useState(false);
   const [localValue, setLocalValue] = useState(text);
@@ -38,6 +40,8 @@ export function FocusInput() {
     setEditing(true);
     setTimeout(() => inputRef.current?.focus(), 0);
   }, []);
+
+  if (!settings.showFocus) return null;
 
   // No text yet or actively editing: show input
   if (!text || editing) {

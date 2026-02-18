@@ -1,9 +1,14 @@
 import { useWeather } from '../../hooks/useWeather';
+import { useSettings } from '../../contexts/SettingsContext';
 import { WeatherIcon } from './WeatherIcon';
 import { Thermometer, AlertTriangle } from 'lucide-react';
 
 export function WeatherWidget() {
+  const { settings } = useSettings();
   const state = useWeather();
+
+  if (!settings.showWeather) return null;
+  if (state.status === 'placeholder') return null;
 
   if (state.status === 'loading') {
     return (
@@ -20,15 +25,6 @@ export function WeatherWidget() {
       <div className="weather-widget glass-panel text-shadow-sm weather-error">
         <AlertTriangle size={28} className="weather-icon" />
         <span className="weather-city">Error</span>
-      </div>
-    );
-  }
-
-  if (state.status === 'placeholder') {
-    return (
-      <div className="weather-widget glass-panel text-shadow-sm weather-placeholder">
-        <Thermometer size={28} className="weather-icon" />
-        <span className="weather-city">{state.message}</span>
       </div>
     );
   }

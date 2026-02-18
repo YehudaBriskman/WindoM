@@ -21,6 +21,10 @@ export interface Settings {
   quoteSource: 'local' | 'api';
   mainFocus: string;
   focusCompleted: boolean;
+  showWeather: boolean;
+  showLinks: boolean;
+  showFocus: boolean;
+  showGreeting: boolean;
 }
 
 export const defaultSettings: Settings = {
@@ -44,4 +48,8 @@ export const defaultSettings: Settings = {
   quoteSource: 'local',
   mainFocus: '',
   focusCompleted: false,
+  showWeather: true,
+  showLinks: true,
+  showFocus: true,
+  showGreeting: true,
 };

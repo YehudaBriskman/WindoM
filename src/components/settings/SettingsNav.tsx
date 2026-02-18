@@ -1,4 +1,4 @@
-const TABS = ['general', 'background', 'weather', 'quotes', 'links'] as const;
+const TABS = ['general', 'background', 'weather', 'quotes', 'links', 'photos'] as const;
 export type SettingsTab = typeof TABS[number];
 
 const LABELS: Record<SettingsTab, string> = {
@@ -7,6 +7,7 @@ const LABELS: Record<SettingsTab, string> = {
   weather: 'Weather',
   quotes: 'Quotes',
   links: 'Links',
+  photos: 'Photos',
 };
 
 interface SettingsNavProps {

@@ -1,4 +1,5 @@
 import { useFocusTimer } from '../../contexts/FocusTimerContext';
+import { useSettings } from '../../contexts/SettingsContext';
 
 const PRESETS = [
   { label: '25m', minutes: 25 },
@@ -8,7 +9,11 @@ const PRESETS = [
 ];
 
 export function FocusPresets() {
-  const { start } = useFocusTimer();
+  const { settings } = useSettings();
+  const { phase, start } = useFocusTimer();
+
+  if (!settings.showFocus) return null;
+  if (phase !== 'idle') return null;
 
   return (
     <div className="focus-presets">

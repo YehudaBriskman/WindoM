@@ -2,12 +2,12 @@ import { useFocusTimer } from '../../contexts/FocusTimerContext';
 import { Clock } from '../clock/Clock';
 
 export function FocusOverlay() {
-  const { active, remaining, stop } = useFocusTimer();
+  const { phase, remaining, stop } = useFocusTimer();
 
-  if (!active) return null;
+  if (phase === 'idle') return null;
 
   return (
-    <div className="focus-overlay">
+    <div className={`focus-overlay ${phase}`}>
       <Clock />
       <div className="focus-remaining text-shadow-sm">
         {remaining}

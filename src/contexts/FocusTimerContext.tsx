@@ -1,7 +1,13 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
 
+// Phases for sequential enter/exit animations:
+//   idle → entering (UI fades out) → entering-overlay (overlay fades in) → active
+//   active → exiting-overlay (overlay fades out) → exiting (UI fades in) → idle
+// Background zoom spans the full enter/exit duration (3s).
+export type FocusPhase = 'idle' | 'entering' | 'entering-overlay' | 'active' | 'exiting-overlay' | 'exiting';
+
 interface FocusTimerContextValue {
-  active: boolean;
+  phase: FocusPhase;
   remaining: string;
   start: (minutes: number) => void;
   stop: () => void;
@@ -9,23 +15,68 @@ interface FocusTimerContextValue {
 
 const FocusTimerContext = createContext<FocusTimerContextValue | null>(null);
 
+const STEP_MS = 1500;
+
 export function FocusTimerProvider({ children }: { children: ReactNode }) {
-  const [active, setActive] = useState(false);
+  const [phase, setPhase] = useState<FocusPhase>('idle');
   const [remaining, setRemaining] = useState('');
   const endTimeRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const transitionRef = useRef<ReturnType<typeof setTimeout>>();
+  const transitionRef2 = useRef<ReturnType<typeof setTimeout>>();
+
+  const clearTimers = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (transitionRef.current) clearTimeout(transitionRef.current);
+    if (transitionRef2.current) clearTimeout(transitionRef2.current);
+  }, []);
 
   const stop = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    setActive(false);
-    setRemaining('');
-    document.body.classList.remove('focus-active');
+    if (transitionRef.current) clearTimeout(transitionRef.current);
+    if (transitionRef2.current) clearTimeout(transitionRef2.current);
+
+    // Step 1: overlay fades out + background starts zooming back (3s)
+    setPhase('exiting-overlay');
+    document.body.classList.remove('focus-active', 'focus-entering', 'focus-entering-overlay');
+    document.body.classList.add('focus-exiting-overlay');
+    document.body.classList.remove('focus-zoomed'); // background zoom-out starts (3s)
+
+    // Step 2: after overlay gone, UI fades back in
+    transitionRef.current = setTimeout(() => {
+      document.body.classList.remove('focus-exiting-overlay');
+      document.body.classList.add('focus-exiting');
+      setPhase('exiting');
+
+      // Step 3: after UI faded in, done
+      transitionRef2.current = setTimeout(() => {
+        document.body.classList.remove('focus-exiting');
+        setPhase('idle');
+        setRemaining('');
+      }, STEP_MS);
+    }, STEP_MS);
   }, []);
 
   const start = useCallback((minutes: number) => {
     endTimeRef.current = Date.now() + minutes * 60_000;
-    document.body.classList.add('focus-active');
-    setActive(true);
+
+    // Step 1: UI fades out + background starts zooming in (3s)
+    setPhase('entering');
+    document.body.classList.add('focus-entering', 'focus-zoomed'); // zoom starts (3s)
+
+    // Step 2: after UI gone, overlay fades in
+    transitionRef.current = setTimeout(() => {
+      document.body.classList.remove('focus-entering');
+      document.body.classList.add('focus-entering-overlay');
+      setPhase('entering-overlay');
+
+      // Step 3: after overlay visible, settle into active
+      transitionRef2.current = setTimeout(() => {
+        document.body.classList.remove('focus-entering-overlay');
+        document.body.classList.add('focus-active');
+        setPhase('active');
+      }, STEP_MS);
+    }, STEP_MS);
 
     const tick = () => {
       const left = endTimeRef.current - Date.now();
@@ -33,10 +84,17 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
         stop();
         return;
       }
-      const totalMin = Math.ceil(left / 60_000);
-      const h = Math.floor(totalMin / 60);
-      const m = totalMin % 60;
-      setRemaining(h > 0 ? `${h}h ${String(m).padStart(2, '0')}m remaining` : `${m}m remaining`);
+      const totalSec = Math.ceil(left / 1000);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (h > 0) {
+        setRemaining(`${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s remaining`);
+      } else if (m > 0) {
+        setRemaining(`${m}m ${String(s).padStart(2, '0')}s remaining`);
+      } else {
+        setRemaining(`${s}s remaining`);
+      }
     };
 
     tick();
@@ -44,11 +102,11 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
   }, [stop]);
 
   useEffect(() => () => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-  }, []);
+    clearTimers();
+  }, [clearTimers]);
 
   return (
-    <FocusTimerContext.Provider value={{ active, remaining, start, stop }}>
+    <FocusTimerContext.Provider value={{ phase, remaining, start, stop }}>
       {children}
     </FocusTimerContext.Provider>
   );

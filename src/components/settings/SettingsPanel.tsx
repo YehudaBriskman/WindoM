@@ -8,6 +8,7 @@ import { BackgroundSettings } from './sections/BackgroundSettings';
 import { WeatherSettings } from './sections/WeatherSettings';
 import { QuotesSettings } from './sections/QuotesSettings';
 import { LinksSettings } from './sections/LinksSettings';
+import { PhotosSettings } from './sections/PhotosSettings';
 import type { Settings } from '../../types/settings';
 
 export function SettingsPanel() {
@@ -53,6 +54,10 @@ export function SettingsPanel() {
     updates.weatherApiKey = str('weatherApiKey');
     updates.quotesEnabled = bool('quotesEnabled');
     updates.quoteSource = str('quoteSource') as Settings['quoteSource'];
+    updates.showWeather = bool('showWeather');
+    updates.showLinks = bool('showLinks');
+    updates.showFocus = bool('showFocus');
+    updates.showGreeting = bool('showGreeting');
 
     await updateMultiple(updates);
     showSettingsMessage('Settings saved successfully!', 'success');
@@ -98,6 +103,7 @@ export function SettingsPanel() {
             {activeTab === 'weather' && <WeatherSettings formRef={formRef} />}
             {activeTab === 'quotes' && <QuotesSettings formRef={formRef} />}
             {activeTab === 'links' && <LinksSettings />}
+            {activeTab === 'photos' && <PhotosSettings />}
 
             {/* Actions */}
             <div className="settings-actions">

@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useLinks } from '../../hooks/useLinks';
+import { useSettings } from '../../contexts/SettingsContext';
 import { DockItem } from './DockItem';
 
 export function DockBar() {
+  const { settings } = useSettings();
   const { links, addLink } = useLinks();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
@@ -30,6 +32,7 @@ export function DockBar() {
     setShowForm(false);
   };
 
+  if (!settings.showLinks) return null;
   if (!links.length) return null;
 
   return (

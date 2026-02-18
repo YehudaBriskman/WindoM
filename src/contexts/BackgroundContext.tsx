@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useSettings } from './SettingsContext';
 import { localStorage as ls } from '../lib/chrome-storage';
+import { usePhotoHistory } from '../hooks/usePhotoHistory';
+import type { PhotoRecord } from '../types/photos';
 
 const UNSPLASH_API_URL = 'https://api.unsplash.com/photos/random';
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
@@ -8,14 +10,18 @@ const DEFAULT_GRADIENT = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
 
 interface UnsplashCache {
   imageUrl: string;
+  thumbUrl: string;
   photographer: string;
   photographerUrl: string;
+  photoId: string;
   timestamp: number;
 }
 
 interface BackgroundContextValue {
   photographer: { name: string; url: string } | null;
   refresh: () => Promise<void>;
+  setFromPhoto: (photo: PhotoRecord) => void;
+  photoHistory: ReturnType<typeof usePhotoHistory>;
 }
 
 const BackgroundContext = createContext<BackgroundContextValue | null>(null);
@@ -23,6 +29,7 @@ const BackgroundContext = createContext<BackgroundContextValue | null>(null);
 export function BackgroundProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
   const [photographer, setPhotographer] = useState<{ name: string; url: string } | null>(null);
+  const photoHistory = usePhotoHistory();
 
   const applyBackground = useCallback((imageUrl: string) => {
     if (imageUrl.startsWith('linear-gradient') || imageUrl.startsWith('radial-gradient')) {
@@ -39,6 +46,11 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       img.src = imageUrl;
     }
   }, []);
+
+  const setFromPhoto = useCallback((photo: PhotoRecord) => {
+    applyBackground(photo.imageUrl);
+    setPhotographer({ name: photo.photographer, url: photo.photographerUrl });
+  }, [applyBackground]);
 
   const loadUnsplash = useCallback(async () => {
     const cached = await ls.get<UnsplashCache | null>('unsplashCache', null);
@@ -63,20 +75,31 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
 
       const imageData: UnsplashCache = {
         imageUrl: data.urls.full,
+        thumbUrl: data.urls.small,
         photographer: data.user.name,
         photographerUrl: data.user.links.html,
+        photoId: data.id,
         timestamp: Date.now(),
       };
 
       await ls.set('unsplashCache', imageData);
       applyBackground(imageData.imageUrl);
       setPhotographer({ name: imageData.photographer, url: imageData.photographerUrl });
+
+      // Record to photo history
+      photoHistory.addPhoto({
+        id: imageData.photoId,
+        imageUrl: imageData.imageUrl,
+        thumbUrl: imageData.thumbUrl,
+        photographer: imageData.photographer,
+        photographerUrl: imageData.photographerUrl,
+      });
     } catch (error) {
       console.error('Error loading Unsplash image:', error);
       applyBackground(DEFAULT_GRADIENT);
       setPhotographer(null);
     }
-  }, [settings.unsplashApiKey, applyBackground]);
+  }, [settings.unsplashApiKey, applyBackground, photoHistory]);
 
   const loadLocal = useCallback(async () => {
     const localImage = await ls.get<string | null>('localBackgroundImage', null);
@@ -113,7 +136,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   }, [settings.backgroundSource, loadUnsplash, loadLocal]);
 
   return (
-    <BackgroundContext.Provider value={{ photographer, refresh }}>
+    <BackgroundContext.Provider value={{ photographer, refresh, setFromPhoto, photoHistory }}>
       {children}
     </BackgroundContext.Provider>
   );
