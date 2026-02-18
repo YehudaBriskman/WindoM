@@ -14,14 +14,27 @@ body {
   height: 100vh;
   overflow: hidden;
   color: white;
+  position: relative;
+}
+
+/* ── Background zoom layer ──────────────────────────────────
+   Separate element so transform:scale animates smoothly.
+   Slightly oversized (inset: -8%) to prevent white edges
+   during the scale-up. FocusTimerContext adds .zoomed class.
+   ─────────────────────────────────────────────────────────── */
+#bg-zoom-layer {
+  position: fixed;
+  inset: -8%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  position: relative;
-  transition: background-size 3s ease;
+  z-index: -2;
+  transform-origin: center center;
+  transform: scale(1);
+  transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-body.focus-zoomed {
-  background-size: 110%;
+#bg-zoom-layer.zoomed {
+  transform: scale(1.12);
 }
 
 a {
@@ -1427,9 +1440,13 @@ input[type="checkbox"]:focus-visible {
 .top-bar,
 .dock-wrapper,
 .bottom-section,
-.right-sidebar,
 .settings-btn,
 .center-content {
+  transition: opacity 1.5s ease;
+}
+/* Sidebar has its own fast open/close transition; only slows during focus enter/exit */
+body.focus-entering .right-sidebar,
+body.focus-exiting .right-sidebar {
   transition: opacity 1.5s ease;
 }
 
@@ -1478,11 +1495,15 @@ body.focus-exiting-overlay .center-content {
 body.focus-exiting .top-bar,
 body.focus-exiting .dock-wrapper,
 body.focus-exiting .bottom-section,
-body.focus-exiting .right-sidebar,
 body.focus-exiting .settings-btn,
 body.focus-exiting .center-content {
   opacity: 1;
   pointer-events: auto;
+}
+/* Sidebar fades back to its closed state (30%), not full opacity */
+body.focus-exiting .right-sidebar {
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 /* ============================================================

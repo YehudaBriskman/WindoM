@@ -37,40 +37,46 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   const [currentPhotoSource, setCurrentPhotoSource] = useState<'unsplash' | 'local' | null>(null);
   const photoHistory = usePhotoHistory();
 
+  // Destructure stable callbacks to avoid recreating loadUnsplash on every photoHistory render
+  const { addPhoto } = photoHistory;
+
   const applyBackground = useCallback((imageUrl: string) => {
+    const layer = document.getElementById('bg-zoom-layer');
+    if (!layer) return;
     if (imageUrl.startsWith('linear-gradient') || imageUrl.startsWith('radial-gradient')) {
-      document.body.style.backgroundImage = imageUrl;
+      layer.style.backgroundImage = imageUrl;
     } else {
       const img = new Image();
       img.onload = () => {
-        document.body.style.backgroundImage = `url('${imageUrl}')`;
-        document.body.style.transition = 'background-image 0.5s ease-in-out';
+        layer.style.backgroundImage = `url('${imageUrl}')`;
       };
       img.onerror = () => {
-        document.body.style.backgroundImage = DEFAULT_GRADIENT;
+        layer.style.backgroundImage = DEFAULT_GRADIENT;
       };
       img.src = imageUrl;
     }
   }, []);
 
-  const setFromPhoto = useCallback((photo: PhotoRecord) => {
-    applyBackground(photo.imageUrl);
+  const setFromPhoto = useCallback(async (photo: PhotoRecord) => {
     if (photo.source === 'local') {
+      const fullUrl = await ls.get<string | null>(`localPhoto-${photo.id}`, null);
+      applyBackground(fullUrl ?? photo.imageUrl);
       setPhotographer(null);
     } else {
+      applyBackground(photo.imageUrl);
       setPhotographer({ name: photo.photographer, url: photo.photographerUrl });
     }
     setCurrentPhotoId(photo.id);
     setCurrentPhotoSource(photo.source ?? 'unsplash');
+    document.dispatchEvent(new CustomEvent('close-settings'));
   }, [applyBackground]);
 
   const setFromLocalPhoto = useCallback(async (id: string) => {
-    const locals = await ls.get<PhotoRecord[]>('localPhotos', []);
-    const photo = locals.find((p) => p.id === id);
-    if (!photo) return;
-    applyBackground(photo.imageUrl);
+    const fullUrl = await ls.get<string | null>(`localPhoto-${id}`, null);
+    if (!fullUrl) return;
+    applyBackground(fullUrl);
     setPhotographer(null);
-    setCurrentPhotoId(photo.id);
+    setCurrentPhotoId(id);
     setCurrentPhotoSource('local');
   }, [applyBackground]);
 
@@ -113,8 +119,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setCurrentPhotoId(imageData.photoId);
       setCurrentPhotoSource('unsplash');
 
-      // Record to photo history
-      photoHistory.addPhoto({
+      addPhoto({
         id: imageData.photoId,
         imageUrl: imageData.imageUrl,
         thumbUrl: imageData.thumbUrl,
@@ -127,7 +132,8 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setPhotographer(null);
       setCurrentPhotoSource(null);
     }
-  }, [settings.unsplashApiKey, applyBackground, photoHistory]);
+  // addPhoto is a stable useCallback — safe dep; do NOT add photoHistory here
+  }, [settings.unsplashApiKey, applyBackground, addPhoto]);
 
   const loadLocal = useCallback(async () => {
     const localImage = await ls.get<string | null>('localBackgroundImage', null);

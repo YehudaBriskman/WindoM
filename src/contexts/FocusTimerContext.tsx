@@ -40,7 +40,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
     setPhase('exiting-overlay');
     document.body.classList.remove('focus-active', 'focus-entering', 'focus-entering-overlay');
     document.body.classList.add('focus-exiting-overlay');
-    document.body.classList.remove('focus-zoomed'); // background zoom-out starts (3s)
+    document.getElementById('bg-zoom-layer')?.classList.remove('zoomed'); // background zoom-out starts (3s)
 
     // Step 2: after overlay gone, UI fades back in
     transitionRef.current = setTimeout(() => {
@@ -62,7 +62,8 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
 
     // Step 1: UI fades out + background starts zooming in (3s)
     setPhase('entering');
-    document.body.classList.add('focus-entering', 'focus-zoomed'); // zoom starts (3s)
+    document.body.classList.add('focus-entering');
+    document.getElementById('bg-zoom-layer')?.classList.add('zoomed'); // zoom starts (3s)
 
     // Step 2: after UI gone, overlay fades in
     transitionRef.current = setTimeout(() => {
@@ -88,13 +89,9 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
       const h = Math.floor(totalSec / 3600);
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
-      if (h > 0) {
-        setRemaining(`${h}h ${String(m).padStart(2, '0')}m ${String(s).padStart(2, '0')}s remaining`);
-      } else if (m > 0) {
-        setRemaining(`${m}m ${String(s).padStart(2, '0')}s remaining`);
-      } else {
-        setRemaining(`${s}s remaining`);
-      }
+      setRemaining(
+        `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+      );
     };
 
     tick();

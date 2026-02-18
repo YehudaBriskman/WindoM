@@ -18,7 +18,6 @@ export function usePhotoHistory() {
       const h = await ls.get<PhotoRecord[]>(HISTORY_KEY, []);
       const loc = await ls.get<PhotoRecord[]>(LOCAL_HISTORY_KEY, []);
       const l = await ls.get<PhotoRecord[]>(LIKED_KEY, []);
-      // Migrate old records without source field
       setUnsplashHistory(h.map((p) => ({ ...p, source: p.source ?? 'unsplash' } as PhotoRecord)));
       setLocalHistory(loc.map((p) => ({ ...p, source: 'local' } as PhotoRecord)));
       setLiked(l.map((p) => ({ ...p, source: p.source ?? 'unsplash' } as PhotoRecord)));
@@ -37,9 +36,12 @@ export function usePhotoHistory() {
 
   const addLocalPhoto = useCallback((dataUrl: string, thumbDataUrl: string, filename: string) => {
     const id = `local-${Date.now()}`;
+    // Store full image separately to avoid bloating the metadata array
+    ls.set(`localPhoto-${id}`, dataUrl);
+
     const record: PhotoRecord = {
       id,
-      imageUrl: dataUrl,
+      imageUrl: thumbDataUrl, // thumbnail only in the metadata record
       thumbUrl: thumbDataUrl,
       photographer: filename,
       photographerUrl: '',
@@ -49,6 +51,9 @@ export function usePhotoHistory() {
     };
     setLocalHistory((prev) => {
       const next = [record, ...prev].slice(0, MAX_LOCAL);
+      // When evicting old records, clean up their full image storage
+      const evicted = prev.slice(MAX_LOCAL - 1);
+      evicted.forEach((p) => ls.set(`localPhoto-${p.id}`, null));
       ls.set(LOCAL_HISTORY_KEY, next);
       return next;
     });
@@ -57,7 +62,6 @@ export function usePhotoHistory() {
   const toggleLike = useCallback((id: string) => {
     let updatedPhoto: PhotoRecord | undefined;
 
-    // Check unsplash history first
     setUnsplashHistory((prev) => {
       const next = prev.map((p) => {
         if (p.id === id) {
@@ -66,24 +70,21 @@ export function usePhotoHistory() {
         }
         return p;
       });
-      if (updatedPhoto) ls.set(HISTORY_KEY, next);
+      if (next.some((p) => p.id === id)) ls.set(HISTORY_KEY, next);
       return next;
     });
 
-    // Also check local history
-    if (!updatedPhoto) {
-      setLocalHistory((prev) => {
-        const next = prev.map((p) => {
-          if (p.id === id) {
-            updatedPhoto = { ...p, liked: !p.liked };
-            return updatedPhoto;
-          }
-          return p;
-        });
-        if (updatedPhoto) ls.set(LOCAL_HISTORY_KEY, next);
-        return next;
+    setLocalHistory((prev) => {
+      const next = prev.map((p) => {
+        if (p.id === id) {
+          updatedPhoto = { ...p, liked: !p.liked };
+          return updatedPhoto;
+        }
+        return p;
       });
-    }
+      if (next.some((p) => p.id === id)) ls.set(LOCAL_HISTORY_KEY, next);
+      return next;
+    });
 
     queueMicrotask(() => {
       if (!updatedPhoto) return;
@@ -103,6 +104,5 @@ export function usePhotoHistory() {
     });
   }, []);
 
-  // Keep backward-compat: history = unsplashHistory
   return { history: unsplashHistory, unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike };
 }

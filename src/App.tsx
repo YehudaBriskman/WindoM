@@ -18,6 +18,8 @@ export function App() {
     <SettingsProvider>
       <BackgroundProvider>
         <FocusTimerProvider>
+          {/* Background zoom layer — separate element so transform:scale animates smoothly */}
+          <div id="bg-zoom-layer" />
           <GlassFilters />
           <BackgroundOverlay />
           <TopBar />

@@ -21,7 +21,7 @@ export function RightSidebar() {
 
   return (
     <>
-      {/* Toggle button is a sibling — outside the sidebar to avoid overflow clipping */}
+      {/* Toggle button */}
       <div
         onClick={(e) => { e.stopPropagation(); toggle(); }}
         className={`sidebar-toggle glass-panel ${isOpen ? 'open' : ''}`}
@@ -29,6 +29,7 @@ export function RightSidebar() {
         <LayoutList size={20} />
       </div>
 
+      {/* Sidebar — always in position; opacity changes open vs closed */}
       <div
         ref={sidebarRef}
         className={`right-sidebar glass-sidebar ${isOpen ? 'open' : 'closed'}`}

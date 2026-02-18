@@ -18,14 +18,19 @@ export function SettingsPanel() {
 
   // Listen for toggle event from SettingsButton
   useEffect(() => {
-    const handler = () => {
+    const toggleHandler = () => {
       setIsOpen((prev) => {
         if (!prev) setActiveTab('general');
         return !prev;
       });
     };
-    document.addEventListener('toggle-settings', handler);
-    return () => document.removeEventListener('toggle-settings', handler);
+    const closeHandler = () => setIsOpen(false);
+    document.addEventListener('toggle-settings', toggleHandler);
+    document.addEventListener('close-settings', closeHandler);
+    return () => {
+      document.removeEventListener('toggle-settings', toggleHandler);
+      document.removeEventListener('close-settings', closeHandler);
+    };
   }, []);
 
   const close = useCallback(() => setIsOpen(false), []);
