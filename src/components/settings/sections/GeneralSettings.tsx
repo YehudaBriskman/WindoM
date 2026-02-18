@@ -1,11 +1,20 @@
+import { Cloud, Quote, Link2, Target, User } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
 
 interface Props {
-  formRef: React.MutableRefObject<Record<string, string | boolean>>;
+  onReset: () => void;
 }
 
-export function GeneralSettings({ formRef }: Props) {
-  const { settings } = useSettings();
+export function GeneralSettings({ onReset }: Props) {
+  const { settings, update } = useSettings();
+
+  const widgets: { key: 'showWeather' | 'quotesEnabled' | 'showLinks' | 'showFocus' | 'showGreeting'; label: string; Icon: React.ElementType }[] = [
+    { key: 'showWeather', label: 'Weather', Icon: Cloud },
+    { key: 'quotesEnabled', label: 'Quotes', Icon: Quote },
+    { key: 'showLinks', label: 'Quick Links', Icon: Link2 },
+    { key: 'showFocus', label: 'Focus / Goals', Icon: Target },
+    { key: 'showGreeting', label: 'Greeting', Icon: User },
+  ];
 
   return (
     <div>
@@ -15,79 +24,39 @@ export function GeneralSettings({ formRef }: Props) {
           type="text"
           defaultValue={settings.userName}
           placeholder="Friend"
-          onChange={(e) => (formRef.current.userName = e.target.value)}
+          onChange={(e) => update('userName', e.target.value || 'Friend')}
           className="settings-input glass-input"
         />
-      </div>
-      <div className="settings-group">
-        <label className="settings-label">Time Format:</label>
-        <select
-          defaultValue={settings.timeFormat}
-          onChange={(e) => (formRef.current.timeFormat = e.target.value)}
-          className="settings-select glass-input"
-        >
-          <option value="12h">12-hour (AM/PM)</option>
-          <option value="24h">24-hour</option>
-        </select>
-      </div>
-      <div className="settings-group">
-        <label className="settings-label">Temperature Unit:</label>
-        <select
-          defaultValue={settings.temperatureUnit}
-          onChange={(e) => (formRef.current.temperatureUnit = e.target.value)}
-          className="settings-select glass-input"
-        >
-          <option value="F">Fahrenheit (&deg;F)</option>
-          <option value="C">Celsius (&deg;C)</option>
-        </select>
       </div>
 
       <div className="settings-group" style={{ marginTop: 28 }}>
         <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
           Widget Visibility
         </label>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <label className="settings-checkbox-label">
-            <input
-              type="checkbox"
-              defaultChecked={settings.showWeather}
-              onChange={(e) => (formRef.current.showWeather = e.target.checked)}
-            />
-            Weather
-          </label>
-          <label className="settings-checkbox-label">
-            <input
-              type="checkbox"
-              defaultChecked={settings.quotesEnabled}
-              onChange={(e) => (formRef.current.quotesEnabled = e.target.checked)}
-            />
-            Quotes
-          </label>
-          <label className="settings-checkbox-label">
-            <input
-              type="checkbox"
-              defaultChecked={settings.showLinks}
-              onChange={(e) => (formRef.current.showLinks = e.target.checked)}
-            />
-            Quick Links
-          </label>
-          <label className="settings-checkbox-label">
-            <input
-              type="checkbox"
-              defaultChecked={settings.showFocus}
-              onChange={(e) => (formRef.current.showFocus = e.target.checked)}
-            />
-            Focus / Goals
-          </label>
-          <label className="settings-checkbox-label">
-            <input
-              type="checkbox"
-              defaultChecked={settings.showGreeting}
-              onChange={(e) => (formRef.current.showGreeting = e.target.checked)}
-            />
-            Greeting
-          </label>
+        <div className="visibility-table">
+          {widgets.map(({ key, label, Icon }) => (
+            <label key={key} className="visibility-row">
+              <span className="visibility-row-icon">
+                <Icon size={16} strokeWidth={1.8} />
+              </span>
+              <span style={{ flex: 1, fontSize: 14 }}>{label}</span>
+              <label className="toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={settings[key]}
+                  onChange={(e) => update(key, e.target.checked)}
+                />
+                <span className="toggle-track"><span className="toggle-knob" /></span>
+              </label>
+            </label>
+          ))}
         </div>
+      </div>
+
+      <div className="settings-group" style={{ marginTop: 28 }}>
+        <button onClick={onReset} className="settings-reset-btn" style={{ width: '100%' }}>
+          Reset to Defaults
+        </button>
       </div>
     </div>
   );

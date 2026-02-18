@@ -6,4 +6,5 @@ export interface PhotoRecord {
   photographerUrl: string;
   timestamp: number;
   liked: boolean;
+  source: 'unsplash' | 'local';
 }

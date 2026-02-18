@@ -37,25 +37,46 @@ function PhotoGrid({ photos, onLike, onSelect }: {
 
 export function PhotosSettings() {
   const { setFromPhoto, photoHistory } = useBackgroundContext();
-  const { history, liked, toggleLike } = photoHistory;
+  const { unsplashHistory, localHistory, liked, toggleLike } = photoHistory;
+
+  const unsplashLiked = liked.filter((p) => p.source === 'unsplash' || !p.source);
+  const localLiked = liked.filter((p) => p.source === 'local');
 
   return (
     <div>
-      {liked.length > 0 && (
-        <div className="settings-group">
-          <label className="settings-label" style={{ fontSize: 15, fontWeight: 500 }}>
-            Liked Photos
-          </label>
-          <PhotoGrid photos={liked} onLike={toggleLike} onSelect={setFromPhoto} />
-        </div>
-      )}
+      {/* Unsplash Photos */}
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Unsplash Photos</h3>
 
-      <div className="settings-group">
-        <label className="settings-label" style={{ fontSize: 15, fontWeight: 500 }}>
-          Recent Photos
-        </label>
-        <PhotoGrid photos={history} onLike={toggleLike} onSelect={setFromPhoto} />
-      </div>
+        {unsplashLiked.length > 0 && (
+          <div className="settings-group">
+            <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
+            <PhotoGrid photos={unsplashLiked} onLike={toggleLike} onSelect={setFromPhoto} />
+          </div>
+        )}
+
+        <div className="settings-group">
+          <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Recent</label>
+          <PhotoGrid photos={unsplashHistory} onLike={toggleLike} onSelect={setFromPhoto} />
+        </div>
+      </section>
+
+      {/* Local Photos */}
+      <section>
+        <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Local Photos</h3>
+
+        {localLiked.length > 0 && (
+          <div className="settings-group">
+            <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
+            <PhotoGrid photos={localLiked} onLike={toggleLike} onSelect={setFromPhoto} />
+          </div>
+        )}
+
+        <div className="settings-group">
+          <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Recent (up to 5)</label>
+          <PhotoGrid photos={localHistory} onLike={toggleLike} onSelect={setFromPhoto} />
+        </div>
+      </section>
     </div>
   );
 }

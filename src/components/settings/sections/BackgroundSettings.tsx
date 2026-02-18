@@ -1,13 +1,11 @@
 import { useSettings } from '../../../contexts/SettingsContext';
+import { useBackgroundContext } from '../../../contexts/BackgroundContext';
 import { localStorage as ls } from '../../../lib/chrome-storage';
 import { showSettingsMessage } from '../SettingsMessage';
 
-interface Props {
-  formRef: React.MutableRefObject<Record<string, string | boolean>>;
-}
-
-export function BackgroundSettings({ formRef }: Props) {
-  const { settings } = useSettings();
+export function BackgroundSettings() {
+  const { settings, update } = useSettings();
+  const { addLocalPhoto } = useBackgroundContext();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -22,9 +20,29 @@ export function BackgroundSettings({ formRef }: Props) {
     }
     const reader = new FileReader();
     reader.onload = async (ev) => {
-      await ls.set('localBackgroundImage', ev.target?.result);
+      const dataUrl = ev.target?.result as string;
+      await ls.set('localBackgroundImage', dataUrl);
+
+      // Generate thumbnail via canvas
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 120;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const scale = Math.max(200 / img.width, 120 / img.height);
+          const w = img.width * scale;
+          const h = img.height * scale;
+          ctx.drawImage(img, (200 - w) / 2, (120 - h) / 2, w, h);
+          const thumbDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+          addLocalPhoto(dataUrl, thumbDataUrl, file.name);
+        }
+      };
+      img.src = dataUrl;
+
+      await update('backgroundSource', 'local');
       showSettingsMessage('Background image uploaded successfully', 'success');
-      formRef.current.backgroundSource = 'local';
     };
     reader.onerror = () => showSettingsMessage('Error reading image file', 'error');
     reader.readAsDataURL(file);
@@ -35,8 +53,8 @@ export function BackgroundSettings({ formRef }: Props) {
       <div className="settings-group">
         <label className="settings-label">Background Source:</label>
         <select
-          defaultValue={settings.backgroundSource}
-          onChange={(e) => (formRef.current.backgroundSource = e.target.value)}
+          value={settings.backgroundSource}
+          onChange={(e) => update('backgroundSource', e.target.value as 'unsplash' | 'local')}
           className="settings-select glass-input"
         >
           <option value="unsplash">Unsplash</option>
@@ -49,7 +67,7 @@ export function BackgroundSettings({ formRef }: Props) {
           type="text"
           defaultValue={settings.unsplashApiKey}
           placeholder="Your API key"
-          onChange={(e) => (formRef.current.unsplashApiKey = e.target.value)}
+          onChange={(e) => update('unsplashApiKey', e.target.value)}
           className="settings-input glass-input"
         />
         <small className="settings-hint">
@@ -65,7 +83,7 @@ export function BackgroundSettings({ formRef }: Props) {
           type="text"
           defaultValue={settings.unsplashCollectionId}
           placeholder="Collection ID"
-          onChange={(e) => (formRef.current.unsplashCollectionId = e.target.value)}
+          onChange={(e) => update('unsplashCollectionId', e.target.value)}
           className="settings-input glass-input"
         />
         <small className="settings-hint">Leave empty for random nature photos</small>

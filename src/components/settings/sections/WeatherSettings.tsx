@@ -1,21 +1,28 @@
 import { useSettings } from '../../../contexts/SettingsContext';
 
-interface Props {
-  formRef: React.MutableRefObject<Record<string, string | boolean>>;
-}
-
-export function WeatherSettings({ formRef }: Props) {
-  const { settings } = useSettings();
+export function WeatherSettings() {
+  const { settings, update } = useSettings();
 
   return (
     <div>
+      <div className="settings-group">
+        <label className="settings-label">Temperature Unit:</label>
+        <select
+          value={settings.temperatureUnit}
+          onChange={(e) => update('temperatureUnit', e.target.value as 'F' | 'C')}
+          className="settings-select glass-input"
+        >
+          <option value="F">Fahrenheit (&deg;F)</option>
+          <option value="C">Celsius (&deg;C)</option>
+        </select>
+      </div>
       <div className="settings-group">
         <label className="settings-label">Location:</label>
         <input
           type="text"
           defaultValue={settings.location}
           placeholder="City name or leave empty for auto-detect"
-          onChange={(e) => (formRef.current.location = e.target.value)}
+          onChange={(e) => update('location', e.target.value)}
           className="settings-input glass-input"
         />
       </div>
@@ -25,7 +32,7 @@ export function WeatherSettings({ formRef }: Props) {
           type="text"
           defaultValue={settings.weatherApiKey}
           placeholder="Your API key"
-          onChange={(e) => (formRef.current.weatherApiKey = e.target.value)}
+          onChange={(e) => update('weatherApiKey', e.target.value)}
           className="settings-input glass-input"
         />
         <small className="settings-hint">

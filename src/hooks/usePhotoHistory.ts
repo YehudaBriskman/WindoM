@@ -4,24 +4,30 @@ import type { PhotoRecord } from '../types/photos';
 
 const HISTORY_KEY = 'photoHistory';
 const LIKED_KEY = 'likedPhotos';
+const LOCAL_HISTORY_KEY = 'localPhotos';
 const MAX_HISTORY = 50;
+const MAX_LOCAL = 5;
 
 export function usePhotoHistory() {
-  const [history, setHistory] = useState<PhotoRecord[]>([]);
+  const [unsplashHistory, setUnsplashHistory] = useState<PhotoRecord[]>([]);
+  const [localHistory, setLocalHistory] = useState<PhotoRecord[]>([]);
   const [liked, setLiked] = useState<PhotoRecord[]>([]);
 
   useEffect(() => {
     (async () => {
       const h = await ls.get<PhotoRecord[]>(HISTORY_KEY, []);
+      const loc = await ls.get<PhotoRecord[]>(LOCAL_HISTORY_KEY, []);
       const l = await ls.get<PhotoRecord[]>(LIKED_KEY, []);
-      setHistory(h);
-      setLiked(l);
+      // Migrate old records without source field
+      setUnsplashHistory(h.map((p) => ({ ...p, source: p.source ?? 'unsplash' } as PhotoRecord)));
+      setLocalHistory(loc.map((p) => ({ ...p, source: 'local' } as PhotoRecord)));
+      setLiked(l.map((p) => ({ ...p, source: p.source ?? 'unsplash' } as PhotoRecord)));
     })();
   }, []);
 
-  const addPhoto = useCallback((photo: Omit<PhotoRecord, 'liked' | 'timestamp'>) => {
-    const record: PhotoRecord = { ...photo, timestamp: Date.now(), liked: false };
-    setHistory((prev) => {
+  const addPhoto = useCallback((photo: Omit<PhotoRecord, 'liked' | 'timestamp' | 'source'>) => {
+    const record: PhotoRecord = { ...photo, timestamp: Date.now(), liked: false, source: 'unsplash' };
+    setUnsplashHistory((prev) => {
       const deduped = prev.filter((p) => p.id !== record.id);
       const next = [record, ...deduped].slice(0, MAX_HISTORY);
       ls.set(HISTORY_KEY, next);
@@ -29,10 +35,30 @@ export function usePhotoHistory() {
     });
   }, []);
 
+  const addLocalPhoto = useCallback((dataUrl: string, thumbDataUrl: string, filename: string) => {
+    const id = `local-${Date.now()}`;
+    const record: PhotoRecord = {
+      id,
+      imageUrl: dataUrl,
+      thumbUrl: thumbDataUrl,
+      photographer: filename,
+      photographerUrl: '',
+      timestamp: Date.now(),
+      liked: false,
+      source: 'local',
+    };
+    setLocalHistory((prev) => {
+      const next = [record, ...prev].slice(0, MAX_LOCAL);
+      ls.set(LOCAL_HISTORY_KEY, next);
+      return next;
+    });
+  }, []);
+
   const toggleLike = useCallback((id: string) => {
     let updatedPhoto: PhotoRecord | undefined;
 
-    setHistory((prev) => {
+    // Check unsplash history first
+    setUnsplashHistory((prev) => {
       const next = prev.map((p) => {
         if (p.id === id) {
           updatedPhoto = { ...p, liked: !p.liked };
@@ -40,11 +66,25 @@ export function usePhotoHistory() {
         }
         return p;
       });
-      ls.set(HISTORY_KEY, next);
+      if (updatedPhoto) ls.set(HISTORY_KEY, next);
       return next;
     });
 
-    // Use a microtask to ensure updatedPhoto is set from the history update
+    // Also check local history
+    if (!updatedPhoto) {
+      setLocalHistory((prev) => {
+        const next = prev.map((p) => {
+          if (p.id === id) {
+            updatedPhoto = { ...p, liked: !p.liked };
+            return updatedPhoto;
+          }
+          return p;
+        });
+        if (updatedPhoto) ls.set(LOCAL_HISTORY_KEY, next);
+        return next;
+      });
+    }
+
     queueMicrotask(() => {
       if (!updatedPhoto) return;
       if (updatedPhoto.liked) {
@@ -63,5 +103,6 @@ export function usePhotoHistory() {
     });
   }, []);
 
-  return { history, liked, addPhoto, toggleLike };
+  // Keep backward-compat: history = unsplashHistory
+  return { history: unsplashHistory, unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike };
 }

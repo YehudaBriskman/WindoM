@@ -690,9 +690,9 @@ input[type="file"]::file-selector-button:hover {
 }
 
 .sidebar-toggle {
-  position: absolute;
-  left: -50px;
-  top: 50%;
+  position: fixed;
+  right: 0;
+  bottom: 0%;
   transform: translateY(-50%);
   width: 42px;
   height: 42px;
@@ -701,7 +701,11 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s;
+  z-index: 201;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-toggle.open {
+  right: 350px;
 }
 .sidebar-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
@@ -753,9 +757,6 @@ input[type="file"]::file-selector-button:hover {
 .todo-item:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.18);
-}
-.todo-item input[type="checkbox"] {
-  cursor: pointer;
 }
 .todo-item-text {
   flex: 1;
@@ -1126,12 +1127,49 @@ input[type="file"]::file-selector-button:hover {
 .settings-checkbox-label {
   display: flex;
   align-items: center;
+  gap: 10px;
   cursor: pointer;
 }
-.settings-checkbox-label input[type="checkbox"] {
-  width: auto;
-  margin-right: 10px;
+
+/* ── Custom checkboxes (all) ──────────────────────────────── */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.07);
   cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+input[type="checkbox"]:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.13);
+}
+input[type="checkbox"]:checked {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
 }
 
 .settings-hint {
@@ -1341,7 +1379,7 @@ input[type="file"]::file-selector-button:hover {
 .photographer-credit {
   position: fixed;
   bottom: 10px;
-  right: 10px;
+  right: 50%;
   font-size: 12px;
   color: rgba(255, 255, 255, 0.8);
   padding: 8px 12px;
@@ -1352,6 +1390,32 @@ input[type="file"]::file-selector-button:hover {
 .photographer-credit a {
   color: white;
   text-decoration: underline;
+}
+.photo-credit-like-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  vertical-align: middle;
+  margin-right: 4px;
+  padding: 0;
+}
+.photo-credit-like-btn:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: scale(1.2);
+}
+.photo-credit-like-btn.liked {
+  color: #ef4444;
+}
+.photo-credit-like-btn.liked:hover {
+  color: #f87171;
 }
 
 /* ============================================================
@@ -1491,6 +1555,109 @@ body.focus-exiting .center-content {
 .photo-like-btn:hover {
   background: rgba(0, 0, 0, 0.7);
   transform: scale(1.15);
+}
+
+/* ============================================================
+   Widget Visibility Table
+   ============================================================ */
+.visibility-table {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.3),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.1);
+}
+
+.visibility-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.visibility-row:last-child {
+  border-bottom: none;
+}
+.visibility-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.visibility-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.toggle-switch input[type="checkbox"] {
+  /* Override global checkbox styles */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+  border: none;
+  background: none;
+  border-radius: 0;
+}
+.toggle-switch input[type="checkbox"]:checked::after {
+  display: none;
+}
+
+.toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background 0.25s ease, border-color 0.25s ease;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.3);
+}
+.toggle-switch input[type="checkbox"]:checked ~ .toggle-track,
+.toggle-switch input:checked + .toggle-track {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: transform 0.25s ease, background 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.toggle-switch input[type="checkbox"]:checked ~ .toggle-track .toggle-knob,
+.toggle-switch input:checked + .toggle-track .toggle-knob {
+  transform: translateX(18px);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* ============================================================

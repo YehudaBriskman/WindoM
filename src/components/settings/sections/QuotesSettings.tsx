@@ -1,11 +1,7 @@
 import { useSettings } from '../../../contexts/SettingsContext';
 
-interface Props {
-  formRef: React.MutableRefObject<Record<string, string | boolean>>;
-}
-
-export function QuotesSettings({ formRef }: Props) {
-  const { settings } = useSettings();
+export function QuotesSettings() {
+  const { settings, update } = useSettings();
 
   return (
     <div>
@@ -13,8 +9,8 @@ export function QuotesSettings({ formRef }: Props) {
         <label className="settings-checkbox-label">
           <input
             type="checkbox"
-            defaultChecked={settings.quotesEnabled}
-            onChange={(e) => (formRef.current.quotesEnabled = e.target.checked)}
+            checked={settings.quotesEnabled}
+            onChange={(e) => update('quotesEnabled', e.target.checked)}
           />
           Show daily quotes
         </label>
@@ -22,8 +18,8 @@ export function QuotesSettings({ formRef }: Props) {
       <div className="settings-group">
         <label className="settings-label">Quote Source:</label>
         <select
-          defaultValue={settings.quoteSource}
-          onChange={(e) => (formRef.current.quoteSource = e.target.value)}
+          value={settings.quoteSource}
+          onChange={(e) => update('quoteSource', e.target.value as 'local' | 'api')}
           className="settings-select glass-input"
         >
           <option value="local">Local Quotes</option>
