@@ -1,5 +1,6 @@
-import { Cloud, Quote, Link2, Target, User } from 'lucide-react';
+import { Cloud, Quote, Link2, Target, User, Search } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
+import type { Settings } from '../../../types';
 
 interface Props {
   onReset: () => void;
@@ -12,7 +13,7 @@ export function GeneralSettings({ onReset }: Props) {
     { key: 'showWeather', label: 'Weather', Icon: Cloud },
     { key: 'quotesEnabled', label: 'Quotes', Icon: Quote },
     { key: 'showLinks', label: 'Quick Links', Icon: Link2 },
-    { key: 'showFocus', label: 'Focus / Goals', Icon: Target },
+    { key: 'showFocus', label: 'Center Bar', Icon: Target },
     { key: 'showGreeting', label: 'Greeting', Icon: User },
   ];
 
@@ -51,6 +52,44 @@ export function GeneralSettings({ onReset }: Props) {
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="settings-group" style={{ marginTop: 28 }}>
+        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+          Center Bar Mode
+        </label>
+        <div className="segmented-control">
+          <button
+            className={`segmented-btn${settings.centerInputMode === 'focus' ? ' active' : ''}`}
+            onClick={() => update('centerInputMode', 'focus')}
+          >
+            <Target size={14} strokeWidth={1.8} />
+            Focus
+          </button>
+          <button
+            className={`segmented-btn${settings.centerInputMode === 'search' ? ' active' : ''}`}
+            onClick={() => update('centerInputMode', 'search')}
+          >
+            <Search size={14} strokeWidth={1.8} />
+            Search Bar
+          </button>
+        </div>
+
+        {settings.centerInputMode === 'search' && (
+          <div style={{ marginTop: 12 }}>
+            <label className="settings-label">Search Engine:</label>
+            <select
+              className="settings-select"
+              value={settings.searchEngine}
+              onChange={(e) => update('searchEngine', e.target.value as Settings['searchEngine'])}
+            >
+              <option value="google">Google</option>
+              <option value="bing">Bing</option>
+              <option value="duckduckgo">DuckDuckGo</option>
+              <option value="brave">Brave Search</option>
+            </select>
+          </div>
+        )}
       </div>
 
       <div className="settings-group" style={{ marginTop: 28 }}>

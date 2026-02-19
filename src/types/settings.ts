@@ -25,6 +25,8 @@ export interface Settings {
   showLinks: boolean;
   showFocus: boolean;
   showGreeting: boolean;
+  centerInputMode: 'focus' | 'search';
+  searchEngine: 'google' | 'bing' | 'duckduckgo' | 'brave';
 }
 
 export const defaultSettings: Settings = {
@@ -52,4 +54,6 @@ export const defaultSettings: Settings = {
   showLinks: true,
   showFocus: true,
   showGreeting: true,
+  centerInputMode: 'focus',
+  searchEngine: 'google',
 };

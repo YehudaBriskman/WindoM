@@ -550,6 +550,140 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* ============================================================
+   Search Bar
+   ============================================================ */
+.search-bar-container {
+  margin-top: 48px;
+  padding: 0 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 28px;
+  padding: 0 8px 0 18px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.25s ease;
+}
+
+.search-bar-wrapper:focus-within {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 6px 32px rgba(0, 0, 0, 0.15),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.3);
+}
+
+.search-bar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.55;
+  flex-shrink: 0;
+  margin-right: 10px;
+  transition: opacity 0.2s ease;
+}
+
+.search-bar-wrapper:focus-within .search-bar-icon {
+  opacity: 0.8;
+}
+
+.search-bar-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 18px;
+  padding: 14px 0;
+  font-family: inherit;
+}
+
+.search-bar-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-bar-submit {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+
+.search-bar-submit:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* ============================================================
+   Segmented Control (General Settings)
+   ============================================================ */
+.segmented-control {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.segmented-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.segmented-btn.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================
    Focus Presets
    ============================================================ */
 .focus-presets {
