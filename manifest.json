@@ -5,13 +5,16 @@
   "description": "A beautiful new tab page with background images, clock, weather, todos, and calendar",
   "permissions": [
     "storage",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "tabs",
+    "history"
   ],
   "host_permissions": [
     "https://api.unsplash.com/*",
     "https://api.openweathermap.org/*",
     "https://api.quotable.io/*",
-    "https://www.google.com/*"
+    "https://www.google.com/*",
+    "https://duckduckgo.com/*"
   ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"

@@ -559,11 +559,16 @@ input[type="file"]::file-selector-button:hover {
   justify-content: center;
 }
 
+.search-bar-inner {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+}
+
 .search-bar-wrapper {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 560px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
@@ -574,7 +579,7 @@ input[type="file"]::file-selector-button:hover {
     0 4px 24px rgba(0, 0, 0, 0.12),
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
     inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
-  transition: all 0.25s ease;
+  transition: border-radius 0.15s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .search-bar-wrapper:focus-within {
@@ -584,6 +589,12 @@ input[type="file"]::file-selector-button:hover {
     0 6px 32px rgba(0, 0, 0, 0.15),
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
     inset 0 0 4px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Flatten bottom corners when dropdown is open */
+.search-bar-wrapper.dropdown-open {
+  border-radius: 28px 28px 0 0;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .search-bar-icon {
@@ -637,6 +648,100 @@ input[type="file"]::file-selector-button:hover {
 .search-bar-submit:hover {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Suggestions dropdown ──────────────────────────────────── */
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(18, 18, 18, 0.55);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: none;
+  border-radius: 0 0 22px 22px;
+  overflow: hidden;
+  z-index: 400;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  padding: 4px 0 8px;
+}
+
+.search-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 18px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.search-suggestion:hover,
+.search-suggestion.active {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.suggestion-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  opacity: 0.55;
+}
+
+.search-suggestion.active .suggestion-icon {
+  opacity: 0.8;
+}
+
+.suggestion-favicon {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.suggestion-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.suggestion-label {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-sub {
+  font-size: 11px;
+  opacity: 0.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-tab-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.02em;
 }
 
 /* ============================================================
