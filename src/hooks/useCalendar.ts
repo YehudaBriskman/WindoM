@@ -1,22 +1,45 @@
 import { useState, useEffect, useCallback } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
+import { apiGet } from '../lib/api';
 import type { CalendarEvent } from '../types/calendar';
 
+function useIsCalendarConnected(): boolean {
+  const [connected, setConnected] = useState(false);
+  useEffect(() => {
+    syncStorage.get<boolean>('calendarConnected', false).then(setConnected);
+    return syncStorage.onChange((changes) => {
+      if (changes.calendarConnected) setConnected(changes.calendarConnected.newValue as boolean);
+    });
+  }, []);
+  return connected;
+}
+
 export function useCalendar() {
+  const calendarConnected = useIsCalendarConnected();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
-  // Load on mount
+  // Load events — from backend if connected, otherwise from local storage
   useEffect(() => {
-    syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
-  }, []);
+    if (calendarConnected) {
+      apiGet<{ events: CalendarEvent[] }>('/calendar/events?days=7')
+        .then((data) => setEvents(data.events))
+        .catch(() => {
+          // Fall back to local events on error
+          syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
+        });
+    } else {
+      syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
+    }
+  }, [calendarConnected]);
 
-  // Cross-tab sync
+  // Cross-tab sync for local events
   useEffect(() => {
+    if (calendarConnected) return;
     const unsub = syncStorage.onChange((changes) => {
       if (changes.localEvents) setEvents(changes.localEvents.newValue as CalendarEvent[]);
     });
     return unsub;
-  }, []);
+  }, [calendarConnected]);
 
   const save = useCallback(async (next: CalendarEvent[]) => {
     setEvents(next);

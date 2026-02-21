@@ -7,14 +7,17 @@
     "storage",
     "unlimitedStorage",
     "tabs",
-    "history"
+    "history",
+    "identity"
   ],
   "host_permissions": [
     "https://api.unsplash.com/*",
     "https://api.openweathermap.org/*",
     "https://api.quotable.io/*",
     "https://www.google.com/*",
-    "https://duckduckgo.com/*"
+    "https://duckduckgo.com/*",
+    "http://localhost:8080/*",
+    "https://api.windom.app/*"
   ],
   "chrome_url_overrides": {
     "newtab": "newtab.html"

@@ -15,7 +15,7 @@ export interface Settings {
   location: string;
   weatherApiKey: string;
   calendarConnected: boolean;
-  calendarAuthToken: string;
+  spotifyConnected: boolean;
   quickLinks: QuickLink[];
   quotesEnabled: boolean;
   quoteSource: 'local' | 'api';
@@ -40,7 +40,7 @@ export const defaultSettings: Settings = {
   location: '',
   weatherApiKey: '',
   calendarConnected: false,
-  calendarAuthToken: '',
+  spotifyConnected: false,
   quickLinks: [
     { name: 'Gmail', url: 'https://gmail.com', icon: 'mail' },
     { name: 'YouTube', url: 'https://youtube.com', icon: 'play' },

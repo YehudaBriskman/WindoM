@@ -10,6 +10,7 @@ import { WeatherSettings } from './sections/WeatherSettings';
 import { QuotesSettings } from './sections/QuotesSettings';
 import { LinksSettings } from './sections/LinksSettings';
 import { PhotosSettings } from './sections/PhotosSettings';
+import { AccountSettings } from './sections/AccountSettings';
 
 export function SettingsPanel() {
   const { reset } = useSettings();
@@ -25,11 +26,17 @@ export function SettingsPanel() {
       });
     };
     const closeHandler = () => setIsOpen(false);
+    const accountHandler = () => {
+      setActiveTab('account');
+      setIsOpen(true);
+    };
     document.addEventListener('toggle-settings', toggleHandler);
     document.addEventListener('close-settings', closeHandler);
+    document.addEventListener('open-settings-account', accountHandler);
     return () => {
       document.removeEventListener('toggle-settings', toggleHandler);
       document.removeEventListener('close-settings', closeHandler);
+      document.removeEventListener('open-settings-account', accountHandler);
     };
   }, []);
 
@@ -75,6 +82,7 @@ export function SettingsPanel() {
             {activeTab === 'quotes' && <QuotesSettings />}
             {activeTab === 'links' && <LinksSettings />}
             {activeTab === 'photos' && <PhotosSettings />}
+            {activeTab === 'account' && <AccountSettings />}
           </div>
         </div>
       </div>
