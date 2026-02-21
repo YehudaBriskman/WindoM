@@ -17,11 +17,9 @@ export function CenterContent() {
       {settings.centerInputMode === 'search' ? (
         <SearchBar />
       ) : (
-        <>
-          <FocusInput />
-          <FocusPresets />
-        </>
+        <FocusInput />
       )}
+      <FocusPresets />
     </div>
   );
 }
