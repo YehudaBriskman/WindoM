@@ -1,0 +1,192 @@
+/* ============================================================
+   Glass — all glass-morphism styles extracted from globals.css
+   Import this after globals.css in main.tsx.
+   ============================================================ */
+
+/* ============================================================
+   Liquid Glass Utilities (iOS-style with SVG distortion)
+   ============================================================ */
+
+/* Shared base — positioning + stacking context for pseudo-elements */
+.glass-panel,
+.glass-sidebar,
+.glass-settings,
+.glass-quote,
+.glass-credit,
+.glass-dock {
+  position: relative;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Inner glow layer — liquid highlight edges */
+.glass-panel::before,
+.glass-sidebar::before,
+.glass-settings::before,
+.glass-quote::before,
+.glass-credit::before,
+.glass-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Backdrop distortion layer — shared base */
+.glass-panel::after,
+.glass-sidebar::after,
+.glass-settings::after,
+.glass-quote::after,
+.glass-credit::after,
+.glass-dock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Per-element blur + distortion filter */
+.glass-panel::after {
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  filter: url(#glass-distort);
+}
+.glass-panel {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.glass-sidebar::after {
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  filter: url(#glass-distort);
+}
+.glass-sidebar {
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.glass-settings::after {
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  filter: url(#glass-distort);
+}
+.glass-settings {
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.glass-quote::after {
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  filter: url(#glass-distort-sm);
+}
+.glass-quote {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.glass-credit::after {
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  filter: url(#glass-distort-sm);
+}
+.glass-credit {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.glass-dock::after {
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  filter: url(#glass-distort-sm);
+}
+.glass-dock {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Glass input — inputs can't use pseudo-elements, inline liquid glass */
+.glass-input {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.25s ease;
+}
+.glass-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================
+   Shared element glass — grouped by identical values
+   ============================================================ */
+
+/* Standard field glass: bg 0.05 · border 0.1 · inset shadow 0.4/0.15 */
+.settings-input,
+.settings-select,
+.todo-input,
+.todo-item,
+.calendar-date,
+.event-item,
+.settings-close {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Standard field focus glass */
+.settings-input:focus,
+.settings-select:focus,
+.todo-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* Dim card glass: bg 0.04 · border 0.1 · inset shadow 0.35/0.12 */
+.settings-file-input,
+.auth-user-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+}
+
+/* Subtle card glass: bg 0.04 · border 0.1 · inset shadow 0.3/0.1 */
+.integration-card,
+.visibility-table {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.3),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Muted hover glass: bg 0.1 · border-color 0.22 */
+.settings-close:hover,
+.settings-reset-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
