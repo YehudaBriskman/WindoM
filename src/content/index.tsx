@@ -23,6 +23,22 @@ styleEl.textContent = styles + glassStyles;
 shadow.appendChild(styleEl);
 
 const container = document.createElement('div');
+container.className = 'windom-content';
+
+// Detect page direction from explicit dir attributes only — avoiding getComputedStyle
+// which can be influenced by the browser's UI locale rather than the page's content direction.
+function syncDirection() {
+  const dir = document.documentElement.dir || document.body?.dir;
+  container.setAttribute('dir', dir === 'rtl' ? 'rtl' : 'ltr');
+}
+syncDirection();
+
+const dirObserver = new MutationObserver(syncDirection);
+dirObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] });
+if (document.body) {
+  dirObserver.observe(document.body, { attributes: true, attributeFilter: ['dir'] });
+}
+
 shadow.appendChild(container);
 
 ReactDOM.createRoot(container).render(

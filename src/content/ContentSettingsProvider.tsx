@@ -3,7 +3,7 @@ import { syncStorage } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { SettingsContext } from '../contexts/SettingsContext';
 
-/** Read-only settings provider for content scripts — writes are no-ops */
+/** Settings provider for content scripts — reads and writes via chrome.storage.sync */
 export function ContentSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
   const [loaded, setLoaded] = useState(false);
@@ -36,9 +36,15 @@ export function ContentSettingsProvider({ children }: { children: ReactNode }) {
     [settings],
   );
 
-  // No-op stubs — content scripts are read-only consumers of settings
-  const update = useCallback(async <K extends keyof Settings>(_key: K, _value: Settings[K]) => {}, []);
-  const updateMultiple = useCallback(async (_updates: Partial<Settings>) => {}, []);
+  const update = useCallback(async <K extends keyof Settings>(key: K, value: Settings[K]) => {
+    await syncStorage.set(key as string, value);
+  }, []);
+
+  const updateMultiple = useCallback(async (updates: Partial<Settings>) => {
+    await syncStorage.setMultiple(updates as Record<string, unknown>);
+  }, []);
+
+  // Resetting to defaults from a content script is intentionally a no-op.
   const reset = useCallback(async () => {}, []);
 
   return (

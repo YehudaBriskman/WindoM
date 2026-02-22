@@ -2513,3 +2513,90 @@ body.focus-exiting .sidebar-container {
     height: 32px;
   }
 }
+
+/* ============================================================
+   Content-page overrides (.windom-content set in index.tsx).
+   Applied only when injected into real web pages, not new-tab.
+   Replaces translucent glass with opaque dark styles that work
+   on any page background, including bright/white pages.
+   ============================================================ */
+
+.windom-content .search-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.windom-content .search-overlay-input-row {
+  background: rgba(18, 18, 18, 0.90);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.windom-content .search-overlay-input-row:focus-within {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.windom-content .search-overlay-dropdown {
+  background: rgba(12, 12, 12, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: none;
+}
+
+/* ============================================================
+   RTL (Right-to-Left) support
+   Scoped to .windom-content[dir="rtl"] so it only applies when
+   the content script detects an RTL page — never affects newtab.
+   ============================================================ */
+
+/* Search overlay: flip icon/pill positions */
+.windom-content[dir="rtl"] .search-overlay-input-row {
+  padding: 0 18px 0 8px;
+}
+
+.windom-content[dir="rtl"] .search-bar-icon {
+  order: 3;
+  margin-right: 0;
+  margin-left: 10px;
+}
+
+.windom-content[dir="rtl"] .search-bar-input {
+  text-align: right;
+  direction: rtl;
+}
+
+.windom-content[dir="rtl"] .search-engine-pill-wrapper {
+  order: 0;
+}
+
+.windom-content[dir="rtl"] .search-engine-pill {
+  margin-right: 0;
+  margin-left: 6px;
+}
+
+.windom-content[dir="rtl"] .search-engine-popover {
+  right: auto;
+  left: 0;
+}
+
+.windom-content[dir="rtl"] .search-engine-option {
+  text-align: right;
+  direction: rtl;
+}
+
+/* Suggestions: flip icon + text sides */
+.windom-content[dir="rtl"] .search-suggestion {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.windom-content[dir="rtl"] .suggestion-text {
+  text-align: right;
+}
+
+.windom-content[dir="rtl"] .suggestion-tab-badge {
+  margin-right: auto;
+  margin-left: 0;
+}
+
