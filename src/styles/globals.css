@@ -2545,58 +2545,26 @@ body.focus-exiting .sidebar-container {
 }
 
 /* ============================================================
-   RTL (Right-to-Left) support
-   Scoped to .windom-content[dir="rtl"] so it only applies when
-   the content script detects an RTL page — never affects newtab.
+   Command palette mode (triggered by typing '>' in search overlay)
    ============================================================ */
 
-/* Search overlay: flip icon/pill positions */
-.windom-content[dir="rtl"] .search-overlay-input-row {
-  padding: 0 18px 0 8px;
+/* Amber border tint signals command mode */
+.search-overlay-input-row.command-mode {
+  border-color: rgba(250, 190, 70, 0.35);
+}
+.search-overlay-input-row.command-mode:focus-within {
+  border-color: rgba(250, 190, 70, 0.6);
+}
+/* Stronger tint on content pages (dark background) */
+.windom-content .search-overlay-input-row.command-mode {
+  border-color: rgba(250, 190, 70, 0.5);
+}
+.windom-content .search-overlay-input-row.command-mode:focus-within {
+  border-color: rgba(250, 190, 70, 0.8);
 }
 
-.windom-content[dir="rtl"] .search-bar-icon {
-  order: 3;
-  margin-right: 0;
-  margin-left: 10px;
-}
-
-.windom-content[dir="rtl"] .search-bar-input {
-  text-align: right;
-  direction: rtl;
-}
-
-.windom-content[dir="rtl"] .search-engine-pill-wrapper {
-  order: 0;
-}
-
-.windom-content[dir="rtl"] .search-engine-pill {
-  margin-right: 0;
-  margin-left: 6px;
-}
-
-.windom-content[dir="rtl"] .search-engine-popover {
-  right: auto;
-  left: 0;
-}
-
-.windom-content[dir="rtl"] .search-engine-option {
-  text-align: right;
-  direction: rtl;
-}
-
-/* Suggestions: flip icon + text sides */
-.windom-content[dir="rtl"] .search-suggestion {
-  flex-direction: row-reverse;
-  text-align: right;
-}
-
-.windom-content[dir="rtl"] .suggestion-text {
-  text-align: right;
-}
-
-.windom-content[dir="rtl"] .suggestion-tab-badge {
-  margin-right: auto;
-  margin-left: 0;
+/* Command suggestion rows — amber icon */
+.search-suggestion.command .suggestion-icon {
+  color: rgba(250, 190, 70, 0.9);
 }
 
