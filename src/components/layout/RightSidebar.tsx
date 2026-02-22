@@ -1,20 +1,19 @@
 import { useRef, useEffect } from "react";
-import { ArrowBigDown, LayoutList, X } from "lucide-react";
+import { LayoutList, X } from "lucide-react";
 import { useSidebar } from "../../hooks/useSidebar";
 import { TodoSection } from "../sidebar/TodoSection";
 import { CalendarSection } from "../sidebar/CalendarSection";
 
 export function RightSidebar() {
   const { isOpen, toggle, close } = useSidebar();
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (
         isOpen &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(e.target as Node)
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
       ) {
         close();
       }
@@ -24,37 +23,29 @@ export function RightSidebar() {
   }, [isOpen, close]);
 
   return (
-    <>
-      {/* Toggle button */}
-      <div
-        onClick={(e) => {
-          e.stopPropagation();
-          toggle();
-        }}
-        className={`sidebar-toggle glass-panel ${isOpen ? "open" : ""}`}
-      >
+    <div
+      ref={containerRef}
+      className={`sidebar-container glass-panel ${isOpen ? "open" : ""}`}
+      onClick={!isOpen ? (e) => { e.stopPropagation(); toggle(); } : undefined}
+    >
+      {/* Collapsed: icon */}
+      <div className="sidebar-btn-icon">
         <LayoutList size={20} />
       </div>
 
-      {/* Sidebar — always in position; opacity changes open vs closed */}
-      <div
-        ref={sidebarRef}
-        className={`right-sidebar glass-sidebar ${isOpen ? "open" : "closed"}`}
-      >
+      {/* Expanded: sidebar content */}
+      <div className="sidebar-panel-content">
         <div
-          onClick={(e) => {
-            e.stopPropagation();
-            toggle();
-          }}
-          className={`sidebar-close-toggle glass-panel ${!isOpen ? "open" : ""}`}
+          onClick={(e) => { e.stopPropagation(); close(); }}
+          className="sidebar-close-btn"
         >
-          <ArrowBigDown size={20} />
+          <X size={18} />
         </div>
         <div className="sidebar-content">
           <TodoSection />
           <CalendarSection />
         </div>
       </div>
-    </>
+    </div>
   );
 }

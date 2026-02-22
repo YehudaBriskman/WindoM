@@ -10,7 +10,7 @@ export function DockBar() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
-  const formRef = useRef<HTMLFormElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,18 +34,16 @@ export function DockBar() {
     setShowForm(false);
   };
 
-  // Focus name input when form opens
   useEffect(() => {
     if (showForm) {
-      setTimeout(() => nameInputRef.current?.focus(), 30);
+      setTimeout(() => nameInputRef.current?.focus(), 50);
     }
   }, [showForm]);
 
-  // Close on outside click
   useEffect(() => {
     if (!showForm) return;
     function handleClick(e: MouseEvent) {
-      if (formRef.current && !formRef.current.contains(e.target as Node)) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         handleClose();
       }
     }
@@ -62,45 +60,47 @@ export function DockBar() {
         {links.map((link, i) => (
           <DockItem key={`${link.url}-${i}`} link={link} />
         ))}
-        {links.length < 10 && (
-          <button
-            className={`dock-item dock-add-btn${showForm ? ' hidden' : ''}`}
-            onClick={(e) => { e.stopPropagation(); setShowForm(true); }}
-            title="Add link"
-          >
-            <Plus size={18} />
-          </button>
-        )}
       </div>
 
-      <form
-        ref={formRef}
-        className={`dock-form glass-panel${showForm ? ' open' : ''}`}
-        onClick={(e) => e.stopPropagation()}
-        onSubmit={handleSubmit}
-      >
-        <button type="button" className="dock-form-close" onClick={handleClose}>
-          <X size={16} />
-        </button>
-        <input
-          ref={nameInputRef}
-          className="dock-form-input glass-input"
-          type="text"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          className="dock-form-input glass-input"
-          type="text"
-          placeholder="https://..."
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        <button type="submit" className="dock-form-submit">
-          Add
-        </button>
-      </form>
+      {links.length < 10 && (
+        <div
+          ref={containerRef}
+          className={`dock-expandable${showForm ? ' expanded glass-panel' : ''}`}
+          onClick={!showForm ? (e) => { e.stopPropagation(); setShowForm(true); } : undefined}
+        >
+          <div className="dock-expand-icon">
+            <Plus size={18} />
+          </div>
+
+          <form
+            className="dock-expand-form"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleSubmit}
+          >
+            <button type="button" className="dock-form-close" onClick={handleClose}>
+              <X size={16} />
+            </button>
+            <input
+              ref={nameInputRef}
+              className="dock-form-input glass-input"
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <input
+              className="dock-form-input glass-input"
+              type="text"
+              placeholder="https://..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+            />
+            <button type="submit" className="dock-form-submit">
+              Add
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

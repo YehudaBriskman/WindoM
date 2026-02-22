@@ -423,40 +423,68 @@ input[type="file"]::file-selector-button:hover {
   display: none;
 }
 
-/* Add button */
-.dock-add-btn {
-  opacity: 0.4;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.dock-add-btn:hover {
-  opacity: 0.9;
-}
-.dock-add-btn.hidden {
-  opacity: 0;
-  transform: scale(0.01);
-  pointer-events: none;
-}
-
-/* Dock Add-Link Form — expands from center-top of dock bar */
-.dock-form {
+/* Dock Expandable — single element that morphs from add button into form */
+.dock-expandable {
   position: absolute;
   top: calc(100% + 8px);
   left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 200;
+  opacity: 0.45;
+  transition:
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease;
+}
+.dock-expandable:hover:not(.expanded) {
+  opacity: 0.9;
+}
+.dock-expandable.expanded {
+  width: 280px;
+  height: 192px;
+  border-radius: 16px;
+  opacity: 1;
+  cursor: default;
+}
+
+.dock-expand-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  color: white;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.dock-expandable.expanded .dock-expand-icon {
+  opacity: 0;
+}
+
+.dock-expand-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 192px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 30px 20px 20px;
-  border-radius: 16px;
-  width: 280px;
-  transform: translateX(-50%) scale(0.01);
-  transform-origin: center top;
   opacity: 0;
   pointer-events: none;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.2s ease 0.2s;
 }
-.dock-form.open {
-  transform: translateX(-50%) scale(1);
+.dock-expandable.expanded .dock-expand-form {
   opacity: 1;
   pointer-events: auto;
 }
@@ -1224,46 +1252,25 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Right Sidebar
    ============================================================ */
-.right-sidebar {
+/* Sidebar Container — single element that morphs from toggle button into sidebar panel */
+.sidebar-container {
   position: fixed;
   right: 10px;
   bottom: 10px;
-  height: calc(66vh - 20px);
-  width: 340px;
-  border-radius: 12px;
-  padding: 20px;
-  overflow-y: auto;
   z-index: 200;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: right bottom;
-}
-.right-sidebar.open {
-  transform: translateX(0) scale(1);
-}
-.right-sidebar.closed {
-  transform: translateX(20px) scale(0.01);
-}
-
-.sidebar-toggle {
-  position: fixed;
-  right: 10px;
-  bottom: 0;
-  transform: translateY(-50%);
   width: 42px;
   height: 42px;
   border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  z-index: 201;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.sidebar-toggle.open {
-  opacity: 0;
-  transform: scale(0.01);
-}
-.sidebar-toggle:hover {
+.sidebar-container:not(.open):hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.22);
   box-shadow:
@@ -1271,39 +1278,72 @@ input[type="file"]::file-selector-button:hover {
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
     inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
+.sidebar-container.open {
+  width: 340px;
+  height: calc(66vh - 20px);
+  cursor: default;
+}
 
-.sidebar-close-toggle {
-  position: fixed;
+.sidebar-btn-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  color: white;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.sidebar-container.open .sidebar-btn-icon {
+  opacity: 0;
+}
+
+.sidebar-panel-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 340px;
+  height: calc(66vh - 20px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease 0.2s;
+}
+.sidebar-container.open .sidebar-panel-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 10px;
   right: 10px;
-  bottom: 10px;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 201;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+  z-index: 1;
 }
-.sidebar-close-toggle.open {
-  opacity: 0;
-  transform: scale(0.01);
-}
-.sidebar-close-toggle:hover {
+.sidebar-close-btn:hover {
+  color: white;
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
 
 .sidebar-content {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 30px;
+  padding: 52px 20px 20px;
+  overflow-y: auto;
 }
 
 /* ============================================================
@@ -1474,22 +1514,27 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Settings Button
    ============================================================ */
-.settings-btn {
+/* Settings Container — single element that morphs from gear button into full settings panel */
+.settings-container {
   position: fixed;
   bottom: 10px;
   left: 10px;
-  z-index: 1001;
+  z-index: 1000;
   width: 42px;
   height: 42px;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  cursor: pointer;
   opacity: 0.8;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
 }
-.settings-btn:hover {
+.settings-container:not(.open):hover {
   opacity: 1;
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.22);
@@ -1498,10 +1543,42 @@ input[type="file"]::file-selector-button:hover {
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
     inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
-.settings-btn.open {
-  opacity: 0;
-  transform: scale(0.01);
+.settings-container.open {
+  width: min(520px, 90vw);
+  height: calc(100vh - 20px);
+  opacity: 1;
+  cursor: default;
+}
+
+.settings-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  color: rgba(255, 255, 255, 0.9);
+  transition: opacity 0.15s ease;
   pointer-events: none;
+}
+.settings-container.open .settings-icon {
+  opacity: 0;
+}
+
+.settings-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(520px, 90vw);
+  height: calc(100vh - 20px);
+  display: flex;
+  flex-direction: row;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease 0.25s;
+}
+.settings-container.open .settings-inner {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ============================================================
@@ -1522,33 +1599,6 @@ input[type="file"]::file-selector-button:hover {
 .settings-backdrop.hidden {
   opacity: 0;
   pointer-events: none;
-}
-
-/* ============================================================
-   Settings Panel
-   ============================================================ */
-.settings-panel {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  width: 520px;
-  max-width: 90vw;
-  border-radius: 12px;
-  height: calc(100vh - 20px);
-  z-index: 1000;
-  display: flex;
-  flex-direction: row;
-  overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
-  transform-origin: left bottom;
-}
-.settings-panel.open {
-  transform: translateX(0) scale(1);
-  opacity: 1;
-}
-.settings-panel.closed {
-  transform: translateX(-10px) scale(0.01);
-  opacity: 0;
 }
 
 /* Settings Nav */
@@ -1580,6 +1630,9 @@ input[type="file"]::file-selector-button:hover {
 }
 
 .settings-close {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
   width: 36px;
   height: 36px;
   display: flex;
@@ -2040,13 +2093,14 @@ input[type="checkbox"]:focus-visible {
 .top-bar,
 .dock-wrapper,
 .bottom-section,
-.settings-btn,
 .center-content {
   transition: opacity 1.5s ease;
 }
-/* Sidebar has its own fast open/close transition; only slows during focus enter/exit */
-body.focus-entering .right-sidebar,
-body.focus-exiting .right-sidebar {
+/* Settings and sidebar have their own open/close transitions; only slow during focus enter/exit */
+body.focus-entering .settings-container,
+body.focus-exiting .settings-container,
+body.focus-entering .sidebar-container,
+body.focus-exiting .sidebar-container {
   transition: opacity 1.5s ease;
 }
 
@@ -2054,8 +2108,8 @@ body.focus-exiting .right-sidebar {
 body.focus-entering .top-bar,
 body.focus-entering .dock-wrapper,
 body.focus-entering .bottom-section,
-body.focus-entering .right-sidebar,
-body.focus-entering .settings-btn,
+body.focus-entering .sidebar-container,
+body.focus-entering .settings-container,
 body.focus-entering .center-content {
   opacity: 0;
   pointer-events: none;
@@ -2065,14 +2119,14 @@ body.focus-entering .center-content {
 body.focus-entering-overlay .top-bar,
 body.focus-entering-overlay .dock-wrapper,
 body.focus-entering-overlay .bottom-section,
-body.focus-entering-overlay .right-sidebar,
-body.focus-entering-overlay .settings-btn,
+body.focus-entering-overlay .sidebar-container,
+body.focus-entering-overlay .settings-container,
 body.focus-entering-overlay .center-content,
 body.focus-active .top-bar,
 body.focus-active .dock-wrapper,
 body.focus-active .bottom-section,
-body.focus-active .right-sidebar,
-body.focus-active .settings-btn,
+body.focus-active .sidebar-container,
+body.focus-active .settings-container,
 body.focus-active .center-content {
   opacity: 0;
   pointer-events: none;
@@ -2083,8 +2137,8 @@ body.focus-active .center-content {
 body.focus-exiting-overlay .top-bar,
 body.focus-exiting-overlay .dock-wrapper,
 body.focus-exiting-overlay .bottom-section,
-body.focus-exiting-overlay .right-sidebar,
-body.focus-exiting-overlay .settings-btn,
+body.focus-exiting-overlay .sidebar-container,
+body.focus-exiting-overlay .settings-container,
 body.focus-exiting-overlay .center-content {
   opacity: 0;
   pointer-events: none;
@@ -2095,13 +2149,13 @@ body.focus-exiting-overlay .center-content {
 body.focus-exiting .top-bar,
 body.focus-exiting .dock-wrapper,
 body.focus-exiting .bottom-section,
-body.focus-exiting .settings-btn,
+body.focus-exiting .settings-container,
 body.focus-exiting .center-content {
   opacity: 1;
   pointer-events: auto;
 }
 /* Sidebar fades back to its closed state (30%), not full opacity */
-body.focus-exiting .right-sidebar {
+body.focus-exiting .sidebar-container {
   opacity: 0.3;
   pointer-events: none;
 }
@@ -2641,9 +2695,12 @@ body.focus-exiting .right-sidebar {
    Responsive: Small screens
    ============================================================ */
 @media (max-width: 640px) {
-  .settings-panel {
+  .settings-container.open {
     width: 100vw;
-    max-width: 100vw;
+    flex-direction: column;
+  }
+  .settings-inner {
+    width: 100vw;
     flex-direction: column;
   }
   .settings-nav {

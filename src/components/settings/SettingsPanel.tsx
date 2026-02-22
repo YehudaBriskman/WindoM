@@ -17,7 +17,6 @@ export function SettingsPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
-  // Listen for toggle event from SettingsButton
   useEffect(() => {
     const toggleHandler = () => {
       setIsOpen((prev) => {
@@ -61,39 +60,46 @@ export function SettingsPanel() {
         onClick={close}
       />
 
+      {/* Single container: gear button when collapsed, full panel when expanded */}
       <div
-      className={`settings-btn glass-panel${isOpen ? " open" : ""}`}
-      onClick={() => document.dispatchEvent(new CustomEvent('toggle-settings'))}
-    >
-      <Settings size={20} />
-    </div>
-
-      {/* Panel */}
-      <div
-        className={`settings-panel glass-settings ${isOpen ? "open" : "closed"}`}
+        className={`settings-container glass-panel${isOpen ? " open" : ""}`}
+        onClick={!isOpen ? () => setIsOpen(true) : undefined}
       >
-        <SettingsNav active={activeTab} onChange={setActiveTab} />
-
-        <div className="settings-main">
-          {/* Body */}
-          <div className="settings-body">
-            <SettingsMessage />
-
-            {activeTab === "general" && (
-              <GeneralSettings onReset={handleReset} />
-            )}
-            {activeTab === "clock" && <ClockSettings />}
-            {activeTab === "background" && <BackgroundSettings />}
-            {activeTab === "weather" && <WeatherSettings />}
-            {activeTab === "quotes" && <QuotesSettings />}
-            {activeTab === "links" && <LinksSettings />}
-            {activeTab === "photos" && <PhotosSettings />}
-            {activeTab === "account" && <AccountSettings />}
-          </div>
+        {/* Collapsed state: gear icon — direct child so it's always visible */}
+        <div className="settings-icon">
+          <Settings size={20} />
         </div>
-        <span onClick={close} className="settings-close settings-btn">
-          <X size={18} />
-        </span>
+
+        {/* Expanded state: full panel content */}
+        <div className="settings-inner">
+          <SettingsNav active={activeTab} onChange={setActiveTab} />
+          <div className="settings-main">
+            <div className="settings-body">
+              <SettingsMessage />
+
+              {activeTab === "general" && (
+                <GeneralSettings onReset={handleReset} />
+              )}
+              {activeTab === "clock" && <ClockSettings />}
+              {activeTab === "background" && <BackgroundSettings />}
+              {activeTab === "weather" && <WeatherSettings />}
+              {activeTab === "quotes" && <QuotesSettings />}
+              {activeTab === "links" && <LinksSettings />}
+              {activeTab === "photos" && <PhotosSettings />}
+              {activeTab === "account" && <AccountSettings />}
+            </div>
+          </div>
+
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              close();
+            }}
+            className="settings-close"
+          >
+            <X size={18} />
+          </span>
+        </div>
       </div>
     </>
   );
