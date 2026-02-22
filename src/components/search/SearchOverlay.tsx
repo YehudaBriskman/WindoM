@@ -40,6 +40,8 @@ const ENGINE_LABELS: Record<string, string> = {
 const ENGINE_LIST: Settings['searchEngine'][] = ['google', 'bing', 'duckduckgo', 'brave'];
 
 const hasChromeApi = typeof chrome !== 'undefined';
+// Content scripts cannot use chrome.tabs.* in MV3; detect and route via background
+const isContentScript = typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
 
 // ── Command definitions ────────────────────────────────────────────────────────
 
@@ -58,7 +60,10 @@ const COMMAND_DEFS: CommandDef[] = [
     keywords: ['new', 'n', 'tab', 'newtab', 'open'],
     Icon: Plus,
     makeAction: (setOpen) => () => {
-      if (hasChromeApi) chrome.tabs.create({});
+      if (hasChromeApi) {
+        if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_NEW_TAB' });
+        else chrome.tabs.create({});
+      }
       setOpen(false);
     },
   },
@@ -69,8 +74,12 @@ const COMMAND_DEFS: CommandDef[] = [
     Icon: X,
     makeAction: (setOpen) => async () => {
       if (hasChromeApi) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) chrome.tabs.remove(tab.id);
+        if (isContentScript) {
+          chrome.runtime.sendMessage({ type: 'WINDOM_CMD_CLOSE_TAB' });
+        } else {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab?.id) chrome.tabs.remove(tab.id);
+        }
       }
       setOpen(false);
     },
@@ -92,8 +101,12 @@ const COMMAND_DEFS: CommandDef[] = [
     Icon: Copy,
     makeAction: (setOpen) => async () => {
       if (hasChromeApi) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) chrome.tabs.duplicate(tab.id);
+        if (isContentScript) {
+          chrome.runtime.sendMessage({ type: 'WINDOM_CMD_DUPLICATE_TAB' });
+        } else {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab?.id) chrome.tabs.duplicate(tab.id);
+        }
       }
       setOpen(false);
     },
@@ -105,8 +118,12 @@ const COMMAND_DEFS: CommandDef[] = [
     Icon: Pin,
     makeAction: (setOpen) => async () => {
       if (hasChromeApi) {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tab?.id) chrome.tabs.update(tab.id, { pinned: !tab.pinned });
+        if (isContentScript) {
+          chrome.runtime.sendMessage({ type: 'WINDOM_CMD_PIN_TAB' });
+        } else {
+          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+          if (tab?.id) chrome.tabs.update(tab.id, { pinned: !tab.pinned });
+        }
       }
       setOpen(false);
     },
@@ -238,8 +255,12 @@ export function SearchOverlay() {
         Icon: ExternalLink,
         action: () => {
           const url = resolveAsUrl(commandQuery) || ENGINES[settings.searchEngine] + encodeURIComponent(commandQuery);
-          if (hasChromeApi) chrome.tabs.create({ url });
-          else window.open(url, '_blank');
+          if (hasChromeApi) {
+            if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_OPEN_URL', url });
+            else chrome.tabs.create({ url });
+          } else {
+            window.open(url, '_blank');
+          }
           setOpen(false);
         },
       });
@@ -320,8 +341,12 @@ export function SearchOverlay() {
         const q = value.slice(1).trimStart();
         if (!q) return;
         const url = resolveAsUrl(q) || ENGINES[settings.searchEngine] + encodeURIComponent(q);
-        if (hasChromeApi) chrome.tabs.create({ url });
-        else window.open(url, '_blank');
+        if (hasChromeApi) {
+          if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_OPEN_URL', url });
+          else chrome.tabs.create({ url });
+        } else {
+          window.open(url, '_blank');
+        }
         setOpen(false);
         return;
       }
