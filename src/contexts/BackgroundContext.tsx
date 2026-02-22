@@ -6,6 +6,9 @@ import type { PhotoRecord } from '../types/photos';
 
 const UNSPLASH_API_URL = 'https://api.unsplash.com/photos/random';
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
+const BUNDLED_BG_URL = (typeof chrome !== 'undefined' && chrome.runtime?.getURL)
+  ? chrome.runtime.getURL('images/bundled-bg.jpg')
+  : '/images/bundled-bg.jpg';
 const DEFAULT_GRADIENT = [
   // Glassy light streaks — simulate refraction/reflection through glass
   'linear-gradient(125deg, rgba(255,255,255,0.13) 0%, transparent 38%, rgba(255,255,255,0.07) 58%, transparent 82%)',
@@ -109,9 +112,9 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     }
 
     if (!settings.unsplashApiKey) {
-      applyBackground(DEFAULT_GRADIENT);
+      applyBackground(BUNDLED_BG_URL);
       setPhotographer(null);
-      setCurrentPhotoSource(null);
+      setCurrentPhotoSource('bundled');
       return;
     }
 
@@ -146,9 +149,9 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('Error loading Unsplash image:', error);
-      applyBackground(DEFAULT_GRADIENT);
+      applyBackground(BUNDLED_BG_URL);
       setPhotographer(null);
-      setCurrentPhotoSource(null);
+      setCurrentPhotoSource('bundled');
     }
   // addPhoto is a stable useCallback — safe dep; do NOT add photoHistory here
   }, [settings.unsplashApiKey, applyBackground, addPhoto]);
@@ -170,10 +173,10 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setCurrentPhotoSource('local');
       return;
     }
-    applyBackground(DEFAULT_GRADIENT);
+    applyBackground(BUNDLED_BG_URL);
     setPhotographer(null);
-    setCurrentPhotoId(null);
-    setCurrentPhotoSource(null);
+    setCurrentPhotoId('bundled-default');
+    setCurrentPhotoSource('bundled');
   }, [settings.localBackground, applyBackground]);
 
   const refresh = useCallback(async () => {
