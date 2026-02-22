@@ -925,41 +925,71 @@ input[type="file"]::file-selector-button:hover {
    ============================================================ */
 .right-sidebar {
   position: fixed;
-  right: 0;
-  top: 0;
-  height: 100vh;
-  width: 350px;
+  right: 10px;
+  bottom: 10px;
+  height: calc(66vh - 20px);
+  width: 340px;
+  border-radius: 12px;
   padding: 20px;
   overflow-y: auto;
   z-index: 200;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: right bottom;
 }
 .right-sidebar.open {
-  transform: translateX(0);
+  transform: translateX(0) scale(1);
 }
 .right-sidebar.closed {
-  transform: translateX(350px);
+  transform: translateX(20px) scale(0.01);
 }
 
 .sidebar-toggle {
   position: fixed;
-  right: 0;
-  bottom: 0%;
+  right: 10px;
+  bottom: 0;
   transform: translateY(-50%);
   width: 42px;
   height: 42px;
-  border-radius: 12px 0 0 12px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 201;
-  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-toggle.open {
-  right: 350px;
+  opacity: 0;
+  transform: scale(0.01);
 }
 .sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-close-toggle {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 201;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-close-toggle.open {
+  opacity: 0;
+  transform: scale(0.01);
+}
+.sidebar-close-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.22);
   box-shadow:
@@ -1193,22 +1223,26 @@ input[type="file"]::file-selector-button:hover {
    ============================================================ */
 .settings-panel {
   position: fixed;
-  top: 0;
-  left: 0;
+  bottom: 10px;
+  left: 10px;
   width: 520px;
   max-width: 90vw;
-  height: 100vh;
+  border-radius: 12px;
+  height: calc(100vh - 20px);
   z-index: 1000;
   display: flex;
   flex-direction: row;
   overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+  transform-origin: left bottom;
 }
 .settings-panel.open {
-  transform: translateX(0);
+  transform: translateX(0) scale(1);
+  opacity: 1;
 }
 .settings-panel.closed {
-  transform: translateX(-100%);
+  transform: translateX(-10px) scale(0.01);
+  opacity: 0;
 }
 
 /* Settings Nav */
@@ -1237,30 +1271,6 @@ input[type="file"]::file-selector-button:hover {
 }
 .settings-nav-btn.active {
   color: white;
-}
-
-/* Settings Header */
-.settings-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  flex-shrink: 0;
-  box-shadow:
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
-}
-.settings-header h2 {
-  font-size: 20px;
-  font-weight: 500;
 }
 
 .settings-close {
