@@ -11,7 +11,7 @@ interface SettingsContextValue {
   reset: () => Promise<void>;
 }
 
-const SettingsContext = createContext<SettingsContextValue | null>(null);
+export const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });

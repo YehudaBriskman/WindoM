@@ -17,8 +17,19 @@
     "https://www.google.com/*",
     "https://duckduckgo.com/*",
     "http://localhost:8080/*",
-    "https://api.windom.app/*"
+    "https://api.windom.app/*",
+    "http://*/*",
+    "https://*/*"
   ],
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [{
+    "matches": ["http://*/*", "https://*/*"],
+    "js": ["src/content/index.tsx"],
+    "run_at": "document_end"
+  }],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
