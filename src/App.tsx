@@ -9,7 +9,6 @@ import { DockBar } from './components/links/DockBar';
 import { CenterContent } from './components/layout/CenterContent';
 import { BottomSection } from './components/layout/BottomSection';
 import { RightSidebar } from './components/layout/RightSidebar';
-import { SettingsButton } from './components/settings/SettingsButton';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { FocusOverlay } from './components/focus/FocusOverlay';
 import { GlassFilters } from './components/GlassFilters';
@@ -27,7 +26,6 @@ function Dashboard() {
       <BackgroundOverlay />
       <TopBar />
       <DockBar />
-      <SettingsButton />
       <CenterContent />
       <BottomSection />
       <RightSidebar />

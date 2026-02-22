@@ -142,16 +142,19 @@ export function SearchOverlay() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  // Auto-focus and reset when opened/closed
+  // Auto-focus when opened; delay state reset so exit animation plays fully
   useEffect(() => {
     if (open) {
       setTimeout(() => inputRef.current?.focus(), 30);
     } else {
-      setValue('');
-      setSuggestions([]);
-      setActiveIdx(-1);
-      setDropdownOpen(false);
-      setEnginePickerOpen(false);
+      const timer = setTimeout(() => {
+        setValue('');
+        setSuggestions([]);
+        setActiveIdx(-1);
+        setDropdownOpen(false);
+        setEnginePickerOpen(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [open]);
 
@@ -225,14 +228,12 @@ export function SearchOverlay() {
     [dropdownOpen, suggestions, activeIdx, go],
   );
 
-  if (!open) return null;
-
   const isUrl = !!resolveAsUrl(value);
   const showDropdown = dropdownOpen && suggestions.length > 0;
 
   return (
     <div
-      className="search-overlay-backdrop"
+      className={`search-overlay-backdrop${open ? ' open' : ''}`}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}

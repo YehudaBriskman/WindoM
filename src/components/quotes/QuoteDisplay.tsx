@@ -7,7 +7,7 @@ export function QuoteDisplay() {
 
   return (
     <div
-      className="quote-container glass-quote"
+      className="quote-container"
       onClick={refresh}
       title="Click for new quote"
     >

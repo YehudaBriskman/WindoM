@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { X } from "lucide-react";
+import { Settings, X } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
 import { SettingsNav, type SettingsTab } from "./SettingsNav";
 import { SettingsMessage } from "./SettingsMessage";
@@ -60,6 +60,13 @@ export function SettingsPanel() {
         className={`settings-backdrop ${isOpen ? "visible" : "hidden"}`}
         onClick={close}
       />
+
+      <div
+      className={`settings-btn glass-panel${isOpen ? " open" : ""}`}
+      onClick={() => document.dispatchEvent(new CustomEvent('toggle-settings'))}
+    >
+      <Settings size={20} />
+    </div>
 
       {/* Panel */}
       <div

@@ -426,33 +426,39 @@ input[type="file"]::file-selector-button:hover {
 /* Add button */
 .dock-add-btn {
   opacity: 0.4;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .dock-add-btn:hover {
   opacity: 0.9;
 }
-
-/* Dock Add-Link Form */
-.dock-form-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+.dock-add-btn.hidden {
+  opacity: 0;
+  transform: scale(0.01);
+  pointer-events: none;
 }
 
+/* Dock Add-Link Form — expands from center-top of dock bar */
 .dock-form {
-  position: relative;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  z-index: 200;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 30px 20px 20px;
   border-radius: 16px;
   width: 280px;
+  transform: translateX(-50%) scale(0.01);
+  transform-origin: center top;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dock-form.open {
+  transform: translateX(-50%) scale(1);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .dock-form-close {
@@ -757,6 +763,13 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.search-overlay-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .search-overlay-box {
@@ -764,6 +777,12 @@ input[type="file"]::file-selector-button:hover {
   max-width: 620px;
   margin: 0 20px;
   position: relative;
+  transform: scale(0.01);
+  transform-origin: center bottom;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.search-overlay-backdrop.open .search-overlay-box {
+  transform: scale(1);
 }
 
 .search-overlay-input-row {
@@ -882,7 +901,7 @@ input[type="file"]::file-selector-button:hover {
   position: fixed;
   top: 0;
   bottom: 0;
-  width: 15px;
+  width: 10px;
   z-index: 502;
   pointer-events: all;
 }
@@ -910,27 +929,26 @@ input[type="file"]::file-selector-button:hover {
 /* Sidebar panel */
 .tab-sidebar-panel {
   position: fixed;
-  top: 0;
-  bottom: 0;
+  top: 10px;
+  bottom: 10px;
   width: 220px;
   z-index: 501;
   display: flex;
   flex-direction: column;
   padding: 12px 8px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
 }
 
 .tab-sidebar-panel-left {
-  left: 0;
-  transform: translateX(-100%);
-  border-radius: 0 12px 12px 0;
+  left: 10px;
+  transform: translateX(-110%);
   border-left: none;
 }
 
 .tab-sidebar-panel-right {
-  right: 0;
-  transform: translateX(100%);
-  border-radius: 12px 0 0 12px;
+  right: 10px;
+  transform: translateX(110%);
   border-right: none;
 }
 
@@ -1458,9 +1476,9 @@ input[type="file"]::file-selector-button:hover {
    ============================================================ */
 .settings-btn {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
-  z-index: 100;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1001;
   width: 42px;
   height: 42px;
   display: flex;
@@ -1469,7 +1487,7 @@ input[type="file"]::file-selector-button:hover {
   border-radius: 12px;
   cursor: pointer;
   opacity: 0.8;
-  transition: all 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .settings-btn:hover {
   opacity: 1;
@@ -1479,6 +1497,11 @@ input[type="file"]::file-selector-button:hover {
     0 2px 8px rgba(0, 0, 0, 0.08),
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
     inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
+}
+.settings-btn.open {
+  opacity: 0;
+  transform: scale(0.01);
+  pointer-events: none;
 }
 
 /* ============================================================
