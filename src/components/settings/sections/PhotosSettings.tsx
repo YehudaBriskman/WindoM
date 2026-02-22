@@ -2,6 +2,26 @@ import { Heart } from 'lucide-react';
 import { useBackgroundContext } from '../../../contexts/BackgroundContext';
 import type { PhotoRecord } from '../../../types/photos';
 
+function getBundledUrl(path: string): string {
+  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL(path);
+  }
+  return `/${path}`;
+}
+
+const BUNDLED_PHOTOS: PhotoRecord[] = [
+  {
+    id: 'bundled-default',
+    imageUrl: getBundledUrl('images/bundled-bg.jpg'),
+    thumbUrl: getBundledUrl('images/bundled-bg.jpg'),
+    photographer: 'Built-in',
+    photographerUrl: '',
+    timestamp: 0,
+    liked: false,
+    source: 'bundled',
+  },
+];
+
 function PhotoGrid({ photos, onLike, onSelect }: {
   photos: PhotoRecord[];
   onLike: (id: string) => void;
@@ -44,6 +64,14 @@ export function PhotosSettings() {
 
   return (
     <div>
+      {/* Built-in Photos */}
+      <section style={{ marginBottom: 28 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Built-in</h3>
+        <div className="settings-group">
+          <PhotoGrid photos={BUNDLED_PHOTOS} onLike={() => {}} onSelect={setFromPhoto} />
+        </div>
+      </section>
+
       {/* Unsplash Photos */}
       <section style={{ marginBottom: 28 }}>
         <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Unsplash Photos</h3>

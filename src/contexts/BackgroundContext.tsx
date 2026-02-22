@@ -6,7 +6,14 @@ import type { PhotoRecord } from '../types/photos';
 
 const UNSPLASH_API_URL = 'https://api.unsplash.com/photos/random';
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
-const DEFAULT_GRADIENT = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+const DEFAULT_GRADIENT = [
+  'radial-gradient(ellipse at 20% 80%, rgba(219, 39, 119, 0.60) 0%, transparent 50%)',
+  'radial-gradient(ellipse at 80% 10%, rgba(124, 58, 237, 0.70) 0%, transparent 45%)',
+  'radial-gradient(ellipse at 50% 50%, rgba(99, 102, 241, 0.40) 0%, transparent 55%)',
+  'radial-gradient(ellipse at 85% 80%, rgba(59, 130, 246, 0.50) 0%, transparent 40%)',
+  'radial-gradient(ellipse at 10% 20%, rgba(192, 132, 252, 0.55) 0%, transparent 40%)',
+  'linear-gradient(160deg, #0d0221 0%, #1a0533 30%, #0c1445 60%, #0d0221 100%)',
+].join(', ');
 
 interface UnsplashCache {
   imageUrl: string;
@@ -20,7 +27,7 @@ interface UnsplashCache {
 interface BackgroundContextValue {
   photographer: { name: string; url: string } | null;
   currentPhotoId: string | null;
-  currentPhotoSource: 'unsplash' | 'local' | null;
+  currentPhotoSource: 'unsplash' | 'local' | 'bundled' | null;
   refresh: () => Promise<void>;
   setFromPhoto: (photo: PhotoRecord) => void;
   setFromLocalPhoto: (id: string) => Promise<void>;
@@ -34,7 +41,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
   const [photographer, setPhotographer] = useState<{ name: string; url: string } | null>(null);
   const [currentPhotoId, setCurrentPhotoId] = useState<string | null>(null);
-  const [currentPhotoSource, setCurrentPhotoSource] = useState<'unsplash' | 'local' | null>(null);
+  const [currentPhotoSource, setCurrentPhotoSource] = useState<'unsplash' | 'local' | 'bundled' | null>(null);
   const photoHistory = usePhotoHistory();
 
   // Destructure stable callbacks to avoid recreating loadUnsplash on every photoHistory render
@@ -61,6 +68,9 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     if (photo.source === 'local') {
       const fullUrl = await ls.get<string | null>(`localPhoto-${photo.id}`, null);
       applyBackground(fullUrl ?? photo.imageUrl);
+      setPhotographer(null);
+    } else if (photo.source === 'bundled') {
+      applyBackground(photo.imageUrl);
       setPhotographer(null);
     } else {
       applyBackground(photo.imageUrl);
