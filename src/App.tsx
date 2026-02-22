@@ -13,6 +13,8 @@ import { SettingsButton } from './components/settings/SettingsButton';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { FocusOverlay } from './components/focus/FocusOverlay';
 import { GlassFilters } from './components/GlassFilters';
+import { SearchOverlay } from './components/search/SearchOverlay';
+import { TabSidebar } from './components/tabs/TabSidebar';
 
 // Dashboard is always accessible — auth is optional.
 // Sign-in lives in Settings → Account tab.
@@ -31,6 +33,8 @@ function Dashboard() {
       <RightSidebar />
       <SettingsPanel />
       <FocusOverlay />
+      <SearchOverlay />
+      <TabSidebar />
       <PhotographerCredit />
     </>
   );

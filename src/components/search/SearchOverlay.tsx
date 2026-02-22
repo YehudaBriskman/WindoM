@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, Globe, Clock, LayoutGrid } from 'lucide-react';
+import { Search, Globe, Clock, LayoutGrid, ChevronDown } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
+import type { Settings } from '../../types/settings';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -25,6 +26,15 @@ const ENGINES: Record<string, string> = {
   brave: 'https://search.brave.com/search?q=',
 };
 
+const ENGINE_LABELS: Record<string, string> = {
+  google: 'Google',
+  bing: 'Bing',
+  duckduckgo: 'DDG',
+  brave: 'Brave',
+};
+
+const ENGINE_LIST: Settings['searchEngine'][] = ['google', 'bing', 'duckduckgo', 'brave'];
+
 const hasChromeApi = typeof chrome !== 'undefined';
 
 // ── URL detection ──────────────────────────────────────────────────────────────
@@ -47,9 +57,7 @@ async function getTabSuggestions(q: string): Promise<Suggestion[]> {
     const tabs = await chrome.tabs.query({});
     return tabs
       .filter(t => {
-        // skip internal chrome pages
         if (t.url?.startsWith('chrome://') || t.url?.startsWith('chrome-extension://')) return false;
-        // match on URL OR title independently — don't require url to be truthy first
         const urlMatch = t.url?.toLowerCase().includes(lower) ?? false;
         const titleMatch = t.title?.toLowerCase().includes(lower) ?? false;
         return urlMatch || titleMatch;
@@ -97,12 +105,9 @@ async function getSearchSuggestions(q: string): Promise<Suggestion[]> {
 
     let terms: string[] = [];
 
-    // OpenSearch format: ["query", ["s1", "s2", ...]]
     if (Array.isArray(data) && Array.isArray((data as unknown[])[1])) {
       terms = ((data as unknown[])[1] as unknown[]).filter((t): t is string => typeof t === 'string');
-    }
-    // Object-array format: [{phrase: "s1"}, ...]
-    else if (Array.isArray(data) && typeof (data as {phrase?: string}[])[0]?.phrase === 'string') {
+    } else if (Array.isArray(data) && typeof (data as {phrase?: string}[])[0]?.phrase === 'string') {
       terms = (data as {phrase: string}[]).map(d => d.phrase).filter(Boolean);
     }
 
@@ -114,40 +119,43 @@ async function getSearchSuggestions(q: string): Promise<Suggestion[]> {
 
 // ── Component ──────────────────────────────────────────────────────────────────
 
-export function SearchBar() {
-  const { settings } = useSettings();
+export function SearchOverlay() {
+  const { settings, update } = useSettings();
+  const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeIdx, setActiveIdx] = useState(-1);
-  const [open, setOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [enginePickerOpen, setEnginePickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Focus: Chrome new-tab pages steal focus after load.
-  // Retry every 100ms until the input is actually focused, up to ~2 seconds.
-  // Also reclaim focus whenever the window re-receives focus.
+  // Global shortcut: Ctrl+Super+H (Ctrl+Meta+H)
   useEffect(() => {
-    let cancelled = false;
-    let tries = 0;
-
-    function attempt() {
-      if (cancelled || tries++ > 20) return;
-      inputRef.current?.focus();
-      if (document.activeElement !== inputRef.current) {
-        setTimeout(attempt, 100);
+    const handler = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.metaKey && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        setOpen(prev => !prev);
       }
-    }
-
-    attempt();
-    window.addEventListener('focus', attempt);
-    return () => {
-      cancelled = true;
-      window.removeEventListener('focus', attempt);
     };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  // ── Suggestions
+  // Auto-focus and reset when opened/closed
+  useEffect(() => {
+    if (open) {
+      setTimeout(() => inputRef.current?.focus(), 30);
+    } else {
+      setValue('');
+      setSuggestions([]);
+      setActiveIdx(-1);
+      setDropdownOpen(false);
+      setEnginePickerOpen(false);
+    }
+  }, [open]);
+
+  // Suggestions
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (!value.trim()) {
@@ -156,7 +164,6 @@ export function SearchBar() {
       return;
     }
     debounceRef.current = setTimeout(async () => {
-      // Each fetcher has its own try-catch, so one failure won't affect others
       const tabs = await getTabSuggestions(value);
       const tabUrls = new Set(tabs.map(t => t.url ?? '').filter(Boolean));
       const [history, searches] = await Promise.all([
@@ -171,18 +178,6 @@ export function SearchBar() {
     };
   }, [value]);
 
-  // ── Close dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  // ── Navigation
   const go = useCallback(
     (overrideText?: string, suggestion?: Suggestion) => {
       if (suggestion?.kind === 'tab' && suggestion.tabId != null && hasChromeApi) {
@@ -195,7 +190,6 @@ export function SearchBar() {
       if (!input) return;
       const url = suggestion?.url ?? resolveAsUrl(input);
       window.location.href = url || (ENGINES[settings.searchEngine] ?? ENGINES.google) + encodeURIComponent(input);
-      setValue('');
       setOpen(false);
     },
     [value, settings.searchEngine],
@@ -203,13 +197,13 @@ export function SearchBar() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      const hasDropdown = open && suggestions.length > 0;
-
       if (e.key === 'Escape') {
-        if (open) { setOpen(false); setActiveIdx(-1); }
-        else setValue('');
+        if (dropdownOpen) { setDropdownOpen(false); setActiveIdx(-1); }
+        else setOpen(false);
         return;
       }
+
+      const hasDropdown = dropdownOpen && suggestions.length > 0;
 
       if (!hasDropdown) {
         if (e.key === 'Enter') go();
@@ -228,18 +222,23 @@ export function SearchBar() {
         else go();
       }
     },
-    [open, suggestions, activeIdx, go],
+    [dropdownOpen, suggestions, activeIdx, go],
   );
 
-  if (!settings.showFocus) return null;
+  if (!open) return null;
 
   const isUrl = !!resolveAsUrl(value);
-  const showDropdown = open && suggestions.length > 0;
+  const showDropdown = dropdownOpen && suggestions.length > 0;
 
   return (
-    <div className="search-bar-container" ref={containerRef}>
-      <div className="search-bar-inner">
-        <div className={`search-bar-wrapper${showDropdown ? ' dropdown-open' : ''}`}>
+    <div
+      className="search-overlay-backdrop"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) setOpen(false);
+      }}
+    >
+      <div className="search-overlay-box">
+        <div className={`search-overlay-input-row${showDropdown ? ' dropdown-open' : ''}`}>
           <span className="search-bar-icon">
             {isUrl ? <Globe size={18} strokeWidth={1.8} /> : <Search size={18} strokeWidth={1.8} />}
           </span>
@@ -247,19 +246,50 @@ export function SearchBar() {
             ref={inputRef}
             type="text"
             value={value}
-            onChange={e => { setValue(e.target.value); setOpen(true); setActiveIdx(-1); }}
-            onFocus={() => value.trim() && setOpen(true)}
+            onChange={e => { setValue(e.target.value); setDropdownOpen(true); setActiveIdx(-1); }}
+            onFocus={() => value.trim() && setDropdownOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search or enter URL..."
             className="search-bar-input"
             autoComplete="off"
             spellCheck={false}
           />
+          <div className="search-engine-pill-wrapper">
+            <button
+              className="search-engine-pill"
+              onClick={() => setEnginePickerOpen(p => !p)}
+              tabIndex={-1}
+              type="button"
+            >
+              {ENGINE_LABELS[settings.searchEngine] ?? 'Google'}
+              <ChevronDown size={11} strokeWidth={2} />
+            </button>
+            {enginePickerOpen && (
+              <div className="search-engine-popover">
+                {ENGINE_LIST.map(eng => (
+                  <button
+                    key={eng}
+                    className={`search-engine-option${settings.searchEngine === eng ? ' active' : ''}`}
+                    onMouseDown={e => {
+                      e.preventDefault();
+                      update('searchEngine', eng);
+                      setEnginePickerOpen(false);
+                      inputRef.current?.focus();
+                    }}
+                    type="button"
+                  >
+                    {ENGINE_LABELS[eng]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           {value && (
             <button
               className="search-bar-submit"
               onClick={() => activeIdx >= 0 ? go(suggestions[activeIdx].text, suggestions[activeIdx]) : go()}
               tabIndex={-1}
+              type="button"
               aria-label="Go"
             >
               ↵
@@ -268,7 +298,7 @@ export function SearchBar() {
         </div>
 
         {showDropdown && (
-          <div className="search-dropdown">
+          <div className="search-dropdown search-overlay-dropdown">
             {suggestions.map((s, i) => (
               <button
                 key={`${s.kind}-${i}`}
@@ -276,6 +306,7 @@ export function SearchBar() {
                 onMouseEnter={() => setActiveIdx(i)}
                 onMouseLeave={() => setActiveIdx(-1)}
                 onMouseDown={e => { e.preventDefault(); go(s.text, s); }}
+                type="button"
               >
                 <span className="suggestion-icon">
                   {s.kind === 'tab' ? (

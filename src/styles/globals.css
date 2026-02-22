@@ -745,6 +745,289 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* ============================================================
+   Search Overlay (Ctrl+Super+H global shortcut)
+   ============================================================ */
+.search-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.search-overlay-box {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 20px;
+  position: relative;
+}
+
+.search-overlay-input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 28px;
+  padding: 0 8px 0 18px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.25),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.55),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.28);
+  transition: border-radius 0.15s ease, border-color 0.25s ease;
+}
+
+.search-overlay-input-row:focus-within {
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 10px 50px rgba(0, 0, 0, 0.3),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.65),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.35);
+}
+
+.search-overlay-input-row.dropdown-open {
+  border-radius: 28px 28px 0 0;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.search-overlay-dropdown {
+  border-radius: 0 0 22px 22px;
+  background: rgba(14, 14, 14, 0.65);
+}
+
+/* Engine picker pill */
+.search-engine-pill-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.search-engine-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 6px;
+  white-space: nowrap;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+}
+
+.search-engine-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: white;
+}
+
+.search-engine-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 6px;
+  background: rgba(16, 16, 16, 0.92);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 4px;
+  z-index: 10;
+  min-width: 110px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.search-engine-option {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.search-engine-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.search-engine-option.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+   Tab Sidebar (edge-hover, Zen Browser style)
+   ============================================================ */
+
+/* 15px hover trigger zone at screen edge */
+.tab-sidebar-trigger {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 15px;
+  z-index: 502;
+  pointer-events: all;
+}
+
+.tab-sidebar-trigger-left { left: 0; }
+.tab-sidebar-trigger-right { right: 0; }
+
+/* Thin 2px edge indicator badge */
+.tab-sidebar-edge {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 1px;
+  z-index: 499;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.tab-sidebar-edge-left { left: 0; }
+.tab-sidebar-edge-right { right: 0; }
+
+/* Sidebar panel */
+.tab-sidebar-panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 220px;
+  z-index: 501;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab-sidebar-panel-left {
+  left: 0;
+  transform: translateX(-100%);
+  border-radius: 0 12px 12px 0;
+  border-left: none;
+}
+
+.tab-sidebar-panel-right {
+  right: 0;
+  transform: translateX(100%);
+  border-radius: 12px 0 0 12px;
+  border-right: none;
+}
+
+.tab-sidebar-panel.visible {
+  transform: translateX(0);
+}
+
+.tab-sidebar-new-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+}
+
+.tab-sidebar-new-tab:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.tab-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tab-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.tab-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.tab-sidebar-item.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+
+.tab-sidebar-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tab-sidebar-favicon-placeholder {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.tab-sidebar-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
    Segmented Control (General Settings)
    ============================================================ */
 .segmented-control {
@@ -1521,7 +1804,7 @@ input[type="checkbox"]:focus-visible {
 }
 
 /* ============================================================
-   Links Settings (Editor)
+   Links Settings (Table Editor)
    ============================================================ */
 .link-editor-list {
   display: flex;
@@ -1533,23 +1816,68 @@ input[type="checkbox"]:focus-visible {
   padding: 2px;
 }
 
-.link-editor-item {
+/* Table layout variant */
+.link-editor-table {
+  gap: 0;
+}
+
+.link-table-header {
   display: grid;
-  grid-template-columns: 1fr 2fr 80px 40px;
+  grid-template-columns: 44px 1fr 1.4fr 36px;
+  gap: 8px;
+  padding: 0 6px 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.link-table-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1.4fr 36px;
   gap: 8px;
   align-items: center;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  transition: all 0.25s ease;
-  box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+  border-radius: 6px;
 }
-.link-editor-item:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+
+.link-table-row:last-child {
+  border-bottom: none;
+}
+
+.link-table-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.link-favicon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.link-favicon-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px;
+}
+
+.link-favicon-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .link-editor-input {
@@ -2303,7 +2631,7 @@ body.focus-exiting .right-sidebar {
     padding: 10px 0;
     overflow-x: auto;
   }
-  .link-editor-item {
+  .link-table-row {
     grid-template-columns: 1fr;
   }
   .link-remove-btn {

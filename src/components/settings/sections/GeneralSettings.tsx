@@ -1,6 +1,5 @@
-import { Cloud, Quote, Link2, Target, User, Search } from 'lucide-react';
+import { Cloud, Quote, Link2, Target, User, PanelRight, PanelLeft } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
-import type { Settings } from '../../../types';
 
 interface Props {
   onReset: () => void;
@@ -56,40 +55,25 @@ export function GeneralSettings({ onReset }: Props) {
 
       <div className="settings-group" style={{ marginTop: 28 }}>
         <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
-          Center Bar Mode
+          Tab Sidebar
         </label>
         <div className="segmented-control">
           <button
-            className={`segmented-btn${settings.centerInputMode === 'focus' ? ' active' : ''}`}
-            onClick={() => update('centerInputMode', 'focus')}
+            className={`segmented-btn${settings.tabSidebarSide === 'left' ? ' active' : ''}`}
+            onClick={() => update('tabSidebarSide', 'left')}
           >
-            <Target size={14} strokeWidth={1.8} />
-            Focus
+            <PanelLeft size={14} strokeWidth={1.8} />
+            Left
           </button>
           <button
-            className={`segmented-btn${settings.centerInputMode === 'search' ? ' active' : ''}`}
-            onClick={() => update('centerInputMode', 'search')}
+            className={`segmented-btn${settings.tabSidebarSide === 'right' ? ' active' : ''}`}
+            onClick={() => update('tabSidebarSide', 'right')}
           >
-            <Search size={14} strokeWidth={1.8} />
-            Search Bar
+            <PanelRight size={14} strokeWidth={1.8} />
+            Right
           </button>
         </div>
-
-        {settings.centerInputMode === 'search' && (
-          <div style={{ marginTop: 12 }}>
-            <label className="settings-label">Search Engine:</label>
-            <select
-              className="settings-select"
-              value={settings.searchEngine}
-              onChange={(e) => update('searchEngine', e.target.value as Settings['searchEngine'])}
-            >
-              <option value="google">Google</option>
-              <option value="bing">Bing</option>
-              <option value="duckduckgo">DuckDuckGo</option>
-              <option value="brave">Brave Search</option>
-            </select>
-          </div>
-        )}
+        <span className="settings-hint">Hover within 15px of the chosen edge to reveal tabs</span>
       </div>
 
       <div className="settings-group" style={{ marginTop: 28 }}>

@@ -1,20 +1,64 @@
+import { Link } from 'lucide-react';
 import { useLinks } from '../../../hooks/useLinks';
-import { isValidUrl } from '../../../utils/url';
+import { isValidUrl, getFaviconUrl } from '../../../utils/url';
 
 export function LinksSettings() {
   const { links, addLink, removeLink, updateLink } = useLinks();
 
   return (
     <div>
-      <div className="link-editor-list">
-        {links.map((link, i) => (
-          <LinkEditorItem
-            key={i}
-            link={link}
-            onChange={(updated) => updateLink(i, updated)}
-            onRemove={() => removeLink(i)}
-          />
-        ))}
+      {links.length > 0 && (
+        <div className="link-table-header">
+          <span>Icon</span>
+          <span>Name</span>
+          <span>URL</span>
+          <span />
+        </div>
+      )}
+      <div className="link-editor-list link-editor-table">
+        {links.map((link, i) => {
+          const urlInvalid = link.url.length > 8 && !isValidUrl(link.url);
+          const faviconUrl = getFaviconUrl(link.url);
+
+          return (
+            <div key={i} className="link-table-row">
+              <div className="link-favicon-cell">
+                {faviconUrl ? (
+                  <img
+                    src={faviconUrl}
+                    className="link-favicon-preview"
+                    alt=""
+                    onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('style'); }}
+                  />
+                ) : null}
+                <div className="link-favicon-fallback" style={faviconUrl ? { display: 'none' } : {}}>
+                  <Link size={14} strokeWidth={1.8} />
+                </div>
+              </div>
+              <input
+                type="text"
+                value={link.name}
+                placeholder="Name"
+                onChange={(e) => updateLink(i, { ...link, name: e.target.value })}
+                className="link-editor-input glass-input"
+              />
+              <input
+                type="text"
+                value={link.url}
+                placeholder="URL"
+                onChange={(e) => updateLink(i, { ...link, url: e.target.value })}
+                className={`link-editor-input glass-input${urlInvalid ? ' url-invalid' : ''}`}
+              />
+              <button
+                type="button"
+                onClick={() => removeLink(i)}
+                className="link-remove-btn"
+              >
+                &times;
+              </button>
+            </div>
+          );
+        })}
       </div>
       <button
         type="button"
@@ -22,56 +66,6 @@ export function LinksSettings() {
         className="link-add-btn"
       >
         + Add Link
-      </button>
-    </div>
-  );
-}
-
-function LinkEditorItem({
-  link,
-  onChange,
-  onRemove,
-}: {
-  link: { name: string; url: string; icon: string };
-  onChange: (updated: { name: string; url: string; icon: string }) => void;
-  onRemove: () => void;
-}) {
-  const handleChange = (field: 'name' | 'url' | 'icon', value: string) => {
-    onChange({ ...link, [field]: value });
-  };
-
-  const urlInvalid = link.url.length > 8 && !isValidUrl(link.url);
-
-  return (
-    <div className="link-editor-item">
-      <input
-        type="text"
-        value={link.name}
-        placeholder="Name"
-        onChange={(e) => handleChange('name', e.target.value)}
-        className="link-editor-input glass-input"
-      />
-      <input
-        type="text"
-        value={link.url}
-        placeholder="URL"
-        onChange={(e) => handleChange('url', e.target.value)}
-        className={`link-editor-input glass-input ${urlInvalid ? 'url-invalid' : ''}`}
-      />
-      <input
-        type="text"
-        value={link.icon}
-        placeholder="Icon"
-        maxLength={20}
-        onChange={(e) => handleChange('icon', e.target.value)}
-        className="link-editor-input glass-input icon-input"
-      />
-      <button
-        type="button"
-        onClick={onRemove}
-        className="link-remove-btn"
-      >
-        &times;
       </button>
     </div>
   );
