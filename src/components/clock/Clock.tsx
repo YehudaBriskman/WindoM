@@ -10,20 +10,20 @@ export function Clock({ id }: { id?: string }) {
   const style = settings.clockStyle ?? 'default';
   const color = settings.clockColor ?? '#ffffff';
 
-  const inlineStyle: CSSProperties = {
+  const inlineStyle = {
     fontSize: `${settings.clockSize ?? 120}px`,
     fontWeight: settings.clockWeight ?? 200,
     ...(style === 'outline'
       ? { color: 'transparent', WebkitTextStroke: `2px ${color}` }
       : style === 'glass'
-      ? { color: 'transparent' }
+      ? { color: 'transparent', '--glass-tint': color }
       : { color }),
-  };
+  } as CSSProperties;
 
   const className = [
     'clock',
     style === 'default' ? 'text-shadow-md' : '',
-    style === 'glass' ? 'clock-glass' : '',
+    style === 'glass' ? 'text-liquid-glass' : '',
     style === 'outline' ? 'clock-outline' : '',
   ]
     .filter(Boolean)

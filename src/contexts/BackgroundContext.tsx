@@ -175,7 +175,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     }
     applyBackground(BUNDLED_BG_URL);
     setPhotographer(null);
-    setCurrentPhotoId('bundled-default');
+    setCurrentPhotoId('bundled-1');
     setCurrentPhotoSource('bundled');
   }, [settings.localBackground, applyBackground]);
 

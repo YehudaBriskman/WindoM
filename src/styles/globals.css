@@ -176,22 +176,60 @@ input[type="file"]::file-selector-button:hover {
   margin-left: 10px;
 }
 
-/* Glass text: gradient fill that mimics light refracting through frosted glass */
-.clock-glass {
+/* ============================================================
+   Liquid Glass Text Utility
+   Semi-transparent, multi-layer gradient fill that lets the
+   background show through the text — like real frosted glass.
+   Set --glass-tint on the element to drive the tint color from
+   a color picker; defaults to white when not set.
+   ============================================================ */
+.text-liquid-glass {
+  --glass-tint: #ffffff;
   color: transparent;
-  background: linear-gradient(
-    150deg,
-    rgba(255, 255, 255, 0.95) 0%,
-    rgba(255, 255, 255, 0.38) 38%,
-    rgba(200, 215, 255, 0.6) 65%,
-    rgba(255, 255, 255, 0.92) 100%
-  );
+
+  /* Three composited gradient layers, all semi-transparent so the
+     background bleeds through the text characters:
+     1. Specular highlight — primary light-source bloom (upper-left)
+     2. Refracted tint    — transmitted-light wash (lower-right)
+     3. Main glass body   — diagonal sweep with a near-clear center */
+  background:
+    radial-gradient(
+      ellipse 55% 45% at 20% 15%,
+      color-mix(in srgb, var(--glass-tint) 65%, transparent) 0%,
+      color-mix(in srgb, var(--glass-tint) 18%, transparent) 48%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 42% at 82% 82%,
+      color-mix(in srgb, var(--glass-tint) 32%, transparent) 0%,
+      transparent 65%
+    ),
+    linear-gradient(
+      148deg,
+      color-mix(in srgb, var(--glass-tint) 58%, transparent) 0%,
+      color-mix(in srgb, var(--glass-tint) 26%, transparent) 22%,
+      color-mix(in srgb, var(--glass-tint)  7%, transparent) 46%,
+      color-mix(in srgb, var(--glass-tint) 30%, transparent) 68%,
+      color-mix(in srgb, var(--glass-tint) 53%, transparent) 87%,
+      color-mix(in srgb, var(--glass-tint) 40%, transparent) 100%
+    );
   background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.35);
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+
+  /* Hair-thin rim in the tint color defines the glass edge */
+  -webkit-text-stroke: 0.5px color-mix(in srgb, var(--glass-tint) 38%, transparent);
+
+  /* Depth shadow + specular edge glow tinted by the chosen color */
+  filter:
+    drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 6px 20px rgba(0, 0, 0, 0.28))
+    drop-shadow(0 0 1px color-mix(in srgb, var(--glass-tint) 72%, transparent));
+
   text-shadow: none;
 }
+
+/* Clock glass — delegates entirely to the shared text-liquid-glass utility */
+.clock-glass {}
 
 /* Outline style: stroke only, no fill */
 .clock-outline {

@@ -1,26 +1,25 @@
 import { Heart } from 'lucide-react';
 import { useBackgroundContext } from '../../../contexts/BackgroundContext';
 import type { PhotoRecord } from '../../../types/photos';
+import bundledImagePaths from 'virtual:bundled-images';
 
-function getBundledUrl(path: string): string {
+function getBundledUrl(filePath: string): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL(path);
+    return chrome.runtime.getURL(filePath);
   }
-  return `/${path}`;
+  return `/${filePath}`;
 }
 
-const BUNDLED_PHOTOS: PhotoRecord[] = [
-  {
-    id: 'bundled-default',
-    imageUrl: getBundledUrl('images/bundled-bg.jpg'),
-    thumbUrl: getBundledUrl('images/bundled-bg.jpg'),
-    photographer: 'Built-in',
-    photographerUrl: '',
-    timestamp: 0,
-    liked: false,
-    source: 'bundled',
-  },
-];
+const BUNDLED_PHOTOS: PhotoRecord[] = bundledImagePaths.map((filePath, i) => ({
+  id: `bundled-${i + 1}`,
+  imageUrl: getBundledUrl(filePath),
+  thumbUrl: getBundledUrl(filePath),
+  photographer: 'Built-in',
+  photographerUrl: '',
+  timestamp: 0,
+  liked: false,
+  source: 'bundled' as const,
+}));
 
 function PhotoGrid({ photos, onLike, onSelect }: {
   photos: PhotoRecord[];
@@ -39,16 +38,18 @@ function PhotoGrid({ photos, onLike, onSelect }: {
           <div className="photo-thumb-overlay">
             <span className="photo-thumb-credit">{photo.photographer}</span>
           </div>
-          <button
-            className={`photo-like-btn ${photo.liked ? 'liked' : ''}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              onLike(photo.id);
-            }}
-            title={photo.liked ? 'Unlike' : 'Like'}
-          >
-            <Heart size={14} fill={photo.liked ? 'currentColor' : 'none'} />
-          </button>
+          {photo.source !== 'bundled' && (
+            <button
+              className={`photo-like-btn ${photo.liked ? 'liked' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onLike(photo.id);
+              }}
+              title={photo.liked ? 'Unlike' : 'Like'}
+            >
+              <Heart size={14} fill={photo.liked ? 'currentColor' : 'none'} />
+            </button>
+          )}
         </div>
       ))}
     </div>
