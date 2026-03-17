@@ -7,6 +7,14 @@ export interface QuickLink {
 export interface Settings {
   userName: string;
   timeFormat: '12h' | '24h';
+  showSeconds: boolean;
+  clockLeadingZero: boolean;
+  clockStyle: 'default' | 'glass' | 'outline';
+  clockColor: string;
+  clockSize: number;
+  clockWeight: 100 | 200 | 400 | 600;
+  showDate: boolean;
+  dateFormat: 'long' | 'short' | 'numeric';
   temperatureUnit: 'F' | 'C';
   backgroundSource: 'unsplash' | 'local';
   unsplashApiKey: string;
@@ -32,6 +40,14 @@ export interface Settings {
 export const defaultSettings: Settings = {
   userName: 'Friend',
   timeFormat: '12h',
+  showSeconds: false,
+  clockLeadingZero: false,
+  clockStyle: 'default',
+  clockColor: '#ffffff',
+  clockSize: 120,
+  clockWeight: 200,
+  showDate: false,
+  dateFormat: 'long',
   temperatureUnit: 'F',
   backgroundSource: 'unsplash',
   unsplashApiKey: '',

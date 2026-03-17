@@ -22,7 +22,7 @@ export function GeneralSettings({ onReset }: Props) {
         <label className="settings-label">Your Name:</label>
         <input
           type="text"
-          defaultValue={settings.userName}
+          value={settings.userName}
           placeholder="Friend"
           onChange={(e) => update('userName', e.target.value || 'Friend')}
           className="settings-input glass-input"

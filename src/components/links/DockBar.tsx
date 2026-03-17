@@ -6,7 +6,7 @@ import { DockItem } from './DockItem';
 
 export function DockBar() {
   const { settings } = useSettings();
-  const { links, addLink } = useLinks();
+  const { links, addLink, removeLink } = useLinks();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
@@ -58,7 +58,7 @@ export function DockBar() {
     <div className="dock-wrapper">
       <div className="dock-bar glass-dock">
         {links.map((link, i) => (
-          <DockItem key={`${link.url}-${i}`} link={link} />
+          <DockItem key={`${link.url}-${i}`} link={link} onRemove={() => removeLink(i)} />
         ))}
       </div>
 
