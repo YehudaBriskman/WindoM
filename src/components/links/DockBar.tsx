@@ -1,8 +1,12 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useLinks } from '../../hooks/useLinks';
 import { useSettings } from '../../contexts/SettingsContext';
 import { DockItem } from './DockItem';
+
+const ITEMS_PER_ROW = 9;
+const ROW_HEIGHT = 44;
+const MAX_LINKS = 27;
 
 export function DockBar() {
   const { settings } = useSettings();
@@ -10,8 +14,31 @@ export function DockBar() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [activeRow, setActiveRow] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const rowsRef = useRef<HTMLDivElement>(null);
+
+  // Chunk links into rows of ITEMS_PER_ROW
+  const rows: typeof links[] = [];
+  for (let i = 0; i < links.length; i += ITEMS_PER_ROW) {
+    rows.push(links.slice(i, i + ITEMS_PER_ROW));
+  }
+
+  const scrollToRow = useCallback((index: number) => {
+    rowsRef.current?.scrollTo({ top: index * ROW_HEIGHT, behavior: 'smooth' });
+  }, []);
+
+  // Track which row is visible based on scroll position
+  useEffect(() => {
+    const el = rowsRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      setActiveRow(Math.round(el.scrollTop / ROW_HEIGHT));
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +62,7 @@ export function DockBar() {
   };
 
   useEffect(() => {
-    if (showForm) {
-      setTimeout(() => nameInputRef.current?.focus(), 50);
-    }
+    if (showForm) setTimeout(() => nameInputRef.current?.focus(), 50);
   }, [showForm]);
 
   useEffect(() => {
@@ -57,12 +82,36 @@ export function DockBar() {
   return (
     <div className="dock-wrapper">
       <div className="dock-bar glass-dock">
-        {links.map((link, i) => (
-          <DockItem key={`${link.url}-${i}`} link={link} onRemove={() => removeLink(i)} />
-        ))}
+        <div className="dock-rows" ref={rowsRef}>
+          {rows.map((row, rowIndex) => (
+            <div key={rowIndex} className="dock-row">
+              {row.map((link, i) => (
+                <DockItem
+                  key={`${link.url}-${rowIndex * ITEMS_PER_ROW + i}`}
+                  link={link}
+                  onRemove={() => removeLink(rowIndex * ITEMS_PER_ROW + i)}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {links.length < 10 && (
+      {/* Row indicator — only shown when there are multiple rows */}
+      {rows.length > 1 && (
+        <div className="dock-page-indicator">
+          {rows.map((_, i) => (
+            <button
+              key={i}
+              className={`dock-page-dot${i === activeRow ? ' active' : ''}`}
+              onClick={() => scrollToRow(i)}
+              aria-label={`Go to row ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
+
+      {links.length < MAX_LINKS && (
         <div
           ref={containerRef}
           className={`dock-expandable${showForm ? ' expanded glass-panel' : ''}`}

@@ -16,7 +16,7 @@ export function useLinks() {
   const setLinks = (newLinks: QuickLink[]) => update('quickLinks', newLinks);
 
   const addLink = (link?: QuickLink | unknown) => {
-    if (links.length >= 10) return;
+    if (links.length >= 27) return;
     const isLink = (v: unknown): v is QuickLink =>
       typeof v === 'object' && v !== null && 'url' in v && 'name' in v;
     setLinks([...links, isLink(link) ? link : { name: 'New Link', url: 'https://', icon: '' }]);
