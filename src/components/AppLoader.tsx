@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBackgroundContext } from '../contexts/BackgroundContext';
+import { DEFAULT_GRADIENT } from '../lib/background-constants';
 
 export function AppLoader() {
   const { backgroundReady } = useBackgroundContext();
@@ -15,7 +16,7 @@ export function AppLoader() {
   if (hidden) return null;
 
   return (
-    <div className={`app-loader ${backgroundReady ? 'app-loader--done' : ''}`}>
+    <div className={`app-loader ${backgroundReady ? 'app-loader--done' : ''}`} style={{ backgroundImage: DEFAULT_GRADIENT }}>
       <div className="app-loader-spinner" />
     </div>
   );

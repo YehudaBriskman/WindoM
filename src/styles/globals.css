@@ -57,7 +57,7 @@ a {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: linear-gradient(160deg, #0d0221 0%, #1a0533 25%, #0c1445 55%, #1a0f03 100%);
+  background-size: cover;
   display: flex;
   align-items: center;
   justify-content: center;
