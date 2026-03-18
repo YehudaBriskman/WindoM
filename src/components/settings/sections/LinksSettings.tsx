@@ -62,7 +62,7 @@ export function LinksSettings() {
       </div>
       <button
         type="button"
-        onClick={addLink}
+        onClick={() => addLink()}
         className="link-add-btn"
       >
         + Add Link
