@@ -1,21 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
 import { apiGet } from '../lib/api';
+import { useSettings } from '../contexts/SettingsContext';
 import type { CalendarEvent } from '../types/calendar';
 
-function useIsCalendarConnected(): boolean {
-  const [connected, setConnected] = useState(false);
-  useEffect(() => {
-    syncStorage.get<boolean>('calendarConnected', false).then(setConnected);
-    return syncStorage.onChange((changes) => {
-      if (changes.calendarConnected) setConnected(changes.calendarConnected.newValue as boolean);
-    });
-  }, []);
-  return connected;
-}
-
 export function useCalendar() {
-  const calendarConnected = useIsCalendarConnected();
+  const { settings } = useSettings();
+  const calendarConnected = settings.calendarConnected;
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   // Load events — from backend if connected, otherwise from local storage

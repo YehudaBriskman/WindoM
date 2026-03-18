@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiGet } from '../lib/api';
-import { syncStorage } from '../lib/chrome-storage';
+import { useSettings } from '../contexts/SettingsContext';
 
 export interface SpotifyTrack {
   name: string;
@@ -19,24 +19,14 @@ export interface NowPlayingState {
 
 const POLL_INTERVAL_MS = 30_000;
 
-function useIsSpotifyConnected(): boolean {
-  const [connected, setConnected] = useState(false);
-  useEffect(() => {
-    syncStorage.get<boolean>('spotifyConnected', false).then(setConnected);
-    return syncStorage.onChange((changes) => {
-      if (changes.spotifyConnected) setConnected(changes.spotifyConnected.newValue as boolean);
-    });
-  }, []);
-  return connected;
-}
-
 export function useSpotify() {
-  const spotifyConnected = useIsSpotifyConnected();
+  const { settings } = useSettings();
+  const spotifyConnected = settings.spotifyConnected;
   const [state, setState] = useState<NowPlayingState>({ isPlaying: false, progressMs: 0, track: null });
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  async function fetchNowPlaying() {
+  const fetchNowPlaying = useCallback(async () => {
     try {
       const data = await apiGet<NowPlayingState>('/spotify/now-playing');
       setState(data);
@@ -44,7 +34,7 @@ export function useSpotify() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch');
     }
-  }
+  }, []);
 
   useEffect(() => {
     if (!spotifyConnected) {
