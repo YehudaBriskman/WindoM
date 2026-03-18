@@ -104,5 +104,19 @@ export function usePhotoHistory() {
     });
   }, []);
 
-  return { history: unsplashHistory, unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike };
+  const deleteLocalPhoto = useCallback((id: string) => {
+    ls.set(`localPhoto-${id}`, null);
+    setLocalHistory((prev) => {
+      const next = prev.filter((p) => p.id !== id);
+      ls.set(LOCAL_HISTORY_KEY, next);
+      return next;
+    });
+    setLiked((prev) => {
+      const next = prev.filter((p) => p.id !== id);
+      ls.set(LIKED_KEY, next);
+      return next;
+    });
+  }, []);
+
+  return { history: unsplashHistory, unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike, deleteLocalPhoto };
 }
