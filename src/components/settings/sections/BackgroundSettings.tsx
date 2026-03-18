@@ -7,6 +7,8 @@ import { GlassSelect } from '../../ui/GlassSelect';
 import type { PhotoRecord } from '../../../types/photos';
 import bundledImagePaths from 'virtual:bundled-images';
 
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+
 function getBundledUrl(filePath: string): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
     return chrome.runtime.getURL(filePath);
@@ -84,8 +86,8 @@ export function BackgroundSettings() {
       showSettingsMessage('Please select a valid image file', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showSettingsMessage('Image too large. Maximum size is 5MB', 'error');
+    if (file.size > MAX_UPLOAD_BYTES) {
+      showSettingsMessage(`Image too large. Maximum size is ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB`, 'error');
       return;
     }
     const reader = new FileReader();

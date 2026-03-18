@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+const MESSAGE_DISMISS_MS = 3_000;
+
 interface Message {
   text: string;
   type: 'success' | 'error';
@@ -18,7 +20,7 @@ export function SettingsMessage() {
   useEffect(() => {
     _show = (m) => {
       setMsg(m);
-      setTimeout(() => setMsg(null), 3000);
+      setTimeout(() => setMsg(null), MESSAGE_DISMISS_MS);
     };
     return () => { _show = () => {}; };
   }, []);
