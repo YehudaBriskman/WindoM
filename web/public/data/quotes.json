@@ -1,0 +1,377 @@
+[
+  {
+    "text": "The only way to do great work is to love what you do.",
+    "author": "Steve Jobs",
+    "category": "motivation"
+  },
+  {
+    "text": "Innovation distinguishes between a leader and a follower.",
+    "author": "Steve Jobs",
+    "category": "innovation"
+  },
+  {
+    "text": "The future belongs to those who believe in the beauty of their dreams.",
+    "author": "Eleanor Roosevelt",
+    "category": "motivation"
+  },
+  {
+    "text": "Success is not final, failure is not fatal: it is the courage to continue that counts.",
+    "author": "Winston Churchill",
+    "category": "perseverance"
+  },
+  {
+    "text": "The best time to plant a tree was 20 years ago. The second best time is now.",
+    "author": "Chinese Proverb",
+    "category": "wisdom"
+  },
+  {
+    "text": "Your time is limited, don't waste it living someone else's life.",
+    "author": "Steve Jobs",
+    "category": "motivation"
+  },
+  {
+    "text": "The only impossible journey is the one you never begin.",
+    "author": "Tony Robbins",
+    "category": "motivation"
+  },
+  {
+    "text": "Do not go where the path may lead, go instead where there is no path and leave a trail.",
+    "author": "Ralph Waldo Emerson",
+    "category": "innovation"
+  },
+  {
+    "text": "The way to get started is to quit talking and begin doing.",
+    "author": "Walt Disney",
+    "category": "motivation"
+  },
+  {
+    "text": "It does not matter how slowly you go as long as you do not stop.",
+    "author": "Confucius",
+    "category": "perseverance"
+  },
+  {
+    "text": "Everything you've ever wanted is on the other side of fear.",
+    "author": "George Addair",
+    "category": "motivation"
+  },
+  {
+    "text": "Success usually comes to those who are too busy to be looking for it.",
+    "author": "Henry David Thoreau",
+    "category": "success"
+  },
+  {
+    "text": "Don't be afraid to give up the good to go for the great.",
+    "author": "John D. Rockefeller",
+    "category": "success"
+  },
+  {
+    "text": "I find that the harder I work, the more luck I seem to have.",
+    "author": "Thomas Jefferson",
+    "category": "success"
+  },
+  {
+    "text": "The future depends on what you do today.",
+    "author": "Mahatma Gandhi",
+    "category": "motivation"
+  },
+  {
+    "text": "You miss 100% of the shots you don't take.",
+    "author": "Wayne Gretzky",
+    "category": "motivation"
+  },
+  {
+    "text": "Whether you think you can or you think you can't, you're right.",
+    "author": "Henry Ford",
+    "category": "motivation"
+  },
+  {
+    "text": "I have not failed. I've just found 10,000 ways that won't work.",
+    "author": "Thomas Edison",
+    "category": "perseverance"
+  },
+  {
+    "text": "The only limit to our realization of tomorrow is our doubts of today.",
+    "author": "Franklin D. Roosevelt",
+    "category": "motivation"
+  },
+  {
+    "text": "Act as if what you do makes a difference. It does.",
+    "author": "William James",
+    "category": "motivation"
+  },
+  {
+    "text": "Success is not how high you have climbed, but how you make a positive difference to the world.",
+    "author": "Roy T. Bennett",
+    "category": "success"
+  },
+  {
+    "text": "What we think, we become.",
+    "author": "Buddha",
+    "category": "wisdom"
+  },
+  {
+    "text": "The mind is everything. What you think you become.",
+    "author": "Buddha",
+    "category": "wisdom"
+  },
+  {
+    "text": "The best revenge is massive success.",
+    "author": "Frank Sinatra",
+    "category": "success"
+  },
+  {
+    "text": "Life is 10% what happens to you and 90% how you react to it.",
+    "author": "Charles R. Swindoll",
+    "category": "wisdom"
+  },
+  {
+    "text": "Change your thoughts and you change your world.",
+    "author": "Norman Vincent Peale",
+    "category": "wisdom"
+  },
+  {
+    "text": "The only person you are destined to become is the person you decide to be.",
+    "author": "Ralph Waldo Emerson",
+    "category": "motivation"
+  },
+  {
+    "text": "Believe you can and you're halfway there.",
+    "author": "Theodore Roosevelt",
+    "category": "motivation"
+  },
+  {
+    "text": "It is never too late to be what you might have been.",
+    "author": "George Eliot",
+    "category": "motivation"
+  },
+  {
+    "text": "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+    "author": "Nelson Mandela",
+    "category": "perseverance"
+  },
+  {
+    "text": "In the middle of difficulty lies opportunity.",
+    "author": "Albert Einstein",
+    "category": "wisdom"
+  },
+  {
+    "text": "Imagination is more important than knowledge.",
+    "author": "Albert Einstein",
+    "category": "creativity"
+  },
+  {
+    "text": "Strive not to be a success, but rather to be of value.",
+    "author": "Albert Einstein",
+    "category": "success"
+  },
+  {
+    "text": "Logic will get you from A to B. Imagination will take you everywhere.",
+    "author": "Albert Einstein",
+    "category": "creativity"
+  },
+  {
+    "text": "The only way to achieve the impossible is to believe it is possible.",
+    "author": "Charles Kingsleigh",
+    "category": "motivation"
+  },
+  {
+    "text": "Don't watch the clock; do what it does. Keep going.",
+    "author": "Sam Levenson",
+    "category": "perseverance"
+  },
+  {
+    "text": "The secret of getting ahead is getting started.",
+    "author": "Mark Twain",
+    "category": "motivation"
+  },
+  {
+    "text": "I never dreamed about success, I worked for it.",
+    "author": "Estee Lauder",
+    "category": "success"
+  },
+  {
+    "text": "Success is walking from failure to failure with no loss of enthusiasm.",
+    "author": "Winston Churchill",
+    "category": "perseverance"
+  },
+  {
+    "text": "The difference between ordinary and extraordinary is that little extra.",
+    "author": "Jimmy Johnson",
+    "category": "success"
+  },
+  {
+    "text": "Don't be pushed around by the fears in your mind. Be led by the dreams in your heart.",
+    "author": "Roy T. Bennett",
+    "category": "motivation"
+  },
+  {
+    "text": "Believe in yourself. You are braver than you think, more talented than you know, and capable of more than you imagine.",
+    "author": "Roy T. Bennett",
+    "category": "motivation"
+  },
+  {
+    "text": "Quality is not an act, it is a habit.",
+    "author": "Aristotle",
+    "category": "wisdom"
+  },
+  {
+    "text": "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+    "author": "Aristotle",
+    "category": "wisdom"
+  },
+  {
+    "text": "You cannot swim for new horizons until you have courage to lose sight of the shore.",
+    "author": "William Faulkner",
+    "category": "motivation"
+  },
+  {
+    "text": "The harder the conflict, the more glorious the triumph.",
+    "author": "Thomas Paine",
+    "category": "perseverance"
+  },
+  {
+    "text": "Life is what happens when you're busy making other plans.",
+    "author": "John Lennon",
+    "category": "wisdom"
+  },
+  {
+    "text": "A person who never made a mistake never tried anything new.",
+    "author": "Albert Einstein",
+    "category": "creativity"
+  },
+  {
+    "text": "The man who has confidence in himself gains the confidence of others.",
+    "author": "Hasidic Proverb",
+    "category": "motivation"
+  },
+  {
+    "text": "What lies behind us and what lies before us are tiny matters compared to what lies within us.",
+    "author": "Ralph Waldo Emerson",
+    "category": "wisdom"
+  },
+  {
+    "text": "Start where you are. Use what you have. Do what you can.",
+    "author": "Arthur Ashe",
+    "category": "motivation"
+  },
+  {
+    "text": "Fall seven times and stand up eight.",
+    "author": "Japanese Proverb",
+    "category": "perseverance"
+  },
+  {
+    "text": "If you are not willing to risk the usual, you will have to settle for the ordinary.",
+    "author": "Jim Rohn",
+    "category": "motivation"
+  },
+  {
+    "text": "The ones who are crazy enough to think they can change the world, are the ones that do.",
+    "author": "Anonymous",
+    "category": "innovation"
+  },
+  {
+    "text": "Do something today that your future self will thank you for.",
+    "author": "Anonymous",
+    "category": "motivation"
+  },
+  {
+    "text": "Little things make big days.",
+    "author": "Anonymous",
+    "category": "wisdom"
+  },
+  {
+    "text": "It's going to be hard, but hard does not mean impossible.",
+    "author": "Anonymous",
+    "category": "perseverance"
+  },
+  {
+    "text": "Don't stop when you're tired. Stop when you're done.",
+    "author": "Anonymous",
+    "category": "perseverance"
+  },
+  {
+    "text": "The expert in anything was once a beginner.",
+    "author": "Helen Hayes",
+    "category": "motivation"
+  },
+  {
+    "text": "Be yourself; everyone else is already taken.",
+    "author": "Oscar Wilde",
+    "category": "wisdom"
+  },
+  {
+    "text": "Creativity is intelligence having fun.",
+    "author": "Albert Einstein",
+    "category": "creativity"
+  },
+  {
+    "text": "What you get by achieving your goals is not as important as what you become by achieving your goals.",
+    "author": "Zig Ziglar",
+    "category": "success"
+  },
+  {
+    "text": "If you want to lift yourself up, lift up someone else.",
+    "author": "Booker T. Washington",
+    "category": "wisdom"
+  },
+  {
+    "text": "The only place where success comes before work is in the dictionary.",
+    "author": "Vidal Sassoon",
+    "category": "success"
+  },
+  {
+    "text": "I alone cannot change the world, but I can cast a stone across the water to create many ripples.",
+    "author": "Mother Teresa",
+    "category": "motivation"
+  },
+  {
+    "text": "Nothing in the world can take the place of persistence.",
+    "author": "Calvin Coolidge",
+    "category": "perseverance"
+  },
+  {
+    "text": "You are never too old to set another goal or to dream a new dream.",
+    "author": "C.S. Lewis",
+    "category": "motivation"
+  },
+  {
+    "text": "Try to be a rainbow in someone's cloud.",
+    "author": "Maya Angelou",
+    "category": "wisdom"
+  },
+  {
+    "text": "You don't have to be great to start, but you have to start to be great.",
+    "author": "Zig Ziglar",
+    "category": "motivation"
+  },
+  {
+    "text": "A champion is someone who gets up when they can't.",
+    "author": "Jack Dempsey",
+    "category": "perseverance"
+  },
+  {
+    "text": "Dream big and dare to fail.",
+    "author": "Norman Vaughan",
+    "category": "motivation"
+  },
+  {
+    "text": "Everything has beauty, but not everyone can see.",
+    "author": "Confucius",
+    "category": "wisdom"
+  },
+  {
+    "text": "How wonderful it is that nobody need wait a single moment before starting to improve the world.",
+    "author": "Anne Frank",
+    "category": "motivation"
+  },
+  {
+    "text": "The best preparation for tomorrow is doing your best today.",
+    "author": "H. Jackson Brown Jr.",
+    "category": "wisdom"
+  },
+  {
+    "text": "Build your own dreams, or someone else will hire you to build theirs.",
+    "author": "Farrah Gray",
+    "category": "success"
+  }
+]

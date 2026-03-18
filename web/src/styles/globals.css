@@ -1,0 +1,3214 @@
+/* ============================================================
+   Global Reset & Base
+   ============================================================ */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+  position: relative;
+}
+
+/* ── Background zoom layer ──────────────────────────────────
+   Separate element so transform:scale animates smoothly.
+   Slightly oversized (inset: -8%) to prevent white edges
+   during the scale-up. FocusTimerContext adds .zoomed class.
+   ─────────────────────────────────────────────────────────── */
+#bg-zoom-layer {
+  position: fixed;
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+  transform-origin: center center;
+  transform: scale(1);
+  transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#bg-zoom-layer.zoomed {
+  transform: scale(1.12);
+}
+#bg-zoom-layer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(125deg, rgba(255,255,255,0.06) 0%, transparent 45%),
+    linear-gradient(to bottom, rgba(255,255,255,0.04) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+a {
+  color: inherit;
+}
+
+/* ============================================================
+   App Loader
+   ============================================================ */
+.app-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.55s ease;
+  pointer-events: all;
+}
+.app-loader--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-loader-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  animation: loader-spin 0.75s linear infinite;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================
+   Select & File Input
+   ============================================================ */
+select option {
+  background: rgba(30, 30, 30, 0.95);
+  color: white;
+}
+
+/* ── GlassSelect custom dropdown ─────────────────────────── */
+.glass-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.glass-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-select-trigger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.glass-select-trigger:focus-visible {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.glass-select-chevron {
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: transform 0.2s ease;
+}
+.glass-select-chevron.open {
+  transform: rotate(180deg);
+}
+
+.glass-select-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  list-style: none;
+  margin: 0;
+  padding: 5px;
+  border-radius: 12px;
+  background: rgba(18, 14, 32, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-select-option {
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.glass-select-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.glass-select-option.active {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+  font-weight: 500;
+}
+
+input[type="file"]::file-selector-button {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
+}
+input[type="file"]::file-selector-button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================
+   Text Shadows
+   ============================================================ */
+.text-shadow-sm {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+.text-shadow-md {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+.text-shadow-credit {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* ============================================================
+   Background Overlay
+   ============================================================ */
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: -1;
+}
+
+/* ============================================================
+   Layout: Top Bar
+   ============================================================ */
+.top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  z-index: 100;
+}
+
+/* ============================================================
+   Layout: Center Content
+   ============================================================ */
+.center-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 100%;
+  max-width: 800px;
+}
+
+.center-content-inner {
+  margin-bottom: 90px;
+}
+
+/* ============================================================
+   Layout: Bottom Section
+   ============================================================ */
+.bottom-section {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  max-width: 600px;
+}
+
+/* ============================================================
+   Clock
+   ============================================================ */
+.clock {
+  font-size: 120px;
+  font-weight: 200;
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+}
+.clock-ampm {
+  font-size: 0.4em;
+  opacity: 0.8;
+  margin-left: 10px;
+}
+
+/* ============================================================
+   Liquid Glass Text Utility
+   Semi-transparent, multi-layer gradient fill that lets the
+   background show through the text — like real frosted glass.
+   Set --glass-tint on the element to drive the tint color from
+   a color picker; defaults to white when not set.
+   ============================================================ */
+.text-liquid-glass {
+  --glass-tint: #ffffff;
+  color: transparent;
+
+  /* Three composited gradient layers, all semi-transparent so the
+     background bleeds through the text characters:
+     1. Specular highlight — primary light-source bloom (upper-left)
+     2. Refracted tint    — transmitted-light wash (lower-right)
+     3. Main glass body   — diagonal sweep with a near-clear center */
+  background:
+    radial-gradient(
+      ellipse 55% 45% at 20% 15%,
+      color-mix(in srgb, var(--glass-tint) 65%, transparent) 0%,
+      color-mix(in srgb, var(--glass-tint) 18%, transparent) 48%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 42% at 82% 82%,
+      color-mix(in srgb, var(--glass-tint) 32%, transparent) 0%,
+      transparent 65%
+    ),
+    linear-gradient(
+      148deg,
+      color-mix(in srgb, var(--glass-tint) 58%, transparent) 0%,
+      color-mix(in srgb, var(--glass-tint) 26%, transparent) 22%,
+      color-mix(in srgb, var(--glass-tint)  7%, transparent) 46%,
+      color-mix(in srgb, var(--glass-tint) 30%, transparent) 68%,
+      color-mix(in srgb, var(--glass-tint) 53%, transparent) 87%,
+      color-mix(in srgb, var(--glass-tint) 40%, transparent) 100%
+    );
+  background-clip: text;
+  -webkit-background-clip: text;
+
+  /* Hair-thin rim in the tint color defines the glass edge */
+  -webkit-text-stroke: 0.5px color-mix(in srgb, var(--glass-tint) 38%, transparent);
+
+  /* Depth shadow + specular edge glow tinted by the chosen color */
+  filter:
+    drop-shadow(0 1px 3px rgba(0, 0, 0, 0.55))
+    drop-shadow(0 6px 20px rgba(0, 0, 0, 0.28))
+    drop-shadow(0 0 1px color-mix(in srgb, var(--glass-tint) 72%, transparent));
+
+  text-shadow: none;
+}
+
+/* Clock glass — delegates entirely to the shared text-liquid-glass utility */
+.clock-glass {}
+
+/* Outline style: stroke only, no fill */
+.clock-outline {
+  text-shadow: none;
+}
+
+/* Date line below the clock */
+.clock-date {
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  opacity: 0.65;
+  margin-top: -6px;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Range slider for clock size */
+.clock-size-slider {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  display: block;
+}
+.clock-size-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.clock-size-slider::-webkit-slider-thumb:hover {
+  background: white;
+  transform: scale(1.15);
+}
+
+/* Color picker for clock text color */
+.clock-color-input {
+  width: 44px;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  display: block;
+}
+.clock-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+.clock-color-input::-webkit-color-swatch {
+  border-radius: 5px;
+  border: none;
+}
+
+/* ============================================================
+   Greeting
+   ============================================================ */
+.greeting {
+  font-size: 32px;
+  font-weight: 300;
+}
+
+/* ============================================================
+   Editable Name
+   ============================================================ */
+.editable-name {
+  outline: none;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+.editable-name:hover,
+.editable-name:focus {
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================================
+   Weather Widget
+   ============================================================ */
+.weather-widget {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 16px;
+}
+.weather-widget .weather-icon {
+  flex-shrink: 0;
+}
+.weather-widget .weather-temp {
+  font-size: 22px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.weather-widget .weather-city {
+  font-size: 12px;
+  opacity: 0.9;
+}
+.weather-error {
+  opacity: 0.7;
+}
+.weather-placeholder {
+  opacity: 0.7;
+}
+
+/* ============================================================
+   Dock Bar (macOS-style, pure CSS magnification)
+   ============================================================ */
+/* glass-dock styles are defined in the Liquid Glass Utilities section above */
+
+.dock-wrapper {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+}
+
+.dock-bar {
+  padding: 0;
+  border-radius: 18px;
+  /* Fixed to exactly one row height so extra rows are hidden */
+  overflow: hidden;
+}
+
+/* Scrollable inner — snaps one row at a time */
+.dock-rows {
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  max-height: 44px; /* 8px pad-top + 28px icon + 8px pad-bottom */
+  scrollbar-width: none;
+}
+.dock-rows::-webkit-scrollbar {
+  display: none;
+}
+
+/* Each row is a horizontal flex of up to 9 items */
+.dock-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 12px;
+  height: 44px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.dock-item-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dock-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: white;
+  background: none;
+  border: none;
+  font-family: inherit;
+  transition: transform 0.2s ease;
+  transform-origin: center center;
+}
+
+/* Hovered item scales up */
+.dock-item-wrapper:hover .dock-item {
+  transform: scale(1.45);
+}
+
+/* Direct neighbors scale a bit */
+.dock-item-wrapper:has(+ .dock-item-wrapper:hover) .dock-item,
+.dock-item-wrapper:hover + .dock-item-wrapper .dock-item {
+  transform: scale(1.2);
+}
+
+/* Two away scale slightly */
+.dock-item-wrapper:has(+ .dock-item-wrapper + .dock-item-wrapper:hover) .dock-item,
+.dock-item-wrapper:hover + .dock-item-wrapper + .dock-item-wrapper .dock-item {
+  transform: scale(1.08);
+}
+
+/* Delete button — top-right badge, stays within the row bounds */
+.dock-item-remove {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 0;
+  z-index: 1;
+}
+
+.dock-item-wrapper:hover .dock-item-remove {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Row page indicator — vertical dots to the right of the dock bar */
+.dock-page-indicator {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.dock-page-dot {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.25s ease;
+  width: 5px;
+  height: 5px;
+}
+
+.dock-page-dot.active {
+  width: 9px;
+  height: 9px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.dock-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dock-item-favicon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.dock-fallback-hidden {
+  display: none;
+}
+
+/* Dock Expandable — single element that morphs from add button into form */
+.dock-expandable {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  opacity: 0.45;
+  transition:
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s ease;
+}
+.dock-expandable:hover:not(.expanded) {
+  opacity: 0.9;
+}
+.dock-expandable.expanded {
+  width: 280px;
+  height: 192px;
+  border-radius: 16px;
+  opacity: 1;
+  cursor: default;
+}
+
+.dock-expand-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  color: white;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.dock-expandable.expanded .dock-expand-icon {
+  opacity: 0;
+}
+
+.dock-expand-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 192px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 30px 20px 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease 0.2s;
+}
+.dock-expandable.expanded .dock-expand-form {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dock-form-close {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  transition: color 0.2s;
+}
+.dock-form-close:hover {
+  color: white;
+}
+
+.dock-form-input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+.dock-form-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.dock-form-submit {
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
+}
+.dock-form-submit:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================================
+   Focus Input
+   ============================================================ */
+.focus-container {
+  margin-top: 48px;
+  padding: 24px 32px;
+}
+
+.focus-label {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 16px;
+  opacity: 0.9;
+}
+
+.focus-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 28px;
+  text-align: center;
+  width: 100%;
+  padding: 10px 0;
+  outline: none;
+  transition: border-color 0.3s;
+}
+.focus-input:focus {
+  border-bottom-color: rgba(255, 255, 255, 0.7);
+}
+.focus-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.focus-display {
+  font-size: 28px;
+  text-align: center;
+  cursor: pointer;
+  padding: 10px 0;
+  transition: opacity 0.3s;
+}
+
+/* ============================================================
+   Search Bar
+   ============================================================ */
+.search-bar-container {
+  margin-top: 48px;
+  padding: 0 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar-inner {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+}
+
+.search-bar-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 28px;
+  padding: 0 8px 0 18px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.12),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
+  transition: border-radius 0.15s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.search-bar-wrapper:focus-within {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 6px 32px rgba(0, 0, 0, 0.15),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Flatten bottom corners when dropdown is open */
+.search-bar-wrapper.dropdown-open {
+  border-radius: 28px 28px 0 0;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.search-bar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.55;
+  flex-shrink: 0;
+  margin-right: 10px;
+  transition: opacity 0.2s ease;
+}
+
+.search-bar-wrapper:focus-within .search-bar-icon {
+  opacity: 0.8;
+}
+
+.search-bar-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 18px;
+  padding: 14px 0;
+  font-family: inherit;
+}
+
+.search-bar-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.search-bar-submit {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+
+.search-bar-submit:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Suggestions dropdown ──────────────────────────────────── */
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(18, 18, 18, 0.55);
+  backdrop-filter: blur(40px) saturate(200%);
+  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-top: none;
+  border-radius: 0 0 22px 22px;
+  overflow: hidden;
+  z-index: 400;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  padding: 4px 0 8px;
+}
+
+.search-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 18px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.search-suggestion:hover,
+.search-suggestion.active {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.suggestion-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  opacity: 0.55;
+}
+
+.search-suggestion.active .suggestion-icon {
+  opacity: 0.8;
+}
+
+.suggestion-favicon {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.suggestion-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.suggestion-label {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-sub {
+  font-size: 11px;
+  opacity: 0.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-tab-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 2px 9px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   Search Overlay (Ctrl+Super+H global shortcut)
+   ============================================================ */
+.search-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.search-overlay-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.search-overlay-box {
+  width: 100%;
+  max-width: 620px;
+  margin: 0 20px;
+  position: relative;
+  transform: scale(0.01);
+  transform-origin: center bottom;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.search-overlay-backdrop.open .search-overlay-box {
+  transform: scale(1);
+}
+
+.search-overlay-input-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: rgba(14, 14, 14, 0.72);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 28px;
+  padding: 0 8px 0 18px;
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  transition: border-radius 0.15s ease, border-color 0.25s ease;
+}
+
+.search-overlay-input-row:focus-within {
+  border-color: rgba(255, 255, 255, 0.26);
+  box-shadow:
+    0 10px 50px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.search-overlay-input-row.dropdown-open {
+  border-radius: 28px 28px 0 0;
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.search-overlay-dropdown {
+  border-radius: 0 0 22px 22px;
+  background: rgba(14, 14, 14, 0.65);
+}
+
+/* Engine picker pill */
+.search-engine-pill-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.search-engine-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 6px;
+  white-space: nowrap;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+}
+
+.search-engine-pill:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.24);
+  color: white;
+}
+
+.search-engine-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 6px;
+  background: rgba(16, 16, 16, 0.92);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 4px;
+  z-index: 10;
+  min-width: 110px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.search-engine-option {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  text-align: left;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.search-engine-option:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.search-engine-option.active {
+  color: white;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================================
+   Tab Sidebar (edge-hover, Zen Browser style)
+   ============================================================ */
+
+/* 15px hover trigger zone at screen edge */
+.tab-sidebar-trigger {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  z-index: 502;
+  pointer-events: all;
+}
+
+.tab-sidebar-trigger-left { left: 0; }
+.tab-sidebar-trigger-right { right: 0; }
+
+/* Thin 2px edge indicator badge */
+.tab-sidebar-edge {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 1px;
+  z-index: 499;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.tab-sidebar-edge-left { left: 0; }
+.tab-sidebar-edge-right { right: 0; }
+
+/* Sidebar panel */
+.tab-sidebar-panel {
+  position: fixed;
+  top: 10px;
+  bottom: 10px;
+  width: 220px;
+  z-index: 501;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+}
+
+.tab-sidebar-panel-left {
+  left: 10px;
+  transform: translateX(-110%);
+  border-left: none;
+}
+
+.tab-sidebar-panel-right {
+  right: 10px;
+  transform: translateX(110%);
+  border-right: none;
+}
+
+.tab-sidebar-panel.visible {
+  transform: translateX(0);
+}
+
+.tab-sidebar-new-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+}
+
+.tab-sidebar-new-tab:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.tab-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tab-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.tab-sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.tab-sidebar-item.active {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+
+.tab-sidebar-favicon {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tab-sidebar-favicon-placeholder {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.tab-sidebar-title {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   Segmented Control (General Settings)
+   ============================================================ */
+.segmented-control {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 3px;
+  gap: 3px;
+}
+
+.segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.segmented-btn:hover {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.segmented-btn.active {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================
+   Focus Presets
+   ============================================================ */
+.focus-presets {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.focus-preset-btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+.focus-preset-btn:hover {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================
+   Focus Overlay
+   ============================================================ */
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.5s ease;
+}
+/* During step 1 of enter (UI fading out), overlay stays invisible */
+.focus-overlay.entering {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Step 2 of enter: overlay fades in */
+.focus-overlay.entering-overlay,
+.focus-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* Step 1 of exit: overlay fades out */
+.focus-overlay.exiting-overlay {
+  opacity: 0;
+  pointer-events: none;
+}
+/* Step 2 of exit (UI fading in): overlay already gone */
+.focus-overlay.exiting {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+.focus-remaining {
+  font-size: 28px;
+  font-weight: 300;
+  opacity: 0.85;
+  margin-bottom: 40px;
+}
+
+.focus-stop-btn {
+  padding: 12px 32px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 24px;
+  color: white;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.4);
+}
+.focus-stop-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.12),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================================
+   Quotes
+   ============================================================ */
+.quote-container {
+  padding: 24px;
+  border-radius: 16px;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+  cursor: pointer;
+}
+
+.quote-text {
+  font-size: 18px;
+  font-style: italic;
+  margin-bottom: 8px;
+  transition: opacity 0.3s;
+}
+
+.quote-author {
+  font-size: 14px;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+/* ============================================================
+   Right Sidebar
+   ============================================================ */
+/* Sidebar Container — single element that morphs from toggle button into sidebar panel */
+.sidebar-container {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  z-index: 200;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-container:not(.open):hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
+}
+.sidebar-container.open {
+  width: 340px;
+  height: calc(66vh - 20px);
+  cursor: default;
+}
+
+.sidebar-btn-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  color: white;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.sidebar-container.open .sidebar-btn-icon {
+  opacity: 0;
+}
+
+.sidebar-panel-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 340px;
+  height: calc(66vh - 20px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease 0.2s;
+}
+.sidebar-container.open .sidebar-panel-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.2s, background 0.2s;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.sidebar-close-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 52px 20px 20px;
+  overflow-y: auto;
+}
+
+/* ============================================================
+   Todo Section
+   ============================================================ */
+.todo-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+}
+.todo-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.todo-item-text {
+  flex: 1;
+  font-size: 14px;
+}
+.todo-item-text.completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+.todo-item-remove {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+.todo-item-remove:hover {
+  opacity: 1;
+}
+
+.todo-input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.todo-input {
+  flex: 1;
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+.todo-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.todo-add-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
+}
+.todo-add-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ============================================================
+   Calendar Section
+   ============================================================ */
+.calendar-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.calendar-date {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.calendar-upcoming-title {
+  font-size: 14px;
+  margin-bottom: 10px;
+  opacity: 0.8;
+}
+
+.calendar-upcoming {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.event-item {
+  display: block;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+.event-item-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.event-item-link:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.event-item-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.event-item-title {
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.event-item-date {
+  opacity: 0.7;
+  font-size: 11px;
+}
+
+.calendar-empty {
+  padding: 20px;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ============================================================
+   Settings Button
+   ============================================================ */
+/* Settings Container — single element that morphs from gear button into full settings panel */
+.settings-container {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  z-index: 1000;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition:
+    width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+.settings-container:not(.open):hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
+}
+.settings-container.open {
+  width: min(520px, 90vw);
+  height: calc(100vh - 20px);
+  opacity: 1;
+  cursor: default;
+}
+
+.settings-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  color: rgba(255, 255, 255, 0.9);
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+.settings-container.open .settings-icon {
+  opacity: 0;
+}
+
+.settings-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(520px, 90vw);
+  height: calc(100vh - 20px);
+  display: flex;
+  flex-direction: row;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease 0.25s;
+}
+.settings-container.open .settings-inner {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================================
+   Settings Backdrop
+   ============================================================ */
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  transition: opacity 0.4s;
+}
+.settings-backdrop.visible {
+  opacity: 1;
+}
+.settings-backdrop.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Settings Nav */
+.settings-nav {
+  width: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-nav-btn {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.2s;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.4);
+}
+.settings-nav-btn:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+.settings-nav-btn.active {
+  color: white;
+}
+.settings-nav-btn.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.settings-nav-btn.locked:hover {
+  color: rgba(255, 255, 255, 0.4);
+}
+.settings-nav-lock {
+  font-size: 10px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+.settings-close {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: all 0.25s ease;
+}
+.settings-close:hover {
+  opacity: 1;
+}
+
+/* Settings Body */
+.settings-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.settings-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Settings Form Controls */
+.settings-group {
+  margin-bottom: 20px;
+}
+.settings-group + .settings-group {
+  margin-top: 28px;
+}
+
+.settings-section-heading {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.visibility-row-label {
+  flex: 1;
+  font-size: 14px;
+}
+
+.settings-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.settings-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.25s ease;
+}
+.settings-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.settings-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.upload-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upload-circle-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.upload-circle-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: scale(1.08);
+}
+
+.settings-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+/* ── Custom checkboxes (all) ──────────────────────────────── */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  border-radius: 5px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+input[type="checkbox"]:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.13);
+}
+input[type="checkbox"]:checked {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.65);
+}
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  width: 5px;
+  height: 9px;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
+}
+
+.settings-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+.settings-hint a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: underline;
+}
+
+/* Settings Actions */
+.settings-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.settings-save-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.35);
+}
+.settings-save-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 6px 16px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
+    inset 0 0 4px 1px rgba(255, 255, 255, 0.45);
+}
+
+.settings-reset-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+
+/* Settings Message */
+.settings-message {
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+}
+.settings-message.success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow:
+    0 2px 8px rgba(34, 197, 94, 0.08),
+    inset 2px 2px 0px -2px rgba(34, 197, 94, 0.5),
+    inset 0 0 2px 1px rgba(34, 197, 94, 0.2);
+}
+.settings-message.error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow:
+    0 2px 8px rgba(239, 68, 68, 0.08),
+    inset 2px 2px 0px -2px rgba(239, 68, 68, 0.5),
+    inset 0 0 2px 1px rgba(239, 68, 68, 0.2);
+}
+
+/* ============================================================
+   Links Settings (Table Editor)
+   ============================================================ */
+.link-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+/* Table layout variant */
+.link-editor-table {
+  gap: 0;
+}
+
+.link-table-header {
+  display: grid;
+  grid-template-columns: 44px 1fr 1.4fr 36px;
+  gap: 8px;
+  padding: 0 6px 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.link-table-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 1.4fr 36px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+  border-radius: 6px;
+}
+
+.link-table-row:last-child {
+  border-bottom: none;
+}
+
+.link-table-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.link-favicon-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.link-favicon-preview {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px;
+}
+
+.link-favicon-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.link-editor-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+}
+.link-editor-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+.link-editor-input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.2);
+}
+.link-editor-input.icon-input {
+  text-align: center;
+  font-size: 16px;
+}
+.link-editor-input.url-invalid {
+  border-color: rgba(239, 68, 68, 0.7);
+}
+
+.link-add-btn {
+  width: 100%;
+  padding: 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    0 2px 8px rgba(34, 197, 94, 0.08),
+    inset 2px 2px 0px -2px rgba(34, 197, 94, 0.5),
+    inset 0 0 2px 1px rgba(34, 197, 94, 0.2);
+}
+.link-add-btn:hover {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow:
+    0 4px 12px rgba(34, 197, 94, 0.12),
+    inset 2px 2px 0px -2px rgba(34, 197, 94, 0.6),
+    inset 0 0 3px 1px rgba(34, 197, 94, 0.3);
+  transform: translateY(-1px);
+}
+
+.link-remove-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 10px;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(239, 68, 68, 0.5),
+    inset 0 0 2px 1px rgba(239, 68, 68, 0.2);
+}
+.link-remove-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.45);
+  transform: scale(1.05);
+}
+
+/* ============================================================
+   Photographer Credit
+   ============================================================ */
+.photographer-credit {
+  position: fixed;
+  bottom: 10px;
+  right: 50%;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 12px;
+  border-radius: 10px;
+  z-index: 50;
+  transition: opacity 0.3s;
+}
+.photographer-credit a {
+  color: white;
+  text-decoration: underline;
+}
+.photo-credit-like-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: color 0.2s ease, transform 0.2s ease;
+  vertical-align: middle;
+  margin-right: 4px;
+  padding: 0;
+}
+.photo-credit-like-btn:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: scale(1.2);
+}
+.photo-credit-like-btn.liked {
+  color: #ef4444;
+}
+.photo-credit-like-btn.liked:hover {
+  color: #f87171;
+}
+
+/* ============================================================
+   Focus Active — sequential enter/exit animations
+   Enter:  UI fades out (1.5s) → overlay fades in (1.5s)
+   Exit:   overlay fades out (1.5s) → UI fades in (1.5s)
+   Background zoom spans the full 3s of each sequence.
+   ============================================================ */
+.top-bar,
+.dock-wrapper,
+.bottom-section,
+.center-content,
+.spotify-player {
+  transition: opacity 1.5s ease;
+}
+/* Settings and sidebar have their own open/close transitions; only slow during focus enter/exit */
+body.focus-entering .settings-container,
+body.focus-exiting .settings-container,
+body.focus-entering .sidebar-container,
+body.focus-exiting .sidebar-container {
+  transition: opacity 1.5s ease;
+}
+
+/* Step 1 of enter: UI fades out */
+body.focus-entering .top-bar,
+body.focus-entering .dock-wrapper,
+body.focus-entering .bottom-section,
+body.focus-entering .sidebar-container,
+body.focus-entering .settings-container,
+body.focus-entering .spotify-player,
+body.focus-entering .center-content {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Steps 2+3 of enter and active: UI stays hidden */
+body.focus-entering-overlay .top-bar,
+body.focus-entering-overlay .dock-wrapper,
+body.focus-entering-overlay .bottom-section,
+body.focus-entering-overlay .sidebar-container,
+body.focus-entering-overlay .settings-container,
+body.focus-entering-overlay .spotify-player,
+body.focus-entering-overlay .center-content,
+body.focus-active .top-bar,
+body.focus-active .dock-wrapper,
+body.focus-active .bottom-section,
+body.focus-active .sidebar-container,
+body.focus-active .settings-container,
+body.focus-active .spotify-player,
+body.focus-active .center-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+/* Step 1 of exit (overlay fading out): UI stays hidden */
+body.focus-exiting-overlay .top-bar,
+body.focus-exiting-overlay .dock-wrapper,
+body.focus-exiting-overlay .bottom-section,
+body.focus-exiting-overlay .sidebar-container,
+body.focus-exiting-overlay .settings-container,
+body.focus-exiting-overlay .spotify-player,
+body.focus-exiting-overlay .center-content {
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+/* Step 2 of exit: UI fades back in */
+body.focus-exiting .top-bar,
+body.focus-exiting .dock-wrapper,
+body.focus-exiting .bottom-section,
+body.focus-exiting .settings-container,
+body.focus-exiting .spotify-player,
+body.focus-exiting .center-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* Sidebar fades back to its closed state (30%), not full opacity */
+body.focus-exiting .sidebar-container {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Photo Grid (Photos Settings Tab)
+   ============================================================ */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.photo-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.25s ease, transform 0.2s ease;
+}
+.photo-thumb:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.03);
+}
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-thumb-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 4px 6px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.photo-thumb:hover .photo-thumb-overlay {
+  opacity: 1;
+}
+.photo-thumb-credit {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.photo-like-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+.photo-like-btn.liked {
+  color: #ef4444;
+  background: rgba(0, 0, 0, 0.6);
+}
+.photo-like-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.15);
+}
+
+.photo-delete-btn {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+.photo-thumb:hover .photo-delete-btn {
+  opacity: 1;
+}
+.photo-delete-btn:hover {
+  background: rgba(180, 30, 30, 0.7);
+  border-color: rgba(255, 80, 80, 0.3);
+  color: white;
+  transform: scale(1.15);
+}
+
+/* ============================================================
+   Widget Visibility Table
+   ============================================================ */
+.visibility-table {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.visibility-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.visibility-row:last-child {
+  border-bottom: none;
+}
+.visibility-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.visibility-row-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.toggle-switch input[type="checkbox"] {
+  /* Override global checkbox styles */
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+  pointer-events: none;
+  border: none;
+  background: none;
+  border-radius: 0;
+}
+.toggle-switch input[type="checkbox"]:checked::after {
+  display: none;
+}
+
+.toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: background 0.25s ease, border-color 0.25s ease;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.3);
+}
+.toggle-switch input[type="checkbox"]:checked ~ .toggle-track,
+.toggle-switch input:checked + .toggle-track {
+  background: rgba(255, 255, 255, 0.32);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  transition: transform 0.25s ease, background 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.toggle-switch input[type="checkbox"]:checked ~ .toggle-track .toggle-knob,
+.toggle-switch input:checked + .toggle-track .toggle-knob {
+  transform: translateX(18px);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* ============================================================
+   Account / Auth (Settings → Account tab)
+   ============================================================ */
+
+.auth-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.25);
+}
+.auth-google-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.35);
+}
+.auth-google-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.auth-divider-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.auth-error {
+  font-size: 12px;
+  color: rgba(239, 100, 100, 0.95);
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+}
+
+.auth-toggle-row {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+.auth-toggle-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+.auth-toggle-link:hover {
+  color: white;
+}
+
+/* Signed-in user card */
+.auth-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+.auth-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.auth-user-meta {
+  flex: 1;
+  min-width: 0;
+}
+.auth-user-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.auth-user-email {
+  font-size: 12px;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.auth-signout-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: rgba(255, 200, 200, 0.9);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(239, 68, 68, 0.4),
+    inset 0 0 2px 1px rgba(239, 68, 68, 0.15);
+}
+.auth-signout-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: white;
+}
+.auth-signout-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* "Sign in to unlock" notice for locked features */
+.auth-required-notice {
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.25),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.08);
+}
+.auth-required-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0;
+  transition: color 0.2s;
+}
+.auth-required-link:hover {
+  color: white;
+}
+
+/* ============================================================
+   Integration Cards (Calendar, Spotify)
+   ============================================================ */
+.integration-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 12px;
+}
+.integration-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.integration-icon.google {
+  background: rgba(66, 133, 244, 0.12);
+  border: 1px solid rgba(66, 133, 244, 0.22);
+}
+.integration-icon.spotify {
+  background: rgba(29, 185, 84, 0.12);
+  border: 1px solid rgba(29, 185, 84, 0.22);
+}
+.integration-info {
+  flex: 1;
+  min-width: 0;
+}
+.integration-name {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.integration-status {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+.integration-status.connected {
+  color: rgba(74, 222, 128, 0.9);
+}
+.integration-connect-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: white;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow:
+    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+}
+.integration-connect-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+.integration-connect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.integration-disconnect-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.07);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: rgba(255, 160, 160, 0.9);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.integration-disconnect-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.14);
+  color: white;
+}
+.integration-disconnect-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Spotify Now Playing Widget
+   ============================================================ */
+.spotify-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 16px;
+}
+.spotify-widget-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.spotify-progress-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.spotify-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #1DB954;
+  transition: width 0.5s linear;
+}
+.spotify-track-link {
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+.spotify-track-link:hover .spotify-track-name {
+  text-decoration: underline;
+}
+.spotify-nothing-playing {
+  opacity: 0.5;
+  font-style: italic;
+}
+.spotify-album-art {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.spotify-album-art-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.spotify-track-info {
+  flex: 1;
+  min-width: 0;
+}
+.spotify-track-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spotify-track-artist {
+  font-size: 12px;
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.spotify-eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.spotify-eq-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: #1DB954;
+}
+.spotify-eq-bar:nth-child(1) { animation: spotify-eq1 1s ease-in-out infinite; }
+.spotify-eq-bar:nth-child(2) { animation: spotify-eq2 1.2s ease-in-out infinite; }
+.spotify-eq-bar:nth-child(3) { animation: spotify-eq3 0.9s ease-in-out infinite; }
+
+@keyframes spotify-eq1 {
+  0%, 100% { height: 5px; }
+  50% { height: 14px; }
+}
+@keyframes spotify-eq2 {
+  0%, 100% { height: 14px; }
+  50% { height: 4px; }
+}
+@keyframes spotify-eq3 {
+  0%, 100% { height: 8px; }
+  50% { height: 16px; }
+}
+
+/* ============================================================
+   Spotify Floating Player (fixed, bottom-left above settings)
+   ============================================================ */
+.spotify-player {
+  position: fixed;
+  bottom: 62px;
+  left: 10px;
+  width: 240px;
+  padding: 12px 14px 10px;
+  border-radius: 16px;
+  z-index: 150;
+  transition: opacity 1.5s ease;
+}
+.spotify-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.spotify-player-art {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.spotify-player-art-placeholder {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.spotify-player-info {
+  flex: 1;
+  min-width: 0;
+}
+.spotify-player-track-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+.spotify-player-track-link:hover .spotify-player-track-name {
+  text-decoration: underline;
+}
+.spotify-player-track-name {
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spotify-player-track-artist {
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.spotify-player-nothing {
+  opacity: 0.5;
+  font-style: italic;
+}
+.spotify-player-progress-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.spotify-player-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: #1DB954;
+  transition: width 0.5s linear;
+}
+.spotify-player-error {
+  font-size: 10px;
+  color: rgba(255, 100, 100, 0.9);
+  margin-bottom: 6px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.spotify-player-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.spotify-ctrl-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+}
+.spotify-ctrl-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+}
+.spotify-ctrl-btn--main {
+  width: 38px;
+  height: 38px;
+  background: rgba(29, 185, 84, 0.2);
+  color: #1DB954;
+}
+.spotify-ctrl-btn--main:hover {
+  background: rgba(29, 185, 84, 0.35);
+  color: #1DB954;
+}
+
+/* ============================================================
+   Spotify Top Tracks Panel
+   ============================================================ */
+.spotify-top-tracks {
+  margin-top: 8px;
+}
+.spotify-top-tracks-title {
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+.spotify-top-tracks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.spotify-top-track-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.spotify-top-track-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.spotify-top-track-num {
+  font-size: 11px;
+  opacity: 0.4;
+  width: 16px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.spotify-top-track-art {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.spotify-top-track-art-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.spotify-top-track-info {
+  flex: 1;
+  min-width: 0;
+}
+.spotify-top-track-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.spotify-top-track-artist {
+  font-size: 11px;
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+
+/* ============================================================
+   Responsive: Small screens
+   ============================================================ */
+@media (max-width: 640px) {
+  .settings-container.open {
+    width: 100vw;
+    flex-direction: column;
+  }
+  .settings-inner {
+    width: 100vw;
+    flex-direction: column;
+  }
+  .settings-nav {
+    width: 100%;
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 10px 0;
+    overflow-x: auto;
+  }
+  .link-table-row {
+    grid-template-columns: 1fr;
+  }
+  .link-remove-btn {
+    width: 100%;
+    height: 32px;
+  }
+}
+
+/* ============================================================
+   Content-page overrides (.windom-content set in index.tsx).
+   Applied only when injected into real web pages, not new-tab.
+   Replaces translucent glass with opaque dark styles that work
+   on any page background, including bright/white pages.
+   ============================================================ */
+
+.windom-content .search-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.windom-content .search-overlay-input-row {
+  background: rgba(18, 18, 18, 0.90);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+.windom-content .search-overlay-input-row:focus-within {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+
+.windom-content .search-overlay-dropdown {
+  background: rgba(12, 12, 12, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: none;
+}
+
+/* ============================================================
+   Command palette mode (triggered by typing '>' in search overlay)
+   ============================================================ */
+
+/* Amber border tint signals command mode */
+.search-overlay-input-row.command-mode {
+  border-color: rgba(250, 190, 70, 0.35);
+}
+.search-overlay-input-row.command-mode:focus-within {
+  border-color: rgba(250, 190, 70, 0.6);
+}
+/* Stronger tint on content pages (dark background) */
+.windom-content .search-overlay-input-row.command-mode {
+  border-color: rgba(250, 190, 70, 0.5);
+}
+.windom-content .search-overlay-input-row.command-mode:focus-within {
+  border-color: rgba(250, 190, 70, 0.8);
+}
+
+/* Command suggestion rows — amber icon */
+.search-suggestion.command .suggestion-icon {
+  color: rgba(250, 190, 70, 0.9);
+}
+

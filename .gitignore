@@ -2,4 +2,7 @@
 /CLAUDE.md
 /dist
 /node_modules
+node_modules
 PUBLISH_CHECKLIST.md
+.env
+drizzle

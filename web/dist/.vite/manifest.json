@@ -1,0 +1,98 @@
+{
+  "../../../../../@crx/manifest": {
+    "file": "assets/crx-manifest.js-DfEoSaYB.js",
+    "name": "crx-manifest.js",
+    "src": "../../../../../@crx/manifest",
+    "isEntry": true
+  },
+  "_chevron-down-D55a4NQM.js": {
+    "file": "assets/chevron-down-D55a4NQM.js",
+    "name": "chevron-down",
+    "imports": [
+      "_x-DqQwLDWE.js"
+    ]
+  },
+  "_x-DqQwLDWE.js": {
+    "file": "assets/x-DqQwLDWE.js",
+    "name": "x"
+  },
+  "index.tsx-loader.js": {
+    "file": "assets/index.tsx-loader-9zzHagRL.js",
+    "src": "index.tsx-loader.js"
+  },
+  "newtab.html": {
+    "file": "assets/newtab.html-BveL8_pj.js",
+    "name": "newtab.html",
+    "src": "newtab.html",
+    "isEntry": true,
+    "imports": [
+      "_x-DqQwLDWE.js"
+    ],
+    "dynamicImports": [
+      "src/components/settings/SettingsPanel.tsx",
+      "src/components/focus/FocusOverlay.tsx",
+      "src/components/search/SearchOverlay.tsx",
+      "src/components/tabs/TabSidebar.tsx"
+    ],
+    "css": [
+      "assets/newtab-D9d-_SlP.css"
+    ]
+  },
+  "src/background/index.ts": {
+    "file": "assets/index.ts-xw0UGwr-.js",
+    "name": "index.ts",
+    "src": "src/background/index.ts",
+    "isEntry": true
+  },
+  "src/components/focus/FocusOverlay.tsx": {
+    "file": "assets/FocusOverlay-DFmvFW72.js",
+    "name": "FocusOverlay",
+    "src": "src/components/focus/FocusOverlay.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_x-DqQwLDWE.js",
+      "newtab.html"
+    ]
+  },
+  "src/components/search/SearchOverlay.tsx": {
+    "file": "assets/SearchOverlay-uJbia0hb.js",
+    "name": "SearchOverlay",
+    "src": "src/components/search/SearchOverlay.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_x-DqQwLDWE.js",
+      "_chevron-down-D55a4NQM.js"
+    ]
+  },
+  "src/components/settings/SettingsPanel.tsx": {
+    "file": "assets/SettingsPanel-BaFQ2fq5.js",
+    "name": "SettingsPanel",
+    "src": "src/components/settings/SettingsPanel.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_x-DqQwLDWE.js",
+      "newtab.html",
+      "_chevron-down-D55a4NQM.js"
+    ]
+  },
+  "src/components/tabs/TabSidebar.tsx": {
+    "file": "assets/TabSidebar-7ufkIKN-.js",
+    "name": "TabSidebar",
+    "src": "src/components/tabs/TabSidebar.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_x-DqQwLDWE.js"
+    ]
+  },
+  "src/content/index.tsx": {
+    "file": "assets/index.tsx-B2nXZnOi.js",
+    "name": "index.tsx",
+    "src": "src/content/index.tsx",
+    "isEntry": true,
+    "imports": [
+      "_x-DqQwLDWE.js",
+      "src/components/search/SearchOverlay.tsx",
+      "_chevron-down-D55a4NQM.js"
+    ]
+  }
+}

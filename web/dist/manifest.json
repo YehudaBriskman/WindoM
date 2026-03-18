@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "WindoM",
+  "version": "1.0.0",
+  "description": "A beautiful new tab page with background images, clock, weather, todos, and calendar",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "tabs",
+    "history",
+    "identity"
+  ],
+  "host_permissions": [
+    "https://api.unsplash.com/*",
+    "https://api.openweathermap.org/*",
+    "https://api.quotable.io/*",
+    "https://www.google.com/*",
+    "https://duckduckgo.com/*",
+    "http://localhost:8080/*",
+    "https://api.windom.app/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/index.tsx-loader-9zzHagRL.js"
+      ],
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "resources": [
+        "assets/x-DqQwLDWE.js",
+        "assets/SearchOverlay-uJbia0hb.js",
+        "assets/chevron-down-D55a4NQM.js",
+        "assets/index.tsx-B2nXZnOi.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}
