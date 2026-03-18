@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Settings, X } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
+import { SETTINGS_EVENT } from "../../lib/settings-events";
 import { SettingsNav, type SettingsTab } from "./SettingsNav";
 import { SettingsMessage } from "./SettingsMessage";
 import { GeneralSettings } from "./sections/GeneralSettings";
@@ -30,13 +31,13 @@ export function SettingsPanel() {
       setActiveTab("account");
       setIsOpen(true);
     };
-    document.addEventListener("toggle-settings", toggleHandler);
-    document.addEventListener("close-settings", closeHandler);
-    document.addEventListener("open-settings-account", accountHandler);
+    document.addEventListener(SETTINGS_EVENT.TOGGLE, toggleHandler);
+    document.addEventListener(SETTINGS_EVENT.CLOSE, closeHandler);
+    document.addEventListener(SETTINGS_EVENT.OPEN_ACCOUNT, accountHandler);
     return () => {
-      document.removeEventListener("toggle-settings", toggleHandler);
-      document.removeEventListener("close-settings", closeHandler);
-      document.removeEventListener("open-settings-account", accountHandler);
+      document.removeEventListener(SETTINGS_EVENT.TOGGLE, toggleHandler);
+      document.removeEventListener(SETTINGS_EVENT.CLOSE, closeHandler);
+      document.removeEventListener(SETTINGS_EVENT.OPEN_ACCOUNT, accountHandler);
     };
   }, []);
 

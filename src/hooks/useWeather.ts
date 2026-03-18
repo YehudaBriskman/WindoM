@@ -85,7 +85,7 @@ export function useWeather() {
     }
   }, [settings.weatherApiKey, settings.location, settings.temperatureUnit, getLocation]);
 
-  // Load cached data on mount then fetch fresh
+  // Load cached data on mount then fetch fresh; start interval only after first fetch
   useEffect(() => {
     (async () => {
       const cached = await ls.get<WeatherData | null>('weatherCache', null);
@@ -95,13 +95,12 @@ export function useWeather() {
           : cached.temp;
         setState({ status: 'ready', data: cached, displayTemp });
       }
-      fetchWeather();
+      await fetchWeather();
+      intervalRef.current = setInterval(fetchWeather, CACHE_EXPIRY);
     })();
 
-    // Refresh every 30 minutes
-    intervalRef.current = setInterval(fetchWeather, CACHE_EXPIRY);
     return () => clearInterval(intervalRef.current);
-  }, [fetchWeather]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchWeather]);
 
   return state;
 }

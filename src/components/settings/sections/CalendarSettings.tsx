@@ -1,4 +1,5 @@
 import { useAuth } from '../../../contexts/AuthContext';
+import { SETTINGS_EVENT } from '../../../lib/settings-events';
 
 /**
  * Shown inside the sidebar calendar section or any settings area.
@@ -15,7 +16,7 @@ export function CalendarSettings() {
           <button
             type="button"
             className="auth-required-link"
-            onClick={() => document.dispatchEvent(new CustomEvent('open-settings-account'))}
+            onClick={() => document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.OPEN_ACCOUNT))}
           >
             Go to Account settings
           </button>
@@ -31,7 +32,7 @@ export function CalendarSettings() {
         <button
           type="button"
           className="auth-required-link"
-          onClick={() => document.dispatchEvent(new CustomEvent('open-settings-account'))}
+          onClick={() => document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.OPEN_ACCOUNT))}
         >
           Account settings
         </button>

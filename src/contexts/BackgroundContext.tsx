@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { useSettings } from './SettingsContext';
 import { localStore as ls } from '../lib/chrome-storage';
 import { usePhotoHistory } from '../hooks/usePhotoHistory';
+import { SETTINGS_EVENT } from '../lib/settings-events';
 import type { PhotoRecord } from '../types/photos';
 
 const UNSPLASH_API_URL = 'https://api.unsplash.com/photos/random';
@@ -40,7 +41,7 @@ interface BackgroundContextValue {
   currentPhotoId: string | null;
   currentPhotoSource: 'unsplash' | 'local' | 'bundled' | null;
   refresh: () => Promise<void>;
-  setFromPhoto: (photo: PhotoRecord) => void;
+  setFromPhoto: (photo: PhotoRecord) => Promise<void>;
   setFromLocalPhoto: (id: string) => Promise<void>;
   addLocalPhoto: (dataUrl: string, thumbDataUrl: string, filename: string) => void;
   photoHistory: ReturnType<typeof usePhotoHistory>;
@@ -89,7 +90,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     }
     setCurrentPhotoId(photo.id);
     setCurrentPhotoSource(photo.source ?? 'unsplash');
-    document.dispatchEvent(new CustomEvent('close-settings'));
+    document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.CLOSE));
   }, [applyBackground]);
 
   const setFromLocalPhoto = useCallback(async (id: string) => {
@@ -182,9 +183,9 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   const refresh = useCallback(async () => {
     if (settings.backgroundSource === 'unsplash') {
       await ls.set('unsplashCache', null);
-      loadUnsplash();
+      await loadUnsplash();
     } else {
-      loadLocal();
+      await loadLocal();
     }
   }, [settings.backgroundSource, loadUnsplash, loadLocal]);
 

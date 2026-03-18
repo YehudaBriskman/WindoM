@@ -92,7 +92,7 @@ export function useQuotes() {
     const ms = tomorrow.getTime() - now.getTime();
     const id = setTimeout(() => displayQuote(), ms);
     return () => clearTimeout(id);
-  }, [quote]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [settings.quotesEnabled, displayQuote]);
 
   return { quote, fading, refresh, enabled: settings.quotesEnabled };
 }
