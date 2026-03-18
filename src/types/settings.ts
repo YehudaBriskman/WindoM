@@ -49,7 +49,7 @@ export const defaultSettings: Settings = {
   showDate: false,
   dateFormat: 'long',
   temperatureUnit: 'F',
-  backgroundSource: 'unsplash',
+  backgroundSource: 'local',
   unsplashApiKey: '',
   unsplashCollectionId: '',
   localBackground: '',

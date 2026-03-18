@@ -112,9 +112,9 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     }
 
     if (!settings.unsplashApiKey) {
-      applyBackground(BUNDLED_BG_URL);
+      applyBackground(DEFAULT_GRADIENT);
       setPhotographer(null);
-      setCurrentPhotoSource('bundled');
+      setCurrentPhotoSource(null);
       return;
     }
 
@@ -149,9 +149,9 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('Error loading Unsplash image:', error);
-      applyBackground(BUNDLED_BG_URL);
+      applyBackground(DEFAULT_GRADIENT);
       setPhotographer(null);
-      setCurrentPhotoSource('bundled');
+      setCurrentPhotoSource(null);
     }
   // addPhoto is a stable useCallback — safe dep; do NOT add photoHistory here
   }, [settings.unsplashApiKey, applyBackground, addPhoto]);
