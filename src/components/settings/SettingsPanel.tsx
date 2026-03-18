@@ -9,6 +9,8 @@ import { BackgroundSettings } from "./sections/BackgroundSettings";
 import { WeatherSettings } from "./sections/WeatherSettings";
 import { QuotesSettings } from "./sections/QuotesSettings";
 import { LinksSettings } from "./sections/LinksSettings";
+import { CalendarSettings } from "./sections/CalendarSettings";
+import { SpotifySettings } from "./sections/SpotifySettings";
 import { AccountSettings } from "./sections/AccountSettings";
 
 export function SettingsPanel() {
@@ -84,6 +86,8 @@ export function SettingsPanel() {
               {activeTab === "weather" && <WeatherSettings />}
               {activeTab === "quotes" && <QuotesSettings />}
               {activeTab === "links" && <LinksSettings />}
+              {activeTab === "calendar" && <CalendarSettings />}
+              {activeTab === "spotify" && <SpotifySettings />}
               {activeTab === "account" && <AccountSettings />}
             </div>
           </div>

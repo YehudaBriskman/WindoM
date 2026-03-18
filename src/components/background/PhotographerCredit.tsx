@@ -3,12 +3,12 @@ import { useBackgroundContext } from "../../contexts/BackgroundContext";
 
 export function PhotographerCredit() {
   const { photographer, currentPhotoId, photoHistory } = useBackgroundContext();
-  const { history, toggleLike } = photoHistory;
+  const { unsplashHistory, toggleLike } = photoHistory;
 
   if (!photographer) return null;
 
   const currentPhoto = currentPhotoId
-    ? history.find((p) => p.id === currentPhotoId)
+    ? unsplashHistory.find((p) => p.id === currentPhotoId)
     : null;
   const isLiked = currentPhoto?.liked ?? false;
 

@@ -118,5 +118,5 @@ export function usePhotoHistory() {
     });
   }, []);
 
-  return { history: unsplashHistory, unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike, deleteLocalPhoto };
+  return { unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike, deleteLocalPhoto };
 }

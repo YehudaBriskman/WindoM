@@ -1768,6 +1768,18 @@ input[type="file"]::file-selector-button:hover {
 .settings-nav-btn.active {
   color: white;
 }
+.settings-nav-btn.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.settings-nav-btn.locked:hover {
+  color: rgba(255, 255, 255, 0.4);
+}
+.settings-nav-lock {
+  font-size: 10px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
 
 .settings-close {
   position: absolute;
