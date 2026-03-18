@@ -69,12 +69,23 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   const setFromPhoto = useCallback(async (photo: PhotoRecord) => {
     if (photo.source === 'local') {
       const fullUrl = await ls.get<string | null>(`localPhoto-${photo.id}`, null);
-      applyBackground(fullUrl ?? photo.imageUrl);
+      const url = fullUrl ?? photo.imageUrl;
+      await ls.set('localBackgroundImage', url);
+      applyBackground(url);
       setPhotographer(null);
     } else if (photo.source === 'bundled') {
+      await ls.set('localBackgroundImage', photo.imageUrl);
       applyBackground(photo.imageUrl);
       setPhotographer(null);
     } else {
+      await ls.set('unsplashCache', {
+        imageUrl: photo.imageUrl,
+        thumbUrl: photo.thumbUrl,
+        photographer: photo.photographer,
+        photographerUrl: photo.photographerUrl,
+        photoId: photo.id,
+        timestamp: Date.now(),
+      });
       applyBackground(photo.imageUrl);
       setPhotographer({ name: photo.photographer, url: photo.photographerUrl });
     }
