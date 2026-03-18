@@ -1,17 +1,9 @@
 import { useSettings } from '../contexts/SettingsContext';
-import type { QuickLink } from '../types/settings';
-
-const defaultLinks: QuickLink[] = [
-  { name: 'Gmail', url: 'https://gmail.com', icon: 'mail' },
-  { name: 'YouTube', url: 'https://youtube.com', icon: 'play' },
-  { name: 'GitHub', url: 'https://github.com', icon: 'github' },
-  { name: 'Twitter', url: 'https://twitter.com', icon: 'twitter' },
-  { name: 'Reddit', url: 'https://reddit.com', icon: 'bot' },
-];
+import { defaultSettings, type QuickLink } from '../types/settings';
 
 export function useLinks() {
   const { settings, update } = useSettings();
-  const links = settings.quickLinks ?? defaultLinks;
+  const links = settings.quickLinks ?? defaultSettings.quickLinks;
 
   const setLinks = (newLinks: QuickLink[]) => update('quickLinks', newLinks);
 

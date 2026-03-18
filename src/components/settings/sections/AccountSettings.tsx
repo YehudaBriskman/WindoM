@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useSettings } from '../../../hooks/useSettings';
+import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
 import { apiPost, apiFetch } from '../../../lib/api';
 

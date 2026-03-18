@@ -32,9 +32,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const stop = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (transitionRef.current) clearTimeout(transitionRef.current);
-    if (transitionRef2.current) clearTimeout(transitionRef2.current);
+    clearTimers();
 
     // Step 1: overlay fades out + background starts zooming back (3s)
     setPhase('exiting-overlay');
@@ -55,7 +53,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
         setRemaining('');
       }, STEP_MS);
     }, STEP_MS);
-  }, []);
+  }, [clearTimers]);
 
   const start = useCallback((minutes: number) => {
     endTimeRef.current = Date.now() + minutes * 60_000;
