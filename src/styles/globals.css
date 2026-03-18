@@ -51,6 +51,39 @@ a {
 }
 
 /* ============================================================
+   App Loader
+   ============================================================ */
+.app-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: linear-gradient(160deg, #0d0221 0%, #1a0533 25%, #0c1445 55%, #1a0f03 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.55s ease;
+  pointer-events: all;
+}
+.app-loader--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-loader-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  animation: loader-spin 0.75s linear infinite;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
    Scrollbar
    ============================================================ */
 ::-webkit-scrollbar {

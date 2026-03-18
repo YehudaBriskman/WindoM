@@ -17,7 +17,7 @@ export function PhotoGrid({ photos, onLike, onSelect, onDelete }: PhotoGridProps
     <div className="photo-grid">
       {photos.map((photo) => (
         <div key={photo.id} className="photo-thumb" onClick={() => onSelect(photo)}>
-          <img src={photo.thumbUrl} alt={`Photo by ${photo.photographer}`} />
+          <img src={photo.thumbUrl} alt={`Photo by ${photo.photographer}`} loading="lazy" />
           <div className="photo-thumb-overlay">
             <span className="photo-thumb-credit">{photo.photographer}</span>
           </div>

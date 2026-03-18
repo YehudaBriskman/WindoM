@@ -139,7 +139,7 @@ export function TabSidebar() {
               title={tab.title}
             >
               {tab.favIconUrl ? (
-                <img src={tab.favIconUrl} className="tab-sidebar-favicon" alt="" />
+                <img src={tab.favIconUrl} className="tab-sidebar-favicon" alt="" loading="lazy" />
               ) : (
                 <div className="tab-sidebar-favicon-placeholder" />
               )}

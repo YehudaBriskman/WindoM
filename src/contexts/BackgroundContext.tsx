@@ -37,6 +37,7 @@ interface UnsplashCache {
 }
 
 interface BackgroundContextValue {
+  backgroundReady: boolean;
   photographer: { name: string; url: string } | null;
   currentPhotoId: string | null;
   currentPhotoSource: 'unsplash' | 'local' | 'bundled' | null;
@@ -51,6 +52,7 @@ const BackgroundContext = createContext<BackgroundContextValue | null>(null);
 
 export function BackgroundProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const [backgroundReady, setBackgroundReady] = useState(false);
   const [photographer, setPhotographer] = useState<{ name: string; url: string } | null>(null);
   const [currentPhotoId, setCurrentPhotoId] = useState<string | null>(null);
   const [currentPhotoSource, setCurrentPhotoSource] = useState<'unsplash' | 'local' | 'bundled' | null>(null);
@@ -64,13 +66,16 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     if (!layer) return;
     if (imageUrl.startsWith('linear-gradient') || imageUrl.startsWith('radial-gradient')) {
       layer.style.backgroundImage = imageUrl;
+      setBackgroundReady(true);
     } else {
       const img = new Image();
       img.onload = () => {
         layer.style.backgroundImage = `url('${imageUrl}')`;
+        setBackgroundReady(true);
       };
       img.onerror = () => {
         layer.style.backgroundImage = DEFAULT_GRADIENT;
+        setBackgroundReady(true);
       };
       img.src = imageUrl;
     }
@@ -199,6 +204,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
 
   return (
     <BackgroundContext.Provider value={{
+      backgroundReady,
       photographer,
       currentPhotoId,
       currentPhotoSource,
