@@ -1,7 +1,7 @@
 import { Upload } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { useBackgroundContext } from '../../../contexts/BackgroundContext';
-import { localStorage as ls } from '../../../lib/chrome-storage';
+import { localStore as ls } from '../../../lib/chrome-storage';
 import { showSettingsMessage } from '../SettingsMessage';
 import { GlassSelect } from '../../ui/GlassSelect';
 import { PhotoGrid } from '../PhotoGrid';
@@ -66,7 +66,7 @@ export function BackgroundSettings() {
         <label className="settings-label">Background Source:</label>
         <GlassSelect
           value={settings.backgroundSource}
-          onChange={(v) => update('backgroundSource', v as 'unsplash' | 'local')}
+          onChange={(value) => update('backgroundSource', value as 'unsplash' | 'local')}
           options={[
             { value: 'unsplash', label: 'Unsplash' },
             { value: 'local', label: 'Local Image' },

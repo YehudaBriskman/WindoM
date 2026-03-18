@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { localStorage as ls } from '../lib/chrome-storage';
+import { localStore as ls } from '../lib/chrome-storage';
 import type { LocationCoords, CachedLocation } from '../types/weather';
 
 const GEO_TIMEOUT_MS = 10_000;

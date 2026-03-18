@@ -17,13 +17,13 @@ export function FocusPresets() {
 
   return (
     <div className="focus-presets">
-      {PRESETS.map((p) => (
+      {PRESETS.map((preset) => (
         <button
-          key={p.minutes}
-          onClick={() => start(p.minutes)}
+          key={preset.minutes}
+          onClick={() => start(preset.minutes)}
           className="focus-preset-btn"
         >
-          {p.label}
+          {preset.label}
         </button>
       ))}
     </div>

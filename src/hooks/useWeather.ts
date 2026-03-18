@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLocation } from './useLocation';
-import { localStorage as ls } from '../lib/chrome-storage';
+import { localStore as ls } from '../lib/chrome-storage';
 import { convertTemperature } from '../utils/temperature';
 import type { WeatherData } from '../types/weather';
 

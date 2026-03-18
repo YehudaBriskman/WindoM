@@ -10,7 +10,7 @@ export function WeatherSettings() {
         <label className="settings-label">Temperature Unit:</label>
         <GlassSelect
           value={settings.temperatureUnit}
-          onChange={(v) => update('temperatureUnit', v as 'F' | 'C')}
+          onChange={(value) => update('temperatureUnit', value as 'F' | 'C')}
           options={[
             { value: 'F', label: 'Fahrenheit (°F)' },
             { value: 'C', label: 'Celsius (°C)' },

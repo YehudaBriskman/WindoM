@@ -369,9 +369,8 @@ export function SearchOverlay() {
         return;
       }
 
-      const isCmdMode = value.startsWith('>');
-      const activeSuggestions = isCmdMode ? commandSuggestions : suggestions;
-      const hasDropdown = isCmdMode
+      const activeSuggestions = isCommandMode ? commandSuggestions : suggestions;
+      const hasDropdown = isCommandMode
         ? commandSuggestions.length > 0
         : dropdownOpen && suggestions.length > 0;
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { localStorage as ls } from '../lib/chrome-storage';
+import { localStore as ls } from '../lib/chrome-storage';
 import type { PhotoRecord } from '../types/photos';
 
 const HISTORY_KEY = 'photoHistory';

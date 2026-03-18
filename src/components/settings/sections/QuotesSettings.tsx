@@ -20,7 +20,7 @@ export function QuotesSettings() {
         <label className="settings-label">Quote Source:</label>
         <GlassSelect
           value={settings.quoteSource}
-          onChange={(v) => update('quoteSource', v as 'local' | 'api')}
+          onChange={(value) => update('quoteSource', value as 'local' | 'api')}
           options={[
             { value: 'local', label: 'Local Quotes' },
             { value: 'api', label: 'API Quotes' },

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useSettings } from './SettingsContext';
-import { localStorage as ls } from '../lib/chrome-storage';
+import { localStore as ls } from '../lib/chrome-storage';
 import { usePhotoHistory } from '../hooks/usePhotoHistory';
 import type { PhotoRecord } from '../types/photos';
 
