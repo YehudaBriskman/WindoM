@@ -1,4 +1,5 @@
 import { useSettings } from '../../../contexts/SettingsContext';
+import { GlassSelect } from '../../ui/GlassSelect';
 
 export function WeatherSettings() {
   const { settings, update } = useSettings();
@@ -7,14 +8,14 @@ export function WeatherSettings() {
     <div>
       <div className="settings-group">
         <label className="settings-label">Temperature Unit:</label>
-        <select
+        <GlassSelect
           value={settings.temperatureUnit}
-          onChange={(e) => update('temperatureUnit', e.target.value as 'F' | 'C')}
-          className="settings-select glass-input"
-        >
-          <option value="F">Fahrenheit (&deg;F)</option>
-          <option value="C">Celsius (&deg;C)</option>
-        </select>
+          onChange={(v) => update('temperatureUnit', v as 'F' | 'C')}
+          options={[
+            { value: 'F', label: 'Fahrenheit (°F)' },
+            { value: 'C', label: 'Celsius (°C)' },
+          ]}
+        />
       </div>
       <div className="settings-group">
         <label className="settings-label">Location:</label>

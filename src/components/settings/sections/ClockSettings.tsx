@@ -1,4 +1,5 @@
 import { useSettings } from '../../../contexts/SettingsContext';
+import { GlassSelect } from '../../ui/GlassSelect';
 
 export function ClockSettings() {
   const { settings, update } = useSettings();
@@ -138,15 +139,15 @@ export function ClockSettings() {
         {(settings.showDate ?? false) && (
           <div style={{ marginTop: 12 }}>
             <label className="settings-label">Date Format</label>
-            <select
+            <GlassSelect
               value={settings.dateFormat ?? 'long'}
-              onChange={(e) => update('dateFormat', e.target.value as 'long' | 'short' | 'numeric')}
-              className="settings-select glass-input"
-            >
-              <option value="long">Monday, March 17</option>
-              <option value="short">Mon, Mar 17</option>
-              <option value="numeric">03/17/2026</option>
-            </select>
+              onChange={(v) => update('dateFormat', v as 'long' | 'short' | 'numeric')}
+              options={[
+                { value: 'long', label: 'Monday, March 17' },
+                { value: 'short', label: 'Mon, Mar 17' },
+                { value: 'numeric', label: '03/17/2026' },
+              ]}
+            />
           </div>
         )}
       </div>

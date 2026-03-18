@@ -1,4 +1,5 @@
 import { useSettings } from '../../../contexts/SettingsContext';
+import { GlassSelect } from '../../ui/GlassSelect';
 
 export function QuotesSettings() {
   const { settings, update } = useSettings();
@@ -17,14 +18,14 @@ export function QuotesSettings() {
       </div>
       <div className="settings-group">
         <label className="settings-label">Quote Source:</label>
-        <select
+        <GlassSelect
           value={settings.quoteSource}
-          onChange={(e) => update('quoteSource', e.target.value as 'local' | 'api')}
-          className="settings-select glass-input"
-        >
-          <option value="local">Local Quotes</option>
-          <option value="api">API Quotes</option>
-        </select>
+          onChange={(v) => update('quoteSource', v as 'local' | 'api')}
+          options={[
+            { value: 'local', label: 'Local Quotes' },
+            { value: 'api', label: 'API Quotes' },
+          ]}
+        />
       </div>
     </div>
   );
