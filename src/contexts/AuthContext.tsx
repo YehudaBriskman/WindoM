@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
 
+const AUTH_REFRESH_TIMEOUT_MS = 5_000;
+
 interface User {
   id: string;
   email: string | null;
@@ -51,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Try silent refresh — race against a 5s timeout
           token = await Promise.race([
             refreshAccessToken(),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_REFRESH_TIMEOUT_MS)),
           ]);
         }
         if (token) {

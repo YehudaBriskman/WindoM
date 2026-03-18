@@ -51,6 +51,39 @@ a {
 }
 
 /* ============================================================
+   App Loader
+   ============================================================ */
+.app-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 1;
+  transition: opacity 0.55s ease;
+  pointer-events: all;
+}
+.app-loader--done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-loader-spinner {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  animation: loader-spin 0.75s linear infinite;
+}
+
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
    Scrollbar
    ============================================================ */
 ::-webkit-scrollbar {
@@ -1768,6 +1801,18 @@ input[type="file"]::file-selector-button:hover {
 .settings-nav-btn.active {
   color: white;
 }
+.settings-nav-btn.locked {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.settings-nav-btn.locked:hover {
+  color: rgba(255, 255, 255, 0.4);
+}
+.settings-nav-lock {
+  font-size: 10px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
 
 .settings-close {
   position: absolute;
@@ -1805,6 +1850,21 @@ input[type="file"]::file-selector-button:hover {
 /* Settings Form Controls */
 .settings-group {
   margin-bottom: 20px;
+}
+.settings-group + .settings-group {
+  margin-top: 28px;
+}
+
+.settings-section-heading {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.visibility-row-label {
+  flex: 1;
+  font-size: 14px;
 }
 
 .settings-label {

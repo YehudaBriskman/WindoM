@@ -369,9 +369,8 @@ export function SearchOverlay() {
         return;
       }
 
-      const isCmdMode = value.startsWith('>');
-      const activeSuggestions = isCmdMode ? commandSuggestions : suggestions;
-      const hasDropdown = isCmdMode
+      const activeSuggestions = isCommandMode ? commandSuggestions : suggestions;
+      const hasDropdown = isCommandMode
         ? commandSuggestions.length > 0
         : dropdownOpen && suggestions.length > 0;
 
@@ -491,7 +490,7 @@ export function SearchOverlay() {
                     s.Icon ? <s.Icon size={15} strokeWidth={1.8} /> : <Terminal size={15} strokeWidth={1.8} />
                   ) : s.kind === 'tab' ? (
                     s.favicon
-                      ? <img src={s.favicon} className="suggestion-favicon" alt="" />
+                      ? <img src={s.favicon} className="suggestion-favicon" alt="" loading="lazy" />
                       : <LayoutGrid size={15} strokeWidth={1.8} />
                   ) : s.kind === 'history' ? (
                     <Clock size={15} strokeWidth={1.8} />

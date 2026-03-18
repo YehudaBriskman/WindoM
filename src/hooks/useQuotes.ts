@@ -57,17 +57,17 @@ export function useQuotes() {
   }, [loadLocalQuotes]);
 
   const displayQuote = useCallback(async () => {
-    let q: Quote;
+    let nextQuote: Quote;
     if (settings.quoteSource === 'api') {
-      q = await fetchAPIQuote();
+      nextQuote = await fetchAPIQuote();
     } else {
       const quotes = await loadLocalQuotes();
-      q = await getDailyQuote(quotes);
+      nextQuote = await getDailyQuote(quotes);
     }
     // Fade animation
     setFading(true);
     setTimeout(() => {
-      setQuote(q);
+      setQuote(nextQuote);
       setFading(false);
     }, 300);
   }, [settings.quoteSource, fetchAPIQuote, loadLocalQuotes, getDailyQuote]);
@@ -92,7 +92,7 @@ export function useQuotes() {
     const ms = tomorrow.getTime() - now.getTime();
     const id = setTimeout(() => displayQuote(), ms);
     return () => clearTimeout(id);
-  }, [quote]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [settings.quotesEnabled, displayQuote]);
 
   return { quote, fading, refresh, enabled: settings.quotesEnabled };
 }

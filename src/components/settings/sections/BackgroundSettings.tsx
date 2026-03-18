@@ -1,71 +1,13 @@
-import { Heart, Upload, Trash2 } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { useBackgroundContext } from '../../../contexts/BackgroundContext';
-import { localStorage as ls } from '../../../lib/chrome-storage';
+import { localStore as ls } from '../../../lib/chrome-storage';
 import { showSettingsMessage } from '../SettingsMessage';
 import { GlassSelect } from '../../ui/GlassSelect';
-import type { PhotoRecord } from '../../../types/photos';
-import bundledImagePaths from 'virtual:bundled-images';
+import { PhotoGrid } from '../PhotoGrid';
+import { BUNDLED_PHOTOS } from '../../../lib/bundled-photos';
 
-function getBundledUrl(filePath: string): string {
-  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL(filePath);
-  }
-  return `/${filePath}`;
-}
-
-const BUNDLED_PHOTOS: PhotoRecord[] = bundledImagePaths.map((filePath, i) => ({
-  id: `bundled-${i + 1}`,
-  imageUrl: getBundledUrl(filePath),
-  thumbUrl: getBundledUrl(filePath),
-  photographer: 'Built-in',
-  photographerUrl: '',
-  timestamp: 0,
-  liked: false,
-  source: 'bundled' as const,
-}));
-
-function PhotoGrid({ photos, onLike, onSelect, onDelete }: {
-  photos: PhotoRecord[];
-  onLike: (id: string) => void;
-  onSelect: (photo: PhotoRecord) => void;
-  onDelete?: (id: string) => void;
-}) {
-  if (!photos.length) {
-    return <p style={{ opacity: 0.5, fontStyle: 'italic', fontSize: 13 }}>No photos yet.</p>;
-  }
-
-  return (
-    <div className="photo-grid">
-      {photos.map((photo) => (
-        <div key={photo.id} className="photo-thumb" onClick={() => onSelect(photo)}>
-          <img src={photo.thumbUrl} alt={`Photo by ${photo.photographer}`} />
-          <div className="photo-thumb-overlay">
-            <span className="photo-thumb-credit">{photo.photographer}</span>
-          </div>
-          {photo.source !== 'bundled' && (
-            <button
-              className={`photo-like-btn ${photo.liked ? 'liked' : ''}`}
-              onClick={(e) => { e.stopPropagation(); onLike(photo.id); }}
-              title={photo.liked ? 'Unlike' : 'Like'}
-            >
-              <Heart size={14} fill={photo.liked ? 'currentColor' : 'none'} />
-            </button>
-          )}
-          {onDelete && (
-            <button
-              className="photo-delete-btn"
-              onClick={(e) => { e.stopPropagation(); onDelete(photo.id); }}
-              title="Delete"
-            >
-              <Trash2 size={13} />
-            </button>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export function BackgroundSettings() {
   const { settings, update } = useSettings();
@@ -84,8 +26,8 @@ export function BackgroundSettings() {
       showSettingsMessage('Please select a valid image file', 'error');
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      showSettingsMessage('Image too large. Maximum size is 5MB', 'error');
+    if (file.size > MAX_UPLOAD_BYTES) {
+      showSettingsMessage(`Image too large. Maximum size is ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB`, 'error');
       return;
     }
     const reader = new FileReader();
@@ -124,7 +66,7 @@ export function BackgroundSettings() {
         <label className="settings-label">Background Source:</label>
         <GlassSelect
           value={settings.backgroundSource}
-          onChange={(v) => update('backgroundSource', v as 'unsplash' | 'local')}
+          onChange={(value) => update('backgroundSource', value as 'unsplash' | 'local')}
           options={[
             { value: 'unsplash', label: 'Unsplash' },
             { value: 'local', label: 'Local Image' },
@@ -164,7 +106,7 @@ export function BackgroundSettings() {
           </div>
 
           <section style={{ marginTop: 24 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Unsplash Photos</h3>
+            <h3 className="settings-section-heading">Unsplash Photos</h3>
             {unsplashLiked.length > 0 && (
               <div className="settings-group">
                 <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
@@ -193,14 +135,14 @@ export function BackgroundSettings() {
           </div>
 
           <section style={{ marginTop: 24, marginBottom: 28 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Built-in</h3>
+            <h3 className="settings-section-heading">Built-in</h3>
             <div className="settings-group">
               <PhotoGrid photos={BUNDLED_PHOTOS} onLike={() => {}} onSelect={setFromPhoto} />
             </div>
           </section>
 
           <section>
-            <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Local Photos</h3>
+            <h3 className="settings-section-heading">Local Photos</h3>
             {localLiked.length > 0 && (
               <div className="settings-group">
                 <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>

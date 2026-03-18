@@ -1,25 +1,19 @@
 import { useSettings } from '../contexts/SettingsContext';
-import type { QuickLink } from '../types/settings';
+import { defaultSettings, type QuickLink } from '../types/settings';
 
-const defaultLinks: QuickLink[] = [
-  { name: 'Gmail', url: 'https://gmail.com', icon: 'mail' },
-  { name: 'YouTube', url: 'https://youtube.com', icon: 'play' },
-  { name: 'GitHub', url: 'https://github.com', icon: 'github' },
-  { name: 'Twitter', url: 'https://twitter.com', icon: 'twitter' },
-  { name: 'Reddit', url: 'https://reddit.com', icon: 'bot' },
-];
+const MAX_LINKS = 27;
 
 export function useLinks() {
   const { settings, update } = useSettings();
-  const links = settings.quickLinks ?? defaultLinks;
+  const links = settings.quickLinks ?? defaultSettings.quickLinks;
 
   const setLinks = (newLinks: QuickLink[]) => update('quickLinks', newLinks);
 
-  const addLink = (link?: QuickLink | unknown) => {
-    if (links.length >= 27) return;
-    const isLink = (v: unknown): v is QuickLink =>
+  const addLink = (link?: QuickLink) => {
+    if (links.length >= MAX_LINKS) return;
+    const isValidLink = (v: unknown): v is QuickLink =>
       typeof v === 'object' && v !== null && 'url' in v && 'name' in v;
-    setLinks([...links, isLink(link) ? link : { name: 'New Link', url: 'https://', icon: '' }]);
+    setLinks([...links, isValidLink(link) ? link : { name: 'New Link', url: 'https://', icon: '' }]);
   };
 
   const removeLink = (index: number) => {

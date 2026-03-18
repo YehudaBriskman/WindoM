@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { localStorage as ls } from '../lib/chrome-storage';
+import { localStore as ls } from '../lib/chrome-storage';
 import type { PhotoRecord } from '../types/photos';
 
 const HISTORY_KEY = 'photoHistory';
@@ -118,5 +118,5 @@ export function usePhotoHistory() {
     });
   }, []);
 
-  return { history: unsplashHistory, unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike, deleteLocalPhoto };
+  return { unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike, deleteLocalPhoto };
 }

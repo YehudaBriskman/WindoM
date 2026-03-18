@@ -29,8 +29,8 @@ export function GeneralSettings({ onReset }: Props) {
         />
       </div>
 
-      <div className="settings-group" style={{ marginTop: 28 }}>
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+      <div className="settings-group">
+        <label className="settings-section-heading settings-label">
           Widget Visibility
         </label>
         <div className="visibility-table">
@@ -39,7 +39,7 @@ export function GeneralSettings({ onReset }: Props) {
               <span className="visibility-row-icon">
                 <Icon size={16} strokeWidth={1.8} />
               </span>
-              <span style={{ flex: 1, fontSize: 14 }}>{label}</span>
+              <span className="visibility-row-label">{label}</span>
               <label className="toggle-switch">
                 <input
                   type="checkbox"
@@ -53,8 +53,8 @@ export function GeneralSettings({ onReset }: Props) {
         </div>
       </div>
 
-      <div className="settings-group" style={{ marginTop: 28 }}>
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+      <div className="settings-group">
+        <label className="settings-section-heading settings-label">
           Tab Sidebar
         </label>
         <div className="segmented-control">
@@ -76,7 +76,7 @@ export function GeneralSettings({ onReset }: Props) {
         <span className="settings-hint">Hover within 15px of the chosen edge to reveal tabs</span>
       </div>
 
-      <div className="settings-group" style={{ marginTop: 28 }}>
+      <div className="settings-group">
         <button onClick={onReset} className="settings-reset-btn" style={{ width: '100%' }}>
           Reset to Defaults
         </button>

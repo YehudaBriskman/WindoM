@@ -1,6 +1,10 @@
 import { useCallback } from 'react';
-import { localStorage as ls } from '../lib/chrome-storage';
+import { localStore as ls } from '../lib/chrome-storage';
 import type { LocationCoords, CachedLocation } from '../types/weather';
+
+const GEO_TIMEOUT_MS = 10_000;
+const GEO_MAX_AGE_MS = 600_000;
+const LOCATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 function getCoordinates(): Promise<LocationCoords> {
   return new Promise((resolve, reject) => {
@@ -18,7 +22,7 @@ function getCoordinates(): Promise<LocationCoords> {
         };
         reject(new Error(msgs[err.code] || 'Unknown geolocation error'));
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+      { enableHighAccuracy: false, timeout: GEO_TIMEOUT_MS, maximumAge: GEO_MAX_AGE_MS },
     );
   });
 }
@@ -32,7 +36,7 @@ export function useLocation() {
     } catch {
       // Fallback to cached
       const cached = await ls.get<CachedLocation | null>('lastKnownLocation', null);
-      if (cached && Date.now() - cached.timestamp < 24 * 60 * 60 * 1000) {
+      if (cached && Date.now() - cached.timestamp < LOCATION_CACHE_TTL_MS) {
         return { lat: cached.lat, lon: cached.lon };
       }
       return null;

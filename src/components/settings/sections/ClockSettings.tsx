@@ -11,7 +11,7 @@ export function ClockSettings() {
     <div>
       {/* FORMAT */}
       <div className="settings-group">
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+        <label className="settings-section-heading settings-label">
           Format
         </label>
 
@@ -60,20 +60,20 @@ export function ClockSettings() {
       </div>
 
       {/* APPEARANCE */}
-      <div className="settings-group" style={{ marginTop: 28 }}>
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+      <div className="settings-group">
+        <label className="settings-section-heading settings-label">
           Appearance
         </label>
 
         <label className="settings-label">Style</label>
         <div className="segmented-control" style={{ marginBottom: 16 }}>
-          {(['default', 'glass', 'outline'] as const).map((s) => (
+          {(['default', 'glass', 'outline'] as const).map((style) => (
             <button
-              key={s}
-              className={`segmented-btn${clockStyle === s ? ' active' : ''}`}
-              onClick={() => update('clockStyle', s)}
+              key={style}
+              className={`segmented-btn${clockStyle === style ? ' active' : ''}`}
+              onClick={() => update('clockStyle', style)}
             >
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {style.charAt(0).toUpperCase() + style.slice(1)}
             </button>
           ))}
         </div>
@@ -104,21 +104,21 @@ export function ClockSettings() {
 
         <label className="settings-label">Font Weight</label>
         <div className="segmented-control">
-          {([100, 200, 400, 600] as const).map((w) => (
+          {([100, 200, 400, 600] as const).map((weight) => (
             <button
-              key={w}
-              className={`segmented-btn${clockWeight === w ? ' active' : ''}`}
-              onClick={() => update('clockWeight', w)}
+              key={weight}
+              className={`segmented-btn${clockWeight === weight ? ' active' : ''}`}
+              onClick={() => update('clockWeight', weight)}
             >
-              {w === 100 ? 'Thin' : w === 200 ? 'Light' : w === 400 ? 'Regular' : 'Bold'}
+              {weight === 100 ? 'Thin' : weight === 200 ? 'Light' : weight === 400 ? 'Regular' : 'Bold'}
             </button>
           ))}
         </div>
       </div>
 
       {/* DATE */}
-      <div className="settings-group" style={{ marginTop: 28 }}>
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+      <div className="settings-group">
+        <label className="settings-section-heading settings-label">
           Date
         </label>
 
@@ -141,7 +141,7 @@ export function ClockSettings() {
             <label className="settings-label">Date Format</label>
             <GlassSelect
               value={settings.dateFormat ?? 'long'}
-              onChange={(v) => update('dateFormat', v as 'long' | 'short' | 'numeric')}
+              onChange={(value) => update('dateFormat', value as 'long' | 'short' | 'numeric')}
               options={[
                 { value: 'long', label: 'Monday, March 17' },
                 { value: 'short', label: 'Mon, Mar 17' },

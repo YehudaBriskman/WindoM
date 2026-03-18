@@ -1,4 +1,5 @@
 import { useAuth } from '../../../contexts/AuthContext';
+import { SETTINGS_EVENT } from '../../../lib/settings-events';
 
 /**
  * Spotify connection settings — full management lives in Settings → Account.
@@ -14,7 +15,7 @@ export function SpotifySettings() {
           <button
             type="button"
             className="auth-required-link"
-            onClick={() => document.dispatchEvent(new CustomEvent('open-settings-account'))}
+            onClick={() => document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.OPEN_ACCOUNT))}
           >
             Go to Account settings
           </button>
@@ -30,7 +31,7 @@ export function SpotifySettings() {
         <button
           type="button"
           className="auth-required-link"
-          onClick={() => document.dispatchEvent(new CustomEvent('open-settings-account'))}
+          onClick={() => document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.OPEN_ACCOUNT))}
         >
           Account settings
         </button>

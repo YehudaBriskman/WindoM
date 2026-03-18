@@ -6,7 +6,8 @@ import { DockItem } from './DockItem';
 
 const ITEMS_PER_ROW = 9;
 const ROW_HEIGHT = 44;
-const MAX_LINKS = 27;
+const MAX_ROWS = 3;
+const MAX_LINKS = MAX_ROWS * ITEMS_PER_ROW;
 
 export function DockBar() {
   const { settings } = useSettings();

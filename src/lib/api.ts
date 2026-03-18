@@ -1,4 +1,4 @@
-import { localStorage as chromeLocal } from './chrome-storage';
+import { localStore as chromeLocal } from './chrome-storage';
 
 // Injected at build time via vite.config.ts define
 declare const __BACKEND_URL__: string;

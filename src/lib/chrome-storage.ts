@@ -79,7 +79,7 @@ export const syncStorage = {
   },
 };
 
-export const localStorage = {
+export const localStore = {
   async get<T>(key: string, defaultValue: T): Promise<T> {
     try {
       const result = await chrome.storage.local.get([key]);

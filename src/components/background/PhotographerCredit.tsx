@@ -1,14 +1,16 @@
 import { Heart } from "lucide-react";
 import { useBackgroundContext } from "../../contexts/BackgroundContext";
 
+const UTM_SOURCE = 'windom';
+
 export function PhotographerCredit() {
   const { photographer, currentPhotoId, photoHistory } = useBackgroundContext();
-  const { history, toggleLike } = photoHistory;
+  const { unsplashHistory, toggleLike } = photoHistory;
 
   if (!photographer) return null;
 
   const currentPhoto = currentPhotoId
-    ? history.find((p) => p.id === currentPhotoId)
+    ? unsplashHistory.find((p) => p.id === currentPhotoId)
     : null;
   const isLiked = currentPhoto?.liked ?? false;
 
@@ -23,7 +25,7 @@ export function PhotographerCredit() {
       </button>
       Photo by{" "}
       <a
-        href={`${photographer.url}?utm_source=momentum-clone&utm_medium=referral`}
+        href={`${photographer.url}?utm_source=${UTM_SOURCE}&utm_medium=referral`}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -31,7 +33,7 @@ export function PhotographerCredit() {
       </a>{" "}
       on{" "}
       <a
-        href="https://unsplash.com?utm_source=momentum-clone&utm_medium=referral"
+        href={`https://unsplash.com?utm_source=${UTM_SOURCE}&utm_medium=referral`}
         target="_blank"
         rel="noopener noreferrer"
       >
