@@ -1818,6 +1818,21 @@ input[type="file"]::file-selector-button:hover {
 .settings-group {
   margin-bottom: 20px;
 }
+.settings-group + .settings-group {
+  margin-top: 28px;
+}
+
+.settings-section-heading {
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.visibility-row-label {
+  flex: 1;
+  font-size: 14px;
+}
 
 .settings-label {
   display: block;

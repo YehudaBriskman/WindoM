@@ -11,7 +11,7 @@ export function ClockSettings() {
     <div>
       {/* FORMAT */}
       <div className="settings-group">
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+        <label className="settings-section-heading settings-label">
           Format
         </label>
 
@@ -60,8 +60,8 @@ export function ClockSettings() {
       </div>
 
       {/* APPEARANCE */}
-      <div className="settings-group" style={{ marginTop: 28 }}>
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+      <div className="settings-group">
+        <label className="settings-section-heading settings-label">
           Appearance
         </label>
 
@@ -117,8 +117,8 @@ export function ClockSettings() {
       </div>
 
       {/* DATE */}
-      <div className="settings-group" style={{ marginTop: 28 }}>
-        <label className="settings-label" style={{ marginBottom: 12, fontSize: 15, fontWeight: 500 }}>
+      <div className="settings-group">
+        <label className="settings-section-heading settings-label">
           Date
         </label>
 

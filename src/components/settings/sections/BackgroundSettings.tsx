@@ -106,7 +106,7 @@ export function BackgroundSettings() {
           </div>
 
           <section style={{ marginTop: 24 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Unsplash Photos</h3>
+            <h3 className="settings-section-heading">Unsplash Photos</h3>
             {unsplashLiked.length > 0 && (
               <div className="settings-group">
                 <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
@@ -135,14 +135,14 @@ export function BackgroundSettings() {
           </div>
 
           <section style={{ marginTop: 24, marginBottom: 28 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Built-in</h3>
+            <h3 className="settings-section-heading">Built-in</h3>
             <div className="settings-group">
               <PhotoGrid photos={BUNDLED_PHOTOS} onLike={() => {}} onSelect={setFromPhoto} />
             </div>
           </section>
 
           <section>
-            <h3 style={{ fontSize: 15, fontWeight: 500, marginBottom: 16, opacity: 0.9 }}>Local Photos</h3>
+            <h3 className="settings-section-heading">Local Photos</h3>
             {localLiked.length > 0 && (
               <div className="settings-group">
                 <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
