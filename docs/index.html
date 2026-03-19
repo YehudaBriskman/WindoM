@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WindoM — The new tab you always wanted</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080810;
+      --surface: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #e8e8f0;
+      --muted: #6b6b85;
+      --accent: #7b9ef5;
+      --accent2: #a78bfa;
+      --glow: rgba(123,158,245,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123,158,245,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(123,158,245,0.1);
+      border: 1px solid rgba(123,158,245,0.2);
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 30%, #a78bfa 70%, #7b9ef5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 24px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 44px;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 0 30px rgba(123,158,245,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 45px rgba(123,158,245,0.45); }
+
+    .btn-secondary {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.07); transform: translateY(-2px); }
+
+    /* ── PREVIEW IMAGE ── */
+    .preview {
+      width: 100%;
+      max-width: 960px;
+      margin: 70px auto 0;
+      padding: 0 24px;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .preview-frame {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 40px 120px rgba(0,0,0,0.6),
+        0 0 80px rgba(123,158,245,0.08);
+    }
+
+    .preview-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, transparent 70%, var(--bg) 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .preview-frame img {
+      width: 100%;
+      display: block;
+    }
+
+    /* ── DESCRIPTION ── */
+    .description {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 100px 24px;
+      text-align: center;
+    }
+
+    .description p {
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
+      color: #9090aa;
+      line-height: 1.85;
+      margin-bottom: 24px;
+    }
+
+    .description p strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .description .closing {
+      font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 48px;
+      background: linear-gradient(135deg, #fff, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── FEATURES ── */
+    .features {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 24px 100px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      transition: all 0.25s ease;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .feature-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .feature-card:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(123,158,245,0.2);
+      transform: translateY(-3px);
+    }
+
+    .feature-icon {
+      font-size: 1.6rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── PRIVACY STRIP ── */
+    .privacy-strip {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 36px 24px;
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 80px;
+    }
+
+    .privacy-strip p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 580px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .privacy-strip p strong { color: var(--text); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; margin: 0 12px; }
+    footer a:hover { color: var(--text); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── SCROLL GLOW ── */
+    .glow-divider {
+      width: 1px;
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+      margin: 0 auto 60px;
+      opacity: 0.4;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badge">Chrome Extension</div>
+    <h1>The new tab you<br>always wanted.</h1>
+    <p>A personal dashboard that gives you everything you need to start your day with clarity and intention — right where you already are.</p>
+    <div class="hero-cta">
+      <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb" class="btn btn-primary">
+        Add to Chrome
+      </a>
+      <a href="local-setup.html" class="btn btn-secondary">
+        Run locally
+      </a>
+      <a href="https://github.com/YehudaBriskman/WindoM" class="btn btn-secondary">
+        GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- PREVIEW -->
+  <div class="preview">
+    <div class="preview-frame">
+      <img src="preview.png" alt="WindoM dashboard showing clock, greeting and northern lights background" />
+    </div>
+  </div>
+
+  <!-- DESCRIPTION -->
+  <section class="description">
+    <div class="glow-divider" style="margin-top:80px;"></div>
+
+    <p>WindoM redefines the new tab experience. Instead of an empty page, every new tab opens to a <strong>thoughtfully designed personal dashboard</strong> that gives you everything you need to start your day with clarity and intention.</p>
+
+    <p>Built around a clean glassmorphism aesthetic, WindoM <strong>feels as good as it looks</strong> — smooth, minimal, and always out of the way when you need it to be.</p>
+
+    <p>At a glance, you see the time, the weather outside, your upcoming calendar events, what is playing on Spotify, and your tasks for the day. <strong>Everything you actually care about, nothing you do not.</strong></p>
+
+    <p>When it is time to get things done, Focus Mode clears the noise and puts a countdown timer front and center so you can work without distraction. When you need to get somewhere, your pinned quick links and dock shortcuts are always one tab away.</p>
+
+    <p>Backgrounds shift with your mood — pull stunning imagery from Unsplash or bring your own. A new quote greets you each day. <strong>The greeting knows your name and the time.</strong></p>
+
+    <p>Every detail of WindoM is configurable. Show what matters, hide what does not. Connect Google Calendar and Spotify if you want them, or keep it simple and offline. Your settings, your dashboard.</p>
+
+    <p class="closing">This is the new tab you always wanted.</p>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🕐</span>
+        <h3>Clock & Greeting</h3>
+        <p>Live clock with a personalized greeting that adapts to the time of day and knows your name.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🌤</span>
+        <h3>Weather</h3>
+        <p>Real-time weather for your location with temperature, conditions, and icons.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🖼</span>
+        <h3>Backgrounds</h3>
+        <p>Dynamic backgrounds from Unsplash or your own images. Changes with your mood.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📅</span>
+        <h3>Calendar</h3>
+        <p>View upcoming events at a glance. Optionally connect Google Calendar for full sync.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎵</span>
+        <h3>Spotify</h3>
+        <p>See what is playing right now directly on your dashboard.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">✅</span>
+        <h3>Todo List</h3>
+        <p>A quick-access task list that stays with you on every new tab.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⏱</span>
+        <h3>Focus Mode</h3>
+        <p>Distraction-free focus sessions with a built-in countdown timer front and center.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔗</span>
+        <h3>Quick Links</h3>
+        <p>Pin your most visited sites as quick-access links or dock shortcuts.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <h3>Daily Quotes</h3>
+        <p>A new inspirational quote greets you every day.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <div class="privacy-strip">
+    <p><strong>WindoM does not track you.</strong> Your data lives in your browser. An account is entirely optional and only needed for Google Calendar and Spotify. No ads, no analytics, no data sold.</p>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div style="margin-bottom:16px;">
+      <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb">Chrome Web Store</a>
+      <a href="https://github.com/YehudaBriskman/WindoM">GitHub</a>
+      <a href="local-setup.html">Local Setup</a>
+      <a href="privacy.html">Privacy Policy</a>
+    </div>
+    <p>MIT License &copy; 2026 Yehuda Briskman</p>
+  </footer>
+
+  <script>
+    // Animate feature cards on scroll
+    const cards = document.querySelectorAll('.feature-card');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 60);
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    cards.forEach(card => observer.observe(card));
+  </script>
+
+</body>
+</html>
