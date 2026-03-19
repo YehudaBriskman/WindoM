@@ -28,7 +28,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/index.tsx-loader-9zzHagRL.js"
+        "assets/index.tsx-loader-BU6nslc9.js"
       ],
       "matches": [
         "http://*/*",
@@ -52,10 +52,10 @@
         "https://*/*"
       ],
       "resources": [
-        "assets/x-DqQwLDWE.js",
-        "assets/SearchOverlay-uJbia0hb.js",
-        "assets/chevron-down-D55a4NQM.js",
-        "assets/index.tsx-B2nXZnOi.js"
+        "assets/x-DNJng2oy.js",
+        "assets/SearchOverlay-BR7yMOpC.js",
+        "assets/chevron-down-CWZEJj24.js",
+        "assets/index.tsx-Dds-9AGR.js"
       ],
       "use_dynamic_url": false
     }

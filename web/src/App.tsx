@@ -31,10 +31,12 @@ function Dashboard() {
       <BackgroundOverlay />
       <AppLoader />
       <TopBar />
-      <DockBar />
+      <div className="top-dock-area">
+        <DockBar />
+        <SpotifyPlayer />
+      </div>
       <CenterContent />
       <BottomSection />
-      <SpotifyPlayer />
       <RightSidebar />
       <Suspense>
         <SettingsPanel />

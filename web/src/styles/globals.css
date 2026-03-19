@@ -473,12 +473,20 @@ input[type="file"]::file-selector-button:hover {
    ============================================================ */
 /* glass-dock styles are defined in the Liquid Glass Utilities section above */
 
-.dock-wrapper {
+/* Shared top row — centers the dock bar; spotify dock grows to the right */
+.top-dock-area {
   position: absolute;
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   z-index: 100;
+}
+
+.dock-wrapper {
+  position: relative;
 }
 
 .dock-bar {
@@ -2288,10 +2296,9 @@ input[type="checkbox"]:focus-visible {
    Background zoom spans the full 3s of each sequence.
    ============================================================ */
 .top-bar,
-.dock-wrapper,
+.top-dock-area,
 .bottom-section,
-.center-content,
-.spotify-player {
+.center-content {
   transition: opacity 1.5s ease;
 }
 /* Settings and sidebar have their own open/close transitions; only slow during focus enter/exit */
@@ -2304,11 +2311,10 @@ body.focus-exiting .sidebar-container {
 
 /* Step 1 of enter: UI fades out */
 body.focus-entering .top-bar,
-body.focus-entering .dock-wrapper,
+body.focus-entering .top-dock-area,
 body.focus-entering .bottom-section,
 body.focus-entering .sidebar-container,
 body.focus-entering .settings-container,
-body.focus-entering .spotify-player,
 body.focus-entering .center-content {
   opacity: 0;
   pointer-events: none;
@@ -2316,18 +2322,16 @@ body.focus-entering .center-content {
 
 /* Steps 2+3 of enter and active: UI stays hidden */
 body.focus-entering-overlay .top-bar,
-body.focus-entering-overlay .dock-wrapper,
+body.focus-entering-overlay .top-dock-area,
 body.focus-entering-overlay .bottom-section,
 body.focus-entering-overlay .sidebar-container,
 body.focus-entering-overlay .settings-container,
-body.focus-entering-overlay .spotify-player,
 body.focus-entering-overlay .center-content,
 body.focus-active .top-bar,
-body.focus-active .dock-wrapper,
+body.focus-active .top-dock-area,
 body.focus-active .bottom-section,
 body.focus-active .sidebar-container,
 body.focus-active .settings-container,
-body.focus-active .spotify-player,
 body.focus-active .center-content {
   opacity: 0;
   pointer-events: none;
@@ -2336,11 +2340,10 @@ body.focus-active .center-content {
 
 /* Step 1 of exit (overlay fading out): UI stays hidden */
 body.focus-exiting-overlay .top-bar,
-body.focus-exiting-overlay .dock-wrapper,
+body.focus-exiting-overlay .top-dock-area,
 body.focus-exiting-overlay .bottom-section,
 body.focus-exiting-overlay .sidebar-container,
 body.focus-exiting-overlay .settings-container,
-body.focus-exiting-overlay .spotify-player,
 body.focus-exiting-overlay .center-content {
   opacity: 0;
   pointer-events: none;
@@ -2349,10 +2352,9 @@ body.focus-exiting-overlay .center-content {
 
 /* Step 2 of exit: UI fades back in */
 body.focus-exiting .top-bar,
-body.focus-exiting .dock-wrapper,
+body.focus-exiting .top-dock-area,
 body.focus-exiting .bottom-section,
 body.focus-exiting .settings-container,
-body.focus-exiting .spotify-player,
 body.focus-exiting .center-content {
   opacity: 1;
   pointer-events: auto;
@@ -2936,126 +2938,175 @@ body.focus-exiting .sidebar-container {
 }
 
 /* ============================================================
-   Spotify Floating Player (fixed, bottom-left above settings)
+   Spotify Dock (top-right, same style as quick-links dock)
    ============================================================ */
-.spotify-player {
-  position: fixed;
-  bottom: 62px;
-  left: 10px;
-  width: 240px;
-  padding: 12px 14px 10px;
-  border-radius: 16px;
-  z-index: 150;
-  transition: opacity 1.5s ease;
-}
-.spotify-player-row {
+.spotify-dock {
+  height: 44px;
+  width: 44px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.spotify-player-art {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  object-fit: cover;
+  flex-direction: row;
+  border-radius: 22px;
+  overflow: hidden;
+  cursor: default;
   flex-shrink: 0;
+  transition:
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-radius 0.35s ease,
+    opacity 1.5s ease;
 }
-.spotify-player-art-placeholder {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+
+.spotify-dock--open {
+  width: 272px;
+  border-radius: 16px;
+}
+
+/* ── Expandable panel (left side, grows when hovered) ─────────── */
+.spotify-dock-expand {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.spotify-dock--open .spotify-dock-expand {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.spotify-dock-expand-inner {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 14px 0 6px;
+  height: 44px;
+  white-space: nowrap;
+}
+
+/* Control buttons */
+.spotify-dock-ctrl {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  padding: 0;
   flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.spotify-player-info {
+.spotify-dock-ctrl:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: white;
+}
+
+/* Track name + progress bar */
+.spotify-dock-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  margin: 0 8px;
 }
-.spotify-player-track-link {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-}
-.spotify-player-track-link:hover .spotify-player-track-name {
-  text-decoration: underline;
-}
-.spotify-player-track-name {
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.spotify-player-track-artist {
+.spotify-dock-track-name {
   font-size: 11px;
-  opacity: 0.6;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
 }
-.spotify-player-nothing {
-  opacity: 0.5;
-  font-style: italic;
-}
-.spotify-player-progress-bar {
+.spotify-dock-progress-bar {
   height: 3px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.18);
   overflow: hidden;
-  margin-bottom: 10px;
 }
-.spotify-player-progress-fill {
+.spotify-dock-progress-fill {
   height: 100%;
   border-radius: 2px;
   background: #1DB954;
   transition: width 0.5s linear;
 }
-.spotify-player-error {
-  font-size: 10px;
-  color: rgba(255, 100, 100, 0.9);
-  margin-bottom: 6px;
-  line-height: 1.3;
-  word-break: break-word;
-}
-.spotify-player-controls {
+
+/* ── Disc button (right side, always visible) ─────────────────── */
+.spotify-dock-disc-btn {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-}
-.spotify-ctrl-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  background: none;
   border: none;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  padding: 0;
+  position: relative;
+  border-radius: 50%;
+  transition: background 0.15s ease;
+}
+.spotify-dock-disc-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Vinyl disc */
+.spotify-dock-disc {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
   flex-shrink: 0;
 }
-.spotify-ctrl-btn:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: white;
+.spotify-dock-disc.spinning {
+  animation: spotify-disc-spin 4s linear infinite;
 }
-.spotify-ctrl-btn--main {
-  width: 38px;
-  height: 38px;
-  background: rgba(29, 185, 84, 0.2);
-  color: #1DB954;
+@keyframes spotify-disc-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
-.spotify-ctrl-btn--main:hover {
-  background: rgba(29, 185, 84, 0.35);
-  color: #1DB954;
+
+.spotify-dock-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.spotify-dock-art-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* EQ bars overlay on top of the spinning disc */
+.spotify-dock-eq-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.spotify-dock-eq-overlay .spotify-eq-bar {
+  height: 7px;
 }
 
 /* ============================================================
