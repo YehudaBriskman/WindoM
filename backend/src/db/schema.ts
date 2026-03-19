@@ -31,7 +31,8 @@ export const refreshSessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tokenHash: text('token_hash').notNull(),
-    tokenLookup: text('token_lookup'), // SHA-256 hex of raw token — indexed for O(1) lookup
+    /** SHA-256 hex of the raw token — uniquely indexed for O(1) session lookup. */
+    tokenLookup: text('token_lookup'),
     rotatedFromId: uuid('rotated_from_id'),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     userAgent: text('user_agent').notNull().default(''),

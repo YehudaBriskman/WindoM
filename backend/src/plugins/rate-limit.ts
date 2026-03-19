@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import fastifyRateLimit from '@fastify/rate-limit';
 
-export async function registerRateLimit(app: FastifyInstance) {
+export async function registerRateLimit(app: FastifyInstance): Promise<void> {
   await app.register(fastifyRateLimit, {
     global: true,
     max: 100,
