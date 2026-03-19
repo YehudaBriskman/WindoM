@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WindoM — Local Setup Guide</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f0f;
+      color: #e8e8e8;
+      line-height: 1.7;
+      padding: 0 24px 80px;
+    }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    header { padding: 60px 0 40px; border-bottom: 1px solid #222; margin-bottom: 48px; }
+    header h1 { font-size: 2.2rem; font-weight: 700; color: #fff; }
+    header p { margin-top: 10px; color: #888; font-size: 1.05rem; }
+    nav { display: flex; gap: 20px; margin-top: 24px; flex-wrap: wrap; }
+    nav a { color: #7b9ef5; font-size: 0.9rem; text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    h2 { font-size: 1.4rem; font-weight: 600; color: #fff; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #222; }
+    h3 { font-size: 1.05rem; font-weight: 600; color: #ccc; margin: 28px 0 10px; }
+    p { color: #aaa; margin-bottom: 12px; }
+    ul, ol { color: #aaa; padding-left: 22px; margin-bottom: 12px; }
+    li { margin-bottom: 6px; }
+    a { color: #7b9ef5; }
+    code {
+      background: #1a1a1a;
+      color: #e2c97e;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.88em;
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+    }
+    pre {
+      background: #151515;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      margin: 12px 0 20px;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+      color: #d4d4d4;
+      font-size: 0.9rem;
+    }
+    .badge {
+      display: inline-block;
+      background: #1e2a1e;
+      color: #5cb85c;
+      border: 1px solid #2d4a2d;
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    .badge.optional { background: #1e1e2a; color: #7b9ef5; border-color: #2d2d4a; }
+    .callout {
+      background: #1a1a1a;
+      border-left: 3px solid #7b9ef5;
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: #aaa;
+      font-size: 0.95rem;
+    }
+    .callout.tip { border-color: #5cb85c; }
+    .callout.warning { border-color: #e2b96e; }
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      background: #1e2a3e;
+      color: #7b9ef5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+    th { text-align: left; color: #fff; padding: 10px 14px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a; }
+    td { padding: 10px 14px; border-bottom: 1px solid #1e1e1e; color: #aaa; }
+    tr:last-child td { border-bottom: none; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>WindoM — Local Setup Guide</h1>
+    <p>Everything you need to run WindoM on your own machine.</p>
+    <nav>
+      <a href="#extension-only">Extension Only</a>
+      <a href="#full-stack">Full Stack (with Backend)</a>
+      <a href="#env-reference">Environment Reference</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="https://github.com/YehudaBriskman/WindoM">GitHub</a>
+    </nav>
+  </header>
+
+  <!-- ─── SECTION 1 ─────────────────────────────────── -->
+  <h2 id="extension-only">Option A — Extension Only <span class="badge">Recommended to start</span></h2>
+
+  <p>
+    This gets the extension running in Chrome with no backend needed.
+    Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work out of the box.
+    Google Calendar and Spotify require the full stack setup below.
+  </p>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li><a href="https://nodejs.org">Node.js 18 or higher</a></li>
+    <li>Google Chrome</li>
+    <li>Git</li>
+  </ul>
+
+  <h3>Steps</h3>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Clone the repository.</p>
+      <pre><code>git clone https://github.com/YehudaBriskman/WindoM.git
+cd WindoM</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Install dependencies for the extension.</p>
+      <pre><code>cd web
+npm install</code></pre>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>Build the extension.</p>
+      <pre><code>npm run build</code></pre>
+      <p>This creates a <code>web/dist/</code> folder — that is your built extension.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p>Load the extension in Chrome.</p>
+      <ol>
+        <li>Open Chrome and go to <code>chrome://extensions</code></li>
+        <li>Enable <strong>Developer mode</strong> (toggle in the top right)</li>
+        <li>Click <strong>Load unpacked</strong></li>
+        <li>Select the <code>web/dist</code> folder</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p>Open a new tab. WindoM should appear.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <strong>Dev mode with hot reload</strong> — run <code>npm run dev</code> instead of build, then load the project root folder (not <code>dist/</code>) as the unpacked extension. Changes reload automatically.
+  </div>
+
+
+  <!-- ─── SECTION 2 ─────────────────────────────────── -->
+  <h2 id="full-stack">Option B — Full Stack <span class="badge optional">Optional</span></h2>
+
+  <p>
+    Required if you want Google Calendar sync or Spotify integration.
+    This runs a local backend with a Postgres database using Docker.
+  </p>
+
+  <h3>Prerequisites</h3>
+  <ul>
+    <li>Everything from Option A</li>
+    <li><a href="https://www.docker.com/products/docker-desktop">Docker Desktop</a></li>
+    <li>A Google Cloud project with OAuth credentials (for Calendar)</li>
+    <li>A Spotify Developer app (for Spotify)</li>
+  </ul>
+
+  <h3>Steps</h3>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Copy the example environment file.</p>
+      <pre><code>cp backend/.env.example backend/.env</code></pre>
+      <p>Then open <code>backend/.env</code> and fill in the values. See the <a href="#env-reference">Environment Reference</a> below for what each one means.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Generate secure secrets for JWT and token encryption.</p>
+      <pre><code>node -e "const c=require('crypto'); console.log('JWT_ACCESS_SECRET='+c.randomBytes(32).toString('base64')); console.log('REFRESH_TOKEN_SECRET='+c.randomBytes(32).toString('base64')); console.log('TOKEN_ENC_KEY_BASE64='+c.randomBytes(32).toString('base64'));"</code></pre>
+      <p>Copy the output into your <code>.env</code> file.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>Start the backend and database with Docker.</p>
+      <pre><code>docker-compose up --build</code></pre>
+      <p>The API will be running at <code>http://localhost:8080</code>. The database runs at port <code>5433</code>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p>Build the extension pointing at your local backend.</p>
+      <pre><code>cd web
+npm install
+npm run build</code></pre>
+      <p>The default backend URL is already <code>http://localhost:8080</code> so no changes are needed.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p>Load <code>web/dist</code> as an unpacked extension in Chrome (same as Option A, step 4).</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <strong>Google and Spotify OAuth</strong> — for local auth to work, you need to add <code>http://localhost:8080/auth/google/callback</code> and <code>http://localhost:8080/oauth/google/callback</code> to your Google Cloud Console OAuth client's authorized redirect URIs, and <code>http://localhost:8080/oauth/spotify/callback</code> to your Spotify app's redirect URIs.
+  </div>
+
+
+  <!-- ─── SECTION 3 ─────────────────────────────────── -->
+  <h2 id="env-reference">Environment Reference</h2>
+
+  <p>All variables go in <code>backend/.env</code>. The ones marked optional are only needed for specific features.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Variable</th>
+        <th>Description</th>
+        <th>Required</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>PORT</code></td>
+        <td>Port the backend listens on. Default: <code>8080</code></td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>DATABASE_URL</code></td>
+        <td>Postgres connection string. When using Docker Compose this is set automatically.</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>JWT_ACCESS_SECRET</code></td>
+        <td>Random secret used to sign access tokens. Generate with <code>openssl rand -base64 32</code></td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>REFRESH_TOKEN_SECRET</code></td>
+        <td>Random secret used to sign refresh tokens. Generate separately from the above.</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>TOKEN_ENC_KEY_BASE64</code></td>
+        <td>32 random bytes base64-encoded. Used to encrypt OAuth tokens at rest.</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>GOOGLE_CLIENT_ID</code></td>
+        <td>OAuth 2.0 Client ID from Google Cloud Console.</td>
+        <td>For Google features</td>
+      </tr>
+      <tr>
+        <td><code>GOOGLE_CLIENT_SECRET</code></td>
+        <td>OAuth 2.0 Client Secret from Google Cloud Console.</td>
+        <td>For Google features</td>
+      </tr>
+      <tr>
+        <td><code>GOOGLE_REDIRECT_URI</code></td>
+        <td>Callback URL for Google Sign-in. Example: <code>http://localhost:8080/auth/google/callback</code></td>
+        <td>For Google features</td>
+      </tr>
+      <tr>
+        <td><code>GOOGLE_OAUTH_REDIRECT_URI</code></td>
+        <td>Callback URL for Google Calendar OAuth. Example: <code>http://localhost:8080/oauth/google/callback</code></td>
+        <td>For Calendar</td>
+      </tr>
+      <tr>
+        <td><code>SPOTIFY_CLIENT_ID</code></td>
+        <td>Client ID from your Spotify Developer app.</td>
+        <td>For Spotify</td>
+      </tr>
+      <tr>
+        <td><code>SPOTIFY_CLIENT_SECRET</code></td>
+        <td>Client Secret from your Spotify Developer app.</td>
+        <td>For Spotify</td>
+      </tr>
+      <tr>
+        <td><code>SPOTIFY_REDIRECT_URI</code></td>
+        <td>Callback URL for Spotify OAuth. Example: <code>http://localhost:8080/oauth/spotify/callback</code></td>
+        <td>For Spotify</td>
+      </tr>
+      <tr>
+        <td><code>CORS_ALLOWED_ORIGINS</code></td>
+        <td>Comma-separated list of allowed origins. Include your extension ID and localhost ports.</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td><code>EXTENSION_REDIRECT_BASE</code></td>
+        <td>The chromiumapp.org URL for your extension. Used as the OAuth redirect base for the Chrome identity flow.</td>
+        <td>For Google features</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Finding your extension ID</strong> — load the extension as unpacked in Chrome, then go to <code>chrome://extensions</code>. The ID is shown under the extension name. Use it in <code>CORS_ALLOWED_ORIGINS</code> as <code>chrome-extension://YOUR_ID</code> and in <code>EXTENSION_REDIRECT_BASE</code> as <code>https://YOUR_ID.chromiumapp.org</code>.
+  </div>
+
+  <h3>Example .env for local development</h3>
+  <pre><code>PORT=8080
+NODE_ENV=development
+DATABASE_URL=postgresql://windom:windom@localhost:5433/windom
+
+JWT_ACCESS_SECRET=your-generated-secret-here
+REFRESH_TOKEN_SECRET=your-other-generated-secret-here
+TOKEN_ENC_KEY_BASE64=your-generated-key-here
+
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
+GOOGLE_OAUTH_REDIRECT_URI=http://localhost:8080/oauth/google/callback
+
+SPOTIFY_CLIENT_ID=your-spotify-client-id
+SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
+SPOTIFY_REDIRECT_URI=http://localhost:8080/oauth/spotify/callback
+
+CORS_ALLOWED_ORIGINS=chrome-extension://YOUR_EXTENSION_ID,http://localhost:3000,http://localhost:5173
+EXTENSION_REDIRECT_BASE=https://YOUR_EXTENSION_ID.chromiumapp.org</code></pre>
+
+</div>
+</body>
+</html>
