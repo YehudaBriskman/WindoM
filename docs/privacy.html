@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WindoM — Privacy Policy</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 760px;
+      margin: 60px auto;
+      padding: 0 24px;
+      color: #1a1a1a;
+      line-height: 1.7;
+    }
+    h1 { font-size: 2rem; margin-bottom: 4px; }
+    h2 { font-size: 1.2rem; margin-top: 40px; }
+    p, li { font-size: 1rem; color: #333; }
+    ul { padding-left: 20px; }
+    .updated { color: #888; font-size: 0.9rem; margin-bottom: 40px; }
+    a { color: #4f6ef7; }
+  </style>
+</head>
+<body>
+
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: March 19, 2026</p>
+
+  <p>
+    WindoM is a Chrome extension that replaces your new tab page with a personal productivity dashboard.
+    This policy explains what data we collect, how we use it, and what stays on your device.
+  </p>
+
+  <h2>What data stays on your device</h2>
+  <p>The following is stored only in your browser using <code>chrome.storage</code> and never sent to any server:</p>
+  <ul>
+    <li>Dashboard settings and preferences</li>
+    <li>Todo items and quick links</li>
+    <li>Cached weather data and background images</li>
+    <li>Your display name and local customizations</li>
+  </ul>
+
+  <h2>Account (optional)</h2>
+  <p>
+    Creating an account is entirely optional. The dashboard works fully without signing in.
+    If you choose to create an account, we store your email address and a hashed password on our servers,
+    solely for the purpose of authentication.
+  </p>
+
+  <h2>Google Calendar integration (optional)</h2>
+  <p>
+    If you connect Google Calendar, WindoM requests read-only access to your calendar events.
+    Your Google OAuth token is stored encrypted on our servers and is used only to fetch your
+    upcoming events on your behalf. We do not read, store, or share your calendar content beyond
+    displaying it to you on the dashboard.
+  </p>
+
+  <h2>Spotify integration (optional)</h2>
+  <p>
+    If you connect Spotify, WindoM requests access to your currently playing track.
+    Your Spotify OAuth token is stored encrypted on our servers and is used only to fetch
+    now-playing information. We do not access your library, playlists, or listening history.
+  </p>
+
+  <h2>Third-party APIs</h2>
+  <p>WindoM makes requests to the following external services on your behalf:</p>
+  <ul>
+    <li><strong>Unsplash</strong> — to fetch background images</li>
+    <li><strong>OpenWeatherMap</strong> — to fetch weather for your location</li>
+    <li><strong>Quotable</strong> — to fetch a daily quote</li>
+  </ul>
+  <p>These services have their own privacy policies. WindoM does not share any personal data with them.</p>
+
+  <h2>Data sharing</h2>
+  <p>
+    We do not sell, rent, or share your personal data with any third party for marketing or advertising purposes.
+    We do not use your data for any purpose other than providing the features of WindoM.
+  </p>
+
+  <h2>Data deletion</h2>
+  <p>
+    You can delete your account and all associated server-side data at any time from the Account tab
+    in the extension settings. Local browser data can be cleared by removing the extension.
+  </p>
+
+  <h2>Security</h2>
+  <p>
+    All communication between the extension and our servers uses HTTPS.
+    OAuth tokens are encrypted at rest using AES-GCM encryption.
+    Authentication uses short-lived JWT access tokens and rotating refresh tokens stored as HttpOnly cookies.
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    If you have any questions about this policy, please contact us at
+    <a href="mailto:yr0556772363@gmail.com">yr0556772363@gmail.com</a>.
+  </p>
+
+</body>
+</html>
