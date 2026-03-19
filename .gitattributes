@@ -1,0 +1,5 @@
+# Default: normalize to LF on checkout
+* text=auto eol=lf
+
+# Shell scripts must always be LF
+*.sh text eol=lf
