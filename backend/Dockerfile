@@ -20,7 +20,10 @@ COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 
 COPY --from=builder /app/dist ./dist
+COPY drizzle ./drizzle
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["node", "dist/index.js"]
+CMD ["./entrypoint.sh"]
