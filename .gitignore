@@ -5,4 +5,4 @@
 node_modules
 PUBLISH_CHECKLIST.md
 .env
-drizzle
+/drizzle

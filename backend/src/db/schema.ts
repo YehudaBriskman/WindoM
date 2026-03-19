@@ -6,6 +6,8 @@ import {
   boolean,
   inet,
   uniqueIndex,
+  integer,
+  jsonb,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -32,6 +34,7 @@ export const refreshSessions = pgTable('refresh_sessions', {
   userAgent: text('user_agent').notNull().default(''),
   ip: inet('ip').notNull(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  renewalCount: integer('renewal_count').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -66,6 +69,14 @@ export const oauthStates = pgTable('oauth_states', {
   used: boolean('used').notNull().default(false),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ── User Settings ──────────────────────────────────────────────────────────
+
+export const userSettings = pgTable('user_settings', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  data: jsonb('data').notNull().default({}),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
 // ── Relations ──────────────────────────────────────────────────────────────

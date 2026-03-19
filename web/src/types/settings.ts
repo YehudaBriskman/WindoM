@@ -60,9 +60,9 @@ export const defaultSettings: Settings = {
   calendarDays: 7,
   spotifyConnected: false,
   quickLinks: [
-    { name: 'Gmail', url: 'https://gmail.com', icon: 'mail' },
-    { name: 'YouTube', url: 'https://youtube.com', icon: 'play' },
-    { name: 'GitHub', url: 'https://github.com', icon: 'github' },
+    { name: 'Gmail', url: 'https://gmail.com', icon: '' },
+    { name: 'YouTube', url: 'https://youtube.com', icon: '' },
+    { name: 'GitHub', url: 'https://github.com', icon: '' },
   ],
   quotesEnabled: true,
   quoteSource: 'local',

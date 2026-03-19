@@ -32,6 +32,12 @@ async function doRefresh(): Promise<string | null> {
     });
     if (!res.ok) {
       await clearAccessToken();
+      try {
+        const err = (await res.json()) as { code?: string };
+        if (err.code === 'SESSION_LIMIT_REACHED') {
+          window.dispatchEvent(new CustomEvent('windom-session-expired'));
+        }
+      } catch { /* ignore parse errors */ }
       return null;
     }
     const data = (await res.json()) as { accessToken: string };
@@ -102,6 +108,15 @@ export async function apiGet<T>(path: string): Promise<T> {
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   const res = await apiFetch(path, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({ message: res.statusText }))) as { message?: string };
+    throw new Error(err.message ?? res.statusText);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
+  const res = await apiFetch(path, { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined });
   if (!res.ok) {
     const err = (await res.json().catch(() => ({ message: res.statusText }))) as { message?: string };
     throw new Error(err.message ?? res.statusText);
