@@ -12,6 +12,7 @@ import { oauthSpotifyRoutes } from './routes/oauth-spotify.js';
 import { integrationsRoutes } from './routes/integrations.js';
 import { calendarRoutes } from './routes/calendar.js';
 import { spotifyRoutes } from './routes/spotify.js';
+import { settingsRoutes } from './routes/settings.js';
 
 const app = Fastify({
   logger: {
@@ -50,6 +51,7 @@ await app.register(oauthSpotifyRoutes, { prefix: '/oauth/spotify' });
 await app.register(integrationsRoutes, { prefix: '/integrations' });
 await app.register(calendarRoutes, { prefix: '/calendar' });
 await app.register(spotifyRoutes, { prefix: '/spotify' });
+await app.register(settingsRoutes);
 
 // ── Global error handler ───────────────────────────────────────────────────
 
