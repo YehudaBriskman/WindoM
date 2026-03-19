@@ -1,4 +1,4 @@
-import{a as N,j as e,r as u,u as C,l as H,g as _,b as L,f as q,m as R,X as V}from"./x-DNJng2oy.js";import{u as E,C as Q,H as K,a as Y,b as Z,i as X,g as J,L as ee,S as f}from"./newtab.html-EBnChi7m.js";import{C as se}from"./chevron-down-CWZEJj24.js";/**
+import{a as N,j as e,r as u,u as C,l as H,g as _,b as L,f as q,m as R,X as V}from"./x-DNJng2oy.js";import{u as E,C as Q,H as K,a as Y,b as Z,i as X,g as J,L as ee,S as f}from"./newtab.html-BnJEl2E0.js";import{C as se}from"./chevron-down-CWZEJj24.js";/**
  * @license lucide-react v0.468.0 - ISC
  *
  * This source code is licensed under the ISC license.
