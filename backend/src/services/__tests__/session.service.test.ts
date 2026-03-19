@@ -122,7 +122,7 @@ describe('findSessionByToken', () => {
   });
 
   it('returns null when bcrypt compare fails', async () => {
-    vi.mocked(bcrypt.compare).mockResolvedValueOnce(false);
+    vi.mocked(bcrypt.compare).mockResolvedValueOnce(false as unknown as string);
     const session = { revokedAt: null, expiresAt: new Date(Date.now() + 99999), tokenHash: '$2b$hash', tokenLookup: 'abc' };
     const whereSpy = vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([session]) });
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: whereSpy }) });
@@ -133,7 +133,7 @@ describe('findSessionByToken', () => {
   });
 
   it('returns the session when valid', async () => {
-    vi.mocked(bcrypt.compare).mockResolvedValueOnce(true);
+    vi.mocked(bcrypt.compare).mockResolvedValueOnce(true as unknown as string);
     const session = { revokedAt: null, expiresAt: new Date(Date.now() + 99999), tokenHash: '$2b$hash', tokenLookup: 'abc', id: 'sid' };
     const whereSpy = vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([session]) });
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: whereSpy }) });
