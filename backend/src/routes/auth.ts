@@ -9,7 +9,8 @@ import { signAccessToken } from '../lib/jwt.js';
 import bcrypt from 'bcryptjs';
 import { config } from '../config.js';
 
-const REFRESH_TTL_DAYS = 30;
+const REFRESH_WINDOW_DAYS = 7;  // sliding window per token
+const MAX_RENEWALS = 4;         // 5 total windows × 7 days ≈ 35 days, then force re-login
 const COOKIE_NAME = 'windom_refresh';
 
 const cookieOpts = {
@@ -17,7 +18,7 @@ const cookieOpts = {
   secure: config.isProd,
   sameSite: 'none' as const,
   path: '/auth/refresh',
-  maxAge: REFRESH_TTL_DAYS * 24 * 60 * 60, // seconds
+  maxAge: REFRESH_WINDOW_DAYS * 24 * 60 * 60, // seconds (sliding — reset on each rotation)
 };
 
 function getClientIp(req: import('fastify').FastifyRequest): string {
@@ -33,10 +34,11 @@ async function createSession(
   userId: string,
   req: import('fastify').FastifyRequest,
   rotatedFromId?: string,
+  renewalCount = 0,
 ): Promise<string> {
   const rawToken = crypto.randomBytes(48).toString('base64url');
   const tokenHash = await bcrypt.hash(rawToken, 10);
-  const expiresAt = new Date(Date.now() + REFRESH_TTL_DAYS * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(Date.now() + REFRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   await db.insert(refreshSessions).values({
     userId,
@@ -45,6 +47,7 @@ async function createSession(
     ip: getClientIp(req),
     userAgent: req.headers['user-agent'] ?? '',
     expiresAt,
+    renewalCount,
   });
 
   return rawToken;
@@ -55,10 +58,11 @@ async function issueTokenPair(
   req: import('fastify').FastifyRequest,
   reply: import('fastify').FastifyReply,
   rotatedFromId?: string,
+  renewalCount = 0,
 ) {
   const [accessToken, refreshToken] = await Promise.all([
     signAccessToken({ sub: user.id, email: user.email, name: user.name }),
-    createSession(user.id, req, rotatedFromId),
+    createSession(user.id, req, rotatedFromId, renewalCount),
   ]);
 
   reply.setCookie(COOKIE_NAME, refreshToken, cookieOpts);
@@ -161,6 +165,13 @@ export async function authRoutes(app: FastifyInstance) {
         return reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired refresh token' });
       }
 
+      // Check renewal cap — after MAX_RENEWALS the user must log in again
+      if (matchedSession.renewalCount >= MAX_RENEWALS) {
+        await db.update(refreshSessions).set({ revokedAt: new Date() }).where(eq(refreshSessions.id, matchedSession.id));
+        reply.clearCookie(COOKIE_NAME, { path: '/auth/refresh' });
+        return reply.status(401).send({ statusCode: 401, error: 'Unauthorized', code: 'SESSION_LIMIT_REACHED', message: 'Session expired. Please log in again.' });
+      }
+
       // Check for reuse: if this session was already rotated (has a child session), revoke the whole chain
       const childSessions = await db
         .select()
@@ -188,7 +199,7 @@ export async function authRoutes(app: FastifyInstance) {
         return reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'User not found' });
       }
 
-      return issueTokenPair(user, req, reply, matchedSession.id);
+      return issueTokenPair(user, req, reply, matchedSession.id, matchedSession.renewalCount + 1);
     },
   });
 
