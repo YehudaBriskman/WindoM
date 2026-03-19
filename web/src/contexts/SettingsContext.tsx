@@ -1,6 +1,22 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
+import { getAccessToken, apiGet, apiPut } from '../lib/api';
+
+// These fields are ephemeral or device-specific — never synced to backend
+const SYNC_EXCLUDE = new Set<keyof Settings>([
+  'localBackground',   // device file / potentially huge data URL
+  'mainFocus',         // ephemeral daily state
+  'focusCompleted',    // ephemeral daily state
+  'calendarConnected', // derived from OAuth, not a user setting
+  'spotifyConnected',  // derived from OAuth, not a user setting
+]);
+
+function pickSyncable(s: Partial<Settings>): Partial<Settings> {
+  return Object.fromEntries(
+    Object.entries(s).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
+  ) as Partial<Settings>;
+}
 
 interface SettingsContextValue {
   settings: Settings;
@@ -16,12 +32,46 @@ export const SettingsContext = createContext<SettingsContextValue | null>(null);
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
   const [loaded, setLoaded] = useState(false);
+  const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load settings on mount
+  // Debounced push to backend — resets the 5s timer on every change
+  const debouncedPush = useCallback((data: Partial<Settings>) => {
+    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
+    pushTimerRef.current = setTimeout(async () => {
+      try {
+        const token = await getAccessToken();
+        if (token) await apiPut('/settings', pickSyncable(data));
+      } catch { /* best-effort */ }
+    }, 5000);
+  }, []);
+
+  // Sync with backend: fetch remote settings, merge into local (backend wins).
+  // If backend has no data yet, push local settings to bootstrap the account.
+  const syncWithBackend = useCallback(async (localSettings: Settings) => {
+    try {
+      const token = await getAccessToken();
+      if (!token) return;
+
+      const { data } = await apiGet<{ data: Partial<Settings> | null }>('/settings');
+
+      if (data && Object.keys(data).length > 0) {
+        // Backend has data — merge into local (backend wins for syncable keys)
+        const merged = { ...localSettings, ...data };
+        setSettings(merged);
+        await syncStorage.setMultiple(merged as unknown as Record<string, unknown>);
+      } else {
+        // New account — push existing local settings to backend
+        await apiPut('/settings', pickSyncable(localSettings));
+      }
+    } catch { /* backend unreachable — stay on local */ }
+  }, []);
+
+  // Load settings on mount, then attempt backend sync
   useEffect(() => {
     (async () => {
       const stored = await syncStorage.getMultiple(defaultSettings as unknown as Record<string, unknown>);
-      setSettings(stored as unknown as Settings);
+      const local = stored as unknown as Settings;
+      setSettings(local);
 
       // First install check
       const isFirstInstall = await syncStorage.get('isFirstInstall', true);
@@ -30,8 +80,21 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       }
 
       setLoaded(true);
+      await syncWithBackend(local);
     })();
-  }, []);
+  }, [syncWithBackend]);
+
+  // Re-sync when user logs in
+  useEffect(() => {
+    const handler = () => {
+      setSettings((current) => {
+        syncWithBackend(current);
+        return current;
+      });
+    };
+    window.addEventListener('windom-auth-login', handler);
+    return () => window.removeEventListener('windom-auth-login', handler);
+  }, [syncWithBackend]);
 
   // Listen for cross-tab changes
   useEffect(() => {
@@ -56,18 +119,26 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(
     async <K extends keyof Settings>(key: K, value: Settings[K]) => {
-      setSettings((prev) => ({ ...prev, [key]: value }));
+      setSettings((prev) => {
+        const next = { ...prev, [key]: value };
+        debouncedPush(next);
+        return next;
+      });
       await syncStorage.set(key, value);
     },
-    [],
+    [debouncedPush],
   );
 
   const updateMultiple = useCallback(
     async (updates: Partial<Settings>) => {
-      setSettings((prev) => ({ ...prev, ...updates }));
+      setSettings((prev) => {
+        const next = { ...prev, ...updates };
+        debouncedPush(next);
+        return next;
+      });
       await syncStorage.setMultiple(updates as unknown as Record<string, unknown>);
     },
-    [],
+    [debouncedPush],
   );
 
   const reset = useCallback(async () => {

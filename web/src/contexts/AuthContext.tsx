@@ -13,6 +13,7 @@ interface AuthState {
   user: User | null;
   accessToken: string | null;
   loading: boolean;
+  sessionExpired: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -23,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sessionExpired, setSessionExpired] = useState(false);
 
   const logout = useCallback(async () => {
     try {
@@ -41,6 +43,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setTokenState(null);
     });
+  }, []);
+
+  // Listen for session hard-expiry (renewal cap reached) to show re-login message
+  useEffect(() => {
+    const handler = () => {
+      setUser(null);
+      setTokenState(null);
+      setSessionExpired(true);
+    };
+    window.addEventListener('windom-session-expired', handler);
+    return () => window.removeEventListener('windom-session-expired', handler);
   }, []);
 
   // On mount: check if we already have a token or can refresh.
@@ -79,10 +92,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokenState(data.accessToken);
     const me = await apiGet<User>('/me');
     setUser(me);
+    setSessionExpired(false);
+    window.dispatchEvent(new CustomEvent('windom-auth-login'));
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, loading, sessionExpired, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
