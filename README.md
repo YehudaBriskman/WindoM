@@ -1,5 +1,7 @@
 <div align="center">
 
+## Coming Soon!
+
 # WindoM
 
 **The new tab you always wanted.**
@@ -49,7 +51,8 @@ At a glance, you see the time, the weather outside, your upcoming calendar event
 
 **From the Chrome Web Store** (recommended):
 
-[Install WindoM](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
+<!-- [Install WindoM](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb) -->
+Install WindoM - Soon!
 
 **Run locally:**
 
