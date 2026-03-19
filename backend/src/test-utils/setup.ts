@@ -8,7 +8,11 @@
  * Create .env.test alongside .env with:
  *   DATABASE_URL_TEST=postgresql://windom:windom@localhost:5433/windom_test
  */
-import 'dotenv/config';
+import { config as loadDotenv } from 'dotenv';
+
+// Load base env then overlay .env.test so DATABASE_URL_TEST is available
+loadDotenv();
+loadDotenv({ path: '.env.test', override: true });
 
 const testUrl = process.env['DATABASE_URL_TEST'];
 if (testUrl) {

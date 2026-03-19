@@ -14,14 +14,18 @@ import { calendarRoutes } from './routes/calendar.js';
 import { spotifyRoutes } from './routes/spotify.js';
 import { settingsRoutes } from './routes/settings.js';
 
+export interface BuildAppOptions extends FastifyServerOptions {
+  /** Skip rate limiting — set to true in tests to prevent limit accumulation across test runs. */
+  skipRateLimit?: boolean;
+}
+
 /**
  * Builds and fully registers the Fastify application.
  * Does NOT bind a port — call app.listen() in the entry point.
  *
- * Accepts optional Fastify server option overrides so tests can disable
- * the logger without affecting the production configuration.
+ * Accepts optional overrides so tests can disable the logger and rate limiter.
  */
-export async function buildApp(overrides: FastifyServerOptions = {}): Promise<FastifyInstance> {
+export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify({
     logger: {
       level: config.isProd ? 'info' : 'debug',
@@ -47,7 +51,7 @@ export async function buildApp(overrides: FastifyServerOptions = {}): Promise<Fa
   });
 
   await registerCors(app);
-  await registerRateLimit(app);
+  if (!skipRateLimit) await registerRateLimit(app);
 
   // ── Routes ─────────────────────────────────────────────────────────────────
 

@@ -15,6 +15,13 @@
       "when": 1773911365590,
       "tag": "0001_large_tarantula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773923689618,
+      "tag": "0002_polite_ulik",
+      "breakpoints": true
     }
   ]
 }

@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import fastifyCors from '@fastify/cors';
 import { config } from '../config.js';
 
-export async function registerCors(app: FastifyInstance) {
+export async function registerCors(app: FastifyInstance): Promise<void> {
   await app.register(fastifyCors, {
     origin: (origin, cb) => {
       // Allow requests with no origin (mobile apps, curl, server-to-server)
