@@ -23,20 +23,25 @@ export const users = pgTable('users', {
 
 // ── Refresh Sessions ───────────────────────────────────────────────────────
 
-export const refreshSessions = pgTable('refresh_sessions', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  tokenHash: text('token_hash').notNull(),
-  rotatedFromId: uuid('rotated_from_id'),
-  revokedAt: timestamp('revoked_at', { withTimezone: true }),
-  userAgent: text('user_agent').notNull().default(''),
-  ip: inet('ip').notNull(),
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  renewalCount: integer('renewal_count').notNull().default(0),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const refreshSessions = pgTable(
+  'refresh_sessions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    tokenLookup: text('token_lookup'), // SHA-256 hex of raw token — indexed for O(1) lookup
+    rotatedFromId: uuid('rotated_from_id'),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    userAgent: text('user_agent').notNull().default(''),
+    ip: inet('ip').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    renewalCount: integer('renewal_count').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('refresh_sessions_token_lookup_idx').on(table.tokenLookup)],
+);
 
 // ── OAuth Accounts ─────────────────────────────────────────────────────────
 

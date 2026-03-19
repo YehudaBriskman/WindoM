@@ -1,0 +1,2 @@
+ALTER TABLE "refresh_sessions" ADD COLUMN "token_lookup" text;--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "refresh_sessions_token_lookup_idx" ON "refresh_sessions" USING btree ("token_lookup");

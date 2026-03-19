@@ -3,7 +3,7 @@ import { z } from 'zod';
 import crypto from 'node:crypto';
 import { db } from '../db/client.js';
 import { users, refreshSessions } from '../db/schema.js';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { signAccessToken } from '../lib/jwt.js';
 import bcrypt from 'bcryptjs';
@@ -30,6 +30,10 @@ function getClientIp(req: import('fastify').FastifyRequest): string {
   );
 }
 
+function sha256Hex(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
 async function createSession(
   userId: string,
   req: import('fastify').FastifyRequest,
@@ -37,12 +41,14 @@ async function createSession(
   renewalCount = 0,
 ): Promise<string> {
   const rawToken = crypto.randomBytes(48).toString('base64url');
+  const tokenLookup = sha256Hex(rawToken);
   const tokenHash = await bcrypt.hash(rawToken, 10);
   const expiresAt = new Date(Date.now() + REFRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   await db.insert(refreshSessions).values({
     userId,
     tokenHash,
+    tokenLookup,
     rotatedFromId: rotatedFromId ?? null,
     ip: getClientIp(req),
     userAgent: req.headers['user-agent'] ?? '',
@@ -140,23 +146,23 @@ export async function authRoutes(app: FastifyInstance) {
         return reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'No refresh token' });
       }
 
-      // Find all non-revoked sessions; we need to compare token hashes
-      // (No index on token_hash — bcrypt compare is intentionally slow)
+      // Fast O(1) lookup via SHA-256 index, then one bcrypt verify for authenticity
+      const lookupHash = sha256Hex(rawToken);
       const sessions = await db
         .select()
         .from(refreshSessions)
-        .where(and(isNull(refreshSessions.revokedAt)))
-        .limit(1000); // safety cap
+        .where(eq(refreshSessions.tokenLookup, lookupHash))
+        .limit(1);
 
-      // Find matching session
+      const candidate = sessions[0] ?? null;
       let matchedSession: (typeof sessions)[0] | null = null;
-      for (const session of sessions) {
-        if (new Date(session.expiresAt) < new Date()) continue;
-        const ok = await bcrypt.compare(rawToken, session.tokenHash);
-        if (ok) {
-          matchedSession = session;
-          break;
-        }
+      if (
+        candidate &&
+        candidate.revokedAt === null &&
+        new Date(candidate.expiresAt) >= new Date() &&
+        (await bcrypt.compare(rawToken, candidate.tokenHash))
+      ) {
+        matchedSession = candidate;
       }
 
       if (!matchedSession) {
