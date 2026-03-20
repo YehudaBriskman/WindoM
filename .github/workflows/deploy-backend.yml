@@ -9,10 +9,69 @@ on:
       - '.github/workflows/deploy-backend.yml'
 
 jobs:
+  test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: windom
+          POSTGRES_PASSWORD: windom
+          POSTGRES_DB: windom_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U windom -d windom_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Lint
+        working-directory: backend
+        run: npm run lint
+
+      - name: Migrate test database
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://windom:windom@localhost:5432/windom_test
+          JWT_ACCESS_SECRET: test-jwt-secret-at-least-32-chars-long
+          REFRESH_TOKEN_SECRET: test-refresh-secret-32-chars-long!!
+          TOKEN_ENC_KEY_BASE64: dGVzdC1lbmMta2V5LTMyLWJ5dGVzLWxvbmchISEhISE=
+          NODE_ENV: test
+        run: npx tsx src/db/migrate.ts
+
+      - name: Test
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://windom:windom@localhost:5432/windom_test
+          DATABASE_URL_TEST: postgresql://windom:windom@localhost:5432/windom_test
+          JWT_ACCESS_SECRET: test-jwt-secret-at-least-32-chars-long
+          REFRESH_TOKEN_SECRET: test-refresh-secret-32-chars-long!!
+          TOKEN_ENC_KEY_BASE64: dGVzdC1lbmMta2V5LTMyLWJ5dGVzLWxvbmchISEhISE=
+          NODE_ENV: test
+        run: npm test
+
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: test
 
     steps:
       - uses: actions/checkout@v4
