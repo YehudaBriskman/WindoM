@@ -79,7 +79,7 @@ export async function refresh(
     return { ok: false, error: 'TOKEN_REUSE_DETECTED' };
   }
 
-  console.info(`[auth.service:refresh] Rotating session ${session.id} (renewal #${session.renewalCount + 1})`);
+  console.warn(`[auth.service:refresh] Rotating session ${session.id} (renewal #${session.renewalCount + 1})`);
   await revokeSession(session.id);
 
   const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
@@ -90,7 +90,7 @@ export async function refresh(
 
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });
   const rawRefreshToken = await createSession(user.id, meta, session.id, session.renewalCount + 1);
-  console.info(`[auth.service:refresh] New session created for user ${user.id}`);
+  console.warn(`[auth.service:refresh] New session created for user ${user.id}`);
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
 

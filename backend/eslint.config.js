@@ -14,7 +14,9 @@ export default tseslint.config(
   {
     languageOptions: {
       parserOptions: {
-        projectService: true,
+        // tsconfig.eslint.json extends tsconfig.json but re-includes test files
+        // so ESLint can type-check them without them being part of the build.
+        project: './tsconfig.eslint.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
