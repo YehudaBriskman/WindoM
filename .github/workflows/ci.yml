@@ -23,7 +23,7 @@ jobs:
           POSTGRES_PASSWORD: windom
           POSTGRES_DB: windom_test
         ports:
-          - 5432:5432
+          - 5433:5432  # Match .env.test which setup.ts loads with override:true
         options: >-
           --health-cmd pg_isready
           --health-interval 5s
@@ -57,7 +57,7 @@ jobs:
       - name: Run migrations on test DB
         run: npx drizzle-kit migrate
         env:
-          DATABASE_URL: postgresql://windom:windom@localhost:5432/windom_test
+          DATABASE_URL: postgresql://windom:windom@localhost:5433/windom_test
 
       - name: Run tests
         run: npm test
