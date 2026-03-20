@@ -61,26 +61,36 @@ export async function refresh(
   meta: SessionMeta,
 ): Promise<Result<TokenPair, AuthError>> {
   const session = await findSessionByToken(rawToken);
-  if (!session) return { ok: false, error: 'SESSION_NOT_FOUND' };
+  if (!session) {
+    console.warn('[auth.service:refresh] SESSION_NOT_FOUND — token revoked, expired, or invalid (may be a multi-tab race)');
+    return { ok: false, error: 'SESSION_NOT_FOUND' };
+  }
 
   if (isRenewalCapReached(session.renewalCount)) {
+    console.warn(`[auth.service:refresh] SESSION_LIMIT_REACHED for session ${session.id} (renewalCount=${session.renewalCount})`);
     await revokeSession(session.id);
     return { ok: false, error: 'SESSION_LIMIT_REACHED' };
   }
 
   // Token reuse: if a child session already exists, the old cookie was replayed
   if (await hasChildSession(session.id)) {
+    console.error(`[auth.service:refresh] TOKEN_REUSE_DETECTED for session ${session.id} — revoking ALL sessions for user ${session.userId}`);
     await revokeAllUserSessions(session.userId);
     return { ok: false, error: 'TOKEN_REUSE_DETECTED' };
   }
 
+  console.info(`[auth.service:refresh] Rotating session ${session.id} (renewal #${session.renewalCount + 1})`);
   await revokeSession(session.id);
 
   const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
-  if (!user) return { ok: false, error: 'USER_NOT_FOUND' };
+  if (!user) {
+    console.error(`[auth.service:refresh] USER_NOT_FOUND for userId ${session.userId}`);
+    return { ok: false, error: 'USER_NOT_FOUND' };
+  }
 
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });
   const rawRefreshToken = await createSession(user.id, meta, session.id, session.renewalCount + 1);
+  console.info(`[auth.service:refresh] New session created for user ${user.id}`);
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
 

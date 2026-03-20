@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register the logout callback so apiFetch can trigger it on 401
   useEffect(() => {
     setLogoutCallback(() => {
+      console.warn('[auth] Logout triggered by failed token refresh (401)');
       setUser(null);
       setTokenState(null);
     });
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Listen for session hard-expiry (renewal cap reached) to show re-login message
   useEffect(() => {
     const handler = () => {
+      console.warn('[auth] Session expired (renewal cap reached) — user must re-login');
       setUser(null);
       setTokenState(null);
       setSessionExpired(true);
@@ -60,28 +62,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Uses a 5s timeout so a missing backend doesn't stall the Account tab.
   useEffect(() => {
     async function init() {
+      console.log('[auth:init] Starting auth init...');
       try {
         let token = await getAccessToken();
-        if (!token) {
+        if (token) {
+          console.log('[auth:init] Valid stored access token found');
+        } else {
+          console.log('[auth:init] No valid stored token — attempting silent refresh');
           // Try silent refresh — race against a 5s timeout
           token = await Promise.race([
             refreshAccessToken(),
             new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_REFRESH_TIMEOUT_MS)),
           ]);
+          if (token) {
+            console.log('[auth:init] Silent refresh succeeded');
+          } else {
+            console.warn('[auth:init] Silent refresh failed or timed out — user stays unauthenticated');
+          }
         }
         if (token) {
           setTokenState(token);
           try {
             const me = await apiGet<User>('/me');
             setUser(me);
-          } catch {
+            console.log('[auth:init] User loaded:', me.email ?? me.name);
+          } catch (err) {
+            console.error('[auth:init] /me failed — clearing token:', err);
             await clearAccessToken();
           }
         }
-      } catch {
+      } catch (err) {
         // Silently fail — user stays unauthenticated
+        console.error('[auth:init] Unexpected error:', err);
       }
       setLoading(false);
+      console.log('[auth:init] Done');
     }
     init();
   }, []);

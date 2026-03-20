@@ -9,7 +9,9 @@ const cookieOpts = {
   httpOnly: true,
   secure: config.isProd,
   sameSite: 'none' as const,
-  path: '/auth/refresh',
+  // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
+  // allowing the logout handler to revoke the session server-side.
+  path: '/auth',
   maxAge: COOKIE_MAX_AGE_SECONDS,
 };
 
@@ -68,17 +70,21 @@ export async function loginController(req: FastifyRequest, reply: FastifyReply):
 export async function refreshController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const rawToken = req.cookies[COOKIE_NAME];
   if (!rawToken) {
+    req.log.warn('refresh: no refresh token cookie present');
     void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'No refresh token' });
     return;
   }
 
+  req.log.info('refresh: attempting token rotation');
   const result = await authService.refresh(rawToken, extractSessionMeta(req));
 
   if (!result.ok) {
-    reply.clearCookie(COOKIE_NAME, { path: '/auth/refresh' });
+    req.log.warn({ reason: result.error }, 'refresh: token rotation failed');
+    reply.clearCookie(COOKIE_NAME, { path: '/auth' });
     if (result.error === 'SESSION_LIMIT_REACHED') {
       void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', code: 'SESSION_LIMIT_REACHED', message: 'Session expired. Please log in again.' });
     } else if (result.error === 'TOKEN_REUSE_DETECTED') {
+      req.log.error('refresh: TOKEN_REUSE_DETECTED — all sessions for user revoked');
       void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Refresh token reuse detected. Please log in again.' });
     } else {
       void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired refresh token' });
@@ -86,13 +92,19 @@ export async function refreshController(req: FastifyRequest, reply: FastifyReply
     return;
   }
 
+  req.log.info('refresh: rotation succeeded, new session created');
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
   void reply.send({ accessToken: result.data.accessToken });
 }
 
 export async function logoutController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const rawToken = req.cookies[COOKIE_NAME];
-  if (rawToken) await authService.logout(rawToken);
-  reply.clearCookie(COOKIE_NAME, { path: '/auth/refresh' });
+  if (rawToken) {
+    req.log.info('logout: revoking session');
+    await authService.logout(rawToken);
+  } else {
+    req.log.warn('logout: no refresh token cookie — session not revoked server-side');
+  }
+  reply.clearCookie(COOKIE_NAME, { path: '/auth' });
   void reply.send({ success: true });
 }
