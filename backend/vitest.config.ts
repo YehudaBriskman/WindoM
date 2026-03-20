@@ -1,8 +1,22 @@
 import { defineConfig } from 'vitest/config';
 
+// Resolve the test DB URL at config-load time (main process) so every worker
+// inherits the correct DATABASE_URL before any module (including config.ts) loads.
+// Priority: DATABASE_URL_TEST env var → DATABASE_URL env var → local docker default
+const testDbUrl =
+  process.env['DATABASE_URL_TEST'] ??
+  process.env['DATABASE_URL'] ??
+  'postgresql://windom:windom@localhost:5433/windom_test';
+
 export default defineConfig({
   test: {
     environment: 'node',
+
+    // Inject DATABASE_URL into every worker process before module evaluation.
+    // This guarantees config.ts reads the test DB URL even with dotenv/config.
+    env: {
+      DATABASE_URL: testDbUrl,
+    },
 
     // Load env vars before each test file
     setupFiles: ['./src/test-utils/setup.ts'],
