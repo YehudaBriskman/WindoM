@@ -3,6 +3,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config.js';
 import { SPOTIFY_AUTH_URL, SPOTIFY_SCOPES } from '../types/constants.js';
 import * as oauthService from '../services/oauth.service.js';
+import { isAllowedRedirectUri } from '../lib/request.js';
 
 const exchangeSchema = z.object({
   code: z.string(),
@@ -61,6 +62,11 @@ export async function exchangeSpotifyOAuthController(req: FastifyRequest, reply:
   const parsed = exchangeSchema.safeParse(req.body);
   if (!parsed.success) {
     void reply.status(400).send({ error: 'Bad Request', message: parsed.error.issues[0]?.message });
+    return;
+  }
+
+  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.SPOTIFY_REDIRECT_URI)) {
+    void reply.status(400).send({ error: 'Redirect URI not allowed' });
     return;
   }
 

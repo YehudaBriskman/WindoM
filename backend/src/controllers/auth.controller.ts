@@ -8,7 +8,8 @@ import * as authService from '../services/auth.service.js';
 const cookieOpts = {
   httpOnly: true,
   secure: config.isProd,
-  sameSite: 'none' as const,
+  // SameSite=None requires Secure; in dev use Lax so the cookie works over plain HTTP.
+  sameSite: config.isProd ? ('none' as const) : ('lax' as const),
   // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
   // allowing the logout handler to revoke the session server-side.
   path: '/auth',

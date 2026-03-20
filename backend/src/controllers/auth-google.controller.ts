@@ -2,15 +2,18 @@ import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config.js';
 import { COOKIE_NAME, COOKIE_MAX_AGE_SECONDS, GOOGLE_AUTH_URL } from '../types/constants.js';
-import { extractSessionMeta } from '../lib/request.js';
+import { extractSessionMeta, isAllowedRedirectUri } from '../lib/request.js';
 import * as authService from '../services/auth.service.js';
 import * as oauthService from '../services/oauth.service.js';
 
 const cookieOpts = {
   httpOnly: true,
   secure: config.isProd,
-  sameSite: 'none' as const,
-  path: '/auth/refresh',
+  // SameSite=None requires Secure; in dev use Lax so the cookie works over plain HTTP.
+  sameSite: config.isProd ? ('none' as const) : ('lax' as const),
+  // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
+  // allowing the logout handler to revoke the session server-side.
+  path: '/auth',
   maxAge: COOKIE_MAX_AGE_SECONDS,
 };
 
@@ -73,6 +76,11 @@ export async function exchangeGoogleAuthController(req: FastifyRequest, reply: F
   const parsed = exchangeSchema.safeParse(req.body);
   if (!parsed.success) {
     void reply.status(400).send({ error: 'Bad Request', message: parsed.error.issues[0]?.message });
+    return;
+  }
+
+  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_REDIRECT_URI)) {
+    void reply.status(400).send({ error: 'Redirect URI not allowed' });
     return;
   }
 
