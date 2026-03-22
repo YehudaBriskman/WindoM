@@ -86,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const me = await apiGet<User>('/me');
             setUser(me);
             console.log('[auth:init] User loaded:', me.email ?? me.name);
+            window.dispatchEvent(new CustomEvent('windom-auth-login'));
           } catch (err) {
             console.error('[auth:init] /me failed — clearing token:', err);
             await clearAccessToken();
