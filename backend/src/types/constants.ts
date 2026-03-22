@@ -3,8 +3,13 @@
 /** Sliding window duration for each refresh token. */
 export const REFRESH_WINDOW_DAYS = 7;
 
-/** Max rotations before forcing re-login (5 windows × 7 days ≈ 35 days total). */
-export const MAX_RENEWALS = 4;
+/**
+ * Max rotations before forcing re-login.
+ * With a 15-min access token TTL, a user refreshing every 15 min hits this after
+ * (MAX_RENEWALS × 15 min). Set to 2016 ≈ 3 weeks of continuous active use.
+ * The 7-day sliding expiresAt window handles inactive sessions automatically.
+ */
+export const MAX_RENEWALS = 2016;
 
 /** bcrypt rounds for password and token hashing. */
 export const BCRYPT_ROUNDS = 10;

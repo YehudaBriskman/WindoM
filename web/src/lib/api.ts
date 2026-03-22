@@ -56,9 +56,47 @@ export async function clearAccessToken(): Promise<void> {
 
 // ── Refresh ─────────────────────────────────────────────────────────────────
 
+const REFRESH_LOCK_KEY = 'windom_refresh_lock';
+const REFRESH_LOCK_TTL_MS = 10_000; // 10s max — prevents stale locks
+
 let refreshPromise: Promise<string | null> | null = null;
 
+/**
+ * Acquire a cross-tab refresh lock using chrome.storage.local.
+ * Returns true if this tab won the lock, false if another tab already holds it.
+ */
+async function acquireRefreshLock(): Promise<boolean> {
+  const now = Date.now();
+  const existing = await chromeLocal.get<number | null>(REFRESH_LOCK_KEY, null);
+  // If lock exists and is still fresh, another tab holds it
+  if (existing && now - existing < REFRESH_LOCK_TTL_MS) return false;
+  await chromeLocal.set(REFRESH_LOCK_KEY, now);
+  // Read back to confirm we actually wrote it (last writer wins in storage.local)
+  const written = await chromeLocal.get<number | null>(REFRESH_LOCK_KEY, null);
+  return written === now;
+}
+
+async function releaseRefreshLock(): Promise<void> {
+  await chromeLocal.set(REFRESH_LOCK_KEY, null);
+}
+
 async function doRefresh(): Promise<string | null> {
+  // ── Cross-tab lock ──────────────────────────────────────────────────────
+  // chrome.storage.local is shared across all tabs. If another tab is already
+  // refreshing, wait for it to finish and use its token instead.
+  const won = await acquireRefreshLock();
+  if (!won) {
+    console.log('[auth:refresh] Another tab holds the refresh lock — waiting...');
+    await new Promise<void>((r) => setTimeout(r, 500));
+    const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
+    if (stored && !isTokenExpired(stored)) {
+      console.log('[auth:refresh] Using token stored by winning tab');
+      return stored;
+    }
+    // Winning tab failed — fall through and try ourselves
+    console.warn('[auth:refresh] Winning tab did not store a fresh token — proceeding anyway');
+  }
+
   console.log('[auth:refresh] Sending refresh request...');
   try {
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
@@ -69,10 +107,8 @@ async function doRefresh(): Promise<string | null> {
     if (!res.ok) {
       console.warn(`[auth:refresh] Failed with HTTP ${res.status}`);
 
-      // ── Multi-tab race mitigation ───────────────────────────────────────
-      // Another tab may have already refreshed and rotated the cookie before
-      // us (causing our cookie to be rejected as revoked). Wait briefly then
-      // check storage for a fresh token stored by that winning tab.
+      // Another tab may have won a concurrent refresh (cookie already rotated).
+      // Wait briefly then check storage for the fresh token it stored.
       if (res.status === 401) {
         await new Promise<void>((r) => setTimeout(r, 250));
         const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
@@ -103,6 +139,8 @@ async function doRefresh(): Promise<string | null> {
   } catch (err) {
     console.error('[auth:refresh] Network error:', err);
     return null;
+  } finally {
+    await releaseRefreshLock();
   }
 }
 
