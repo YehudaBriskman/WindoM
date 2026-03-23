@@ -26,6 +26,19 @@ async function handleSpotifyCodeExchange(
   }
 
   const { access_token, refresh_token, expires_in, scope, providerUserId } = exchangeResult.data;
+
+  // Guard: if this Spotify account is already owned by a different WindoM user,
+  // reject rather than silently re-linking. This prevents the case where a user
+  // connects while their browser is logged into someone else's Spotify account.
+  const conflict = await oauthService.checkOAuthConflict(userId, 'spotify', providerUserId);
+  if (conflict === 'other_user') {
+    void reply.status(409).send({
+      error: 'SPOTIFY_ACCOUNT_TAKEN',
+      message: 'This Spotify account is already linked to a different WindoM account. Please log into your own Spotify account in the browser and try again.',
+    });
+    return;
+  }
+
   await oauthService.storeOAuthTokens(userId, 'spotify', {
     accessToken: access_token,
     refreshToken: refresh_token,
@@ -47,12 +60,19 @@ export async function startSpotifyOAuthController(req: FastifyRequest, reply: Fa
   }
 
   const state = await oauthService.createOAuthState('spotify', 'link', req.user.sub);
+
+  // Only force the account-chooser dialog when the user has no existing Spotify
+  // connection. This prevents silent reuse of another browser user's cached
+  // Spotify session. Users who already have a row (re-linking) skip the dialog.
+  const hasExisting = await oauthService.hasOAuthAccount(req.user.sub, 'spotify');
+
   const params = new URLSearchParams({
     client_id: config.SPOTIFY_CLIENT_ID ?? '',
     redirect_uri: effectiveUri,
     response_type: 'code',
     scope: SPOTIFY_SCOPES,
     state,
+    ...(hasExisting ? {} : { show_dialog: 'true' }),
   });
 
   void reply.send({ authUrl: `${SPOTIFY_AUTH_URL}?${params}` });

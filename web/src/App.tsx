@@ -3,6 +3,7 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import { BackgroundProvider } from './contexts/BackgroundContext';
 import { FocusTimerProvider } from './contexts/FocusTimerContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { useIntegrationSync } from './hooks/useIntegrationSync';
 import { BackgroundOverlay } from './components/background/BackgroundOverlay';
 import { PhotographerCredit } from './components/background/PhotographerCredit';
 import { TopBar } from './components/layout/TopBar';
@@ -23,6 +24,8 @@ const TabSidebar     = lazy(() => import('./components/tabs/TabSidebar').then(m 
 // Dashboard is always accessible — auth is optional.
 // Sign-in lives in Settings → Account tab.
 function Dashboard() {
+  useIntegrationSync();
+
   return (
     <>
       {/* Background zoom layer — separate element so transform:scale animates smoothly */}

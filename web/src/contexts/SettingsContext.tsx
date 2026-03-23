@@ -93,8 +93,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { _updatedAt: _, ...backendSettings } = data;
         const merged = { ...localSettings, ...backendSettings };
-        setSettings(merged);
-        await syncStorage.setMultiple(merged as unknown as Record<string, unknown>);
+        // Server-derived keys (SYNC_EXCLUDE) are not in backendSettings, but they
+        // ARE in localSettings which may be stale. Use the current React state for
+        // these keys so a concurrent useIntegrationSync update is never clobbered.
+        setSettings((prev) => {
+          const result = { ...merged } as Settings;
+          for (const key of SYNC_EXCLUDE) (result as unknown as Record<string, unknown>)[key] = prev[key];
+          return result;
+        });
+        // Don't write server-derived keys back to storage via this path
+        const storable = Object.fromEntries(
+          Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
+        );
+        await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
       }
     } catch { /* backend unreachable — stay on local */ }
   }, []);

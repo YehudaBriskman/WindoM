@@ -78,6 +78,7 @@ export async function storeOAuthTokens(
     .onConflictDoUpdate({
       target: [oauthAccounts.provider, oauthAccounts.providerUserId],
       set: {
+        userId,
         accessTokenEnc,
         ...(refreshTokenEnc ? { refreshTokenEnc } : {}),
         tokenExpiresAt,
@@ -85,6 +86,41 @@ export async function storeOAuthTokens(
         updatedAt: new Date(),
       },
     });
+}
+
+// ── Account existence check ───────────────────────────────────────────────
+
+/** Returns true if the user already has an OAuth row for the given provider. */
+export async function hasOAuthAccount(userId: string, provider: OAuthProvider): Promise<boolean> {
+  const [row] = await db
+    .select({ id: oauthAccounts.id })
+    .from(oauthAccounts)
+    .where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, provider)))
+    .limit(1);
+  return !!row;
+}
+
+/**
+ * Check whether a provider account (identified by providerUserId) is already
+ * linked to a WindoM user — and if so, whether it's the same user or a different one.
+ *
+ * - 'none'       → no existing link, safe to insert
+ * - 'same_user'  → already linked to this user, safe to update
+ * - 'other_user' → linked to a different user — must reject
+ */
+export async function checkOAuthConflict(
+  userId: string,
+  provider: OAuthProvider,
+  providerUserId: string,
+): Promise<'none' | 'same_user' | 'other_user'> {
+  const [row] = await db
+    .select({ userId: oauthAccounts.userId })
+    .from(oauthAccounts)
+    .where(and(eq(oauthAccounts.provider, provider), eq(oauthAccounts.providerUserId, providerUserId)))
+    .limit(1);
+
+  if (!row) return 'none';
+  return row.userId === userId ? 'same_user' : 'other_user';
 }
 
 // ── Google code exchange ──────────────────────────────────────────────────
