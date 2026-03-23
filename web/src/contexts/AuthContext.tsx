@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
+import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, setRefreshToken, clearRefreshToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
 
 const AUTH_REFRESH_TIMEOUT_MS = 5_000;
 
@@ -33,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // best effort
     }
     await clearAccessToken();
+    await clearRefreshToken();
     setUser(null);
     setTokenState(null);
   }, []);
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setLogoutCallback(() => {
       console.warn('[auth] Logout triggered by failed token refresh (401)');
+      clearRefreshToken();
       setUser(null);
       setTokenState(null);
     });
@@ -103,8 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await apiPost<{ accessToken: string }>('/auth/login', { email, password });
+    const data = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/login', { email, password });
     await setAccessToken(data.accessToken);
+    await setRefreshToken(data.refreshToken);
     setTokenState(data.accessToken);
     const me = await apiGet<User>('/me');
     setUser(me);

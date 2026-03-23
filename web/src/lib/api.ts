@@ -5,6 +5,7 @@ declare const __BACKEND_URL__: string;
 export const BASE_URL = typeof __BACKEND_URL__ !== 'undefined' ? __BACKEND_URL__ : 'http://localhost:8080';
 
 const ACCESS_TOKEN_KEY = 'windom_access_token';
+const REFRESH_TOKEN_KEY = 'windom_refresh_token';
 
 // ── JWT expiry helper ───────────────────────────────────────────────────────
 
@@ -54,6 +55,18 @@ export async function clearAccessToken(): Promise<void> {
   await chromeLocal.set(ACCESS_TOKEN_KEY, null);
 }
 
+export async function setRefreshToken(token: string): Promise<void> {
+  await chromeLocal.set(REFRESH_TOKEN_KEY, token);
+}
+
+export async function getRefreshToken(): Promise<string | null> {
+  return chromeLocal.get<string | null>(REFRESH_TOKEN_KEY, null);
+}
+
+export async function clearRefreshToken(): Promise<void> {
+  await chromeLocal.set(REFRESH_TOKEN_KEY, null);
+}
+
 // ── Refresh ─────────────────────────────────────────────────────────────────
 
 const REFRESH_LOCK_KEY = 'windom_refresh_lock';
@@ -99,9 +112,14 @@ async function doRefresh(): Promise<string | null> {
 
   console.log('[auth:refresh] Sending refresh request...');
   try {
+    const storedRefreshToken = await getRefreshToken();
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
+      ...(storedRefreshToken ? {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: storedRefreshToken }),
+      } : {}),
     });
 
     if (!res.ok) {
@@ -132,8 +150,9 @@ async function doRefresh(): Promise<string | null> {
       return null;
     }
 
-    const data = (await res.json()) as { accessToken: string };
+    const data = (await res.json()) as { accessToken: string; refreshToken?: string };
     await setAccessToken(data.accessToken);
+    if (data.refreshToken) await setRefreshToken(data.refreshToken);
     console.log('[auth:refresh] Success — new access token stored');
     return data.accessToken;
   } catch (err) {

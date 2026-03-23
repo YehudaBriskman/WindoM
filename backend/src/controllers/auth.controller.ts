@@ -47,7 +47,7 @@ export async function registerController(req: FastifyRequest, reply: FastifyRepl
   }
 
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: result.data.accessToken });
+  void reply.send({ accessToken: result.data.accessToken, refreshToken: result.data.rawRefreshToken });
 }
 
 export async function loginController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -65,13 +65,15 @@ export async function loginController(req: FastifyRequest, reply: FastifyReply):
   }
 
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: result.data.accessToken });
+  void reply.send({ accessToken: result.data.accessToken, refreshToken: result.data.rawRefreshToken });
 }
 
 export async function refreshController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const rawToken = req.cookies[COOKIE_NAME];
+  const cookieToken = req.cookies[COOKIE_NAME];
+  const bodyToken = (req.body as Record<string, unknown> | null)?.refreshToken;
+  const rawToken = cookieToken ?? (typeof bodyToken === 'string' ? bodyToken : undefined);
   if (!rawToken) {
-    req.log.warn('refresh: no refresh token cookie present');
+    req.log.warn('refresh: no refresh token in cookie or body');
     void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'No refresh token' });
     return;
   }
@@ -95,7 +97,7 @@ export async function refreshController(req: FastifyRequest, reply: FastifyReply
 
   req.log.info('refresh: rotation succeeded, new session created');
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: result.data.accessToken });
+  void reply.send({ accessToken: result.data.accessToken, refreshToken: result.data.rawRefreshToken });
 }
 
 export async function logoutController(req: FastifyRequest, reply: FastifyReply): Promise<void> {

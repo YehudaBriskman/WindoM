@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { apiGet, apiPost, setAccessToken } from '../../lib/api';
+import { apiGet, apiPost, setAccessToken, setRefreshToken } from '../../lib/api';
 
 interface Props {
   onSuccess?: () => void;
@@ -43,13 +43,14 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
       if (error || !code || !state) throw new Error(error ?? 'No auth code returned');
 
       // Send code to backend for server-side token exchange
-      const { accessToken } = await apiPost<{ accessToken: string }>('/auth/google/exchange', {
+      const { accessToken, refreshToken } = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/google/exchange', {
         code,
         state,
         redirectUri,
       });
 
       await setAccessToken(accessToken);
+      await setRefreshToken(refreshToken);
       onSuccess?.();
       window.location.reload();
     } catch (err) {
