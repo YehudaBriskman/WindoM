@@ -5,6 +5,7 @@
 node_modules
 PUBLISH_CHECKLIST.md
 .env
+.env.*
 /drizzle
 CREDENTIALS.md
 CWS_PRIVACY_JUSTIFICATIONS.md

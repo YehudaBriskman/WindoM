@@ -1,11 +1,9 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { crx } from '@crxjs/vite-plugin';
 import manifest from './manifest.json';
 import fs from 'fs';
 import path from 'path';
-
-const BACKEND_URL = process.env.VITE_BACKEND_URL ?? 'http://localhost:8080';
 
 const IMAGE_EXTS = /\.(jpe?g|png|webp|gif|avif|svg)$/i;
 const VIRTUAL_ID = 'virtual:bundled-images';
@@ -52,7 +50,12 @@ function bundledImagesPlugin(): Plugin {
   };
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  // process.env takes priority (set by CI via GitHub secret); loadEnv reads .env.production for local builds
+  const BACKEND_URL = process.env.VITE_BACKEND_URL ?? env.VITE_BACKEND_URL ?? 'http://localhost:8080';
+
+  return {
   plugins: [
     bundledImagesPlugin(),
     react(),
@@ -65,4 +68,5 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
   },
+  };
 });
