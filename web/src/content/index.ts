@@ -41,6 +41,9 @@ function ensureIframe(): HTMLIFrameElement {
     if ((e.data as { type?: string })?.type === MSG_CLOSED) {
       iframe!.style.display = 'none';
       iframe!.style.pointerEvents = 'none';
+      // Return keyboard focus to the host page so hotkeys keep working without
+      // requiring the user to click the page first.
+      window.focus();
     }
   });
 
