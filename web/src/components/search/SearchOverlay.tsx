@@ -44,8 +44,6 @@ const hasChromeApi = typeof chrome !== 'undefined';
 const isContentScript = typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
 // True when the overlay is running inside the content-script iframe (search.html embedded in a page)
 const isEmbedded = typeof window !== 'undefined' && window.parent !== window;
-// True when running as the extension's own new tab page (not embedded)
-const isNewTab = !isEmbedded && hasChromeApi && typeof window !== 'undefined' && window.location.protocol === 'chrome-extension:';
 
 // ── Command definitions ────────────────────────────────────────────────────────
 
@@ -309,12 +307,6 @@ export function SearchOverlay() {
     return () => window.removeEventListener('message', handler);
   }, [openWithAnimation]);
 
-  // On the extension's own new tab page: auto-open so the input can steal focus
-  // from Chrome's address bar before the user has to click anything.
-  useEffect(() => {
-    if (!isNewTab) return;
-    openWithAnimation();
-  }, [openWithAnimation]);
 
   const prevOpenRef = useRef(false);
   useEffect(() => {
