@@ -7,6 +7,20 @@ interface Props {
   label?: string;
 }
 
+/** Map Chrome's internal OAuth error messages to user-friendly ones. */
+function mapChromeOAuthError(msg: string): string {
+  if (/could not be loaded|not loaded/i.test(msg)) {
+    return 'Could not open the sign-in page. Check your internet connection and try again.';
+  }
+  if (/cancelled|canceled|dismissed|closed|did not approve/i.test(msg)) {
+    return 'Sign-in was cancelled.';
+  }
+  if (/timed? ?out/i.test(msg)) {
+    return 'Sign-in timed out. Please try again.';
+  }
+  return msg;
+}
+
 export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Google' }: Props) {
   const [loading, setLoading] = useState(false);
 
@@ -20,13 +34,22 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
         `/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`,
       );
 
-      // Open Google consent — launchWebAuthFlow captures the redirect to chromiumapp.org
+      // Open Google consent — launchWebAuthFlow captures the redirect to chromiumapp.org.
+      // Wrap in a 2-minute timeout so a hanging popup doesn't block the UI forever.
       const redirectUrl = await new Promise<string>((resolve, reject) => {
+        let settled = false;
+        const timer = setTimeout(() => {
+          settled = true;
+          reject(new Error('Sign-in timed out. Please try again.'));
+        }, 120_000);
+
         chrome.identity.launchWebAuthFlow(
           { url: authUrl, interactive: true },
           (url) => {
+            clearTimeout(timer);
+            if (settled) return;
             if (chrome.runtime.lastError || !url) {
-              reject(new Error(chrome.runtime.lastError?.message ?? 'Auth cancelled'));
+              reject(new Error(mapChromeOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
             } else {
               resolve(url);
             }

@@ -38,7 +38,11 @@ async function handleGoogleCodeExchange(
 
   if (!exchangeResult.ok) {
     const status = exchangeResult.error === 'USERINFO_FAILED' ? 500 : 400;
-    void reply.status(status).send({ error: exchangeResult.error });
+    const messages: Record<string, string> = {
+      TOKEN_EXCHANGE_FAILED: 'Failed to complete sign-in with Google. Please try again.',
+      USERINFO_FAILED: 'Could not retrieve your Google profile. Please try again.',
+    };
+    void reply.status(status).send({ error: exchangeResult.error, message: messages[exchangeResult.error] ?? exchangeResult.error });
     return;
   }
 
@@ -55,6 +59,12 @@ export async function startGoogleAuthController(req: FastifyRequest, reply: Fast
 
   if (!effectiveUri) {
     void reply.status(500).send({ error: 'No redirect URI configured' });
+    return;
+  }
+
+  // Validate redirect URI before creating state (fail fast — avoids orphaned state rows)
+  if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_REDIRECT_URI)) {
+    void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Google sign-in. Contact support.' });
     return;
   }
 

@@ -196,11 +196,34 @@ export function AccountSettings() {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+/** Map Chrome's internal OAuth error messages to user-friendly ones. */
+function mapChromeOAuthError(msg: string): string {
+  if (/could not be loaded|not loaded/i.test(msg)) {
+    return 'Could not open the sign-in page. Check your internet connection and try again.';
+  }
+  if (/cancelled|canceled|dismissed|closed|did not approve/i.test(msg)) {
+    return 'Sign-in was cancelled.';
+  }
+  if (/timed? ?out/i.test(msg)) {
+    return 'Sign-in timed out. Please try again.';
+  }
+  return msg;
+}
+
+/** Launch an OAuth popup with a 2-minute timeout and friendly error messages. */
 function launchWebAuth(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      settled = true;
+      reject(new Error('Sign-in timed out. Please try again.'));
+    }, 120_000);
+
     chrome.identity.launchWebAuthFlow({ url, interactive: true }, (redirectUrl) => {
+      clearTimeout(timer);
+      if (settled) return;
       if (chrome.runtime.lastError || !redirectUrl) {
-        reject(new Error(chrome.runtime.lastError?.message ?? 'Auth cancelled'));
+        reject(new Error(mapChromeOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
       } else {
         resolve(redirectUrl);
       }
