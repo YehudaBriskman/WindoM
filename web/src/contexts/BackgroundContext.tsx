@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 import { useSettings } from './SettingsContext';
+import { useAuth } from './AuthContext';
 import { localStore as ls } from '../lib/chrome-storage';
 import { usePhotoHistory } from '../hooks/usePhotoHistory';
 import { SETTINGS_EVENT } from '../lib/settings-events';
@@ -29,6 +30,7 @@ interface BackgroundContextValue {
   refresh: () => Promise<void>;
   setFromPhoto: (photo: PhotoRecord) => Promise<void>;
   setFromLocalPhoto: (id: string) => Promise<void>;
+  setUploadedBackground: (dataUrl: string) => Promise<void>;
   addLocalPhoto: (dataUrl: string, thumbDataUrl: string, filename: string) => void;
   photoHistory: ReturnType<typeof usePhotoHistory>;
 }
@@ -37,11 +39,19 @@ const BackgroundContext = createContext<BackgroundContextValue | null>(null);
 
 export function BackgroundProvider({ children }: { children: ReactNode }) {
   const { settings } = useSettings();
+  const { user } = useAuth();
   const [backgroundReady, setBackgroundReady] = useState(false);
   const [photographer, setPhotographer] = useState<{ name: string; url: string } | null>(null);
   const [currentPhotoId, setCurrentPhotoId] = useState<string | null>(null);
   const [currentPhotoSource, setCurrentPhotoSource] = useState<'unsplash' | 'local' | 'bundled' | null>(null);
   const photoHistory = usePhotoHistory();
+
+  // Per-user storage key: isolates each account's local background on this device.
+  // Falls back to the global key when no user is signed in.
+  const bgImageKey = useMemo(
+    () => (user?.id ? `localBackgroundImage_${user.id}` : 'localBackgroundImage'),
+    [user?.id],
+  );
 
   // Destructure stable callbacks to avoid recreating loadUnsplash on every photoHistory render
   const { addPhoto } = photoHistory;
@@ -70,11 +80,11 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     if (photo.source === 'local') {
       const fullUrl = await ls.get<string | null>(`localPhoto-${photo.id}`, null);
       const url = fullUrl ?? photo.imageUrl;
-      await ls.set('localBackgroundImage', url);
+      await ls.set(bgImageKey, url);
       applyBackground(url);
       setPhotographer(null);
     } else if (photo.source === 'bundled') {
-      await ls.set('localBackgroundImage', photo.imageUrl);
+      await ls.set(bgImageKey, photo.imageUrl);
       applyBackground(photo.imageUrl);
       setPhotographer(null);
     } else {
@@ -92,16 +102,26 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     setCurrentPhotoId(photo.id);
     setCurrentPhotoSource(photo.source ?? 'unsplash');
     document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.CLOSE));
-  }, [applyBackground]);
+  }, [bgImageKey, applyBackground]);
 
   const setFromLocalPhoto = useCallback(async (id: string) => {
     const fullUrl = await ls.get<string | null>(`localPhoto-${id}`, null);
     if (!fullUrl) return;
+    await ls.set(bgImageKey, fullUrl);
     applyBackground(fullUrl);
     setPhotographer(null);
     setCurrentPhotoId(id);
     setCurrentPhotoSource('local');
-  }, [applyBackground]);
+  }, [bgImageKey, applyBackground]);
+
+  // Used by BackgroundSettings upload handler — writes to the correct per-user key.
+  const setUploadedBackground = useCallback(async (dataUrl: string) => {
+    await ls.set(bgImageKey, dataUrl);
+    applyBackground(dataUrl);
+    setPhotographer(null);
+    setCurrentPhotoId(null);
+    setCurrentPhotoSource('local');
+  }, [bgImageKey, applyBackground]);
 
   const loadUnsplash = useCallback(async () => {
     const cached = await ls.get<UnsplashCache | null>('unsplashCache', null);
@@ -159,7 +179,18 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   }, [settings.unsplashApiKey, applyBackground, addPhoto]);
 
   const loadLocal = useCallback(async () => {
-    const localImage = await ls.get<string | null>('localBackgroundImage', null);
+    let localImage = await ls.get<string | null>(bgImageKey, null);
+
+    // Migration: on first login (user-specific key is empty), copy the global key so
+    // any background set before signing in persists for this account.
+    if (!localImage && bgImageKey !== 'localBackgroundImage') {
+      const globalImage = await ls.get<string | null>('localBackgroundImage', null);
+      if (globalImage) {
+        await ls.set(bgImageKey, globalImage);
+        localImage = globalImage;
+      }
+    }
+
     if (localImage) {
       const imageData = Array.isArray(localImage) ? localImage[0] : localImage;
       applyBackground(imageData);
@@ -179,7 +210,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     setPhotographer(null);
     setCurrentPhotoId('bundled-1');
     setCurrentPhotoSource('bundled');
-  }, [settings.localBackground, applyBackground]);
+  }, [bgImageKey, settings.localBackground, applyBackground]);
 
   const refresh = useCallback(async () => {
     if (settings.backgroundSource === 'unsplash') {
@@ -207,6 +238,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       refresh,
       setFromPhoto,
       setFromLocalPhoto,
+      setUploadedBackground,
       addLocalPhoto: photoHistory.addLocalPhoto,
       photoHistory,
     }}>
