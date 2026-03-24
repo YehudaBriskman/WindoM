@@ -192,15 +192,20 @@ export async function apiFetch(path: string, options: RequestInit = {}, _retry =
 
   const hasBody = options.body !== undefined && options.body !== null;
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    credentials: 'include',
-    headers: {
-      ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
-      ...(options.headers ?? {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      credentials: 'include',
+      headers: {
+        ...(hasBody ? { 'Content-Type': 'application/json' } : {}),
+        ...(options.headers ?? {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+  } catch {
+    throw new Error('Network error — check your connection and try again.');
+  }
 
   if (res.status === 401 && _retry) {
     console.warn(`[auth] 401 on ${path} — attempting token refresh`);
@@ -220,15 +225,18 @@ export async function apiFetch(path: string, options: RequestInit = {}, _retry =
 
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await apiFetch(path);
-  if (!res.ok) throw new Error(`GET ${path} failed: ${res.status}`);
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(payload.message ?? payload.error ?? `Request failed (${res.status})`);
+  }
   return res.json() as Promise<T>;
 }
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   const res = await apiFetch(path, { method: 'POST', body: body !== undefined ? JSON.stringify(body) : undefined });
   if (!res.ok) {
-    const err = (await res.json().catch(() => ({ message: res.statusText }))) as { message?: string };
-    throw new Error(err.message ?? res.statusText);
+    const payload = await res.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(payload.message ?? payload.error ?? `Request failed (${res.status})`);
   }
   return res.json() as Promise<T>;
 }
@@ -236,8 +244,8 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
 export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
   const res = await apiFetch(path, { method: 'PUT', body: body !== undefined ? JSON.stringify(body) : undefined });
   if (!res.ok) {
-    const err = (await res.json().catch(() => ({ message: res.statusText }))) as { message?: string };
-    throw new Error(err.message ?? res.statusText);
+    const payload = await res.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(payload.message ?? payload.error ?? `Request failed (${res.status})`);
   }
   return res.json() as Promise<T>;
 }
