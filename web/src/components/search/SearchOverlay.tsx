@@ -42,6 +42,8 @@ const ENGINE_LIST: Settings['searchEngine'][] = ['google', 'bing', 'duckduckgo',
 const hasChromeApi = typeof chrome !== 'undefined';
 // Content scripts cannot use chrome.tabs.* in MV3; detect and route via background
 const isContentScript = typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
+// True when the overlay is running inside the content-script iframe (search.html embedded in a page)
+const isEmbedded = typeof window !== 'undefined' && window.parent !== window;
 
 // ── Command definitions ────────────────────────────────────────────────────────
 
@@ -269,8 +271,10 @@ export function SearchOverlay() {
     return matched;
   }, [isCommandMode, commandQuery, settings.searchEngine]);
 
-  // Global shortcut: Ctrl+Super+H (Ctrl+Meta+H)
+  // Global shortcut: Ctrl+Super+H (Ctrl+Meta+H) — only active on the new tab page.
+  // On other pages the content script intercepts the shortcut and sends WINDOM_SEARCH_OPEN.
   useEffect(() => {
+    if (isEmbedded) return; // handled by content script
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.metaKey && e.key.toLowerCase() === 'h') {
         e.preventDefault();
@@ -280,6 +284,24 @@ export function SearchOverlay() {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, []);
+
+  // When embedded in a content-script iframe: open on demand and notify parent on close.
+  useEffect(() => {
+    if (!isEmbedded) return;
+    const handler = (e: MessageEvent) => {
+      if ((e.data as { type?: string })?.type === 'WINDOM_SEARCH_OPEN') setOpen(true);
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const prevOpenRef = useRef(false);
+  useEffect(() => {
+    if (isEmbedded && prevOpenRef.current && !open) {
+      window.parent.postMessage({ type: 'WINDOM_SEARCH_CLOSED' }, '*');
+    }
+    prevOpenRef.current = open;
+  }, [open]);
 
   // Auto-focus when opened; delay state reset so exit animation plays fully
   useEffect(() => {
