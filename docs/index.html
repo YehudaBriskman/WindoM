@@ -253,40 +253,67 @@
       margin-bottom: 56px;
     }
 
-    .showcase-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    /* ── SHOWCASE CARD ── */
-    .sc-card {
+    /* Featured card (full-width hero screenshot) */
+    .sc-featured {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
+      margin-bottom: 18px;
+      opacity: 0;
+      transform: translateY(22px);
       transition:
         opacity 0.5s ease,
         transform 0.5s ease,
         border-color 0.25s ease,
         box-shadow 0.25s ease;
-      opacity: 0;
-      transform: translateY(22px);
     }
 
-    .sc-card.sc-visible {
+    .sc-featured.sc-visible {
       opacity: 1;
       transform: translateY(0);
     }
 
-    .sc-card:hover {
+    .sc-featured:hover {
       border-color: rgba(123,158,245,0.25);
-      transform: translateY(-4px);
       box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(123,158,245,0.1);
     }
 
-    .sc-card.sc-featured {
-      grid-column: span 3;
+    /* Alternating rows for the three detail cards */
+    .sc-rows {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sc-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+      min-height: 50vh;
+      padding: 80px 0;
+      /* No background, no border — content floats freely */
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    /* Thin divider between rows */
+    .sc-row + .sc-row {
+      border-top: 1px solid var(--border);
+    }
+
+    .sc-row.sc-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Reverse: text left, image right */
+    .sc-row.sc-reverse {
+      direction: rtl;
+    }
+    .sc-row.sc-reverse > * {
+      direction: ltr;
     }
 
     /* Image wrapper — contains shimmer + image */
@@ -295,11 +322,20 @@
       width: 100%;
       aspect-ratio: 16 / 10;
       overflow: hidden;
+      border-radius: 12px;
       background: rgba(10, 12, 30, 0.8);
+      /* Floating shadow so the image has depth without a card container */
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.07),
+        0 32px 80px rgba(0,0,0,0.6),
+        0 0 60px rgba(123,158,245,0.06);
     }
 
-    .sc-card.sc-featured .sc-img-wrap {
+    /* Hero featured uses a taller wrapper */
+    .sc-featured .sc-img-wrap {
       aspect-ratio: 16 / 9;
+      border-radius: 0;
+      box-shadow: none;
     }
 
     /* Shimmer sweep — plays until image loads */
@@ -326,7 +362,7 @@
       animation: none;
     }
 
-    /* Low-quality placeholder feel: subtle inner glow */
+    /* Low-quality placeholder: subtle inner glow */
     .sc-img-wrap::before {
       content: '';
       position: absolute;
@@ -355,8 +391,8 @@
     /* Coming Soon overlay badge */
     .sc-badge {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 12px;
+      right: 12px;
       z-index: 4;
       padding: 5px 14px;
       border-radius: 999px;
@@ -371,11 +407,29 @@
       -webkit-backdrop-filter: blur(12px);
     }
 
-    /* Card info */
-    .sc-info {
-      padding: 18px 22px 22px;
+    /* Featured card caption */
+    .sc-featured .sc-info {
+      padding: 18px 24px 22px;
     }
 
+    /* Row text content */
+    .sc-text h3 {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 16px;
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+    }
+
+    .sc-text p {
+      font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 420px;
+    }
+
+    /* Shared info block used by featured card */
     .sc-info h3 {
       font-size: 0.97rem;
       font-weight: 600;
@@ -387,6 +441,21 @@
       font-size: 0.84rem;
       color: var(--muted);
       line-height: 1.62;
+    }
+
+    @media (max-width: 700px) {
+      .sc-row {
+        grid-template-columns: 1fr;
+        min-height: unset;
+        padding: 48px 0;
+        gap: 28px;
+      }
+      .sc-row.sc-reverse {
+        direction: ltr;
+      }
+      .sc-text p {
+        max-width: none;
+      }
     }
 
     /* ── FEATURES ── */
@@ -412,14 +481,16 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 28px;
-      transition: all 0.25s ease;
+      /* Scroll-driven entrance — JS writes opacity/transform inline each frame */
       opacity: 0;
-      transform: translateY(20px);
+      transform: translate(var(--fc-x, 0px), var(--fc-y, 150px));
+      will-change: opacity, transform;
+      transition: background 0.25s ease, border-color 0.25s ease;
     }
 
-    .feature-card.visible {
-      opacity: 1;
-      transform: translateY(0);
+    .feature-card.fc-settled {
+      will-change: auto;
+      transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
     }
 
     .feature-card:hover {
@@ -517,24 +588,6 @@
       opacity: 0.4;
     }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 720px) {
-      .showcase-grid {
-        grid-template-columns: 1fr;
-      }
-      .sc-card.sc-featured {
-        grid-column: span 1;
-      }
-      .sc-card.sc-featured .sc-img-wrap {
-        aspect-ratio: 16 / 10;
-      }
-    }
-
-    @media (max-width: 560px) {
-      .showcase-grid {
-        gap: 14px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -597,26 +650,27 @@
       <p class="section-sub">Every detail crafted to make your new tab feel like home.</p>
     </div>
 
-    <div class="showcase-grid">
-
-      <!-- 1 · Full dashboard (featured, spans all 3 columns) -->
-      <div class="sc-card sc-featured">
-        <div class="sc-img-wrap">
-          <img
-            src="preview.png"
-            alt="WindoM full dashboard with clock, dock bar, quick links and northern lights background"
-            loading="lazy"
-            class="sc-img"
-          />
-        </div>
-        <div class="sc-info">
-          <h3>Dashboard Overview</h3>
-          <p>The full WindoM experience — clock, greeting, quick links, dock bar, and a breathtaking background, every single time you open a new tab.</p>
-        </div>
+    <!-- Featured: full dashboard -->
+    <div class="sc-featured">
+      <div class="sc-img-wrap">
+        <img
+          src="preview.png"
+          alt="WindoM full dashboard with clock, dock bar, quick links and northern lights background"
+          loading="lazy"
+          class="sc-img"
+        />
       </div>
+      <div class="sc-info">
+        <h3>Dashboard Overview</h3>
+        <p>The full WindoM experience — clock, greeting, quick links, dock bar, and a breathtaking background, every single time you open a new tab.</p>
+      </div>
+    </div>
 
-      <!-- 2 · Sidebar: Tasks & Calendar -->
-      <div class="sc-card">
+    <!-- Alternating detail rows -->
+    <div class="sc-rows">
+
+      <!-- Row 1: image left, text right -->
+      <div class="sc-row">
         <div class="sc-img-wrap">
           <img
             src="preview-sidebar.png"
@@ -625,14 +679,14 @@
             class="sc-img"
           />
         </div>
-        <div class="sc-info">
+        <div class="sc-text">
           <h3>Tasks &amp; Calendar</h3>
           <p>A smart sidebar keeps your to-do list and upcoming events always within reach, without ever cluttering your dashboard.</p>
         </div>
       </div>
 
-      <!-- 3 · Settings panel -->
-      <div class="sc-card">
+      <!-- Row 2: text left, image right -->
+      <div class="sc-row sc-reverse">
         <div class="sc-img-wrap">
           <img
             src="preview-settings.png"
@@ -641,14 +695,14 @@
             class="sc-img"
           />
         </div>
-        <div class="sc-info">
+        <div class="sc-text">
           <h3>Deep Customization</h3>
           <p>Shape every detail — clock style, font weight, colors, date format, sidebar position, background source, and much more from one clean panel.</p>
         </div>
       </div>
 
-      <!-- 4 · Account & Integrations — Coming Soon -->
-      <div class="sc-card">
+      <!-- Row 3: image left, text right — Coming Soon -->
+      <div class="sc-row">
         <div class="sc-img-wrap">
           <span class="sc-badge">Coming Soon</span>
           <img
@@ -659,7 +713,7 @@
             style="object-position: center;"
           />
         </div>
-        <div class="sc-info">
+        <div class="sc-text">
           <h3>Account &amp; Integrations</h3>
           <p>Connect Google Calendar and Spotify. Sign in once and your entire setup syncs seamlessly across all your devices.</p>
         </div>
@@ -771,29 +825,120 @@
       else img.addEventListener('load', onLoad);
     });
 
-    // ── Showcase cards: staggered entrance on scroll ──────────────────────────
-    const scCards = Array.from(document.querySelectorAll('.sc-card'));
-    const scObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const idx = scCards.indexOf(entry.target);
-        setTimeout(() => entry.target.classList.add('sc-visible'), idx * 80);
-        scObserver.unobserve(entry.target);
-      });
-    }, { threshold: 0.08 });
-    scCards.forEach(c => scObserver.observe(c));
+    // ── Showcase: entrance animations ────────────────────────────────────────
+    // Trigger when the element reaches ~40% from the bottom of the viewport
+    const scOpts = { threshold: 0, rootMargin: '0px 0px -40% 0px' };
 
-    // ── Feature cards: staggered entrance on scroll ───────────────────────────
+    const featuredEl = document.querySelector('.sc-featured');
+    if (featuredEl) {
+      new IntersectionObserver(([e], obs) => {
+        if (!e.isIntersecting) return;
+        featuredEl.classList.add('sc-visible');
+        obs.disconnect();
+      }, scOpts).observe(featuredEl);
+    }
+
+    document.querySelectorAll('.sc-row').forEach(row => {
+      new IntersectionObserver(([e], obs) => {
+        if (!e.isIntersecting) return;
+        row.classList.add('sc-visible');
+        obs.disconnect();
+      }, scOpts).observe(row);
+    });
+
+    // ── Feature cards: scatter-from-column entrance ───────────────────────────
+    //
+    // Each card starts nearly invisible and displaced downward + biased toward
+    // Scroll-driven feature card entrance.
+    // Each card has a fixed spawn offset (biased by column position).
+    // As the user scrolls, each card's progress is computed in real time:
+    //   progress 0 = card just enters from 70% from bottom (start animating)
+    //   progress 1 = card reaches 30% from bottom (fully landed)
+    // Opacity and translate are applied inline so motion tracks the scroll.
+
     const fcCards = Array.from(document.querySelectorAll('.feature-card'));
-    const fcObserver = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const idx = fcCards.indexOf(entry.target);
-        setTimeout(() => entry.target.classList.add('visible'), idx * 55);
-        fcObserver.unobserve(entry.target);
+
+    // Per-card spawn data — set once after layout
+    const fcData = [];
+
+    function initFcData() {
+      const vw = window.innerWidth;
+      fcData.length = 0;
+      fcCards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        const scrollY = window.scrollY;
+        const cx = rect.left + rect.width / 2;
+        const rel = cx / vw; // 0 = far left, 1 = far right
+
+        // Horizontal spawn: strongly biased by column, small jitter
+        const xBias = (rel - 0.5) * 260;
+        const xJitter = (Math.random() - 0.5) * 50;
+        const startX = xBias + xJitter;
+
+        // Vertical spawn: far below final position
+        const startY = 130 + Math.random() * 90;
+
+        // Absolute top of card in document space (stable reference)
+        const cardDocTop = rect.top + scrollY;
+
+        fcData.push({ card, startX, startY, cardDocTop, settled: false });
       });
-    }, { threshold: 0.1 });
-    fcCards.forEach(c => fcObserver.observe(c));
+    }
+
+    function easeOut(t) {
+      // Smooth cubic ease-out
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function updateFcCards() {
+      const vh = window.innerHeight;
+      const scrollY = window.scrollY;
+
+      // Trigger zone:
+      //   start animating when card top is at 70% from top of viewport (= 30% from bottom)
+      //   fully landed when card top is at 30% from top of viewport
+      const triggerStart = vh * 0.70; // card enters viewport from here
+      const triggerEnd   = vh * 0.30; // card fully landed here
+      const range = triggerStart - triggerEnd; // scroll distance over which animation plays
+
+      fcData.forEach(d => {
+        if (d.settled) return;
+
+        // Card's current position relative to viewport top
+        const cardViewportTop = d.cardDocTop - scrollY;
+
+        // Progress: 0 when card is at triggerStart, 1 when at triggerEnd
+        const raw = (triggerStart - cardViewportTop) / range;
+        const progress = Math.max(0, Math.min(1, raw));
+        const eased = easeOut(progress);
+
+        const tx = d.startX * (1 - eased);
+        const ty = d.startY * (1 - eased);
+
+        d.card.style.opacity = eased.toFixed(4);
+        d.card.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px)`;
+
+        // Once fully landed, mark as settled and switch to hover-only transition
+        if (progress >= 1) {
+          d.settled = true;
+          d.card.style.opacity = '1';
+          d.card.style.transform = 'translate(0,0)';
+          d.card.classList.add('fc-settled');
+        }
+      });
+    }
+
+    // Init after two rAFs so layout is stable
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      initFcData();
+      updateFcCards(); // paint initial state (cards above fold may already be visible)
+    }));
+
+    window.addEventListener('scroll', updateFcCards, { passive: true });
+    window.addEventListener('resize', () => {
+      initFcData();
+      updateFcCards();
+    }, { passive: true });
   </script>
 
 </body>
