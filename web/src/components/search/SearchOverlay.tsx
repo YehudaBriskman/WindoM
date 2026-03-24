@@ -271,12 +271,14 @@ export function SearchOverlay() {
     return matched;
   }, [isCommandMode, commandQuery, settings.searchEngine]);
 
-  // Global shortcut: Ctrl+Super+H (Ctrl+Meta+H) — only active on the new tab page.
-  // On other pages the content script intercepts the shortcut and sends WINDOM_SEARCH_OPEN.
+  // Ctrl+Super+H or Ctrl+Super+' — toggle the overlay.
+  // On the new-tab page: this listener handles both open and close.
+  // When embedded: the content script opens it (message below), but this listener
+  // still fires when the overlay has focus, allowing the shortcut to close it.
   useEffect(() => {
-    if (isEmbedded) return; // handled by content script
+    const TRIGGER_KEYS = new Set(["h", "'"]);
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.metaKey && e.key.toLowerCase() === 'h') {
+      if (e.ctrlKey && e.metaKey && TRIGGER_KEYS.has(e.key.toLowerCase())) {
         e.preventDefault();
         setOpen(prev => !prev);
       }
@@ -285,9 +287,13 @@ export function SearchOverlay() {
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
-  // When embedded in a content-script iframe: open on demand and notify parent on close.
+  // When embedded in the content-script iframe:
+  // - Auto-open on mount (handles first-load race before postMessage arrives)
+  // - Listen for subsequent WINDOM_SEARCH_OPEN messages (re-opens after close)
+  // - Notify the content script when the overlay closes so it can hide the iframe
   useEffect(() => {
     if (!isEmbedded) return;
+    setOpen(true); // first open — auto-mount
     const handler = (e: MessageEvent) => {
       if ((e.data as { type?: string })?.type === 'WINDOM_SEARCH_OPEN') setOpen(true);
     };
