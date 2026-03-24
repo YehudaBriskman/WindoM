@@ -17,7 +17,6 @@
       --muted: #6b6b85;
       --accent: #7b9ef5;
       --accent2: #a78bfa;
-      --glow: rgba(123,158,245,0.15);
     }
 
     html { scroll-behavior: smooth; }
@@ -126,7 +125,7 @@
     }
     .btn-secondary:hover { background: rgba(255,255,255,0.07); transform: translateY(-2px); }
 
-    /* ── PREVIEW IMAGE ── */
+    /* ── HERO PREVIEW ── */
     .preview {
       width: 100%;
       max-width: 960px;
@@ -155,9 +154,34 @@
       pointer-events: none;
     }
 
+    /* Shimmer on hero image while it loads */
+    .preview-frame::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+      transform: translateX(-100%);
+      animation: shimmer 1.8s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.4s;
+      z-index: 2;
+    }
+
+    .preview-frame.img-ready::after {
+      opacity: 0;
+      animation: none;
+    }
+
     .preview-frame img {
       width: 100%;
       display: block;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .preview-frame.img-ready img {
+      opacity: 1;
     }
 
     /* ── DESCRIPTION ── */
@@ -183,7 +207,6 @@
     .description .closing {
       font-size: clamp(1.2rem, 2.5vw, 1.5rem);
       font-weight: 600;
-      color: var(--text);
       margin-top: 48px;
       background: linear-gradient(135deg, #fff, #a78bfa);
       -webkit-background-clip: text;
@@ -191,11 +214,191 @@
       background-clip: text;
     }
 
+    /* ── SHARED SECTION HEADER ── */
+    .section-eyebrow {
+      display: block;
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .section-heading {
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    .section-sub {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ── SHOWCASE ── */
+    .showcase {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 24px 100px;
+    }
+
+    .showcase-header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    /* ── SHOWCASE CARD ── */
+    .sc-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition:
+        opacity 0.5s ease,
+        transform 0.5s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease;
+      opacity: 0;
+      transform: translateY(22px);
+    }
+
+    .sc-card.sc-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .sc-card:hover {
+      border-color: rgba(123,158,245,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(123,158,245,0.1);
+    }
+
+    .sc-card.sc-featured {
+      grid-column: span 3;
+    }
+
+    /* Image wrapper — contains shimmer + image */
+    .sc-img-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: rgba(10, 12, 30, 0.8);
+    }
+
+    .sc-card.sc-featured .sc-img-wrap {
+      aspect-ratio: 16 / 9;
+    }
+
+    /* Shimmer sweep — plays until image loads */
+    .sc-img-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(123,158,245,0.06) 50%,
+        transparent 100%
+      );
+      transform: translateX(-100%);
+      animation: shimmer 1.8s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.35s ease;
+      z-index: 1;
+    }
+
+    .sc-img-wrap.sc-loaded::after {
+      opacity: 0;
+      animation: none;
+    }
+
+    /* Low-quality placeholder feel: subtle inner glow */
+    .sc-img-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(123,158,245,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .sc-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+
+    .sc-img-wrap.sc-loaded .sc-img {
+      opacity: 1;
+    }
+
+    /* Coming Soon overlay badge */
+    .sc-badge {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 4;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(167,139,250,0.18);
+      border: 1px solid rgba(167,139,250,0.4);
+      color: #c4b5fd;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Card info */
+    .sc-info {
+      padding: 18px 22px 22px;
+    }
+
+    .sc-info h3 {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .sc-info p {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.62;
+    }
+
     /* ── FEATURES ── */
     .features {
       max-width: 1000px;
       margin: 0 auto;
       padding: 0 24px 100px;
+    }
+
+    .features-header {
+      text-align: center;
+      margin-bottom: 52px;
     }
 
     .features-grid {
@@ -236,6 +439,24 @@
       font-weight: 600;
       color: var(--text);
       margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .feature-badge {
+      display: inline-block;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.28);
+      color: #a78bfa;
+      line-height: 1.4;
     }
 
     .feature-card p {
@@ -282,13 +503,37 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── SCROLL GLOW ── */
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+
+    /* ── DIVIDER ── */
     .glow-divider {
       width: 1px;
       height: 80px;
       background: linear-gradient(to bottom, transparent, var(--accent), transparent);
       margin: 0 auto 60px;
       opacity: 0.4;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 720px) {
+      .showcase-grid {
+        grid-template-columns: 1fr;
+      }
+      .sc-card.sc-featured {
+        grid-column: span 1;
+      }
+      .sc-card.sc-featured .sc-img-wrap {
+        aspect-ratio: 16 / 10;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .showcase-grid {
+        gap: 14px;
+      }
     }
   </style>
 </head>
@@ -312,10 +557,14 @@
     </div>
   </section>
 
-  <!-- PREVIEW -->
+  <!-- HERO PREVIEW -->
   <div class="preview">
-    <div class="preview-frame">
-      <img src="preview.png" alt="WindoM dashboard showing clock, greeting and northern lights background" />
+    <div class="preview-frame" id="previewFrame">
+      <img
+        src="preview.png"
+        alt="WindoM dashboard showing clock, greeting and northern lights background"
+        id="heroImg"
+      />
     </div>
   </div>
 
@@ -338,12 +587,100 @@
     <p class="closing">This is the new tab you always wanted.</p>
   </section>
 
+  <!-- SHOWCASE -->
+  <section class="showcase">
+    <div class="glow-divider"></div>
+
+    <div class="showcase-header">
+      <span class="section-eyebrow">Gallery</span>
+      <h2 class="section-heading">A closer look</h2>
+      <p class="section-sub">Every detail crafted to make your new tab feel like home.</p>
+    </div>
+
+    <div class="showcase-grid">
+
+      <!-- 1 · Full dashboard (featured, spans all 3 columns) -->
+      <div class="sc-card sc-featured">
+        <div class="sc-img-wrap">
+          <img
+            src="preview.png"
+            alt="WindoM full dashboard with clock, dock bar, quick links and northern lights background"
+            loading="lazy"
+            class="sc-img"
+          />
+        </div>
+        <div class="sc-info">
+          <h3>Dashboard Overview</h3>
+          <p>The full WindoM experience — clock, greeting, quick links, dock bar, and a breathtaking background, every single time you open a new tab.</p>
+        </div>
+      </div>
+
+      <!-- 2 · Sidebar: Tasks & Calendar -->
+      <div class="sc-card">
+        <div class="sc-img-wrap">
+          <img
+            src="preview-sidebar.png"
+            alt="WindoM sidebar showing today's tasks and upcoming calendar events"
+            loading="lazy"
+            class="sc-img"
+          />
+        </div>
+        <div class="sc-info">
+          <h3>Tasks &amp; Calendar</h3>
+          <p>A smart sidebar keeps your to-do list and upcoming events always within reach, without ever cluttering your dashboard.</p>
+        </div>
+      </div>
+
+      <!-- 3 · Settings panel -->
+      <div class="sc-card">
+        <div class="sc-img-wrap">
+          <img
+            src="preview-settings.png"
+            alt="WindoM settings panel open, showing clock style, size, and date format controls"
+            loading="lazy"
+            class="sc-img"
+          />
+        </div>
+        <div class="sc-info">
+          <h3>Deep Customization</h3>
+          <p>Shape every detail — clock style, font weight, colors, date format, sidebar position, background source, and much more from one clean panel.</p>
+        </div>
+      </div>
+
+      <!-- 4 · Account & Integrations — Coming Soon -->
+      <div class="sc-card">
+        <div class="sc-img-wrap">
+          <span class="sc-badge">Coming Soon</span>
+          <img
+            src="preview-account.png"
+            alt="WindoM account settings showing Google Calendar and Spotify connected"
+            loading="lazy"
+            class="sc-img"
+            style="object-position: center;"
+          />
+        </div>
+        <div class="sc-info">
+          <h3>Account &amp; Integrations</h3>
+          <p>Connect Google Calendar and Spotify. Sign in once and your entire setup syncs seamlessly across all your devices.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <!-- FEATURES -->
   <section class="features">
+    <div class="features-header">
+      <div class="glow-divider" style="margin-bottom:40px;"></div>
+      <span class="section-eyebrow">What's inside</span>
+      <h2 class="section-heading">Everything you need</h2>
+      <p class="section-sub">One tab. All your essentials. Nothing extra.</p>
+    </div>
+
     <div class="features-grid">
       <div class="feature-card">
         <span class="feature-icon">🕐</span>
-        <h3>Clock & Greeting</h3>
+        <h3>Clock &amp; Greeting</h3>
         <p>Live clock with a personalized greeting that adapts to the time of day and knows your name.</p>
       </div>
       <div class="feature-card">
@@ -386,6 +723,16 @@
         <h3>Daily Quotes</h3>
         <p>A new inspirational quote greets you every day.</p>
       </div>
+      <div class="feature-card">
+        <span class="feature-icon">☁️</span>
+        <h3>Cloud Sync <span class="feature-badge">Coming Soon</span></h3>
+        <p>Sign in once and your settings, quick links, and customizations follow you to every device automatically.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎨</span>
+        <h3>Themes <span class="feature-badge">Coming Soon</span></h3>
+        <p>One-click preset themes to completely transform the look and feel of your dashboard in seconds.</p>
+      </div>
     </div>
   </section>
 
@@ -406,17 +753,47 @@
   </footer>
 
   <script>
-    // Animate feature cards on scroll
-    const cards = document.querySelectorAll('.feature-card');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry, i) => {
-        if (entry.isIntersecting) {
-          setTimeout(() => entry.target.classList.add('visible'), i * 60);
-          observer.unobserve(entry.target);
-        }
+    // ── Hero image: fade in + remove shimmer when loaded ──────────────────────
+    const heroFrame = document.getElementById('previewFrame');
+    const heroImg   = document.getElementById('heroImg');
+    if (heroImg && heroFrame) {
+      const onReady = () => heroFrame.classList.add('img-ready');
+      if (heroImg.complete && heroImg.naturalHeight > 0) onReady();
+      else heroImg.addEventListener('load', onReady);
+    }
+
+    // ── Showcase images: shimmer → fade in on load ────────────────────────────
+    document.querySelectorAll('.sc-img').forEach(img => {
+      const wrap = img.closest('.sc-img-wrap');
+      if (!wrap) return;
+      const onLoad = () => wrap.classList.add('sc-loaded');
+      if (img.complete && img.naturalHeight > 0) onLoad();
+      else img.addEventListener('load', onLoad);
+    });
+
+    // ── Showcase cards: staggered entrance on scroll ──────────────────────────
+    const scCards = Array.from(document.querySelectorAll('.sc-card'));
+    const scObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const idx = scCards.indexOf(entry.target);
+        setTimeout(() => entry.target.classList.add('sc-visible'), idx * 80);
+        scObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.08 });
+    scCards.forEach(c => scObserver.observe(c));
+
+    // ── Feature cards: staggered entrance on scroll ───────────────────────────
+    const fcCards = Array.from(document.querySelectorAll('.feature-card'));
+    const fcObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const idx = fcCards.indexOf(entry.target);
+        setTimeout(() => entry.target.classList.add('visible'), idx * 55);
+        fcObserver.unobserve(entry.target);
       });
     }, { threshold: 0.1 });
-    cards.forEach(card => observer.observe(card));
+    fcCards.forEach(c => fcObserver.observe(c));
   </script>
 
 </body>
