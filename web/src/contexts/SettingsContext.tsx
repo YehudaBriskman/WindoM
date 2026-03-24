@@ -67,9 +67,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   // Sync with backend: fetch remote settings and merge intelligently.
   // - If backend has no data: push local to bootstrap the account.
-  // - If local was changed more recently than backend: push local, then accept backend's other fields.
-  // - Otherwise: backend wins (another device may have made changes).
-  const syncWithBackend = useCallback(async (localSettings: Settings) => {
+  // - backendWins=false (background sync): timestamp comparison — local wins if it's newer.
+  // - backendWins=true (sign-in event): backend always wins, overwriting local regardless of timestamps.
+  const syncWithBackend = useCallback(async (localSettings: Settings, backendWins = false) => {
     try {
       const token = await getAccessToken();
       if (!token) return;
@@ -85,28 +85,29 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const localUpdatedAt = await getLocalUpdatedAt();
       const backendUpdatedAt = data._updatedAt ?? 0;
 
-      if (localUpdatedAt > backendUpdatedAt) {
-        // Local changes are newer — push local to backend, keep local state
+      if (!backendWins && localUpdatedAt > backendUpdatedAt) {
+        // Background sync: local changes are newer — push local to backend, keep local state
         await apiPut('/settings', withTimestamp(pickSyncable(localSettings)));
-      } else {
-        // Backend is newer — merge into local (backend wins for syncable keys)
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { _updatedAt: _, ...backendSettings } = data;
-        const merged = { ...localSettings, ...backendSettings };
-        // Server-derived keys (SYNC_EXCLUDE) are not in backendSettings, but they
-        // ARE in localSettings which may be stale. Use the current React state for
-        // these keys so a concurrent useIntegrationSync update is never clobbered.
-        setSettings((prev) => {
-          const result = { ...merged } as Settings;
-          for (const key of SYNC_EXCLUDE) (result as unknown as Record<string, unknown>)[key] = prev[key];
-          return result;
-        });
-        // Don't write server-derived keys back to storage via this path
-        const storable = Object.fromEntries(
-          Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
-        );
-        await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
+        return;
       }
+
+      // Backend wins — apply to local (either forced by sign-in, or backend is genuinely newer)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _updatedAt: _, ...backendSettings } = data;
+      const merged = { ...localSettings, ...backendSettings };
+      // Server-derived keys (SYNC_EXCLUDE) are not in backendSettings, but they
+      // ARE in localSettings which may be stale. Use the current React state for
+      // these keys so a concurrent useIntegrationSync update is never clobbered.
+      setSettings((prev) => {
+        const result = { ...merged } as Settings;
+        for (const key of SYNC_EXCLUDE) (result as unknown as Record<string, unknown>)[key] = prev[key];
+        return result;
+      });
+      // Don't write server-derived keys back to storage via this path
+      const storable = Object.fromEntries(
+        Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
+      );
+      await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
     } catch { /* backend unreachable — stay on local */ }
   }, []);
 
@@ -128,11 +129,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     })();
   }, [syncWithBackend]);
 
-  // Re-sync when user logs in
+  // Re-sync when user logs in — backend always wins so the account's saved settings
+  // overwrite whatever was in local storage on this device.
   useEffect(() => {
     const handler = () => {
       setSettings((current) => {
-        syncWithBackend(current);
+        syncWithBackend(current, true);
         return current;
       });
     };
