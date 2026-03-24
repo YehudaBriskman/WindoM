@@ -53,6 +53,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
   const [loaded, setLoaded] = useState(false);
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Ref so async callbacks can read the latest settings without stale closures
+  const settingsRef = useRef<Settings>({ ...defaultSettings });
+  useEffect(() => { settingsRef.current = settings; }, [settings]);
 
   // Debounced push to backend — resets the 5s timer on every change
   const debouncedPush = useCallback((data: Partial<Settings>) => {
@@ -131,11 +134,18 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   // Re-sync when user logs in — backend always wins so the account's saved settings
   // overwrite whatever was in local storage on this device.
+  // After sync, auto-populate userName from the auth name if it's still the default.
   useEffect(() => {
-    const handler = () => {
-      setSettings((current) => {
-        syncWithBackend(current, true);
-        return current;
+    const handler = async (e: Event) => {
+      const authName = (e as CustomEvent<{ name?: string }>).detail?.name ?? '';
+      await syncWithBackend(settingsRef.current, true);
+      if (!authName) return;
+      setSettings((s) => {
+        if (s.userName !== defaultSettings.userName) return s;
+        const firstName = authName.split(' ')[0];
+        void syncStorage.set('userName', firstName);
+        void setLocalUpdatedAt();
+        return { ...s, userName: firstName };
       });
     };
     window.addEventListener('windom-auth-login', handler);

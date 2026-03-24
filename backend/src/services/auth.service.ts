@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { users } from '../db/schema.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
@@ -109,10 +109,15 @@ export async function loginWithGoogle(
   googleName: string,
   meta: SessionMeta,
 ): Promise<TokenPair> {
+  // On conflict (existing account with same email): preserve the user's name if already set.
+  // Only overwrite with Google name when the account has no name yet (empty string default).
   const [user] = await db
     .insert(users)
     .values({ email: googleEmail, name: googleName })
-    .onConflictDoUpdate({ target: users.email, set: { name: googleName } })
+    .onConflictDoUpdate({
+      target: users.email,
+      set: { name: sql`CASE WHEN ${users.name} = '' THEN EXCLUDED.name ELSE ${users.name} END` },
+    })
     .returning();
 
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });

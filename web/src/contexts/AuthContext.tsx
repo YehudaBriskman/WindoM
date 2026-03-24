@@ -88,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const me = await apiGet<User>('/me');
             setUser(me);
             console.log('[auth:init] User loaded:', me.email ?? me.name);
-            window.dispatchEvent(new CustomEvent('windom-auth-login'));
+            window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
           } catch (err) {
             console.error('[auth:init] /me failed — clearing token:', err);
             await clearAccessToken();
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const me = await apiGet<User>('/me');
     setUser(me);
     setSessionExpired(false);
-    window.dispatchEvent(new CustomEvent('windom-auth-login'));
+    window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
   }, []);
 
   return (

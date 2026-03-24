@@ -1,7 +1,6 @@
 import { Upload } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { useBackgroundContext } from '../../../contexts/BackgroundContext';
-import { localStore as ls } from '../../../lib/chrome-storage';
 import { showSettingsMessage } from '../SettingsMessage';
 import { GlassSelect } from '../../ui/GlassSelect';
 import { PhotoGrid } from '../PhotoGrid';
@@ -11,7 +10,7 @@ const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export function BackgroundSettings() {
   const { settings, update } = useSettings();
-  const { addLocalPhoto, setFromPhoto, photoHistory } = useBackgroundContext();
+  const { addLocalPhoto, setFromPhoto, setUploadedBackground, photoHistory } = useBackgroundContext();
   const { unsplashHistory, localHistory, liked, toggleLike, deleteLocalPhoto } = photoHistory;
 
   const unsplashLiked = liked.filter((p) => p.source === 'unsplash' || !p.source);
@@ -33,7 +32,8 @@ export function BackgroundSettings() {
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
-      await ls.set('localBackgroundImage', dataUrl);
+      // Write to the per-user (or global) key via BackgroundContext so account isolation is respected
+      await setUploadedBackground(dataUrl);
 
       const img = new Image();
       img.onload = () => {
