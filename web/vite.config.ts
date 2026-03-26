@@ -67,6 +67,13 @@ export default defineConfig(({ mode }) => {
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      // search.html is a web_accessible_resource that CRXJS doesn't auto-process as an
+      // entry point — add it here so Vite bundles it like any other multi-page HTML entry.
+      input: {
+        search: path.resolve(__dirname, 'search.html'),
+      },
+    },
   },
   };
 });

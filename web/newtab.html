@@ -6,6 +6,10 @@
     <title>New Tab</title>
 </head>
 <body>
+    <!-- autofocus must be on a non-hidden element; off-screen placement keeps it
+         invisible while still letting Chrome honour the attribute. -->
+    <input autofocus tabindex="-1" readonly aria-hidden="true"
+           style="position:fixed;left:-9999px;top:0;width:1px;height:1px;border:none;outline:none;background:transparent;color:transparent">
     <div id="root"></div>
     <script type="module" src="./src/main.tsx"></script>
 </body>
