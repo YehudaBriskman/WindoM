@@ -588,6 +588,342 @@
       opacity: 0.4;
     }
 
+    /* ── BROWSER COMPAT ── */
+    .hero-compat {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .hero-compat svg {
+      width: 13px;
+      height: 13px;
+      opacity: 0.5;
+    }
+
+    .hero-compat span {
+      opacity: 0.5;
+    }
+
+    /* ── INSTALL STEPS ── */
+    .install {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 100px;
+    }
+
+    .install-header {
+      text-align: center;
+      margin-bottom: 52px;
+    }
+
+    .install-steps {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: start;
+      gap: 0;
+    }
+
+    .install-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 24px;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.5s ease, transform 0.5s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .install-step.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .install-step:hover {
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(123,158,245,0.2);
+    }
+
+    .install-step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(123,158,245,0.12);
+      border: 1px solid rgba(123,158,245,0.25);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .install-step h3 {
+      font-size: 0.97rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .install-step p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .install-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 12px;
+      margin-top: 46px;
+      color: var(--muted);
+      opacity: 0.35;
+    }
+
+    .install-arrow svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .install-cta {
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 700px) {
+      .install-steps {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .install-arrow { display: none; }
+    }
+
+    /* ── WHAT'S NEW ── */
+    .whats-new {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 100px;
+    }
+
+    .whats-new-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .wn-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .wn-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      transition: background 0.2s ease;
+    }
+
+    .wn-item:last-child { border-bottom: none; }
+    .wn-item:hover { background: rgba(255,255,255,0.02); }
+
+    .wn-date {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+      padding-top: 2px;
+      white-space: nowrap;
+    }
+
+    .wn-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .wn-tag {
+      display: inline-block;
+      font-size: 0.66rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 999px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .wn-tag.new {
+      background: rgba(123,158,245,0.12);
+      border: 1px solid rgba(123,158,245,0.25);
+      color: var(--accent);
+    }
+
+    .wn-tag.fix {
+      background: rgba(92,184,92,0.1);
+      border: 1px solid rgba(92,184,92,0.22);
+      color: #6dca6d;
+    }
+
+    .wn-tag.improved {
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.25);
+      color: #a78bfa;
+    }
+
+    .wn-text {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .wn-text strong { color: var(--text); font-weight: 500; }
+
+    /* ── TRUST STRIP (enhanced) ── */
+    .trust-strip {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 52px 24px;
+      text-align: center;
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 80px;
+    }
+
+    .trust-strip p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 580px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+    }
+
+    .trust-strip p strong { color: var(--text); }
+
+    .trust-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .trust-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .trust-pill:hover {
+      color: var(--text);
+      border-color: rgba(123,158,245,0.25);
+      background: rgba(123,158,245,0.06);
+    }
+
+    .trust-pill svg {
+      width: 13px;
+      height: 13px;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+
+    /* ── FAQ ── */
+    .faq {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .faq-header {
+      text-align: center;
+      margin-bottom: 44px;
+    }
+
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-item:last-child { border-bottom: none; }
+
+    .faq-q {
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 20px 24px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .faq-q:hover { background: rgba(255,255,255,0.03); color: #fff; }
+
+    .faq-q svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: transform 0.25s ease;
+    }
+
+    .faq-item.open .faq-q svg { transform: rotate(45deg); }
+
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      padding: 0 24px;
+    }
+
+    .faq-item.open .faq-a {
+      max-height: 300px;
+      padding: 0 24px 20px;
+    }
+
+    .faq-a p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .faq-a a { color: var(--accent); text-decoration: none; }
+    .faq-a a:hover { text-decoration: underline; }
+
   </style>
 </head>
 <body>
@@ -608,6 +944,10 @@
         GitHub
       </a>
     </div>
+    <p class="hero-compat">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 1 0 12M8 2a6 6 0 0 0 0 12M2 8h12"/></svg>
+      Works on Chrome, Arc, Brave, Edge, and any Chromium-based browser
+    </p>
   </section>
 
   <!-- HERO PREVIEW -->
@@ -719,6 +1059,40 @@
         </div>
       </div>
 
+      <!-- Row 4: text left, image right — Focus Mode -->
+      <div class="sc-row sc-reverse">
+        <div class="sc-img-wrap">
+          <span class="sc-badge">Coming Soon</span>
+          <img
+            src="preview.png"
+            alt="WindoM focus mode with countdown timer front and center"
+            loading="lazy"
+            class="sc-img"
+          />
+        </div>
+        <div class="sc-text">
+          <h3>Focus Mode</h3>
+          <p>When it is time to work, Focus Mode strips the dashboard to its core — a full-screen countdown timer with no distractions, no widgets, no noise. Just you and the clock.</p>
+        </div>
+      </div>
+
+      <!-- Row 5: image left, text right — Search -->
+      <div class="sc-row">
+        <div class="sc-img-wrap">
+          <span class="sc-badge">Coming Soon</span>
+          <img
+            src="preview.png"
+            alt="WindoM search bar open over the dashboard"
+            loading="lazy"
+            class="sc-img"
+          />
+        </div>
+        <div class="sc-text">
+          <h3>Search</h3>
+          <p>A fast command bar sits one keypress away. Search the web, jump to a quick link, or navigate directly — without ever leaving the tab.</p>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -790,10 +1164,206 @@
     </div>
   </section>
 
-  <!-- PRIVACY -->
-  <div class="privacy-strip">
-    <p><strong>WindoM does not track you.</strong> Your data lives in your browser. An account is entirely optional and only needed for Google Calendar and Spotify. No ads, no analytics, no data sold.</p>
+  <!-- INSTALL STEPS -->
+  <section class="install">
+    <div class="glow-divider"></div>
+    <div class="install-header">
+      <span class="section-eyebrow">Get started</span>
+      <h2 class="section-heading">Up and running in seconds</h2>
+      <p class="section-sub">No account required. No configuration needed. Just install and open a new tab.</p>
+    </div>
+
+    <div class="install-steps">
+      <div class="install-step">
+        <div class="install-step-num">1</div>
+        <h3>Add to Chrome</h3>
+        <p>Click "Add to Chrome" from the Chrome Web Store. One click, no permissions beyond new tab.</p>
+      </div>
+      <div class="install-arrow">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10h12M12 5l5 5-5 5"/>
+        </svg>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">2</div>
+        <h3>Open a new tab</h3>
+        <p>WindoM replaces your new tab page immediately. Your first dashboard is ready the moment you install.</p>
+      </div>
+      <div class="install-arrow">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10h12M12 5l5 5-5 5"/>
+        </svg>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">3</div>
+        <h3>Make it yours</h3>
+        <p>Open Settings to set your name, choose a background, and enable the features you actually want.</p>
+      </div>
+    </div>
+
+    <div class="install-cta">
+      <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb" class="btn btn-primary">
+        Add to Chrome — it's free
+      </a>
+    </div>
+  </section>
+
+  <!-- WHAT'S NEW -->
+  <section class="whats-new">
+    <div class="whats-new-header">
+      <span class="section-eyebrow">Changelog</span>
+      <h2 class="section-heading">What's new</h2>
+      <p class="section-sub">WindoM is actively developed. Here's what landed recently.</p>
+    </div>
+
+    <div class="wn-list">
+      <div class="wn-item">
+        <span class="wn-date">Mar 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag new">New</span>
+          <span class="wn-text"><strong>Cloud sync (beta)</strong> — Sign in and your settings, quick links, and customizations follow you across devices.</span>
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-date">Mar 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag new">New</span>
+          <span class="wn-text"><strong>Spotify integration</strong> — See your currently playing track live on the dashboard.</span>
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-date">Mar 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag new">New</span>
+          <span class="wn-text"><strong>Google Calendar sync</strong> — Connect your Google account and see real events alongside local todos.</span>
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-date">Feb 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag improved">Improved</span>
+          <span class="wn-text"><strong>Background system</strong> — Per-account local backgrounds, Unsplash integration, and custom image uploads.</span>
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-date">Feb 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag improved">Improved</span>
+          <span class="wn-text"><strong>Settings panel</strong> — Redesigned with tabbed navigation, deeper clock customization, and live preview.</span>
+        </div>
+      </div>
+      <div class="wn-item">
+        <span class="wn-date">Jan 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag new">New</span>
+          <span class="wn-text"><strong>Focus Mode</strong> — Distraction-free countdown timer takes over the full dashboard.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <div class="trust-strip">
+    <p><strong>WindoM does not track you.</strong> Your data lives in your browser. An account is entirely optional and only needed for Google Calendar and Spotify. No ads, no analytics, no data sold — ever.</p>
+    <div class="trust-pills">
+      <a href="https://github.com/YehudaBriskman/WindoM" class="trust-pill">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        Open Source
+      </a>
+      <span class="trust-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8h6M8 5v6"/></svg>
+        MIT License
+      </span>
+      <span class="trust-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2a6 6 0 1 0 0 12A6 6 0 0 0 8 2z"/><path d="M8 5v4l2.5 1.5"/></svg>
+        No Telemetry
+      </span>
+      <span class="trust-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+        No Ads
+      </span>
+      <a href="local-setup.html" class="trust-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="14" height="10" rx="1.5"/><path d="M5 7l2 2 4-4"/></svg>
+        Self-hostable
+      </a>
+      <span class="trust-pill">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2l1.5 4.5H14l-3.7 2.7 1.4 4.3L8 11l-3.7 2.5 1.4-4.3L2 6.5h4.5z"/></svg>
+        Account Optional
+      </span>
+    </div>
   </div>
+
+  <!-- FAQ -->
+  <section class="faq">
+    <div class="faq-header">
+      <span class="section-eyebrow">FAQ</span>
+      <h2 class="section-heading">Common questions</h2>
+    </div>
+
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <button class="faq-q">
+          Does WindoM work offline?
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+        <div class="faq-a">
+          <p>Yes — almost everything works offline. The clock, todos, quick links, focus timer, quotes, and your settings are all stored locally in your browser. Weather and Unsplash backgrounds require an internet connection. Google Calendar and Spotify naturally require both a connection and an account.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          Do I need to create an account?
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+        <div class="faq-a">
+          <p>No. An account is entirely optional. Every feature except Google Calendar sync and Spotify works without one. If you do create an account, it's only used to sync your settings across devices and to connect third-party integrations.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          Will it slow down Chrome or my new tab?
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+        <div class="faq-a">
+          <p>WindoM is built to be fast. It is a static React app with no background scripts running while you browse. The extension only activates when you open a new tab. Weather and Spotify polling happens at most once every 30 seconds and only when the dashboard is open.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          Does it work on Arc, Brave, or Edge?
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+        <div class="faq-a">
+          <p>Yes. WindoM is a Manifest V3 Chrome extension and works on any Chromium-based browser — Arc, Brave, Microsoft Edge, Opera, and Vivaldi. Firefox is not supported at this time as it uses a different extension API.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          What happens to my data if I uninstall?
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+        <div class="faq-a">
+          <p>Removing the extension deletes all locally stored data (settings, todos, quick links) from your browser automatically. If you have an account, your server-side data (settings sync, OAuth tokens) is kept until you explicitly delete your account from the Account tab in Settings.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q">
+          Can I run my own backend?
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
+        </button>
+        <div class="faq-a">
+          <p>Yes. WindoM is fully open source under the MIT license. The backend is a Node.js + Fastify API that can be self-hosted with Docker in minutes. See the <a href="local-setup.html">Local Setup guide</a> for instructions.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
   <!-- FOOTER -->
   <footer>
@@ -939,6 +1509,25 @@
       initFcData();
       updateFcCards();
     }, { passive: true });
+
+    // ── Install steps: entrance animation ────────────────────────────────────
+    document.querySelectorAll('.install-step').forEach((el, i) => {
+      new IntersectionObserver(([e], obs) => {
+        if (!e.isIntersecting) return;
+        setTimeout(() => el.classList.add('is-visible'), i * 120);
+        obs.disconnect();
+      }, { threshold: 0, rootMargin: '0px 0px -20% 0px' }).observe(el);
+    });
+
+    // ── FAQ: toggle open/close ────────────────────────────────────────────────
+    document.querySelectorAll('.faq-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+      });
+    });
   </script>
 
 </body>
