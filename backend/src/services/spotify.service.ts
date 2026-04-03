@@ -106,7 +106,13 @@ async function resolveActiveDeviceId(token: string): Promise<string | null> {
   return active?.id ?? null;
 }
 
+const NOW_PLAYING_TTL_MS = 15_000;
+const nowPlayingCache = new Map<string, { data: Result<NowPlayingResult, SpotifyError>; expiresAt: number }>();
+
 export async function getNowPlaying(userId: string): Promise<Result<NowPlayingResult, SpotifyError>> {
+  const cached = nowPlayingCache.get(userId);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
   const token = await getSpotifyToken(userId);
   if (!token) return { ok: false, error: 'NOT_CONNECTED' };
 
@@ -114,16 +120,36 @@ export async function getNowPlaying(userId: string): Promise<Result<NowPlayingRe
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  if (res.status === 204) return { ok: true, data: { isPlaying: false, track: null } };
+  if (res.status === 204) {
+    const result: Result<NowPlayingResult, SpotifyError> = { ok: true, data: { isPlaying: false, track: null } };
+    nowPlayingCache.set(userId, { data: result, expiresAt: Date.now() + NOW_PLAYING_TTL_MS });
+    return result;
+  }
   if (!res.ok) return { ok: false, error: 'API_ERROR' };
 
   const data = (await res.json()) as SpotifyNowPlayingResponse;
-  if (!data.item) return { ok: true, data: { isPlaying: false, track: null } };
+  if (!data.item) {
+    const result: Result<NowPlayingResult, SpotifyError> = { ok: true, data: { isPlaying: false, track: null } };
+    nowPlayingCache.set(userId, { data: result, expiresAt: Date.now() + NOW_PLAYING_TTL_MS });
+    return result;
+  }
 
-  return {
+  const result: Result<NowPlayingResult, SpotifyError> = {
     ok: true,
     data: { isPlaying: data.is_playing, progressMs: data.progress_ms, track: normalizeTrack(data.item) },
   };
+  nowPlayingCache.set(userId, { data: result, expiresAt: Date.now() + NOW_PLAYING_TTL_MS });
+  return result;
+}
+
+/** Invalidate the now-playing cache for a user (e.g. on disconnect). */
+export function invalidateNowPlayingCache(userId: string): void {
+  nowPlayingCache.delete(userId);
+}
+
+/** Clear the entire now-playing cache. Only intended for use in tests. */
+export function clearNowPlayingCacheForTest(): void {
+  nowPlayingCache.clear();
 }
 
 export async function getTopTracks(
