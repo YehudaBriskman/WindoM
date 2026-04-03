@@ -2,6 +2,8 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { oauthAccounts } from '../db/schema.js';
 import type { OAuthProvider } from '../types/oauth.types.js';
+import { invalidateCalendarCache } from './calendar.service.js';
+import { invalidateNowPlayingCache } from './spotify.service.js';
 
 export interface IntegrationsStatus {
   google: { connected: boolean; scopes: string[] };
@@ -27,4 +29,10 @@ export async function unlinkProvider(userId: string, provider: OAuthProvider): P
   await db
     .delete(oauthAccounts)
     .where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, provider)));
+
+  if (provider === 'google') {
+    invalidateCalendarCache(userId);
+  } else if (provider === 'spotify') {
+    invalidateNowPlayingCache(userId);
+  }
 }
