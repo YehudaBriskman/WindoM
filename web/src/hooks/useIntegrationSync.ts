@@ -15,7 +15,7 @@ interface IntegrationsResponse {
  * Must be called inside a component below both AuthProvider and SettingsProvider.
  */
 export function useIntegrationSync() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, authLoading } = useAuth();
   const { updateMultiple, loaded: settingsLoaded } = useSettings();
 
   useEffect(() => {

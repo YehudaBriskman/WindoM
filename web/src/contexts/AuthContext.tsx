@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, setRefreshToken, clearRefreshToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
 
 const AUTH_REFRESH_TIMEOUT_MS = 5_000;
+const ME_TIMEOUT_MS = 5_000;
 
 interface User {
   id: string;
@@ -12,8 +13,9 @@ interface User {
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  loading: boolean;
+  authLoading: boolean;
   sessionExpired: boolean;
+  sessionLimitReached: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -25,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accessToken, setTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [sessionLimitReached, setSessionLimitReached] = useState(false);
 
   const logout = useCallback(async () => {
     try {
@@ -45,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       clearRefreshToken();
       setUser(null);
       setTokenState(null);
+      setSessionLimitReached(false);
     });
   }, []);
 
@@ -58,6 +62,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener('windom-session-expired', handler);
     return () => window.removeEventListener('windom-session-expired', handler);
+  }, []);
+
+  // Listen for session limit reached — too many active sessions
+  useEffect(() => {
+    const handler = () => {
+      console.warn('[auth] Session limit reached — user must sign out from another device');
+      setUser(null);
+      setTokenState(null);
+      setSessionLimitReached(true);
+    };
+    window.addEventListener('windom-session-limit', handler);
+    return () => window.removeEventListener('windom-session-limit', handler);
   }, []);
 
   // On mount: check if we already have a token or can refresh.
@@ -85,7 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token) {
           setTokenState(token);
           try {
-            const me = await apiGet<User>('/me');
+            const me = await Promise.race([
+              apiGet<User>('/me'),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('me_timeout')), ME_TIMEOUT_MS)
+              ),
+            ]);
             setUser(me);
             console.log('[auth:init] User loaded:', me.email ?? me.name);
             window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
@@ -112,11 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const me = await apiGet<User>('/me');
     setUser(me);
     setSessionExpired(false);
+    setSessionLimitReached(false);
     window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, loading, sessionExpired, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
