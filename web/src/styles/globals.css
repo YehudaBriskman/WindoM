@@ -2647,6 +2647,17 @@ body.focus-exiting .sidebar-container {
   border-radius: 8px;
 }
 
+.integration-error {
+  font-size: 12px;
+  color: rgba(239, 100, 100, 0.95);
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  margin-top: -6px;
+  margin-bottom: 8px;
+}
+
 .auth-toggle-row {
   text-align: center;
   font-size: 13px;
