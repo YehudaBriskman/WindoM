@@ -41,12 +41,42 @@ interface GoogleCalendarEventsResponse {
   items?: GoogleCalendarEvent[];
 }
 
+const CALENDAR_TTL_MS = 180_000;
+const calendarCache = new Map<string, { data: Result<CalendarEvent[], CalendarError>; expiresAt: number }>();
+
+/** Invalidate the calendar cache for a user (e.g. on disconnect). */
+export function invalidateCalendarCache(userId: string): void {
+  for (const key of calendarCache.keys()) {
+    if (key === userId || key.startsWith(`${userId}:`)) {
+      calendarCache.delete(key);
+    }
+  }
+}
+
+/** Clear the entire calendar cache. Only intended for use in tests. */
+export function clearCalendarCacheForTest(): void {
+  calendarCache.clear();
+}
+
+async function batchRequests<T>(tasks: (() => Promise<T>)[], concurrency: number): Promise<PromiseSettledResult<T>[]> {
+  const results: PromiseSettledResult<T>[] = [];
+  for (let i = 0; i < tasks.length; i += concurrency) {
+    const batch = tasks.slice(i, i + concurrency);
+    const batchResults = await Promise.allSettled(batch.map((t) => t()));
+    results.push(...batchResults);
+  }
+  return results;
+}
+
 /** Fetch and normalize Google Calendar events for a user over the given day range. */
 export async function getCalendarEvents(
   userId: string,
   days: number,
 ): Promise<Result<CalendarEvent[], CalendarError>> {
   const dayCount = Math.min(MAX_CALENDAR_DAYS, Math.max(1, days || DEFAULT_CALENDAR_DAYS));
+  const cacheKey = `${userId}:${dayCount}`;
+  const cached = calendarCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
 
   const [account] = await db
     .select()
@@ -87,9 +117,9 @@ export async function getCalendarEvents(
     maxResults: String(MAX_CALENDAR_RESULTS),
   });
 
-  // Fan-out: fetch events from all calendars in parallel
-  const results = await Promise.allSettled(
-    calendarIds.map(({ id, color }) =>
+  // Fan-out: fetch events from all calendars with max 5 concurrent requests
+  const results = await batchRequests(
+    calendarIds.map(({ id, color }) => () =>
       fetch(`${CALENDAR_API}/calendars/${encodeURIComponent(id)}/events?${params}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       }).then(async (r) => {
@@ -98,6 +128,7 @@ export async function getCalendarEvents(
         return { items: d.items ?? [], color, calendarId: id };
       }),
     ),
+    5,
   );
 
   // Flatten, deduplicate by event id, and normalize
@@ -123,5 +154,7 @@ export async function getCalendarEvents(
   }
 
   events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  return { ok: true, data: events };
+  const result: Result<CalendarEvent[], CalendarError> = { ok: true, data: events };
+  calendarCache.set(cacheKey, { data: result, expiresAt: Date.now() + CALENDAR_TTL_MS });
+  return result;
 }

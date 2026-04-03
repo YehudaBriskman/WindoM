@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
 import { apiPost, apiFetch } from '../../../lib/api';
+import { mapOAuthError } from '../../../lib/oauth-errors';
 
 // ── Signed-out view ────────────────────────────────────────────────────────
 
@@ -74,7 +75,7 @@ function IntegrationCard({ name, connected, onConnect, onDisconnect, icon, provi
           </button>
         )}
       </div>
-      {error && <p className="auth-error" style={{ marginTop: '-6px', marginBottom: '8px' }}>{error}</p>}
+      {error && <p className="integration-error">{error}</p>}
     </div>
   );
 }
@@ -93,17 +94,21 @@ function SignedInView() {
     : (user?.email?.[0] ?? '?').toUpperCase();
 
   async function connectGoogle() {
-    const redirectUri = chrome.identity.getRedirectURL();
-    const { authUrl } = await apiPost<{ authUrl: string }>(`/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`);
-    const redirectUrl = await launchWebAuth(authUrl);
-    const params = new URL(redirectUrl).searchParams;
-    if (params.get('error')) throw new Error(params.get('error')!);
-    const code = params.get('code');
-    const state = params.get('state');
-    if (!code || !state) throw new Error('No auth code returned');
-    const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
-    if (status !== 'linked') throw new Error('Linking failed');
-    await update('calendarConnected', true);
+    try {
+      const redirectUri = chrome.identity.getRedirectURL();
+      const { authUrl } = await apiPost<{ authUrl: string }>(`/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`);
+      const redirectUrl = await launchWebAuth(authUrl);
+      const params = new URL(redirectUrl).searchParams;
+      if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
+      const code = params.get('code');
+      const state = params.get('state');
+      if (!code || !state) throw new Error('No auth code returned');
+      const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
+      if (status !== 'linked') throw new Error('Linking failed');
+      await update('calendarConnected', true);
+    } catch (err) {
+      throw new Error(mapIntegrationError(err));
+    }
   }
 
   async function disconnectGoogle() {
@@ -113,17 +118,21 @@ function SignedInView() {
   }
 
   async function connectSpotify() {
-    const redirectUri = chrome.identity.getRedirectURL();
-    const { authUrl } = await apiPost<{ authUrl: string }>(`/oauth/spotify/start?redirectUri=${encodeURIComponent(redirectUri)}`);
-    const redirectUrl = await launchWebAuth(authUrl);
-    const params = new URL(redirectUrl).searchParams;
-    if (params.get('error')) throw new Error(params.get('error')!);
-    const code = params.get('code');
-    const state = params.get('state');
-    if (!code || !state) throw new Error('No auth code returned');
-    const { status } = await apiPost<{ status: string }>('/oauth/spotify/exchange', { code, state, redirectUri });
-    if (status !== 'linked') throw new Error('Linking failed');
-    await update('spotifyConnected', true);
+    try {
+      const redirectUri = chrome.identity.getRedirectURL();
+      const { authUrl } = await apiPost<{ authUrl: string }>(`/oauth/spotify/start?redirectUri=${encodeURIComponent(redirectUri)}`);
+      const redirectUrl = await launchWebAuth(authUrl);
+      const params = new URL(redirectUrl).searchParams;
+      if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
+      const code = params.get('code');
+      const state = params.get('state');
+      if (!code || !state) throw new Error('No auth code returned');
+      const { status } = await apiPost<{ status: string }>('/oauth/spotify/exchange', { code, state, redirectUri });
+      if (status !== 'linked') throw new Error('Linking failed');
+      await update('spotifyConnected', true);
+    } catch (err) {
+      throw new Error(mapIntegrationError(err));
+    }
   }
 
   async function disconnectSpotify() {
@@ -185,10 +194,21 @@ function SignedInView() {
 // ── Root export ────────────────────────────────────────────────────────────
 
 export function AccountSettings() {
-  const { user, loading } = useAuth();
+  const { user, authLoading, sessionLimitReached } = useAuth();
 
-  if (loading) {
+  if (authLoading) {
     return <p className="settings-label" style={{ opacity: 0.5 }}>Loading…</p>;
+  }
+
+  if (sessionLimitReached) {
+    return (
+      <div className="settings-group">
+        <p className="auth-error" style={{ marginBottom: '12px' }}>
+          You've reached the maximum number of active sessions. Please sign out from another device to continue.
+        </p>
+        <SignedOutView />
+      </div>
+    );
   }
 
   return user ? <SignedInView /> : <SignedOutView />;
@@ -196,18 +216,22 @@ export function AccountSettings() {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-/** Map Chrome's internal OAuth error messages to user-friendly ones. */
-function mapChromeOAuthError(msg: string): string {
-  if (/could not be loaded|not loaded/i.test(msg)) {
-    return 'Could not open the sign-in page. Check your internet connection and try again.';
+/** Map integration connection errors to user-friendly messages. */
+function mapIntegrationError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/already.linked|account already linked/i.test(msg)) {
+    return 'This account is already linked to a different user.';
   }
-  if (/cancelled|canceled|dismissed|closed|did not approve/i.test(msg)) {
-    return 'Sign-in was cancelled.';
+  if (/network|fetch|connection|failed to fetch/i.test(msg)) {
+    return 'Connection failed. Check your internet and try again.';
   }
-  if (/timed? ?out/i.test(msg)) {
-    return 'Sign-in timed out. Please try again.';
+  // Route access_denied through mapOAuthError to get a friendly message
+  if (msg === 'access_denied' || msg.includes('access_denied')) {
+    return mapOAuthError(msg);
   }
-  return msg;
+  // Pass through user-friendly messages already set (e.g. from launchWebAuth / mapOAuthError)
+  if (msg && msg !== 'Failed') return msg;
+  return 'Something went wrong. Please try again.';
 }
 
 /** Launch an OAuth popup with a 2-minute timeout and friendly error messages. */
@@ -223,7 +247,7 @@ function launchWebAuth(url: string): Promise<string> {
       clearTimeout(timer);
       if (settled) return;
       if (chrome.runtime.lastError || !redirectUrl) {
-        reject(new Error(mapChromeOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
+        reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
       } else {
         resolve(redirectUrl);
       }

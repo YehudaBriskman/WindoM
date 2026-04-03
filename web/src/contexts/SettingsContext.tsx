@@ -96,7 +96,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       // Backend wins — apply to local (either forced by sign-in, or backend is genuinely newer)
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _updatedAt: _, ...backendSettings } = data;
+      const { _updatedAt: _, ...rawBackendSettings } = data;
+      // Strip unknown keys — only keep keys that exist in defaultSettings to prevent
+      // a compromised or malformed backend response from injecting unknown state.
+      const backendSettings = Object.fromEntries(
+        Object.entries(rawBackendSettings).filter(([k]) => k in defaultSettings),
+      ) as Partial<Settings>;
       const merged = { ...localSettings, ...backendSettings };
       // Server-derived keys (SYNC_EXCLUDE) are not in backendSettings, but they
       // ARE in localSettings which may be stale. Use the current React state for

@@ -140,6 +140,8 @@ async function doRefresh(): Promise<string | null> {
         const err = (await res.json()) as { code?: string };
         console.warn('[auth:refresh] Error code:', err.code);
         if (err.code === 'SESSION_LIMIT_REACHED') {
+          window.dispatchEvent(new CustomEvent('windom-session-limit'));
+        } else {
           window.dispatchEvent(new CustomEvent('windom-session-expired'));
         }
       } catch { /* ignore parse errors */ }

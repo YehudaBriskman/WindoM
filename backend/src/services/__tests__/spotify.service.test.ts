@@ -8,7 +8,7 @@ vi.mock('../../config.js', () => ({
 
 import { db } from '../../db/client.js';
 import { getValidAccessToken } from '../token-refresh.service.js';
-import { getNowPlaying, getTopTracks, sendPlaybackCommand } from '../spotify.service.js';
+import { getNowPlaying, getTopTracks, sendPlaybackCommand, clearNowPlayingCacheForTest } from '../spotify.service.js';
 
 const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 const mockGetToken = getValidAccessToken as ReturnType<typeof vi.fn>;
@@ -29,6 +29,7 @@ const rawTrack = {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+  clearNowPlayingCacheForTest();
 });
 
 // ── getNowPlaying ──────────────────────────────────────────────────────────

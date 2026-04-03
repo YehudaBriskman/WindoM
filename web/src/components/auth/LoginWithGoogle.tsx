@@ -1,24 +1,11 @@
 import { useState } from 'react';
 import { apiGet, apiPost, setAccessToken, setRefreshToken } from '../../lib/api';
+import { mapOAuthError } from '../../lib/oauth-errors';
 
 interface Props {
   onSuccess?: () => void;
   onError?: (msg: string) => void;
   label?: string;
-}
-
-/** Map Chrome's internal OAuth error messages to user-friendly ones. */
-function mapChromeOAuthError(msg: string): string {
-  if (/could not be loaded|not loaded/i.test(msg)) {
-    return 'Could not open the sign-in page. Check your internet connection and try again.';
-  }
-  if (/cancelled|canceled|dismissed|closed|did not approve/i.test(msg)) {
-    return 'Sign-in was cancelled.';
-  }
-  if (/timed? ?out/i.test(msg)) {
-    return 'Sign-in timed out. Please try again.';
-  }
-  return msg;
 }
 
 export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Google' }: Props) {
@@ -49,7 +36,7 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
             clearTimeout(timer);
             if (settled) return;
             if (chrome.runtime.lastError || !url) {
-              reject(new Error(mapChromeOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
+              reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
             } else {
               resolve(url);
             }
@@ -63,7 +50,7 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
       const code = params.get('code');
       const state = params.get('state');
 
-      if (error || !code || !state) throw new Error(error ?? 'No auth code returned');
+      if (error || !code || !state) throw new Error(error ? mapOAuthError(error) : 'No auth code returned');
 
       // Send code to backend for server-side token exchange
       const { accessToken, refreshToken } = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/google/exchange', {

@@ -8,7 +8,7 @@ vi.mock('../../config.js', () => ({
 
 import { db } from '../../db/client.js';
 import { getValidAccessToken } from '../token-refresh.service.js';
-import { getCalendarEvents } from '../calendar.service.js';
+import { getCalendarEvents, clearCalendarCacheForTest } from '../calendar.service.js';
 
 const mockDb = db as unknown as { select: ReturnType<typeof vi.fn> };
 const mockGetToken = getValidAccessToken as ReturnType<typeof vi.fn>;
@@ -25,6 +25,7 @@ function dbReturnsAccount(account: ReturnType<typeof mockAccount> | null): void 
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllGlobals();
+  clearCalendarCacheForTest();
 });
 
 describe('getCalendarEvents', () => {
