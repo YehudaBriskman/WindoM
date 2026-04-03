@@ -14,5 +14,5 @@ export function authGoogleRoutes(app: FastifyInstance): void {
 
   app.get('/start', { config: { rateLimit: { max: 20, timeWindow: '15 minutes' } } }, startGoogleAuthController);
   app.post('/exchange', { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } }, exchangeGoogleAuthController);
-  app.get('/callback', callbackGoogleAuthController);
+  app.get('/callback', { config: { rateLimit: { max: 20, timeWindow: '5 minutes' } } }, callbackGoogleAuthController);
 }
