@@ -42,6 +42,8 @@ const ENGINE_LIST: Settings['searchEngine'][] = ['google', 'bing', 'duckduckgo',
 const hasChromeApi = typeof chrome !== 'undefined';
 // Content scripts cannot use chrome.tabs.* in MV3; detect and route via background
 const isContentScript = typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
+// True when the overlay is running inside the content-script iframe (search.html embedded in a page)
+const isEmbedded = typeof window !== 'undefined' && window.parent !== window;
 
 // ── Command definitions ────────────────────────────────────────────────────────
 
@@ -223,6 +225,12 @@ export function SearchOverlay() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Double rAF ensures the browser paints the initial closed state before the
+  // open transition fires — without it the CSS animation is skipped on first open.
+  const openWithAnimation = useCallback(() => {
+    requestAnimationFrame(() => requestAnimationFrame(() => setOpen(true)));
+  }, []);
+
   // Command mode: any value that starts with '>'
   const isCommandMode = value.startsWith('>');
   const commandQuery = isCommandMode ? value.slice(1).trimStart() : '';
@@ -269,10 +277,14 @@ export function SearchOverlay() {
     return matched;
   }, [isCommandMode, commandQuery, settings.searchEngine]);
 
-  // Global shortcut: Ctrl+Super+H (Ctrl+Meta+H)
+  // Ctrl+Super+H or Ctrl+Super+' — toggle the overlay.
+  // On the new-tab page: this listener handles both open and close.
+  // When embedded: the content script opens it (message below), but this listener
+  // still fires when the overlay has focus, allowing the shortcut to close it.
   useEffect(() => {
+    const TRIGGER_KEYS = new Set(["h", "'"]);
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.metaKey && e.key.toLowerCase() === 'h') {
+      if (e.ctrlKey && e.metaKey && TRIGGER_KEYS.has(e.key.toLowerCase())) {
         e.preventDefault();
         setOpen(prev => !prev);
       }
@@ -280,6 +292,36 @@ export function SearchOverlay() {
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, []);
+
+  // When embedded in the content-script iframe:
+  // - Auto-open on mount (handles first-load race before postMessage arrives)
+  // - Listen for subsequent WINDOM_SEARCH_OPEN messages (re-opens after close)
+  // - Notify the content script when the overlay closes so it can hide the iframe
+  useEffect(() => {
+    if (!isEmbedded) return;
+    openWithAnimation(); // first open — double rAF so the enter animation plays
+    const handler = (e: MessageEvent) => {
+      if ((e.data as { type?: string })?.type === 'WINDOM_SEARCH_OPEN') openWithAnimation();
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, [openWithAnimation]);
+
+
+  const prevOpenRef = useRef(false);
+  useEffect(() => {
+    const wasOpen = prevOpenRef.current;
+    prevOpenRef.current = open;
+    if (isEmbedded && wasOpen && !open) {
+      // Blur first so no lingering focus in the iframe, then delay the CLOSED
+      // message long enough for the exit animation to complete (≈ 420 ms).
+      (document.activeElement as HTMLElement | null)?.blur();
+      const tid = setTimeout(() => {
+        window.parent.postMessage({ type: 'WINDOM_SEARCH_CLOSED' }, '*');
+      }, 450);
+      return () => clearTimeout(tid);
+    }
+  }, [open]);
 
   // Auto-focus when opened; delay state reset so exit animation plays fully
   useEffect(() => {

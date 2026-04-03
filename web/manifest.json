@@ -18,6 +18,19 @@
     "https://duckduckgo.com/*",
     "https://api.windom.app/*"
   ],
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [{
+    "matches": ["https://*/*", "http://*/*"],
+    "js": ["src/content/index.ts"],
+    "run_at": "document_end"
+  }],
+  "web_accessible_resources": [{
+    "resources": ["search.html"],
+    "matches": ["https://*/*", "http://*/*"]
+  }],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
