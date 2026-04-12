@@ -6,6 +6,8 @@ import type { PlaybackCommand } from '../services/spotify.service.js';
 function sendSpotifyError(error: spotifyService.SpotifyError, reply: FastifyReply): void {
   if (error === 'NOT_CONNECTED') {
     void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Spotify not connected' });
+  } else if (error === 'NO_DEVICE') {
+    void reply.status(422).send({ statusCode: 422, error: 'No Active Device', message: 'Open Spotify on any device to enable playback control' });
   } else if (error === 'FORBIDDEN') {
     void reply.status(403).send({ statusCode: 403, error: 'Forbidden', message: 'Spotify premium required or action not allowed' });
   } else {
