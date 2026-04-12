@@ -8,6 +8,7 @@ interface User {
   id: string;
   email: string | null;
   name: string;
+  hasPassword: boolean;
 }
 
 interface AuthState {

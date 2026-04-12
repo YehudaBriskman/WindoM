@@ -2747,6 +2747,105 @@ body.focus-exiting .sidebar-container {
   cursor: not-allowed;
 }
 
+/* ── Danger zone (account deletion) ──────────────────────────────────────── */
+
+.danger-zone {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+.danger-zone-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(239, 100, 100, 0.6);
+  margin-bottom: 10px;
+}
+
+.danger-delete-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: rgba(239, 100, 100, 0.8);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.danger-delete-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: rgba(255, 150, 150, 1);
+}
+.danger-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.danger-confirm-panel {
+  padding: 14px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.danger-confirm-warning {
+  font-size: 12px;
+  color: rgba(255, 200, 200, 0.85);
+  line-height: 1.5;
+}
+
+.danger-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.danger-confirm-cancel {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.danger-confirm-cancel:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.danger-confirm-submit {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: rgba(255, 150, 150, 1);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.danger-confirm-submit:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.55);
+  color: white;
+}
+.danger-confirm-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* "Sign in to unlock" notice for locked features */
 .auth-required-notice {
   padding: 14px 16px;
