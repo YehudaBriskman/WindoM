@@ -1,4 +1,5 @@
 /.claude
+**/.claude
 /CLAUDE.md
 /dist
 /node_modules
@@ -13,3 +14,6 @@ extension.zip
 web/dist/
 backend/dist/
 windom-production.zip
+
+# Local private docs repo (never push)
+Windom/
