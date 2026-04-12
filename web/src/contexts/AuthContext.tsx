@@ -17,6 +17,7 @@ interface AuthState {
   sessionExpired: boolean;
   sessionLimitReached: boolean;
   login: (email: string, password: string) => Promise<void>;
+  loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -137,8 +138,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
   }, []);
 
+  const loginWithTokens = useCallback(async (accessToken: string, refreshToken: string) => {
+    await setAccessToken(accessToken);
+    await setRefreshToken(refreshToken);
+    setTokenState(accessToken);
+    const me = await apiGet<User>('/me');
+    setUser(me);
+    setSessionExpired(false);
+    setSessionLimitReached(false);
+    window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, loginWithTokens, logout }}>
       {children}
     </AuthContext.Provider>
   );
