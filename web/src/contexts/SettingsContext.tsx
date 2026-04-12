@@ -53,18 +53,27 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
   const [loaded, setLoaded] = useState(false);
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Accumulates only the keys that changed since the last backend push
+  const pendingDeltaRef = useRef<Partial<Settings>>({});
   // Ref so async callbacks can read the latest settings without stale closures
   const settingsRef = useRef<Settings>({ ...defaultSettings });
   useEffect(() => { settingsRef.current = settings; }, [settings]);
 
-  // Debounced push to backend — resets the 5s timer on every change
-  const debouncedPush = useCallback((data: Partial<Settings>) => {
+  // Debounced push to backend — accumulates changed keys and pushes only the delta.
+  // Sending just the changed keys prevents a tab from overwriting another tab's
+  // concurrent changes to different keys (last-write-wins blast radius reduced).
+  const debouncedPush = useCallback((delta: Partial<Settings>) => {
+    pendingDeltaRef.current = { ...pendingDeltaRef.current, ...delta };
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
     pushTimerRef.current = setTimeout(async () => {
+      const toSend = pendingDeltaRef.current;
+      pendingDeltaRef.current = {};
       try {
         const token = await getAccessToken();
-        if (token) await apiPut('/settings', withTimestamp(pickSyncable(data)));
-      } catch { /* best-effort */ }
+        if (token) await apiPut('/settings', withTimestamp(pickSyncable(toSend)));
+      } catch (err) {
+        console.error('[settings] Failed to push settings to backend:', err);
+      }
     }, 5000);
   }, []);
 
@@ -116,7 +125,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
       );
       await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
-    } catch { /* backend unreachable — stay on local */ }
+    } catch (err) {
+      console.error('[settings] Backend sync failed — staying on local:', err);
+    }
   }, []);
 
   // Load settings on mount, then attempt backend sync
@@ -180,11 +191,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(
     async <K extends keyof Settings>(key: K, value: Settings[K]) => {
-      setSettings((prev) => {
-        const next = { ...prev, [key]: value };
-        debouncedPush(next);
-        return next;
-      });
+      setSettings((prev) => ({ ...prev, [key]: value }));
+      debouncedPush({ [key]: value } as Partial<Settings>);
       await Promise.all([
         syncStorage.set(key, value),
         setLocalUpdatedAt(),
@@ -195,11 +203,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const updateMultiple = useCallback(
     async (updates: Partial<Settings>) => {
-      setSettings((prev) => {
-        const next = { ...prev, ...updates };
-        debouncedPush(next);
-        return next;
-      });
+      setSettings((prev) => ({ ...prev, ...updates }));
+      debouncedPush(updates);
       await Promise.all([
         syncStorage.setMultiple(updates as unknown as Record<string, unknown>),
         setLocalUpdatedAt(),
