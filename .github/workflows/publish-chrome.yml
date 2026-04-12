@@ -46,7 +46,7 @@ jobs:
         run: cd dist && zip -r ../../extension.zip . && cd ..
 
       - name: Upload to Chrome Web Store
-        uses: mnao305/chrome-extension-upload@v5.0.0
+        uses: mnao305/chrome-extension-upload@v5.1.1
         with:
           file-path: extension.zip
           extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
