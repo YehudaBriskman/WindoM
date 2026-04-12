@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { apiGet, apiPost, setAccessToken, setRefreshToken } from '../../lib/api';
+import { apiGet, apiPost } from '../../lib/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { mapOAuthError } from '../../lib/oauth-errors';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Google' }: Props) {
+  const { loginWithTokens } = useAuth();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -59,10 +61,8 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
         redirectUri,
       });
 
-      await setAccessToken(accessToken);
-      await setRefreshToken(refreshToken);
+      await loginWithTokens(accessToken, refreshToken);
       onSuccess?.();
-      window.location.reload();
     } catch (err) {
       onError?.(err instanceof Error ? err.message : 'Google sign-in failed');
     } finally {

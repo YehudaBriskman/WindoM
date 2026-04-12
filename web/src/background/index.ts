@@ -11,7 +11,19 @@ async function broadcastTabsChanged() {
 }
 
 chrome.tabs.onActivated.addListener(() => broadcastTabsChanged());
-chrome.tabs.onUpdated.addListener(() => broadcastTabsChanged());
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Close any older WindoM newtab in the same window when a new one loads (#47)
+  if (changeInfo.status === 'loading' && tab.url?.includes('/newtab.html')) {
+    const newtabUrl = `chrome-extension://${chrome.runtime.id}/newtab.html`;
+    const tabs = await chrome.tabs.query({ windowId: tab.windowId });
+    for (const other of tabs) {
+      if (other.id && other.id !== tabId && other.url === newtabUrl) {
+        chrome.tabs.remove(other.id).catch(() => {});
+      }
+    }
+  }
+  broadcastTabsChanged();
+});
 chrome.tabs.onRemoved.addListener(() => broadcastTabsChanged());
 chrome.tabs.onCreated.addListener(() => broadcastTabsChanged());
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoginWithGoogle } from './LoginWithGoogle';
-import { apiPost, setAccessToken } from '../../lib/api';
+import { apiPost } from '../../lib/api';
 
 interface Props {
   onSuccess?: () => void;
@@ -12,7 +12,7 @@ interface Props {
  * Not a full-page blocker; the dashboard is always accessible.
  */
 export function LoginScreen({ onSuccess }: Props) {
-  const { login } = useAuth();
+  const { login, loginWithTokens } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -31,9 +31,9 @@ export function LoginScreen({ onSuccess }: Props) {
     setLoading(true);
     try {
       if (mode === 'register') {
-        const data = await apiPost<{ accessToken: string }>('/auth/register', { email, password, name });
-        await setAccessToken(data.accessToken);
-        window.location.reload();
+        const data = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/register', { email, password, name });
+        await loginWithTokens(data.accessToken, data.refreshToken);
+        onSuccess?.();
       } else {
         await login(email, password);
         onSuccess?.();
