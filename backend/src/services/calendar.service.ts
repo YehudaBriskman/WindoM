@@ -138,7 +138,7 @@ export async function getCalendarEvents(
   for (const result of results) {
     if (result.status !== 'fulfilled') continue;
     const { items, color, calendarId } = result.value;
-    for (const item of items) {
+    for (const item of items.filter(Boolean)) {
       if (seen.has(item.id)) continue;
       seen.add(item.id);
       events.push({

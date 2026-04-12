@@ -184,9 +184,11 @@ export async function sendPlaybackCommand(
   if (!token) return { ok: false, error: 'NOT_CONNECTED' };
 
   const deviceId = await resolveActiveDeviceId(token);
+  if (!deviceId) return { ok: false, error: 'NO_DEVICE' };
+
   const { method, endpoint } = COMMAND_CONFIG[command];
   const sep = endpoint.includes('?') ? '&' : '?';
-  const url = deviceId ? `${SPOTIFY_API}${endpoint}${sep}device_id=${deviceId}` : `${SPOTIFY_API}${endpoint}`;
+  const url = `${SPOTIFY_API}${endpoint}${sep}device_id=${deviceId}`;
 
   const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` } });
 

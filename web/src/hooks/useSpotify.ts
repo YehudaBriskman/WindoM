@@ -35,10 +35,11 @@ export function useSpotify() {
     stopTicker();
     if (!playing || duration <= 0) return;
     tickRef.current = setInterval(() => {
-      setState((prev) => ({
-        ...prev,
-        progressMs: Math.min(prev.progressMs + 1000, duration),
-      }));
+      setState((prev) => {
+        const next = Math.min(prev.progressMs + 1000, duration);
+        if (next >= duration) stopTicker();
+        return { ...prev, progressMs: next };
+      });
     }, 1000);
   };
 

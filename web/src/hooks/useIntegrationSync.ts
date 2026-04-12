@@ -39,7 +39,8 @@ export function useIntegrationSync() {
           spotifyConnected: spotify.connected,
         });
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        console.error('[integrations] Failed to sync integration status:', err);
         // Backend unreachable — flags stay as loaded from storage
       });
 
