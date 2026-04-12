@@ -89,6 +89,12 @@ function SignedInView() {
   const spotifyConnected = get('spotifyConnected');
   const [signingOut, setSigningOut] = useState(false);
 
+  // Danger zone state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
   const initials = user?.name
     ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : (user?.email?.[0] ?? '?').toUpperCase();
@@ -153,6 +159,26 @@ function SignedInView() {
     setSigningOut(false);
   }
 
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      const body: Record<string, string> = {};
+      if (user?.hasPassword) body.password = deletePassword;
+      const res = await apiFetch('/me', { method: 'DELETE', body: JSON.stringify(body) });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error((data as { message?: string }).message ?? 'Deletion failed');
+      }
+      await update('calendarConnected', false);
+      await update('spotifyConnected', false);
+      await logout();
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : 'Something went wrong');
+      setDeleting(false);
+    }
+  }
+
   return (
     <div>
       {/* User card */}
@@ -193,6 +219,53 @@ function SignedInView() {
       >
         {signingOut ? 'Signing out…' : 'Sign out'}
       </button>
+
+      {/* Danger zone */}
+      <div className="danger-zone">
+        <div className="danger-zone-label">Danger Zone</div>
+        {!showDeleteConfirm ? (
+          <button
+            className="danger-delete-btn"
+            onClick={() => { setShowDeleteConfirm(true); setDeleteError(''); }}
+          >
+            Delete account
+          </button>
+        ) : (
+          <div className="danger-confirm-panel">
+            <p className="danger-confirm-warning">
+              This will permanently delete your account and all data, including Calendar and Spotify connections. This cannot be undone.
+            </p>
+            {user?.hasPassword && (
+              <input
+                className="settings-input"
+                type="password"
+                placeholder="Enter your password to confirm"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                disabled={deleting}
+                autoComplete="current-password"
+              />
+            )}
+            {deleteError && <p className="auth-error">{deleteError}</p>}
+            <div className="danger-confirm-actions">
+              <button
+                className="danger-confirm-cancel"
+                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="danger-confirm-submit"
+                onClick={handleDeleteAccount}
+                disabled={deleting || (user?.hasPassword === true && deletePassword.length === 0)}
+              >
+                {deleting ? 'Deleting…' : 'Delete my account'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

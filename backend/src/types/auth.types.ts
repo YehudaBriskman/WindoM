@@ -34,4 +34,5 @@ export interface UserRecord {
   email: string | null;
   name: string;
   createdAt: Date;
+  hasPassword: boolean;
 }
