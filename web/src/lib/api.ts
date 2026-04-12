@@ -99,15 +99,23 @@ async function doRefresh(): Promise<string | null> {
   // refreshing, wait for it to finish and use its token instead.
   const won = await acquireRefreshLock();
   if (!won) {
-    console.log('[auth:refresh] Another tab holds the refresh lock — waiting...');
-    await new Promise<void>((r) => setTimeout(r, 500));
-    const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
-    if (stored && !isTokenExpired(stored)) {
-      console.log('[auth:refresh] Using token stored by winning tab');
-      return stored;
+    console.log('[auth:refresh] Another tab holds the refresh lock — polling...');
+    const POLL_MS = 200;
+    const POLL_DEADLINE = Date.now() + REFRESH_LOCK_TTL_MS;
+    while (Date.now() < POLL_DEADLINE) {
+      await new Promise<void>((r) => setTimeout(r, POLL_MS));
+      const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
+      if (stored && !isTokenExpired(stored)) {
+        console.log('[auth:refresh] Using token stored by winning tab');
+        return stored;
+      }
+      const lock = await chromeLocal.get<number | null>(REFRESH_LOCK_KEY, null);
+      if (!lock) break; // Lock released — winning tab finished, check token once more
     }
+    const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
+    if (stored && !isTokenExpired(stored)) return stored;
     // Winning tab failed — fall through and try ourselves
-    console.warn('[auth:refresh] Winning tab did not store a fresh token — proceeding anyway');
+    console.warn('[auth:refresh] Winning tab did not produce a fresh token — proceeding');
   }
 
   console.log('[auth:refresh] Sending refresh request...');
