@@ -9,8 +9,7 @@ export function DockItem({ link, onRemove }: { link: QuickLink; onRemove?: () =>
     <div className="dock-item-wrapper">
       <a
         href={link.url}
-        target="_blank"
-        rel="noopener noreferrer"
+        target="_self"
         className="dock-item"
         title={link.name}
       >
