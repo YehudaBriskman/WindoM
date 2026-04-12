@@ -113,7 +113,10 @@ function SignedInView() {
 
   async function disconnectGoogle() {
     const res = await apiFetch('/integrations/google', { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to disconnect');
+    if (!res.ok) {
+      console.error('[integrations] Failed to disconnect Google:', res.status);
+      throw new Error('Failed to disconnect Google Calendar');
+    }
     await update('calendarConnected', false);
   }
 
@@ -137,7 +140,10 @@ function SignedInView() {
 
   async function disconnectSpotify() {
     const res = await apiFetch('/integrations/spotify', { method: 'DELETE' });
-    if (!res.ok) throw new Error('Failed to disconnect');
+    if (!res.ok) {
+      console.error('[integrations] Failed to disconnect Spotify:', res.status);
+      throw new Error('Failed to disconnect Spotify');
+    }
     await update('spotifyConnected', false);
   }
 
