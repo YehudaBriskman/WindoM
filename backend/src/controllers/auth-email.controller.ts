@@ -309,10 +309,10 @@ export async function verifyEmailController(req: FastifyRequest, reply: FastifyR
 
 const forgotSchema = z.object({ email: z.string().email() });
 
-export function forgotPasswordController(req: FastifyRequest, reply: FastifyReply): void {
+export async function forgotPasswordController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const parsed = forgotSchema.safeParse(req.body);
   if (parsed.success) {
-    void authEmailService.sendPasswordReset(parsed.data.email).catch((err) => {
+    await authEmailService.sendPasswordReset(parsed.data.email).catch((err: unknown) => {
       console.error('[forgotPassword] email send failed:', err);
     });
   }

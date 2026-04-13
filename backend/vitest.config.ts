@@ -25,6 +25,10 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     passWithNoTests: true,
 
+    // Run test files serially — all integration tests hit the same real DB
+    // and use truncateAll() in beforeEach; parallel execution causes FK races.
+    fileParallelism: false,
+
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],

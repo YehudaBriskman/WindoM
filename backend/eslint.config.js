@@ -48,6 +48,17 @@ export default tseslint.config(
     },
   },
 
+  // ── Test-file overrides — relax rules that are awkward in test assertions ──
+  {
+    files: ['src/**/*.test.ts', 'src/test-utils/**/*.ts'],
+    rules: {
+      // Non-null assertions are idiomatic in test code after expect().toBeTruthy()
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      // Helper functions in tests rarely need explicit return types
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+
   // ── Prettier must be last — disables conflicting formatting rules ───────────
   prettier,
 );
