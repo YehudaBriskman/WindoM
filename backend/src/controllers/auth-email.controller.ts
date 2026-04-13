@@ -309,19 +309,17 @@ export async function verifyEmailController(req: FastifyRequest, reply: FastifyR
 
 const forgotSchema = z.object({ email: z.string().email() });
 
-export async function forgotPasswordController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+export function forgotPasswordController(req: FastifyRequest, reply: FastifyReply): void {
   const parsed = forgotSchema.safeParse(req.body);
-  if (!parsed.success) {
-    void reply.send({ ok: true });
-    return;
+  if (parsed.success) {
+    void authEmailService.sendPasswordReset(parsed.data.email).catch((err) => {
+      console.error('[forgotPassword] email send failed:', err);
+    });
   }
-  void authEmailService.sendPasswordReset(parsed.data.email).catch((err) => {
-    console.error('[forgotPassword] email send failed:', err);
-  });
   void reply.send({ ok: true });
 }
 
-export async function resetPasswordPageController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+export function resetPasswordPageController(req: FastifyRequest, reply: FastifyReply): void {
   const { token } = req.query as { token?: string };
   if (!token) {
     void reply.type('text/html').send(buildPage({ title: 'Reset Password', body: resetErrorBody('Missing reset token.') }));
