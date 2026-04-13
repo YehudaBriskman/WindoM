@@ -17,6 +17,10 @@ const envSchema = z.object({
   SPOTIFY_REDIRECT_URI: z.string().url().optional(),
   CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
   EXTENSION_REDIRECT_BASE: z.string().optional(),
+  SMTP_USER: z.string().email().optional(),
+  SMTP_PASS: z.string().optional(),
+  FROM_EMAIL: z.string().email().default('noreply@windom.app'),
+  APP_URL: z.string().url().default('https://windom-api.fly.dev'),
 });
 
 const parsed = envSchema.safeParse(process.env);
