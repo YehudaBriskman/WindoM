@@ -82,7 +82,7 @@ async function fullRegister(email = 'user@e2e.test', password = 'Password123!', 
   return { accessToken, cookie, res };
 }
 
-/** Read the most-recent unused email token for a user from the DB. */
+/** Read the most-recent email token for a user from the DB. */
 async function getLatestEmailToken(userId: string, type: 'verify_email' | 'password_reset') {
   const rows = await db
     .select()
@@ -90,6 +90,25 @@ async function getLatestEmailToken(userId: string, type: 'verify_email' | 'passw
     .where(and(eq(emailTokens.userId, userId), eq(emailTokens.type, type)))
     .orderBy(emailTokens.createdAt);
   return rows.at(-1) ?? null;
+}
+
+/**
+ * Poll for an email token to appear in DB (up to `maxMs`).
+ * Required after register(): the verification token is written by a fire-and-forget
+ * promise that may not have resolved before the test reads the DB on slow CI runners.
+ */
+async function waitForEmailToken(
+  userId: string,
+  type: 'verify_email' | 'password_reset',
+  maxMs = 1000,
+) {
+  const deadline = Date.now() + maxMs;
+  while (Date.now() < deadline) {
+    const token = await getLatestEmailToken(userId, type);
+    if (token) return token;
+    await new Promise<void>((resolve) => setTimeout(resolve, 30));
+  }
+  return null;
 }
 
 /** Get a user row from DB by email. */
@@ -194,10 +213,10 @@ describe('Journey 2 — email verification', () => {
       .json<{ emailVerified: boolean }>();
     expect(me1.emailVerified).toBe(false);
 
-    // Token written to DB
+    // Token written to DB (fire-and-forget from register — poll until it appears)
     const user = await getUserByEmail('user@e2e.test');
     expect(user).toBeTruthy();
-    const emailToken = await getLatestEmailToken(user.id, 'verify_email');
+    const emailToken = await waitForEmailToken(user.id, 'verify_email');
     expect(emailToken).toBeTruthy();
     expect(emailToken!.usedAt).toBeNull();
 
@@ -225,7 +244,7 @@ describe('Journey 2 — email verification', () => {
   it('expired verification token is rejected with error page', async () => {
     await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const emailToken = await getLatestEmailToken(user.id, 'verify_email');
+    const emailToken = await waitForEmailToken(user.id, 'verify_email');
 
     // Expire the token directly in DB
     await db.update(emailTokens)
@@ -242,7 +261,7 @@ describe('Journey 2 — email verification', () => {
   it('already-used token is rejected', async () => {
     await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const emailToken = await getLatestEmailToken(user.id, 'verify_email');
+    const emailToken = await waitForEmailToken(user.id, 'verify_email');
 
     // Use it once
     await app.inject({ method: 'GET', url: `/auth/verify-email?token=${emailToken!.token}` });
@@ -260,7 +279,7 @@ describe('Journey 2 — email verification', () => {
   it('resend verification creates a new token and old one still exists', async () => {
     const { accessToken } = await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const firstToken = await getLatestEmailToken(user.id, 'verify_email');
+    const firstToken = await waitForEmailToken(user.id, 'verify_email');
 
     const resendRes = await app.inject({
       method: 'POST', url: '/auth/resend-verification',
@@ -275,7 +294,7 @@ describe('Journey 2 — email verification', () => {
   it('resend returns 400 if email already verified', async () => {
     await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const emailToken = await getLatestEmailToken(user.id, 'verify_email');
+    const emailToken = await waitForEmailToken(user.id, 'verify_email');
 
     // Verify first
     await app.inject({ method: 'GET', url: `/auth/verify-email?token=${emailToken!.token}` });
