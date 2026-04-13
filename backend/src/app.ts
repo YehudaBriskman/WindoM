@@ -6,6 +6,7 @@ import { registerRateLimit } from './plugins/rate-limit.js';
 import { healthRoutes } from './routes/health.js';
 import { authRoutes } from './routes/auth.js';
 import { meRoutes } from './routes/me.js';
+import { authEmailRoutes } from './routes/auth-email.js';
 import { authGoogleRoutes } from './routes/auth-google.js';
 import { oauthGoogleRoutes } from './routes/oauth-google.js';
 import { oauthSpotifyRoutes } from './routes/oauth-spotify.js';
@@ -57,6 +58,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
 
   await app.register(healthRoutes);
   await app.register(authRoutes, { prefix: '/auth' });
+  await app.register(authEmailRoutes, { prefix: '/auth' });
   await app.register(meRoutes);
   await app.register(authGoogleRoutes, { prefix: '/auth/google' });
   await app.register(oauthGoogleRoutes, { prefix: '/oauth/google' });

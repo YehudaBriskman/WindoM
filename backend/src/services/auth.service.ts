@@ -11,6 +11,7 @@ import {
   revokeSession,
   revokeAllUserSessions,
 } from './session.service.js';
+import { sendVerification } from './auth-email.service.js';
 import type { Result, TokenPair, SessionMeta, AuthError } from '../types/auth.types.js';
 
 /** Register a new user with email + password. Returns TOKEN_PAIR or EMAIL_TAKEN. */
@@ -26,7 +27,10 @@ export async function register(
   const passwordHash = await hashPassword(password);
   const [user] = await db.insert(users).values({ email, name, passwordHash }).returning();
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });
+  // Send verification email — fire-and-forget so register doesn't fail on email errors
+  void sendVerification(user.id).catch((err) => console.error('[register] verification email failed:', err));
+
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false });
   const rawRefreshToken = await createSession(user.id, meta);
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
@@ -47,7 +51,7 @@ export async function login(
 
   if (!user || !passwordOk) return { ok: false, error: 'INVALID_CREDENTIALS' };
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
   const rawRefreshToken = await createSession(user.id, meta);
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
@@ -88,7 +92,7 @@ export async function refresh(
     return { ok: false, error: 'USER_NOT_FOUND' };
   }
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
   const rawRefreshToken = await createSession(user.id, meta, session.id, session.renewalCount + 1);
   console.warn(`[auth.service:refresh] New session created for user ${user.id}`);
   return { ok: true, data: { accessToken, rawRefreshToken } };
@@ -113,14 +117,17 @@ export async function loginWithGoogle(
   // Only overwrite with Google name when the account has no name yet (empty string default).
   const [user] = await db
     .insert(users)
-    .values({ email: googleEmail, name: googleName })
+    .values({ email: googleEmail, name: googleName, emailVerified: true })
     .onConflictDoUpdate({
       target: users.email,
-      set: { name: sql`CASE WHEN ${users.name} = '' THEN EXCLUDED.name ELSE ${users.name} END` },
+      set: {
+        name: sql`CASE WHEN ${users.name} = '' THEN EXCLUDED.name ELSE ${users.name} END`,
+        emailVerified: true,
+      },
     })
     .returning();
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name });
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: true });
   const rawRefreshToken = await createSession(user.id, meta);
   return { accessToken, rawRefreshToken };
 }

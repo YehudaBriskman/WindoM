@@ -18,6 +18,7 @@ export const users = pgTable('users', {
   email: text('email').unique(),
   name: text('name').notNull().default(''),
   passwordHash: text('password_hash'),
+  emailVerified: boolean('email_verified').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -77,6 +78,20 @@ export const oauthStates = pgTable('oauth_states', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Email Tokens (verification + password reset) ───────────────────────────
+
+export const emailTokens = pgTable('email_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  token: text('token').notNull().unique(),
+  type: text('type').notNull(), // 'verify_email' | 'password_reset'
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ── User Settings ──────────────────────────────────────────────────────────
 
 export const userSettings = pgTable('user_settings', {
@@ -91,6 +106,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   refreshSessions: many(refreshSessions),
   oauthAccounts: many(oauthAccounts),
   oauthStates: many(oauthStates),
+  emailTokens: many(emailTokens),
 }));
 
 export const refreshSessionsRelations = relations(refreshSessions, ({ one }) => ({
