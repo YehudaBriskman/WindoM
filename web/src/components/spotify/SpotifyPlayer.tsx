@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useSpotify } from '../../hooks/useSpotify';
 
 export function SpotifyPlayer() {
-  const { isPlaying, progressMs, track, spotifyConnected, control } = useSpotify();
+  const { isPlaying, progressMs, track, spotifyConnected, error, control } = useSpotify();
   const [hovered, setHovered] = useState(false);
 
   if (!spotifyConnected) return null;
@@ -57,9 +57,13 @@ export function SpotifyPlayer() {
             <NextIcon />
           </button>
           <div className="spotify-dock-info">
-            <div className="spotify-dock-track-name">
-              {track?.name ?? 'Nothing playing'}
-            </div>
+            {error ? (
+              <div className="spotify-dock-error">{error}</div>
+            ) : (
+              <div className="spotify-dock-track-name">
+                {track?.name ?? 'Nothing playing'}
+              </div>
+            )}
             <div className="spotify-dock-progress-bar">
               <div className="spotify-dock-progress-fill" style={{ width: `${pct}%` }} />
             </div>

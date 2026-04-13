@@ -1,7 +1,7 @@
 import { useSpotify } from '../../hooks/useSpotify';
 
 export function SpotifyWidget() {
-  const { isPlaying, progressMs, track, spotifyConnected } = useSpotify();
+  const { isPlaying, progressMs, track, spotifyConnected, error } = useSpotify();
 
   if (!spotifyConnected) return null;
 
@@ -41,6 +41,7 @@ export function SpotifyWidget() {
       <div className="spotify-progress-bar">
         <div className="spotify-progress-fill" style={{ width: `${pct}%` }} />
       </div>
+      {error && <div className="spotify-widget-error">{error}</div>}
     </div>
   );
 }

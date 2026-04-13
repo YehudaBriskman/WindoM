@@ -27,21 +27,25 @@ export function useSpotify() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const stopTicker = () => {
+  // Use refs so these helpers are always fresh inside useCallback closures
+  const stopTicker = useCallback(() => {
     if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
-  };
+  }, []);
 
-  const startTicker = (playing: boolean, duration: number) => {
-    stopTicker();
+  const startTicker = useCallback((playing: boolean, duration: number) => {
+    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
     if (!playing || duration <= 0) return;
     tickRef.current = setInterval(() => {
       setState((prev) => {
         const next = Math.min(prev.progressMs + 1000, duration);
-        if (next >= duration) stopTicker();
+        if (next >= duration && tickRef.current) {
+          clearInterval(tickRef.current);
+          tickRef.current = null;
+        }
         return { ...prev, progressMs: next };
       });
     }, 1000);
-  };
+  }, []);
 
   const fetchNowPlaying = useCallback(async () => {
     try {
@@ -50,47 +54,75 @@ export function useSpotify() {
       setError(null);
       startTicker(data.isPlaying, data.track?.durationMs ?? 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch');
+      const msg = err instanceof Error ? err.message : 'Failed to fetch';
+      // NO_DEVICE is a normal state (Spotify closed) — show friendly message, not error
+      if (msg.includes('No active') || msg.includes('NO_DEVICE') || msg.includes('422')) {
+        setState({ isPlaying: false, progressMs: 0, track: null });
+        setError('Open Spotify on a device to start playing');
+      } else {
+        setError(msg);
+      }
+      stopTicker();
     }
-  }, []);
+  }, [startTicker, stopTicker]);
 
   useEffect(() => {
     if (!spotifyConnected) {
       setState({ isPlaying: false, progressMs: 0, track: null });
+      setError(null);
       stopTicker();
       return;
     }
 
-    fetchNowPlaying();
-    pollRef.current = setInterval(fetchNowPlaying, POLL_INTERVAL_MS);
+    void fetchNowPlaying();
+    pollRef.current = setInterval(() => { void fetchNowPlaying(); }, POLL_INTERVAL_MS);
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
       stopTicker();
     };
-  }, [spotifyConnected]);
+  }, [spotifyConnected, fetchNowPlaying, stopTicker]);
 
   const control = useCallback(async (action: 'play' | 'pause' | 'next' | 'previous') => {
-    console.log(`[spotify] control: ${action}`);
-    const res = await apiFetch(`/spotify/${action}`, { method: 'POST' }).catch((err) => {
+    // Optimistic update so the UI responds instantly before the re-fetch
+    if (action === 'pause') {
+      setState((prev) => ({ ...prev, isPlaying: false }));
+      stopTicker();
+    } else if (action === 'play') {
+      setState((prev) => ({ ...prev, isPlaying: true }));
+      // Ticker will be (re)started by the fetchNowPlaying below once duration is confirmed
+    }
+
+    const res = await apiFetch(`/spotify/${action}`, { method: 'POST' }).catch((err: unknown) => {
       console.error('[spotify] control fetch error:', err);
       return null;
     });
-    if (!res) return;
-    console.log(`[spotify] control response status: ${res.status}`);
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({})) as { error?: string; reason?: string; spotifyStatus?: number };
-      console.error('[spotify] control error body:', body);
-      if (res.status === 401) {
-        setError('Session expired — please log in again via Settings → Account');
-      } else {
-        setError(`Control failed (${body.spotifyStatus ?? res.status}): ${body.error ?? 'unknown'}${body.reason ? ` — ${body.reason}` : ''}`);
-      }
+
+    if (!res) {
+      setError('Network error — could not reach server');
       return;
     }
-    // Re-fetch after a short delay to reflect updated state
-    setTimeout(fetchNowPlaying, 400);
-  }, [fetchNowPlaying]);
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({})) as { error?: string; reason?: string; spotifyStatus?: number };
+      if (res.status === 422 || body.error === 'NO_DEVICE') {
+        setError('Open Spotify on a device to control playback');
+      } else if (res.status === 401) {
+        setError('Session expired — sign in again via Settings → Account');
+      } else if (res.status === 403) {
+        setError('Spotify Premium required for playback control');
+      } else {
+        setError(`Control failed: ${body.error ?? 'unknown error'}`);
+      }
+      // Revert optimistic update on failure
+      if (action === 'pause') setState((prev) => ({ ...prev, isPlaying: true }));
+      if (action === 'play') setState((prev) => ({ ...prev, isPlaying: false }));
+      return;
+    }
+
+    // Re-fetch after short delay to confirm actual Spotify state
+    setTimeout(() => { void fetchNowPlaying(); }, 400);
+  }, [fetchNowPlaying, stopTicker]);
 
   return { ...state, spotifyConnected, error, control };
 }
