@@ -1,5 +1,6 @@
 import { Cloud, Quote, Link2, Target, User, PanelRight, PanelLeft } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface Props {
   onReset: () => void;
@@ -7,6 +8,7 @@ interface Props {
 
 export function GeneralSettings({ onReset }: Props) {
   const { settings, update } = useSettings();
+  const { user } = useAuth();
 
   const widgets: { key: 'showWeather' | 'quotesEnabled' | 'showLinks' | 'showFocus' | 'showGreeting'; label: string; Icon: React.ElementType }[] = [
     { key: 'showWeather', label: 'Weather', Icon: Cloud },
@@ -18,16 +20,18 @@ export function GeneralSettings({ onReset }: Props) {
 
   return (
     <div>
-      <div className="settings-group">
-        <label className="settings-label">Your Name:</label>
-        <input
-          type="text"
-          value={settings.userName}
-          placeholder="Friend"
-          onChange={(e) => update('userName', e.target.value || 'Friend')}
-          className="settings-input glass-input"
-        />
-      </div>
+      {!user && (
+        <div className="settings-group">
+          <label className="settings-label">Your Name:</label>
+          <input
+            type="text"
+            value={settings.userName}
+            placeholder="Friend"
+            onChange={(e) => update('userName', e.target.value || 'Friend')}
+            className="settings-input glass-input"
+          />
+        </div>
+      )}
 
       <div className="settings-group">
         <label className="settings-section-heading settings-label">

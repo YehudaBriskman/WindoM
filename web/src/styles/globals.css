@@ -2680,6 +2680,33 @@ body.focus-exiting .sidebar-container {
   color: white;
 }
 
+.auth-field-error {
+  font-size: 12px;
+  color: rgba(239, 100, 100, 0.95);
+  margin: -4px 0 0 2px;
+}
+
+.auth-field-success {
+  font-size: 13px;
+  color: rgba(120, 220, 140, 0.95);
+  line-height: 1.5;
+}
+
+.auth-forgot-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  text-align: right;
+  align-self: flex-end;
+  transition: color 0.2s;
+}
+.auth-forgot-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
 /* Signed-in user card */
 .auth-user-card {
   display: flex;
@@ -2745,6 +2772,44 @@ body.focus-exiting .sidebar-container {
 .auth-signout-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Email verification banner ────────────────────────────────────────────── */
+
+.verification-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255, 200, 60, 0.1);
+  border: 1px solid rgba(255, 200, 60, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+.verification-banner-text {
+  font-size: 12px;
+  color: rgba(255, 200, 60, 0.9);
+  line-height: 1.4;
+  flex: 1;
+}
+.verification-resend-btn {
+  background: rgba(255, 200, 60, 0.15);
+  border: 1px solid rgba(255, 200, 60, 0.3);
+  border-radius: 6px;
+  color: rgba(255, 200, 60, 0.9);
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.verification-resend-btn:hover:not(:disabled) {
+  background: rgba(255, 200, 60, 0.25);
+}
+.verification-resend-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 /* ── Danger zone (account deletion) ──────────────────────────────────────── */

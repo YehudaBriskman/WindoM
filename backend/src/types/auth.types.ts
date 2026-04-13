@@ -35,4 +35,5 @@ export interface UserRecord {
   name: string;
   createdAt: Date;
   hasPassword: boolean;
+  emailVerified: boolean;
 }

@@ -12,6 +12,12 @@ export async function registerCors(app: FastifyInstance): Promise<void> {
         return cb(null, true);
       }
 
+      // Allow the server's own origin — needed for the reset-password HTML form
+      // that is served from APP_URL and POSTs back to the same server.
+      if (origin === config.APP_URL) {
+        return cb(null, true);
+      }
+
       // Chrome extensions have a unique origin format — allow any chrome-extension:// if in dev
       if (!config.isProd && origin.startsWith('chrome-extension://')) {
         return cb(null, true);

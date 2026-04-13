@@ -2,11 +2,8 @@ name: Deploy Backend to Fly.io
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'backend/**'
-      - '.github/workflows/deploy-backend.yml'
+    tags:
+      - 'v*'
 
 jobs:
   test:

@@ -1,5 +1,5 @@
 import { db, pool } from '../db/client.js';
-import { refreshSessions, oauthAccounts, oauthStates, userSettings, users } from '../db/schema.js';
+import { refreshSessions, oauthAccounts, oauthStates, userSettings, emailTokens, users } from '../db/schema.js';
 
 /**
  * Truncates all tables in dependency order (children before parents).
@@ -10,6 +10,7 @@ export async function truncateAll(): Promise<void> {
   await db.delete(oauthAccounts);
   await db.delete(oauthStates);
   await db.delete(userSettings);
+  await db.delete(emailTokens);
   await db.delete(users);
 }
 

@@ -9,6 +9,7 @@ interface User {
   email: string | null;
   name: string;
   hasPassword: boolean;
+  emailVerified: boolean;
 }
 
 interface AuthState {
@@ -20,6 +21,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (patch: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -150,8 +152,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
   }, []);
 
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((prev) => (prev ? { ...prev, ...patch } : prev));
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, loginWithTokens, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, loginWithTokens, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
