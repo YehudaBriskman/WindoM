@@ -1,9 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { authenticate } from '../middleware/authenticate.js';
-import { getMeController, deleteAccountController } from '../controllers/me.controller.js';
+import { getMeController, updateMeController, deleteAccountController } from '../controllers/me.controller.js';
 
 export function meRoutes(app: FastifyInstance): void {
   app.get('/me', { preHandler: authenticate }, getMeController);
+
+  app.patch('/me', {
+    preHandler: authenticate,
+    config: { rateLimit: { max: 10, timeWindow: '15 minutes' } },
+  }, updateMeController);
 
   app.delete('/me', {
     preHandler: authenticate,

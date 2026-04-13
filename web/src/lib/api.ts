@@ -259,3 +259,12 @@ export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
   }
   return res.json() as Promise<T>;
 }
+
+export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
+  const res = await apiFetch(path, { method: 'PATCH', body: body !== undefined ? JSON.stringify(body) : undefined });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({})) as { message?: string; error?: string };
+    throw new Error(payload.message ?? payload.error ?? `Request failed (${res.status})`);
+  }
+  return res.json() as Promise<T>;
+}

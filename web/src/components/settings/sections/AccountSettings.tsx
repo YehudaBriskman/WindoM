@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
-import { apiPost, apiFetch } from '../../../lib/api';
+import { apiPost, apiPatch, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
 
 // ── Signed-out view ────────────────────────────────────────────────────────
@@ -81,6 +81,173 @@ function IntegrationCard({ name, connected, onConnect, onDisconnect, icon, provi
 }
 
 // ── Signed-in view ─────────────────────────────────────────────────────────
+
+function EmailVerificationBanner() {
+  const { user } = useAuth();
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const cooldownRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  if (!user || user.emailVerified) return null;
+
+  async function handleResend() {
+    setSending(true);
+    try {
+      await apiPost('/auth/resend-verification', {});
+      setSent(true);
+      // Disable resend for 60s
+      cooldownRef.current = setTimeout(() => setSent(false), 60_000);
+    } catch {
+      // ignore — user can retry
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="verification-banner">
+      <span className="verification-banner-text">
+        Please verify your email address. Check your inbox for a link.
+      </span>
+      <button
+        className="verification-resend-btn"
+        disabled={sending || sent}
+        onClick={handleResend}
+      >
+        {sent ? 'Sent!' : sending ? '…' : 'Resend'}
+      </button>
+    </div>
+  );
+}
+
+function ProfileSection() {
+  const { user, updateUser } = useAuth();
+  const { update: updateSetting } = useSettings();
+
+  const [name, setName] = useState(user?.name ?? '');
+  const [nameSaving, setNameSaving] = useState(false);
+  const [nameMsg, setNameMsg] = useState('');
+
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwError, setPwError] = useState('');
+
+  async function handleNameSave() {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === user?.name) return;
+    if (trimmed.length > 100) { setNameMsg('Name must be 100 characters or less'); return; }
+    setNameSaving(true);
+    setNameMsg('');
+    try {
+      const updated = await apiPatch<{ name: string }>('/me', { name: trimmed });
+      updateUser({ name: updated.name });
+      await updateSetting('userName', updated.name);
+      setName(updated.name);
+      setNameMsg('Saved');
+      setTimeout(() => setNameMsg(''), 2000);
+    } catch (err) {
+      setNameMsg(err instanceof Error ? err.message : 'Failed to save');
+    } finally {
+      setNameSaving(false);
+    }
+  }
+
+  async function handlePasswordSave() {
+    setPwError('');
+    setPwMsg('');
+    if (newPw.length < 8) { setPwError('New password must be at least 8 characters'); return; }
+    if (newPw !== confirmPw) { setPwError('Passwords do not match'); return; }
+    setPwSaving(true);
+    try {
+      await apiPatch('/me', { currentPassword: currentPw, newPassword: newPw });
+      setCurrentPw(''); setNewPw(''); setConfirmPw('');
+      setPwMsg('Password updated');
+      setTimeout(() => setPwMsg(''), 3000);
+    } catch (err) {
+      setPwError(err instanceof Error ? err.message : 'Failed to update password');
+    } finally {
+      setPwSaving(false);
+    }
+  }
+
+  return (
+    <div className="settings-group">
+      <label className="settings-label">Profile</label>
+
+      {/* Display name */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name"
+          className="settings-input"
+          style={{ fontFamily: 'inherit', fontSize: '14px', flex: 1 }}
+          onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
+        />
+        <button
+          className="settings-save-btn"
+          style={{ flexShrink: 0, padding: '8px 14px' }}
+          disabled={nameSaving || !name.trim() || name.trim() === user?.name}
+          onClick={handleNameSave}
+        >
+          {nameSaving ? '…' : 'Save'}
+        </button>
+      </div>
+      {nameMsg && (
+        <p className={nameMsg === 'Saved' ? 'auth-field-success' : 'auth-field-error'} style={{ marginBottom: '8px' }}>
+          {nameMsg}
+        </p>
+      )}
+
+      {/* Change password (only for password accounts) */}
+      {user?.hasPassword && (
+        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <label className="settings-hint" style={{ marginBottom: '2px' }}>Change password</label>
+          <input
+            type="password"
+            placeholder="Current password"
+            value={currentPw}
+            onChange={(e) => { setCurrentPw(e.target.value); setPwError(''); }}
+            autoComplete="current-password"
+            className="settings-input"
+            style={{ fontFamily: 'inherit', fontSize: '14px' }}
+          />
+          <input
+            type="password"
+            placeholder="New password (min 8 characters)"
+            value={newPw}
+            onChange={(e) => { setNewPw(e.target.value); setPwError(''); }}
+            autoComplete="new-password"
+            className="settings-input"
+            style={{ fontFamily: 'inherit', fontSize: '14px' }}
+          />
+          <input
+            type="password"
+            placeholder="Confirm new password"
+            value={confirmPw}
+            onChange={(e) => { setConfirmPw(e.target.value); setPwError(''); }}
+            autoComplete="new-password"
+            className="settings-input"
+            style={{ fontFamily: 'inherit', fontSize: '14px' }}
+          />
+          {pwError && <p className="auth-field-error">{pwError}</p>}
+          {pwMsg && <p className="auth-field-success">{pwMsg}</p>}
+          <button
+            className="settings-save-btn"
+            disabled={pwSaving || !currentPw || !newPw || !confirmPw}
+            onClick={handlePasswordSave}
+          >
+            {pwSaving ? 'Updating…' : 'Update password'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function SignedInView() {
   const { user, logout } = useAuth();
@@ -181,6 +348,9 @@ function SignedInView() {
 
   return (
     <div>
+      {/* Email verification banner */}
+      <EmailVerificationBanner />
+
       {/* User card */}
       <div className="auth-user-card">
         <div className="auth-avatar">{initials}</div>
@@ -189,6 +359,9 @@ function SignedInView() {
           {user?.email && <div className="auth-user-email">{user.email}</div>}
         </div>
       </div>
+
+      {/* Profile */}
+      <ProfileSection />
 
       {/* Connected services */}
       <div className="settings-group">
