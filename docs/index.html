@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WindoM — The new tab you always wanted</title>
+  <meta name="description" content="WindoM is a beautiful Chrome extension that replaces your new tab with a personal dashboard — clock, weather, Spotify, Google Calendar, todos, quick links, and focus timer." />
+  <meta name="keywords" content="chrome extension, new tab, dashboard, productivity, weather, spotify, google calendar, todos, focus mode" />
+  <meta property="og:title" content="WindoM — The new tab you always wanted" />
+  <meta property="og:description" content="A personal dashboard that gives you everything you need to start your day with clarity and intention — right where you already are." />
+  <meta property="og:image" content="https://windom.app/images/preview.png" />
+  <meta property="og:url" content="https://windom.app/" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="WindoM — The new tab you always wanted" />
+  <meta name="twitter:description" content="A personal dashboard that gives you everything you need to start your day with clarity and intention." />
+  <meta name="twitter:image" content="https://windom.app/images/preview.png" />
+  <link rel="canonical" href="https://windom.app/" />
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png" />
+  <link rel="apple-touch-icon" href="icons/icon128.png" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -25,6 +40,7 @@
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
+      line-height: 1.7;
       overflow-x: hidden;
     }
 
@@ -698,7 +714,7 @@
       margin-top: 40px;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 900px) {
       .install-steps {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -791,6 +807,13 @@
     }
 
     .wn-text strong { color: var(--text); font-weight: 500; }
+
+    @media (max-width: 480px) {
+      .wn-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
 
     /* ── TRUST STRIP (enhanced) ── */
     .trust-strip {
@@ -911,7 +934,7 @@
     }
 
     .faq-item.open .faq-a {
-      max-height: 300px;
+      max-height: 800px;
       padding: 0 24px 20px;
     }
 
@@ -954,7 +977,7 @@
   <div class="preview">
     <div class="preview-frame" id="previewFrame">
       <img
-        src="preview.png"
+        src="images/preview.png"
         alt="WindoM dashboard showing clock, greeting and northern lights background"
         id="heroImg"
       />
@@ -994,7 +1017,7 @@
     <div class="sc-featured">
       <div class="sc-img-wrap">
         <img
-          src="preview.png"
+          src="images/preview.png"
           alt="WindoM full dashboard with clock, dock bar, quick links and northern lights background"
           loading="lazy"
           class="sc-img"
@@ -1013,7 +1036,7 @@
       <div class="sc-row">
         <div class="sc-img-wrap">
           <img
-            src="preview-sidebar.png"
+            src="images/preview-sidebar.png"
             alt="WindoM sidebar showing today's tasks and upcoming calendar events"
             loading="lazy"
             class="sc-img"
@@ -1029,7 +1052,7 @@
       <div class="sc-row sc-reverse">
         <div class="sc-img-wrap">
           <img
-            src="preview-settings.png"
+            src="images/preview-settings.png"
             alt="WindoM settings panel open, showing clock style, size, and date format controls"
             loading="lazy"
             class="sc-img"
@@ -1041,12 +1064,11 @@
         </div>
       </div>
 
-      <!-- Row 3: image left, text right — Coming Soon -->
+      <!-- Row 3: image left, text right — Account & Integrations -->
       <div class="sc-row">
         <div class="sc-img-wrap">
-          <span class="sc-badge">Coming Soon</span>
           <img
-            src="preview-account.png"
+            src="images/preview-account.png"
             alt="WindoM account settings showing Google Calendar and Spotify connected"
             loading="lazy"
             class="sc-img"
@@ -1062,9 +1084,8 @@
       <!-- Row 4: text left, image right — Focus Mode -->
       <div class="sc-row sc-reverse">
         <div class="sc-img-wrap">
-          <span class="sc-badge">Coming Soon</span>
           <img
-            src="preview.png"
+            src="images/preview.png"
             alt="WindoM focus mode with countdown timer front and center"
             loading="lazy"
             class="sc-img"
@@ -1081,7 +1102,7 @@
         <div class="sc-img-wrap">
           <span class="sc-badge">Coming Soon</span>
           <img
-            src="preview.png"
+            src="images/preview.png"
             alt="WindoM search bar open over the dashboard"
             loading="lazy"
             class="sc-img"
@@ -1153,7 +1174,7 @@
       </div>
       <div class="feature-card">
         <span class="feature-icon">☁️</span>
-        <h3>Cloud Sync <span class="feature-badge">Coming Soon</span></h3>
+        <h3>Cloud Sync <span class="feature-badge">Beta</span></h3>
         <p>Sign in once and your settings, quick links, and customizations follow you to every device automatically.</p>
       </div>
       <div class="feature-card">
@@ -1177,7 +1198,7 @@
       <div class="install-step">
         <div class="install-step-num">1</div>
         <h3>Add to Chrome</h3>
-        <p>Click "Add to Chrome" from the Chrome Web Store. One click, no permissions beyond new tab.</p>
+        <p>Click "Add to Chrome" from the Chrome Web Store. Free, one click, installs in seconds.</p>
       </div>
       <div class="install-arrow">
         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1217,6 +1238,13 @@
     </div>
 
     <div class="wn-list">
+      <div class="wn-item">
+        <span class="wn-date">Apr 2026</span>
+        <div class="wn-content">
+          <span class="wn-tag fix">Fix</span>
+          <span class="wn-text"><strong>Spotify stability</strong> — Resolved OAuth integration bugs and improved token refresh reliability.</span>
+        </div>
+      </div>
       <div class="wn-item">
         <span class="wn-date">Mar 2026</span>
         <div class="wn-content">

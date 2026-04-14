@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WindoM — Local Setup Guide</title>
+  <meta name="description" content="How to run WindoM locally — extension-only or full-stack with backend, Docker, Google Calendar, and Spotify OAuth." />
+  <meta property="og:title" content="WindoM — Local Setup Guide" />
+  <meta property="og:description" content="Step-by-step guide to run WindoM on your own machine, with or without the backend." />
+  <meta property="og:image" content="https://windom.app/images/preview.png" />
+  <meta property="og:url" content="https://windom.app/local-setup.html" />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://windom.app/local-setup.html" />
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png" />
+  <link rel="apple-touch-icon" href="icons/icon128.png" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -161,6 +171,8 @@
       font-size: 0.87em;
       font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
       border: 1px solid rgba(255,255,255,0.08);
+      /* Break long values (URLs, paths) inside text paragraphs and table cells */
+      word-break: break-all;
     }
 
     pre {
@@ -169,6 +181,7 @@
       border-radius: 10px;
       padding: 18px 20px;
       overflow-x: auto;
+      max-width: 100%;
       margin: 12px 0 20px;
     }
 
@@ -179,6 +192,8 @@
       color: #d4d4d4;
       font-size: 0.88rem;
       white-space: pre;
+      /* Code blocks scroll horizontally — do not break mid-token */
+      word-break: normal;
     }
 
     /* ── BADGES ── */
@@ -282,7 +297,12 @@
       border-bottom: 1px solid rgba(255,255,255,0.04);
       color: var(--muted);
       vertical-align: top;
+      /* Prevent long URLs and paths from overflowing table cells on small screens */
+      word-break: break-word;
+      min-width: 0;
     }
+
+    td code { word-break: break-all; }
 
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(255,255,255,0.015); }
@@ -397,7 +417,7 @@ npm install</code></pre>
   </div>
 
   <div class="callout tip">
-    <strong>Dev mode with hot reload</strong> — run <code>npm run dev</code> instead of build, then load the project root folder (not <code>dist/</code>) as the unpacked extension. Changes reload automatically.
+    <strong>Dev mode with hot reload</strong> — run <code>npm run dev</code> instead of build, then load the <code>web/</code> project root folder (not <code>dist/</code>) as the unpacked extension at <code>chrome://extensions</code>. Changes reload automatically via HMR.
   </div>
 
 
@@ -465,7 +485,16 @@ npm run build</code></pre>
   </div>
 
   <div class="callout warning">
-    <strong>Google and Spotify OAuth</strong> — for local auth to work, you need to add <code>http://localhost:8080/auth/google/callback</code> and <code>http://localhost:8080/oauth/google/callback</code> to your Google Cloud Console OAuth client's authorized redirect URIs, and <code>http://localhost:8080/oauth/spotify/callback</code> to your Spotify app's redirect URIs.
+    <strong>OAuth redirect URIs</strong> — add these to your OAuth app consoles before testing:
+    <ul style="margin-top:8px;">
+      <li><strong>Google Cloud Console</strong> → Authorized redirect URIs:<br>
+        <code>http://localhost:8080/auth/google/callback</code><br>
+        <code>http://localhost:8080/oauth/google/callback</code>
+      </li>
+      <li style="margin-top:6px;"><strong>Spotify Developer Dashboard</strong> → Redirect URIs:<br>
+        <code>http://localhost:8080/oauth/spotify/callback</code>
+      </li>
+    </ul>
   </div>
 
 
@@ -554,6 +583,26 @@ npm run build</code></pre>
         <td>The chromiumapp.org URL for your extension. Used as the OAuth redirect base for the Chrome identity flow.</td>
         <td>For Google features</td>
       </tr>
+      <tr>
+        <td><code>SMTP_USER</code></td>
+        <td>Google Workspace email address used to authenticate with Gmail SMTP. Must have a Google App Password. If not set, emails are printed to the console instead of sent.</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>SMTP_PASS</code></td>
+        <td>16-character Google App Password for the SMTP account. Generate at <em>myaccount.google.com → Security → 2-Step Verification → App Passwords</em>.</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>FROM_EMAIL</code></td>
+        <td>The "From" address shown on outbound emails. Must be the same as <code>SMTP_USER</code> or an alias of it. Defaults to <code>noreply@windom.app</code>.</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>APP_URL</code></td>
+        <td>Public base URL of the backend. Used to build email verification and password-reset links. Example: <code>http://localhost:8080</code>.</td>
+        <td>No</td>
+      </tr>
     </tbody>
   </table>
   </div>
@@ -563,6 +612,11 @@ npm run build</code></pre>
   </div>
 
   <h3>Example .env for local development</h3>
+
+  <div class="callout">
+    <strong>DATABASE_URL note</strong> — when running with <code>docker-compose up</code>, the <code>DATABASE_URL</code> is automatically overridden to point to the <code>db</code> container (port 5432 internally). You only need to set it manually if you run the backend directly on your host, in which case use port <code>5433</code> — the host-mapped port Docker Compose exposes.
+  </div>
+
   <pre><code>PORT=8080
 NODE_ENV=development
 DATABASE_URL=postgresql://windom:windom@localhost:5433/windom
@@ -581,7 +635,13 @@ SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
 SPOTIFY_REDIRECT_URI=http://localhost:8080/oauth/spotify/callback
 
 CORS_ALLOWED_ORIGINS=chrome-extension://YOUR_EXTENSION_ID,http://localhost:3000,http://localhost:5173
-EXTENSION_REDIRECT_BASE=https://YOUR_EXTENSION_ID.chromiumapp.org</code></pre>
+EXTENSION_REDIRECT_BASE=https://YOUR_EXTENSION_ID.chromiumapp.org
+
+# Email — optional. If omitted, verification/reset emails are printed to the console.
+# SMTP_USER=you@yourdomain.com
+# SMTP_PASS=your-16-char-app-password
+# FROM_EMAIL=noreply@windom.app
+# APP_URL=http://localhost:8080</code></pre>
 
 </div>
 
