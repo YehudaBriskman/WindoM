@@ -38,16 +38,7 @@
       overflow-x: hidden;
     }
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(123,158,245,0.10) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(167,139,250,0.06) 0%, transparent 60%);
-      pointer-events: none;
-      z-index: 0;
-    }
+    /* body::before removed — ambient glow comes from .scroll-bg */
 
     .wrap {
       max-width: 780px;
@@ -171,9 +162,115 @@
     }
 
     header { animation: fadeUp 0.5s ease both; }
+
+    /* ── SCROLL-DRIVEN SVG BACKGROUND ── */
+    .scroll-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .scroll-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(123,158,245,0.09) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: dots-fade linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes dots-fade {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0.25; transform: translateY(24px); }
+    }
+
+    .bg-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .bg-orb-1 {
+      animation: orb1-move linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes orb1-move {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(70px, -160px) scale(1.18); }
+    }
+
+    .bg-orb-2 {
+      animation: orb2-move linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes orb2-move {
+      from { transform: translate(0, 0) scale(1); opacity: 1; }
+      to   { transform: translate(-90px, -140px) scale(0.82); opacity: 0.45; }
+    }
+
+    .bg-path-1 {
+      stroke-dasharray: 3000;
+      stroke-dashoffset: 3000;
+      animation: path-draw-1 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0% 75%;
+    }
+    @keyframes path-draw-1 { to { stroke-dashoffset: 0; } }
+
+    .bg-path-2 {
+      stroke-dasharray: 3200;
+      stroke-dashoffset: 3200;
+      animation: path-draw-2 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 10% 90%;
+    }
+    @keyframes path-draw-2 { to { stroke-dashoffset: 0; } }
+
+    .bg-ring-1 {
+      transform-origin: 1100px 200px;
+      animation: ring-out-1 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0% 55%;
+    }
+    @keyframes ring-out-1 {
+      from { transform: scale(1); opacity: 0.6; }
+      to   { transform: scale(1.7); opacity: 0; }
+    }
+
+    .bg-ring-2 {
+      transform-origin: 300px 700px;
+      animation: ring-out-2 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 35% 95%;
+    }
+    @keyframes ring-out-2 {
+      from { transform: scale(0.7); opacity: 0; }
+      40%  { opacity: 0.5; }
+      to   { transform: scale(1.5); opacity: 0; }
+    }
   </style>
 </head>
 <body>
+
+  <div class="scroll-bg" aria-hidden="true">
+    <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g-blue" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#7b9ef5" stop-opacity="0.38"/>
+          <stop offset="100%" stop-color="#7b9ef5" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="g-purple" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle class="bg-orb bg-orb-1" cx="190" cy="270" r="300" fill="url(#g-blue)"/>
+      <circle class="bg-orb bg-orb-2" cx="1280" cy="520" r="240" fill="url(#g-purple)"/>
+      <path class="bg-path-1" d="M -220 380 Q 320 80 720 400 Q 1120 720 1660 280" stroke="#7b9ef5" stroke-width="1.2" stroke-opacity="0.18"/>
+      <path class="bg-path-2" d="M -220 640 Q 380 880 760 580 Q 1140 280 1660 620" stroke="#a78bfa" stroke-width="1" stroke-opacity="0.13"/>
+      <circle class="bg-ring bg-ring-1" cx="1100" cy="200" r="110" stroke="#7b9ef5" stroke-width="0.8" stroke-opacity="0.12"/>
+      <circle class="bg-ring bg-ring-2" cx="300" cy="700" r="85" stroke="#a78bfa" stroke-width="0.8" stroke-opacity="0.1"/>
+    </svg>
+  </div>
+
 <div class="wrap">
 
   <header>
@@ -254,8 +351,8 @@
 
   <h2>Contact</h2>
   <p>
-    If you have any questions about this policy, please contact us at
-    <a href="mailto:yr0556772363@gmail.com">yr0556772363@gmail.com</a>.
+    If you have any questions about this policy, reach out directly at
+    <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a>.
   </p>
 
 </div>
@@ -266,8 +363,9 @@
     <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb">Chrome Web Store</a>
     <a href="https://github.com/YehudaBriskman/WindoM">GitHub</a>
     <a href="local-setup.html">Local Setup</a>
+    <a href="mailto:yehudabriskman@windom.app">Contact</a>
   </div>
-  <p>MIT License &copy; 2026 Yehuda Briskman</p>
+  <p>MIT License &copy; 2026 Yehuda Briskman &nbsp;&middot;&nbsp; <a href="mailto:yehudabriskman@windom.app" style="color:inherit;text-decoration:none;">yehudabriskman@windom.app</a></p>
 </footer>
 
 </body>
