@@ -516,8 +516,17 @@
     }
 
     .feature-icon {
-      font-size: 1.6rem;
+      width: 28px;
+      height: 28px;
       margin-bottom: 14px;
+      display: block;
+      color: var(--accent2);
+      flex-shrink: 0;
+    }
+
+    .feature-icon svg {
+      width: 100%;
+      height: 100%;
       display: block;
     }
 
@@ -959,9 +968,170 @@
     .faq-a a { color: var(--accent); text-decoration: none; }
     .faq-a a:hover { text-decoration: underline; }
 
+    /* ── SCROLL-DRIVEN SVG BACKGROUND ── */
+    .scroll-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .scroll-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(123,158,245,0.09) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: dots-fade linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes dots-fade {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0.25; transform: translateY(24px); }
+    }
+
+    .bg-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Orbs */
+    .bg-orb-1 {
+      animation: orb1-move linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes orb1-move {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(70px, -160px) scale(1.18); }
+    }
+
+    .bg-orb-2 {
+      animation: orb2-move linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes orb2-move {
+      from { transform: translate(0, 0) scale(1); opacity: 1; }
+      to   { transform: translate(-90px, -140px) scale(0.82); opacity: 0.45; }
+    }
+
+    .bg-orb-3 {
+      animation: orb3-move linear both;
+      animation-timeline: scroll(root);
+      animation-range: 15% 85%;
+    }
+    @keyframes orb3-move {
+      from { transform: translate(0, 0) scale(0.75); opacity: 0.2; }
+      50%  { transform: translate(30px, -50px) scale(1.2); opacity: 0.55; }
+      to   { transform: translate(110px, -130px) scale(0.9); opacity: 0.15; }
+    }
+
+    /* Path stroke-dasharray reveal on scroll */
+    .bg-path-1 {
+      stroke-dasharray: 3000;
+      stroke-dashoffset: 3000;
+      animation: path-draw-1 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0% 75%;
+    }
+    @keyframes path-draw-1 {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .bg-path-2 {
+      stroke-dasharray: 3200;
+      stroke-dashoffset: 3200;
+      animation: path-draw-2 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 10% 90%;
+    }
+    @keyframes path-draw-2 {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Rings that expand and fade as you scroll */
+    .bg-ring-1 {
+      transform-origin: 1100px 200px;
+      animation: ring-out-1 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0% 55%;
+    }
+    @keyframes ring-out-1 {
+      from { transform: scale(1); opacity: 0.6; }
+      to   { transform: scale(1.7); opacity: 0; }
+    }
+
+    .bg-ring-2 {
+      transform-origin: 300px 700px;
+      animation: ring-out-2 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 35% 95%;
+    }
+    @keyframes ring-out-2 {
+      from { transform: scale(0.7); opacity: 0; }
+      40%  { opacity: 0.5; }
+      to   { transform: scale(1.5); opacity: 0; }
+    }
+
+    /* Content sits above fixed background */
+    body > section,
+    body > .trust-strip,
+    body > footer,
+    .install,
+    .whats-new,
+    .faq {
+      position: relative;
+      z-index: 1;
+    }
+
   </style>
 </head>
 <body>
+
+  <!-- SCROLL-DRIVEN BACKGROUND -->
+  <div class="scroll-bg" aria-hidden="true">
+    <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g-blue" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#7b9ef5" stop-opacity="0.42"/>
+          <stop offset="100%" stop-color="#7b9ef5" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="g-purple" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.36"/>
+          <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="g-teal" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <!-- Blue orb — top left -->
+      <circle class="bg-orb bg-orb-1" cx="190" cy="270" r="330" fill="url(#g-blue)"/>
+
+      <!-- Purple orb — right -->
+      <circle class="bg-orb bg-orb-2" cx="1280" cy="520" r="270" fill="url(#g-purple)"/>
+
+      <!-- Accent teal orb — center low -->
+      <circle class="bg-orb bg-orb-3" cx="680" cy="760" r="170" fill="url(#g-teal)"/>
+
+      <!-- Curved path 1 — draws itself on scroll -->
+      <path class="bg-path-1"
+        d="M -220 380 Q 320 80 720 400 Q 1120 720 1660 280"
+        stroke="#7b9ef5" stroke-width="1.2" stroke-opacity="0.22"/>
+
+      <!-- Curved path 2 — draws itself on scroll, offset -->
+      <path class="bg-path-2"
+        d="M -220 640 Q 380 880 760 580 Q 1140 280 1660 620"
+        stroke="#a78bfa" stroke-width="1" stroke-opacity="0.16"/>
+
+      <!-- Expanding rings -->
+      <circle class="bg-ring bg-ring-1" cx="1100" cy="200" r="110" stroke="#7b9ef5" stroke-width="0.8" stroke-opacity="0.14"/>
+      <circle class="bg-ring bg-ring-2" cx="300" cy="700" r="85"  stroke="#a78bfa" stroke-width="0.8" stroke-opacity="0.12"/>
+    </svg>
+  </div>
 
   <!-- HERO -->
   <section class="hero">
@@ -1140,57 +1310,57 @@
 
     <div class="features-grid">
       <div class="feature-card">
-        <span class="feature-icon">🕐</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
         <h3>Clock &amp; Greeting</h3>
         <p>Live clock with a personalized greeting that adapts to the time of day and knows your name.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🌤</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3"/><path d="M12 2v2M12 14v2M4.93 4.93l1.41 1.41M17.66 6.34l1.41-1.41M2 12h2M20 12h2"/><path d="M6 19h12a3 3 0 0 0 0-6H6a3 3 0 0 0 0 6z"/></svg></span>
         <h3>Weather</h3>
         <p>Real-time weather for your location with temperature, conditions, and icons.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🖼</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg></span>
         <h3>Backgrounds</h3>
         <p>Dynamic backgrounds from Unsplash or your own images. Changes with your mood.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">📅</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>
         <h3>Calendar</h3>
         <p>View upcoming events at a glance. Optionally connect Google Calendar for full sync.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🎵</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
         <h3>Spotify <span class="feature-badge limited">Limited</span></h3>
         <p>See what is playing right now directly on your dashboard. Currently invite-only while we await Spotify's extended API approval — open to everyone once granted.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">✅</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17 2 2 4-4M13 6h8M13 12h8M13 18h8"/></svg></span>
         <h3>Todo List</h3>
         <p>A quick-access task list that stays with you on every new tab.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">⏱</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5M12 2.5V5"/></svg></span>
         <h3>Focus Mode</h3>
         <p>Distraction-free focus sessions with a built-in countdown timer front and center.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🔗</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span>
         <h3>Quick Links</h3>
         <p>Pin your most visited sites as quick-access links or dock shortcuts.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">💬</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></span>
         <h3>Daily Quotes</h3>
         <p>A new inspirational quote greets you every day.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">☁️</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/><path d="M12 13v6M9 16l3 3 3-3"/></svg></span>
         <h3>Cloud Sync <span class="feature-badge">Beta</span></h3>
         <p>Sign in once and your settings, quick links, and customizations follow you to every device automatically.</p>
       </div>
       <div class="feature-card">
-        <span class="feature-icon">🎨</span>
+        <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none"/><circle cx="17.5" cy="10.5" r="1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="7.5" r="1" fill="currentColor" stroke="none"/><circle cx="6.5" cy="12.5" r="1" fill="currentColor" stroke="none"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></span>
         <h3>Themes <span class="feature-badge">Coming Soon</span></h3>
         <p>One-click preset themes to completely transform the look and feel of your dashboard in seconds.</p>
       </div>
