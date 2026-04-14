@@ -171,6 +171,8 @@
       font-size: 0.87em;
       font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
       border: 1px solid rgba(255,255,255,0.08);
+      /* Break long values (URLs, paths) inside text paragraphs and table cells */
+      word-break: break-all;
     }
 
     pre {
@@ -179,6 +181,7 @@
       border-radius: 10px;
       padding: 18px 20px;
       overflow-x: auto;
+      max-width: 100%;
       margin: 12px 0 20px;
     }
 
@@ -189,6 +192,8 @@
       color: #d4d4d4;
       font-size: 0.88rem;
       white-space: pre;
+      /* Code blocks scroll horizontally — do not break mid-token */
+      word-break: normal;
     }
 
     /* ── BADGES ── */
@@ -292,7 +297,12 @@
       border-bottom: 1px solid rgba(255,255,255,0.04);
       color: var(--muted);
       vertical-align: top;
+      /* Prevent long URLs and paths from overflowing table cells on small screens */
+      word-break: break-word;
+      min-width: 0;
     }
+
+    td code { word-break: break-all; }
 
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(255,255,255,0.015); }

@@ -40,6 +40,7 @@
       font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
+      line-height: 1.7;
       overflow-x: hidden;
     }
 
@@ -713,7 +714,7 @@
       margin-top: 40px;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 900px) {
       .install-steps {
         grid-template-columns: 1fr;
         gap: 12px;
@@ -806,6 +807,13 @@
     }
 
     .wn-text strong { color: var(--text); font-weight: 500; }
+
+    @media (max-width: 480px) {
+      .wn-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+    }
 
     /* ── TRUST STRIP (enhanced) ── */
     .trust-strip {
@@ -926,7 +934,7 @@
     }
 
     .faq-item.open .faq-a {
-      max-height: 300px;
+      max-height: 800px;
       padding: 0 24px 20px;
     }
 
