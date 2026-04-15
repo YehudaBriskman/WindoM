@@ -9,6 +9,7 @@ const exchangeSchema = z.object({
   code: z.string(),
   state: z.string(),
   redirectUri: z.string().url(),
+  codeVerifier: z.string().optional(),
 });
 
 async function handleSpotifyCodeExchange(
@@ -16,8 +17,10 @@ async function handleSpotifyCodeExchange(
   code: string,
   redirectUri: string,
   reply: FastifyReply,
+  codeVerifier?: string,
+  pkceClientId?: string,
 ): Promise<void> {
-  const exchangeResult = await oauthService.exchangeSpotifyCode(code, redirectUri);
+  const exchangeResult = await oauthService.exchangeSpotifyCode(code, redirectUri, codeVerifier, pkceClientId);
 
   if (!exchangeResult.ok) {
     const status = exchangeResult.error === 'USERINFO_FAILED' ? 500 : 400;
@@ -49,40 +52,47 @@ async function handleSpotifyCodeExchange(
     expiresIn: expires_in,
     scope,
     providerUserId,
+    ...(pkceClientId ? { providerClientId: pkceClientId } : {}),
   });
 
   void reply.send({ status: 'linked' });
 }
 
 export async function startSpotifyOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const { redirectUri } = req.query as { redirectUri?: string };
-  const effectiveUri = redirectUri ?? config.SPOTIFY_REDIRECT_URI ?? '';
+  const query = req.query as { redirectUri?: string };
+  const body = (req.body as { clientId?: string; codeChallenge?: string; codeChallengeMethod?: string; redirectUri?: string } | null) ?? {};
+
+  const effectiveUri = body.redirectUri ?? query.redirectUri ?? config.SPOTIFY_REDIRECT_URI ?? '';
+  const pkceClientId = body.clientId;
+  const codeChallenge = body.codeChallenge;
+  const codeChallengeMethod = body.codeChallengeMethod;
 
   if (!effectiveUri) {
     void reply.status(500).send({ error: 'No redirect URI configured' });
     return;
   }
 
-  // Validate redirect URI before creating state (fail fast — avoids orphaned state rows)
-  if (!isAllowedRedirectUri(effectiveUri, config.SPOTIFY_REDIRECT_URI)) {
+  // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL — skip shared-URI validation.
+  // For legacy shared-app flows, validate against the configured server redirect URI.
+  if (!pkceClientId && !isAllowedRedirectUri(effectiveUri, config.SPOTIFY_REDIRECT_URI)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Spotify. Contact support.' });
     return;
   }
 
-  const state = await oauthService.createOAuthState('spotify', 'link', req.user.sub);
+  const state = await oauthService.createOAuthState('spotify', 'link', req.user.sub, pkceClientId);
 
-  // Only force the account-chooser dialog when the user has no existing Spotify
-  // connection. This prevents silent reuse of another browser user's cached
-  // Spotify session. Users who already have a row (re-linking) skip the dialog.
   const hasExisting = await oauthService.hasOAuthAccount(req.user.sub, 'spotify');
 
+  const clientIdToUse = pkceClientId ?? config.SPOTIFY_CLIENT_ID ?? '';
+
   const params = new URLSearchParams({
-    client_id: config.SPOTIFY_CLIENT_ID ?? '',
+    client_id: clientIdToUse,
     redirect_uri: effectiveUri,
     response_type: 'code',
     scope: SPOTIFY_SCOPES,
     state,
     ...(hasExisting ? {} : { show_dialog: 'true' }),
+    ...(codeChallenge ? { code_challenge: codeChallenge, code_challenge_method: codeChallengeMethod ?? 'S256' } : {}),
   });
 
   void reply.send({ authUrl: `${SPOTIFY_AUTH_URL}?${params}` });
@@ -95,7 +105,9 @@ export async function exchangeSpotifyOAuthController(req: FastifyRequest, reply:
     return;
   }
 
-  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.SPOTIFY_REDIRECT_URI)) {
+  // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL — skip shared-URI validation.
+  const isPkce = parsed.data.codeVerifier !== undefined;
+  if (!isPkce && !isAllowedRedirectUri(parsed.data.redirectUri, config.SPOTIFY_REDIRECT_URI)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed' });
     return;
   }
@@ -106,7 +118,8 @@ export async function exchangeSpotifyOAuthController(req: FastifyRequest, reply:
     return;
   }
 
-  await handleSpotifyCodeExchange(stateResult.data.userId, parsed.data.code, parsed.data.redirectUri, reply);
+  const pkceClientId = stateResult.data.clientId ?? undefined;
+  await handleSpotifyCodeExchange(stateResult.data.userId, parsed.data.code, parsed.data.redirectUri, reply, parsed.data.codeVerifier, pkceClientId);
 }
 
 export async function callbackSpotifyOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
