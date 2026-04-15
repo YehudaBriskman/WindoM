@@ -36,7 +36,9 @@ function Dashboard() {
       <TopBar />
       <div className="top-dock-area">
         <DockBar />
-        <SpotifyPlayer />
+        <div className="spotify-anchor">
+          <SpotifyPlayer />
+        </div>
       </div>
       <CenterContent />
       <BottomSection />
