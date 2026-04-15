@@ -10,8 +10,10 @@ export interface TokenRefreshConfig {
   tokenUrl: string;
   /** Additional body fields merged alongside grant_type + refresh_token. */
   extraBody: Record<string, string>;
-  /** Optional Authorization header (e.g. Basic auth for Spotify). */
+  /** Optional Authorization header (e.g. Basic auth for Spotify legacy shared-app). */
   authHeader?: string;
+  /** For PKCE (BYOA) Spotify connections — the user's own Spotify app client_id. When set, omits Authorization header and sends client_id in body instead. */
+  pkceClientId?: string;
 }
 
 /**
@@ -33,7 +35,11 @@ export async function getValidAccessToken(
   const refreshToken = await decryptToken(account.refreshTokenEnc);
 
   const headers: Record<string, string> = { 'Content-Type': 'application/x-www-form-urlencoded' };
-  if (refreshConfig.authHeader) headers['Authorization'] = refreshConfig.authHeader;
+  if (refreshConfig.pkceClientId) {
+    // PKCE (BYOA) mode: no Authorization header; client_id goes in body
+  } else if (refreshConfig.authHeader) {
+    headers['Authorization'] = refreshConfig.authHeader;
+  }
 
   const res = await fetch(refreshConfig.tokenUrl, {
     method: 'POST',
@@ -41,6 +47,7 @@ export async function getValidAccessToken(
     body: new URLSearchParams({
       grant_type: 'refresh_token',
       refresh_token: refreshToken,
+      ...(refreshConfig.pkceClientId ? { client_id: refreshConfig.pkceClientId } : {}),
       ...refreshConfig.extraBody,
     }),
   });
