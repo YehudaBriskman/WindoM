@@ -62,9 +62,9 @@ See the [Local Setup Guide](https://yehudabriskman.github.io/WindoM/local-setup.
 
 ## Tech stack
 
-**Extension** — React 18, TypeScript, Vite, Tailwind CSS v4, CRXJS, Manifest V3
+**Extension** - React 18, TypeScript, Vite, Tailwind CSS v4, CRXJS, Manifest V3
 
-**Backend** — Fastify v5, Drizzle ORM, PostgreSQL 16, TypeScript ESM
+**Backend** - Fastify v5, Drizzle ORM, PostgreSQL 16, TypeScript ESM
 
 ---
 
