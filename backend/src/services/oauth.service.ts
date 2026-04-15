@@ -20,10 +20,11 @@ export async function createOAuthState(
   provider: OAuthProvider,
   purpose: OAuthPurpose,
   userId?: string,
+  clientId?: string,
 ): Promise<string> {
   const state = crypto.randomBytes(24).toString('base64url');
   const expiresAt = new Date(Date.now() + OAUTH_STATE_TTL_MS);
-  await db.insert(oauthStates).values({ state, provider, purpose, userId: userId ?? null, expiresAt });
+  await db.insert(oauthStates).values({ state, provider, purpose, userId: userId ?? null, clientId: clientId ?? null, expiresAt });
   return state;
 }
 
@@ -55,6 +56,7 @@ export async function verifyAndConsumeOAuthState(
       userId: row.userId,
       provider: row.provider as OAuthProvider,
       purpose: row.purpose,
+      clientId: row.clientId ?? null,
     },
   };
 }
@@ -71,10 +73,11 @@ export async function storeOAuthTokens(
   const refreshTokenEnc = tokens.refreshToken ? await encryptToken(tokens.refreshToken) : null;
   const tokenExpiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
   const scopes = tokens.scope?.split(' ') ?? [];
+  const providerClientId = tokens.providerClientId ?? null;
 
   await db
     .insert(oauthAccounts)
-    .values({ userId, provider, providerUserId: tokens.providerUserId, accessTokenEnc, refreshTokenEnc, tokenExpiresAt, scopes })
+    .values({ userId, provider, providerUserId: tokens.providerUserId, accessTokenEnc, refreshTokenEnc, tokenExpiresAt, scopes, providerClientId })
     .onConflictDoUpdate({
       target: [oauthAccounts.provider, oauthAccounts.providerUserId],
       set: {
@@ -83,6 +86,7 @@ export async function storeOAuthTokens(
         ...(refreshTokenEnc ? { refreshTokenEnc } : {}),
         tokenExpiresAt,
         scopes,
+        providerClientId,
         updatedAt: new Date(),
       },
     });
@@ -192,13 +196,25 @@ function spotifyBasicAuth(): string {
 export async function exchangeSpotifyCode(
   code: string,
   redirectUri: string,
+  codeVerifier?: string,
+  pkceClientId?: string,
 ): Promise<Result<SpotifyTokenResponse & { providerUserId: string }, OAuthError>> {
   let tokenRes: Response;
   try {
+    const isPkce = codeVerifier !== undefined && pkceClientId !== undefined;
+    const headers: Record<string, string> = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    if (!isPkce) headers['Authorization'] = spotifyBasicAuth();
+
+    const bodyParams: Record<string, string> = { code, redirect_uri: redirectUri, grant_type: 'authorization_code' };
+    if (isPkce) {
+      bodyParams['client_id'] = pkceClientId!;
+      bodyParams['code_verifier'] = codeVerifier!;
+    }
+
     tokenRes = await fetch(SPOTIFY_TOKEN_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: spotifyBasicAuth() },
-      body: new URLSearchParams({ code, redirect_uri: redirectUri, grant_type: 'authorization_code' }),
+      headers,
+      body: new URLSearchParams(bodyParams),
     });
   } catch {
     return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
