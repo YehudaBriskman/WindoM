@@ -225,12 +225,22 @@ function buildPage(opts: {
 
 // ── Page bodies ────────────────────────────────────────────────────────────
 
+/** Escape characters that are special in HTML attribute values. */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function resetFormBody(token: string): string {
   return `
     <h1>Reset your password</h1>
     <p class="subtitle">Enter a new password for your WindoM account.</p>
     <form method="POST" action="/auth/reset-password">
-      <input type="hidden" name="token" value="${token}" />
+      <input type="hidden" name="token" value="${escapeHtml(token)}" />
       <div class="field">
         <input
           type="password"
@@ -251,7 +261,7 @@ function resetErrorBody(message: string): string {
     <h1>Reset password</h1>
     <div class="msg-error">
       <span class="icon">⚠</span>
-      <span>${message} Request a new link from the WindoM extension.</span>
+      <span>${escapeHtml(message)} Request a new link from the WindoM extension.</span>
     </div>`;
 }
 
@@ -278,7 +288,7 @@ function verifyErrorBody(message: string): string {
     <h1>Verification failed</h1>
     <div class="msg-error">
       <span class="icon">⚠</span>
-      <span>${message}</span>
+      <span>${escapeHtml(message)}</span>
     </div>`;
 }
 
