@@ -60,6 +60,8 @@ export const oauthAccounts = pgTable(
     refreshTokenEnc: text('refresh_token_enc'),
     tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }),
     scopes: text('scopes').array().notNull().default([]),
+    /** For PKCE (BYOA) Spotify connections — the user's own Spotify app client_id. Null for legacy shared-app connections. */
+    providerClientId: text('provider_client_id'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [uniqueIndex('oauth_accounts_provider_user_idx').on(table.provider, table.providerUserId)],
@@ -74,6 +76,8 @@ export const oauthStates = pgTable('oauth_states', {
   provider: text('provider').notNull(),
   purpose: text('purpose').notNull(), // 'login' | 'link'
   used: boolean('used').notNull().default(false),
+  /** For PKCE (BYOA) Spotify flows — the user's own Spotify app client_id. Null for legacy flows. */
+  clientId: text('client_id'),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });

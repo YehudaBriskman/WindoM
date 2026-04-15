@@ -16,7 +16,7 @@ const LABELS: Record<SettingsTab, string> = {
 };
 
 /** Tabs that require a signed-in user to be interactive */
-const AUTH_REQUIRED_TABS = new Set<SettingsTab>(['calendar', 'spotify']);
+const AUTH_REQUIRED_TABS = new Set<SettingsTab>(['calendar']);
 
 interface SettingsNavProps {
   active: SettingsTab;

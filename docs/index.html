@@ -807,12 +807,6 @@
       color: #fbbf24;
     }
 
-    .feature-badge.limited {
-      background: rgba(251,191,36,0.1);
-      border: 1px solid rgba(251,191,36,0.28);
-      color: #fbbf24;
-    }
-
     .wn-text {
       font-size: 0.9rem;
       color: var(--muted);
@@ -1323,8 +1317,8 @@
       </div>
       <div class="feature-card">
         <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
-        <h3>Spotify <span class="feature-badge limited">Limited</span></h3>
-        <p>See what is playing right now directly on your dashboard. Currently invite-only while we await Spotify's extended API approval — open to everyone once granted.</p>
+        <h3>Spotify</h3>
+        <p>Connect your own free Spotify Developer app (~2 min setup at developer.spotify.com). See what's playing right now, control playback, and view your top tracks.</p>
       </div>
       <div class="feature-card">
         <span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17 2 2 4-4M13 6h8M13 12h8M13 18h8"/></svg></span>
@@ -1415,8 +1409,8 @@
       <div class="wn-item">
         <span class="wn-date">Apr 2026</span>
         <div class="wn-content">
-          <span class="wn-tag notice">Notice</span>
-          <span class="wn-text"><strong>Spotify — invite-only for now</strong> — Spotify's API limits new apps to 5 users in Development Mode. The integration works, but access is restricted until we receive Extended API approval. We are actively working on it.</span>
+          <span class="wn-tag new">New</span>
+          <span class="wn-text"><strong>Spotify — Bring Your Own App</strong> — Spotify's February 2026 policy capped shared apps at 5 users. WindoM now uses a BYOA model: connect your own free Spotify Developer app in ~2 minutes. No shared quota, works for everyone, no Client Secret ever stored.</span>
         </div>
       </div>
       <div class="wn-item">
@@ -1517,7 +1511,7 @@
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
         </button>
         <div class="faq-a">
-          <p>The Spotify integration is built and works, but it is currently limited to a small number of invited users. This is due to Spotify's API policy — new apps are restricted to 5 users in Development Mode until they receive Extended API access. We are applying for that approval. Once granted, Spotify will be available to everyone with no restrictions.</p>
+          <p>Yes — Spotify uses a <strong>Bring Your Own App</strong> model. Create a free app at <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer">developer.spotify.com/dashboard</a>, add the Redirect URI shown in WindoM's Spotify settings, and paste your Client ID. The whole setup takes about 2 minutes. Your Client Secret is never required or stored — WindoM uses PKCE, the standard secure OAuth flow for public clients.</p>
         </div>
       </div>
 
