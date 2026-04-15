@@ -36,9 +36,10 @@ const WEATHER_CONDITION_MAP: Record<string, LucideIcon> = {
   Tornado: Tornado,
 };
 
-/** Resolve OWM data to a lucide-react icon component */
-export function getWeatherIcon(iconCode?: string, condition?: string): LucideIcon {
+/** Resolve weather data to a lucide-react icon component */
+export function getWeatherIcon(iconCode?: string, condition?: string, isDay?: boolean): LucideIcon {
   if (iconCode && WEATHER_ICON_MAP[iconCode]) return WEATHER_ICON_MAP[iconCode];
+  if (condition === 'Clear') return isDay === false ? Moon : Sun;
   if (condition && WEATHER_CONDITION_MAP[condition]) return WEATHER_CONDITION_MAP[condition];
   return Thermometer;
 }

@@ -8,11 +8,19 @@ export function WeatherWidget() {
   const state = useWeather();
 
   if (!settings.showWeather) return null;
-  if (state.status === 'placeholder') return null;
+
+  if (state.status === 'placeholder') {
+    return (
+      <div className="weather-widget glass-dock text-shadow-sm">
+        <Thermometer size={28} className="weather-icon" />
+        <span className="weather-city">{state.message}</span>
+      </div>
+    );
+  }
 
   if (state.status === 'loading') {
     return (
-      <div className="weather-widget glass-panel text-shadow-sm">
+      <div className="weather-widget glass-dock text-shadow-sm">
         <Thermometer size={28} className="weather-icon" />
         <span className="weather-temp">...</span>
         <span className="weather-city">Loading...</span>
@@ -22,7 +30,7 @@ export function WeatherWidget() {
 
   if (state.status === 'error') {
     return (
-      <div className="weather-widget glass-panel text-shadow-sm weather-error">
+      <div className="weather-widget glass-dock text-shadow-sm weather-error">
         <AlertTriangle size={28} className="weather-icon" />
         <span className="weather-city">Error</span>
       </div>
@@ -31,8 +39,8 @@ export function WeatherWidget() {
 
   // status === 'ready'
   return (
-    <div className="weather-widget glass-panel text-shadow-sm">
-      <WeatherIcon iconCode={state.data.iconCode} condition={state.data.condition} size={28} className="weather-icon" />
+    <div className="weather-widget glass-dock text-shadow-sm">
+      <WeatherIcon iconCode={state.data.iconCode} condition={state.data.condition} isDay={state.data.isDay} size={28} className="weather-icon" />
       <span className="weather-temp">{state.displayTemp}&deg;</span>
       <span className="weather-city">{state.data.city}</span>
     </div>
