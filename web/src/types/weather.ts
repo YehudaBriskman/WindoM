@@ -2,7 +2,8 @@ export interface WeatherData {
   temp: number;
   condition: string;
   description: string;
-  iconCode: string;
+  iconCode?: string;
+  isDay: boolean;
   city: string;
   unit: 'F' | 'C';
   timestamp: number;

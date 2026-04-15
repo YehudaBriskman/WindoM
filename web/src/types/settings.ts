@@ -21,7 +21,6 @@ export interface Settings {
   unsplashCollectionId: string;
   localBackground: string;
   location: string;
-  weatherApiKey: string;
   calendarConnected: boolean;
   calendarDays: 7 | 14 | 30;
   spotifyConnected: boolean;
@@ -55,7 +54,6 @@ export const defaultSettings: Settings = {
   unsplashCollectionId: '',
   localBackground: '',
   location: '',
-  weatherApiKey: '',
   calendarConnected: false,
   calendarDays: 7,
   spotifyConnected: false,

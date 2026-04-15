@@ -260,7 +260,7 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 30px;
+  padding: 16px;
   z-index: 100;
 }
 
@@ -452,19 +452,19 @@ input[type="file"]::file-selector-button:hover {
 .weather-widget {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 18px;
-  border-radius: 16px;
+  gap: 10px;
+  padding: 8px 16px;
+  border-radius: 18px;
+  height: 46px;
 }
 .weather-widget .weather-icon {
   flex-shrink: 0;
 }
 .weather-widget .weather-temp {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 400;
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 .weather-widget .weather-city {
   font-size: 12px;
@@ -475,6 +475,56 @@ input[type="file"]::file-selector-button:hover {
 }
 .weather-placeholder {
   opacity: 0.7;
+}
+
+/* City autocomplete dropdown */
+.city-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(15, 15, 25, 0.9);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 300;
+}
+.city-dropdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 14px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  text-align: left;
+  color: white;
+  transition: background 0.15s;
+}
+.city-dropdown-item:last-child {
+  border-bottom: none;
+}
+.city-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.city-dropdown-name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.city-dropdown-region {
+  font-size: 11px;
+  opacity: 0.55;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* ============================================================
@@ -488,14 +538,22 @@ input[type="file"]::file-selector-button:hover {
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
   z-index: 100;
+  height: 46px;
+}
+
+/* Spotify player anchored right of the dock — grows right without shifting the dock */
+.spotify-anchor {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 0;
 }
 
 .dock-wrapper {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .dock-bar {
@@ -598,15 +656,11 @@ input[type="file"]::file-selector-button:hover {
 
 /* Row page indicator — vertical dots to the right of the dock bar */
 .dock-page-indicator {
-  position: absolute;
-  left: calc(100% + 10px);
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  z-index: 1;
+  min-width: 18px;
 }
 
 .dock-page-dot {

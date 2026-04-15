@@ -41,6 +41,23 @@ export function DockBar() {
     return () => el.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Intercept wheel events to move exactly one row at a time
+  useEffect(() => {
+    const el = rowsRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const direction = e.deltaY > 0 ? 1 : -1;
+      setActiveRow(prev => {
+        const next = Math.max(0, Math.min(rows.length - 1, prev + direction));
+        rowsRef.current?.scrollTo({ top: next * ROW_HEIGHT, behavior: 'smooth' });
+        return next;
+      });
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [rows.length]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedUrl = url.trim();

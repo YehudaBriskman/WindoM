@@ -12,7 +12,10 @@
   ],
   "host_permissions": [
     "https://api.unsplash.com/*",
-    "https://api.openweathermap.org/*",
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://nominatim.openstreetmap.org/*",
+    "https://ipapi.co/*",
     "https://api.quotable.io/*",
     "https://www.google.com/*",
     "https://duckduckgo.com/*",

@@ -27,20 +27,40 @@ function getCoordinates(): Promise<LocationCoords> {
   });
 }
 
+async function getLocationFromIp(): Promise<LocationCoords | null> {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const data = await res.json();
+    if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+      return { lat: data.latitude, lon: data.longitude };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function useLocation() {
   const getLocation = useCallback(async (): Promise<LocationCoords | null> => {
+    // 1. Try browser geolocation
     try {
       const coords = await getCoordinates();
       await ls.set('lastKnownLocation', { ...coords, timestamp: Date.now() });
       return coords;
-    } catch {
-      // Fallback to cached
-      const cached = await ls.get<CachedLocation | null>('lastKnownLocation', null);
-      if (cached && Date.now() - cached.timestamp < LOCATION_CACHE_TTL_MS) {
-        return { lat: cached.lat, lon: cached.lon };
-      }
-      return null;
+    } catch { /* fall through */ }
+
+    // 2. Fallback to cached coords (within 24h)
+    const cached = await ls.get<CachedLocation | null>('lastKnownLocation', null);
+    if (cached && Date.now() - cached.timestamp < LOCATION_CACHE_TTL_MS) {
+      return { lat: cached.lat, lon: cached.lon };
     }
+
+    // 3. Last resort: IP-based geolocation
+    const ipCoords = await getLocationFromIp();
+    if (ipCoords) {
+      await ls.set('lastKnownLocation', { ...ipCoords, timestamp: Date.now() });
+    }
+    return ipCoords;
   }, []);
 
   return { getLocation };
