@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions, type FastifyError } from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifyFormbody from '@fastify/formbody';
+import fastifyHelmet from '@fastify/helmet';
 import { config } from './config.js';
 import { registerCors } from './plugins/cors.js';
 import { registerRateLimit } from './plugins/rate-limit.js';
@@ -43,6 +44,9 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
       },
     },
     trustProxy: config.isProd, // trust X-Forwarded-For from Fly.io proxy
+    // Hard limit on incoming request body size (covers both JSON and form data).
+    // 700 KB covers the largest legitimate payload (localBackground base64 image ≤ 600 KB + overhead).
+    bodyLimit: 700_000,
     ...overrides,
   });
 
@@ -54,6 +58,30 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
 
   // Parse application/x-www-form-urlencoded (used by the reset-password HTML form)
   await app.register(fastifyFormbody);
+
+  // Security headers: HSTS, X-Frame-Options, X-Content-Type-Options, etc.
+  // CSP is permissive here because most responses are JSON; the HTML pages served
+  // (reset-password, verify-email) load fonts from Google so we allow that origin.
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'none'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+    hsts: config.isProd
+      ? { maxAge: 31_536_000, includeSubDomains: true, preload: true }
+      : false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow extension to fetch the API
+  });
 
   await registerCors(app);
   if (!skipRateLimit) await registerRateLimit(app);
@@ -76,11 +104,13 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
 
   app.setErrorHandler((error: FastifyError, _req, reply) => {
     const statusCode = error.statusCode ?? 500;
-    app.log.error({ statusCode, message: error.message }, 'Request error');
+    app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
+    // In production, never leak internal error messages or stack traces to clients.
+    const isClientError = statusCode >= 400 && statusCode < 500;
     void reply.status(statusCode).send({
       statusCode,
-      error: error.name,
-      message: error.message,
+      error: isClientError ? error.name : 'Internal Server Error',
+      message: isClientError || !config.isProd ? error.message : 'An unexpected error occurred',
     });
   });
 

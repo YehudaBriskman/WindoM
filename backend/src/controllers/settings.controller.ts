@@ -25,7 +25,15 @@ const settingsSchema = z.object({
   backgroundSource: z.enum(['unsplash', 'local']),
   unsplashApiKey: z.string().max(100),
   unsplashCollectionId: z.string().max(100),
-  localBackground: z.string().max(2_000_000),
+  // Base64-encoded image: must start with a data URI for a supported image type.
+  // Capped at 600 KB (encoded) ≈ ~450 KB actual image to prevent storage exhaustion.
+  localBackground: z
+    .string()
+    .max(600_000)
+    .refine(
+      (v) => v === '' || /^data:image\/(jpeg|png|webp|gif);base64,/.test(v),
+      { message: 'localBackground must be a base64-encoded JPEG, PNG, WebP, or GIF data URI' },
+    ),
   location: z.string().max(100),
   weatherApiKey: z.string().max(100),
   calendarConnected: z.boolean(),

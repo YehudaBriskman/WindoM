@@ -18,6 +18,7 @@ export async function authenticate(req: FastifyRequest, reply: FastifyReply): Pr
   try {
     req.user = await verifyAccessToken(token);
   } catch {
-    reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired token' });
+    void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired token' });
+    return;
   }
 }
