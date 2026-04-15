@@ -16,10 +16,10 @@ export function authEmailRoutes(app: FastifyInstance): void {
     resendVerificationController,
   );
 
-  // Public: click link from email → verify email
+  // Public: click link from email → verify email (tightened to prevent token enumeration)
   app.get(
     '/verify-email',
-    { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } },
+    { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } },
     verifyEmailController,
   );
 
