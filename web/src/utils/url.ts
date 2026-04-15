@@ -11,8 +11,9 @@ export function isValidUrl(url: string): boolean {
 /** Get favicon URL from Google's favicon service */
 export function getFaviconUrl(url: string): string {
   try {
-    const domain = new URL(url).hostname;
-    return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    const { hostname } = new URL(url);
+    if (!hostname.includes('.')) return '';
+    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
   } catch {
     return '';
   }
