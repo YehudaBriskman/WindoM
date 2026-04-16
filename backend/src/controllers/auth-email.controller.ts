@@ -323,7 +323,7 @@ export async function forgotPasswordController(req: FastifyRequest, reply: Fasti
   const parsed = forgotSchema.safeParse(req.body);
   if (parsed.success) {
     await authEmailService.sendPasswordReset(parsed.data.email).catch((err: unknown) => {
-      console.error('[forgotPassword] email send failed:', err);
+      req.log.error({ err }, 'forgotPassword: email send failed');
     });
   }
   void reply.send({ ok: true });

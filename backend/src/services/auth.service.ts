@@ -12,6 +12,7 @@ import {
   revokeAllUserSessions,
 } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
+import { logger } from '../lib/logger.js';
 import type { Result, TokenPair, SessionMeta, AuthError } from '../types/auth.types.js';
 
 /** Register a new user with email + password. Returns TOKEN_PAIR or EMAIL_TAKEN. */
@@ -28,7 +29,7 @@ export async function register(
   const [user] = await db.insert(users).values({ email, name, passwordHash }).returning();
 
   // Send verification email — fire-and-forget so register doesn't fail on email errors
-  void sendVerification(user.id).catch((err) => console.error('[register] verification email failed:', err));
+  void sendVerification(user.id).catch((err) => logger.error({ err }, 'register: verification email failed'));
 
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false });
   const rawRefreshToken = await createSession(user.id, meta);
@@ -66,35 +67,35 @@ export async function refresh(
 ): Promise<Result<TokenPair, AuthError>> {
   const session = await findSessionByToken(rawToken);
   if (!session) {
-    console.warn('[auth.service:refresh] SESSION_NOT_FOUND — token revoked, expired, or invalid (may be a multi-tab race)');
+    logger.warn('refresh: SESSION_NOT_FOUND — token revoked, expired, or invalid (may be a multi-tab race)');
     return { ok: false, error: 'SESSION_NOT_FOUND' };
   }
 
   if (isRenewalCapReached(session.renewalCount)) {
-    console.warn(`[auth.service:refresh] SESSION_LIMIT_REACHED for session ${session.id} (renewalCount=${session.renewalCount})`);
+    logger.warn({ sessionId: session.id, renewalCount: session.renewalCount }, 'refresh: SESSION_LIMIT_REACHED');
     await revokeSession(session.id);
     return { ok: false, error: 'SESSION_LIMIT_REACHED' };
   }
 
   // Token reuse: if a child session already exists, the old cookie was replayed
   if (await hasChildSession(session.id)) {
-    console.error(`[auth.service:refresh] TOKEN_REUSE_DETECTED for session ${session.id} — revoking ALL sessions for user ${session.userId}`);
+    logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED — revoking ALL sessions for user');
     await revokeAllUserSessions(session.userId);
     return { ok: false, error: 'TOKEN_REUSE_DETECTED' };
   }
 
-  console.warn(`[auth.service:refresh] Rotating session ${session.id} (renewal #${session.renewalCount + 1})`);
+  logger.warn({ sessionId: session.id, renewal: session.renewalCount + 1 }, 'refresh: rotating session');
   await revokeSession(session.id);
 
   const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
   if (!user) {
-    console.error(`[auth.service:refresh] USER_NOT_FOUND for userId ${session.userId}`);
+    logger.error({ userId: session.userId }, 'refresh: USER_NOT_FOUND');
     return { ok: false, error: 'USER_NOT_FOUND' };
   }
 
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
   const rawRefreshToken = await createSession(user.id, meta, session.id, session.renewalCount + 1);
-  console.warn(`[auth.service:refresh] New session created for user ${user.id}`);
+  logger.warn({ userId: user.id }, 'refresh: new session created');
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
 

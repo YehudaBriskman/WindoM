@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { config } from '../config.js';
+import { logger } from './logger.js';
 
 // ── Transporter (singleton) ────────────────────────────────────────────────
 
@@ -184,7 +185,7 @@ function buildEmail(opts: {
 
 async function send(to: string, subject: string, html: string): Promise<void> {
   if (!transporter) {
-    console.warn(`[email] SMTP not configured — skipping email to ${to}: "${subject}"`);
+    logger.warn({ to, subject }, 'email: SMTP not configured — skipping send');
     return;
   }
   await transporter.sendMail({
