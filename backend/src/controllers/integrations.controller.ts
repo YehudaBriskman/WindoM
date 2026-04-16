@@ -6,6 +6,7 @@ const providerSchema = z.enum(['google', 'spotify']);
 
 export async function getIntegrationsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const status = await integrationsService.getIntegrations(req.user.sub);
+  reply.header('Cache-Control', 'private, max-age=60');
   void reply.send(status);
 }
 

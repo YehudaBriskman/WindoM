@@ -14,5 +14,6 @@ export async function getCalendarEventsController(req: FastifyRequest, reply: Fa
     return;
   }
 
+  reply.header('Cache-Control', 'private, max-age=60');
   void reply.send({ events: result.data });
 }

@@ -53,6 +53,7 @@ export async function getMeController(req: FastifyRequest, reply: FastifyReply):
     void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'User not found' });
     return;
   }
+  reply.header('Cache-Control', 'private, max-age=60');
   void reply.send(user);
 }
 

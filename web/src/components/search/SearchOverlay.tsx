@@ -478,7 +478,7 @@ export function SearchOverlay() {
           <div className="search-dropdown search-overlay-dropdown">
             {visibleSuggestions.map((s, i) => (
               <button
-                key={`${s.kind}-${i}`}
+                key={`${s.kind}-${s.text}`}
                 className={`search-suggestion${i === activeIdx ? ' active' : ''}${s.kind === 'command' ? ' command' : ''}`}
                 onMouseEnter={() => setActiveIdx(i)}
                 onMouseLeave={() => setActiveIdx(-1)}
