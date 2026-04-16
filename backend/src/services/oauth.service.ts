@@ -152,13 +152,23 @@ export async function exchangeGoogleCode(
   redirectUri: string,
   clientId: string,
   clientSecret: string,
+  codeVerifier?: string,
 ): Promise<Result<{ tokens: GoogleTokenResponse; userInfo: GoogleUserInfo }, OAuthError>> {
   let tokenRes: Response;
   try {
+    const bodyParams: Record<string, string> = {
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+    };
+    if (codeVerifier) bodyParams['code_verifier'] = codeVerifier;
+
     tokenRes = await fetch(GOOGLE_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ code, client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, grant_type: 'authorization_code' }),
+      body: new URLSearchParams(bodyParams),
     });
   } catch {
     return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };

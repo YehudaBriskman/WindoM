@@ -8,8 +8,11 @@ import * as oauthService from '../services/oauth.service.js';
 
 const cookieOpts = {
   httpOnly: true,
-  secure: config.isProd,
-  // SameSite=None requires Secure; in dev use Lax so the cookie works over plain HTTP.
+  // Always true — modern browsers exempt localhost from the Secure requirement,
+  // so local dev still works. Never send refresh tokens over plain HTTP.
+  secure: true,
+  // SameSite=None is required for cross-origin requests from the extension;
+  // in dev use Lax (localhost is same-site for the backend).
   sameSite: config.isProd ? ('none' as const) : ('lax' as const),
   // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
   // allowing the logout handler to revoke the session server-side.
@@ -21,6 +24,7 @@ const exchangeSchema = z.object({
   code: z.string(),
   state: z.string(),
   redirectUri: z.string().url(),
+  codeVerifier: z.string().optional(),
 });
 
 async function handleGoogleCodeExchange(
@@ -28,12 +32,14 @@ async function handleGoogleCodeExchange(
   redirectUri: string,
   req: FastifyRequest,
   reply: FastifyReply,
+  codeVerifier?: string,
 ): Promise<void> {
   const exchangeResult = await oauthService.exchangeGoogleCode(
     code,
     redirectUri,
     config.GOOGLE_CLIENT_ID ?? '',
     config.GOOGLE_CLIENT_SECRET ?? '',
+    codeVerifier,
   );
 
   if (!exchangeResult.ok) {
@@ -54,7 +60,11 @@ async function handleGoogleCodeExchange(
 }
 
 export async function startGoogleAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const { redirectUri } = req.query as { redirectUri?: string };
+  const { redirectUri, codeChallenge, codeChallengeMethod } = req.query as {
+    redirectUri?: string;
+    codeChallenge?: string;
+    codeChallengeMethod?: string;
+  };
   const effectiveUri = redirectUri ?? config.GOOGLE_REDIRECT_URI ?? '';
 
   if (!effectiveUri) {
@@ -63,7 +73,7 @@ export async function startGoogleAuthController(req: FastifyRequest, reply: Fast
   }
 
   // Validate redirect URI before creating state (fail fast — avoids orphaned state rows)
-  if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_REDIRECT_URI)) {
+  if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Google sign-in. Contact support.' });
     return;
   }
@@ -78,6 +88,10 @@ export async function startGoogleAuthController(req: FastifyRequest, reply: Fast
     access_type: 'offline',
     prompt: 'select_account',
   });
+  if (codeChallenge) {
+    params.set('code_challenge', codeChallenge);
+    params.set('code_challenge_method', codeChallengeMethod ?? 'S256');
+  }
 
   void reply.send({ authUrl: `${GOOGLE_AUTH_URL}?${params}` });
 }
@@ -89,7 +103,7 @@ export async function exchangeGoogleAuthController(req: FastifyRequest, reply: F
     return;
   }
 
-  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_REDIRECT_URI)) {
+  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed' });
     return;
   }
@@ -100,7 +114,7 @@ export async function exchangeGoogleAuthController(req: FastifyRequest, reply: F
     return;
   }
 
-  await handleGoogleCodeExchange(parsed.data.code, parsed.data.redirectUri, req, reply);
+  await handleGoogleCodeExchange(parsed.data.code, parsed.data.redirectUri, req, reply, parsed.data.codeVerifier);
 }
 
 export async function callbackGoogleAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
