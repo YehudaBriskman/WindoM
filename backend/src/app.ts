@@ -103,6 +103,21 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
   // ── Global error handler ───────────────────────────────────────────────────
 
   app.setErrorHandler((error: FastifyError, _req, reply) => {
+    // Postgres pool exhaustion: connectionTimeoutMillis exceeded → 503
+    const isPoolTimeout =
+      error.message === 'timeout expired' ||
+      error.message?.includes('Connection terminated') ||
+      (error as { code?: string }).code === 'CONNECTION_TIMEOUT';
+    if (isPoolTimeout) {
+      app.log.warn('DB pool connection timeout — returning 503');
+      void reply.status(503).send({
+        statusCode: 503,
+        error: 'Service Unavailable',
+        message: 'The server is temporarily unable to handle the request. Please try again shortly.',
+      });
+      return;
+    }
+
     const statusCode = error.statusCode ?? 500;
     app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
     // In production, never leak internal error messages or stack traces to clients.
