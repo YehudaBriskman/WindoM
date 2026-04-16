@@ -9,6 +9,7 @@ const exchangeSchema = z.object({
   code: z.string(),
   state: z.string(),
   redirectUri: z.string().url(),
+  codeVerifier: z.string().optional(),
 });
 
 async function handleGoogleOAuthExchange(
@@ -16,12 +17,14 @@ async function handleGoogleOAuthExchange(
   code: string,
   redirectUri: string,
   reply: FastifyReply,
+  codeVerifier?: string,
 ): Promise<void> {
   const exchangeResult = await oauthService.exchangeGoogleCode(
     code,
     redirectUri,
     config.GOOGLE_CLIENT_ID ?? '',
     config.GOOGLE_CLIENT_SECRET ?? '',
+    codeVerifier,
   );
 
   if (!exchangeResult.ok) {
@@ -47,7 +50,11 @@ async function handleGoogleOAuthExchange(
 }
 
 export async function startGoogleOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const { redirectUri } = req.query as { redirectUri?: string };
+  const { redirectUri, codeChallenge, codeChallengeMethod } = req.query as {
+    redirectUri?: string;
+    codeChallenge?: string;
+    codeChallengeMethod?: string;
+  };
   const effectiveUri = redirectUri ?? config.GOOGLE_OAUTH_REDIRECT_URI ?? '';
 
   if (!effectiveUri) {
@@ -56,7 +63,7 @@ export async function startGoogleOAuthController(req: FastifyRequest, reply: Fas
   }
 
   // Validate redirect URI before creating state (fail fast — avoids orphaned state rows)
-  if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_OAUTH_REDIRECT_URI)) {
+  if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_OAUTH_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Google Calendar. Contact support.' });
     return;
   }
@@ -71,6 +78,10 @@ export async function startGoogleOAuthController(req: FastifyRequest, reply: Fas
     access_type: 'offline',
     prompt: 'consent',
   });
+  if (codeChallenge) {
+    params.set('code_challenge', codeChallenge);
+    params.set('code_challenge_method', codeChallengeMethod ?? 'S256');
+  }
 
   void reply.send({ authUrl: `${GOOGLE_AUTH_URL}?${params}` });
 }
@@ -82,7 +93,7 @@ export async function exchangeGoogleOAuthController(req: FastifyRequest, reply: 
     return;
   }
 
-  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_OAUTH_REDIRECT_URI)) {
+  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_OAUTH_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed' });
     return;
   }
@@ -93,7 +104,7 @@ export async function exchangeGoogleOAuthController(req: FastifyRequest, reply: 
     return;
   }
 
-  await handleGoogleOAuthExchange(stateResult.data.userId, parsed.data.code, parsed.data.redirectUri, reply);
+  await handleGoogleOAuthExchange(stateResult.data.userId, parsed.data.code, parsed.data.redirectUri, reply, parsed.data.codeVerifier);
 }
 
 export async function callbackGoogleOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
