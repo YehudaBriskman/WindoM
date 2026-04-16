@@ -62,5 +62,6 @@ export async function getSpotifyMeController(req: FastifyRequest, reply: Fastify
 
 // Validate that a value is a valid playback command
 export function parsePlaybackCommand(value: string): PlaybackCommand | null {
-  return commandSchema.safeParse(value).success ? (value as PlaybackCommand) : null;
+  const result = commandSchema.safeParse(value);
+  return result.success ? result.data : null;
 }
