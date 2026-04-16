@@ -62,6 +62,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
   // Security headers: HSTS, X-Frame-Options, X-Content-Type-Options, etc.
   // CSP is permissive here because most responses are JSON; the HTML pages served
   // (reset-password, verify-email) load fonts from Google so we allow that origin.
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- @fastify/helmet options type doesn't satisfy FastifyPluginCallback generic exactly; safe in practice
   await app.register(fastifyHelmet, {
     contentSecurityPolicy: {
       directives: {
