@@ -329,9 +329,9 @@ export function SearchOverlay() {
       }
 
       // Tab switch
-      if (suggestion?.kind === 'tab' && suggestion.tabId != null && hasChromeApi) {
+      if (suggestion?.kind === 'tab' && suggestion.tabId !== null && suggestion.tabId !== undefined && hasChromeApi) {
         chrome.tabs.update(suggestion.tabId, { active: true });
-        if (suggestion.windowId != null) chrome.windows.update(suggestion.windowId, { focused: true });
+        if (suggestion.windowId !== null && suggestion.windowId !== undefined) chrome.windows.update(suggestion.windowId, { focused: true });
         setOpen(false);
         return;
       }
@@ -391,7 +391,7 @@ export function SearchOverlay() {
         else go();
       }
     },
-    [dropdownOpen, suggestions, commandSuggestions, activeIdx, go, value],
+    [dropdownOpen, suggestions, commandSuggestions, activeIdx, go, isCommandMode],
   );
 
   const isUrl = !isCommandMode && !!resolveAsUrl(value);
