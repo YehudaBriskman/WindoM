@@ -17,11 +17,17 @@ export async function signAccessToken(payload: AccessTokenPayload): Promise<stri
     .setSubject(payload.sub)
     .setIssuedAt()
     .setExpirationTime(ACCESS_TTL)
+    .setIssuer('windom-api')
+    .setAudience('windom-extension')
     .sign(accessSecret);
 }
 
 export async function verifyAccessToken(token: string): Promise<AccessTokenPayload> {
-  const { payload } = await jwtVerify(token, accessSecret, { algorithms: ['HS256'] });
+  const { payload } = await jwtVerify(token, accessSecret, {
+    algorithms: ['HS256'],
+    issuer: 'windom-api',
+    audience: 'windom-extension',
+  });
   return {
     sub: payload.sub as string,
     email: (payload['email'] as string | null) ?? null,
