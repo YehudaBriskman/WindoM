@@ -72,7 +72,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: superfly/flyctl-actions/setup-flyctl@v1.5
+      - uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy to Fly.io
         working-directory: backend
