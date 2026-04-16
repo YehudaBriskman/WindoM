@@ -5,7 +5,7 @@ async function broadcastTabsChanged() {
   await chrome.storage.local.set({ _windom_tabs: tabs });
 
   for (const tab of tabs) {
-    if (tab.id == null) continue;
+    if (tab.id === null || tab.id === undefined) continue;
     chrome.tabs.sendMessage(tab.id, { type: 'WINDOM_TABS_CHANGED', tabs }).catch(() => {});
   }
 }
