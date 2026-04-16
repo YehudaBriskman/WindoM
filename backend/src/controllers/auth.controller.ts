@@ -7,8 +7,11 @@ import * as authService from '../services/auth.service.js';
 
 const cookieOpts = {
   httpOnly: true,
-  secure: config.isProd,
-  // SameSite=None requires Secure; in dev use Lax so the cookie works over plain HTTP.
+  // Always true — modern browsers exempt localhost from the Secure requirement,
+  // so local dev still works. Never send refresh tokens over plain HTTP.
+  secure: true,
+  // SameSite=None is required for cross-origin requests from the extension;
+  // in dev use Lax (localhost is same-site for the backend).
   sameSite: config.isProd ? ('none' as const) : ('lax' as const),
   // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
   // allowing the logout handler to revoke the session server-side.
