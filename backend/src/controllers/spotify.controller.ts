@@ -18,6 +18,7 @@ function sendSpotifyError(error: spotifyService.SpotifyError, reply: FastifyRepl
 export async function getNowPlayingController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const result = await spotifyService.getNowPlaying(req.user.sub);
   if (!result.ok) { sendSpotifyError(result.error, reply); return; }
+  reply.header('Cache-Control', 'no-store');
   void reply.send(result.data);
 }
 
@@ -25,6 +26,7 @@ export async function getTopTracksController(req: FastifyRequest, reply: Fastify
   const { limit = '10', time_range = 'short_term' } = req.query as { limit?: string; time_range?: string };
   const result = await spotifyService.getTopTracks(req.user.sub, parseInt(limit, 10) || 10, time_range);
   if (!result.ok) { sendSpotifyError(result.error, reply); return; }
+  reply.header('Cache-Control', 'private, max-age=300');
   void reply.send({ tracks: result.data });
 }
 
