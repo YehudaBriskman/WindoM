@@ -206,9 +206,9 @@ export async function exchangeSpotifyCode(
     if (!isPkce) headers['Authorization'] = spotifyBasicAuth();
 
     const bodyParams: Record<string, string> = { code, redirect_uri: redirectUri, grant_type: 'authorization_code' };
-    if (isPkce) {
-      bodyParams['client_id'] = pkceClientId!;
-      bodyParams['code_verifier'] = codeVerifier!;
+    if (pkceClientId !== undefined && codeVerifier !== undefined) {
+      bodyParams['client_id'] = pkceClientId;
+      bodyParams['code_verifier'] = codeVerifier;
     }
 
     tokenRes = await fetch(SPOTIFY_TOKEN_URL, {
