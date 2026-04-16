@@ -88,9 +88,9 @@ export function WeatherSettings() {
         />
         {open && results.length > 0 && (
           <div className="city-dropdown">
-            {results.map((r, i) => (
+            {results.map((r) => (
               <button
-                key={i}
+                key={`${r.name}-${r.admin1 ?? ''}-${r.country}`}
                 className="city-dropdown-item"
                 onMouseDown={(e) => { e.preventDefault(); handleSelect(r); }}
               >

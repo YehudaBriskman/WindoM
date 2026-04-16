@@ -21,7 +21,7 @@ export function LinksSettings() {
           const faviconUrl = getFaviconUrl(link.url);
 
           return (
-            <div key={i} className="link-table-row">
+            <div key={link.url || `link-${i}`} className="link-table-row">
               <div className="link-favicon-cell">
                 {faviconUrl ? (
                   <img
