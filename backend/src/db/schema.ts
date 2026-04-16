@@ -5,6 +5,7 @@ import {
   timestamp,
   boolean,
   inet,
+  index,
   uniqueIndex,
   integer,
   jsonb,
@@ -42,7 +43,11 @@ export const refreshSessions = pgTable(
     renewalCount: integer('renewal_count').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [uniqueIndex('refresh_sessions_token_lookup_idx').on(table.tokenLookup)],
+  (table) => [
+    uniqueIndex('refresh_sessions_token_lookup_idx').on(table.tokenLookup),
+    // Enables O(1) lookup for token reuse detection (WHERE rotated_from_id = $1)
+    index('refresh_sessions_rotated_from_idx').on(table.rotatedFromId),
+  ],
 );
 
 // ── OAuth Accounts ─────────────────────────────────────────────────────────
@@ -64,7 +69,12 @@ export const oauthAccounts = pgTable(
     providerClientId: text('provider_client_id'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [uniqueIndex('oauth_accounts_provider_user_idx').on(table.provider, table.providerUserId)],
+  (table) => [
+    uniqueIndex('oauth_accounts_provider_user_idx').on(table.provider, table.providerUserId),
+    // Enables O(1) lookup for per-user provider queries (WHERE user_id = $1 AND provider = $2)
+    // Used by spotify.service, calendar.service, and integrations.service on every request
+    index('oauth_accounts_user_provider_idx').on(table.userId, table.provider),
+  ],
 );
 
 // ── OAuth States (for CSRF protection) ────────────────────────────────────

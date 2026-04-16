@@ -1,0 +1,2 @@
+CREATE INDEX IF NOT EXISTS "oauth_accounts_user_provider_idx" ON "oauth_accounts" USING btree ("user_id","provider");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "refresh_sessions_rotated_from_idx" ON "refresh_sessions" USING btree ("rotated_from_id");
