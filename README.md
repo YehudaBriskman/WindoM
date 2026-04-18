@@ -16,7 +16,7 @@ Built with a clean glassmorphism design.
 
 <br />
 
-<img src="docs/preview.png" alt="WindoM dashboard" width="100%" style="border-radius:12px;" />
+<img src="docs/images/preview.png" alt="WindoM dashboard" width="100%" style="border-radius:12px;" />
 
 </div>
 
