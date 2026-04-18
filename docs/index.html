@@ -605,6 +605,39 @@
       opacity: 0.4;
     }
 
+    /* ── CORNER IMAGES + SCROLL COMPANION ── */
+
+    .ci, .scroll-companion {
+      position: fixed;
+      pointer-events: none;
+      z-index: 3;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow:
+        0 20px 56px rgba(0,0,0,0.62),
+        0 0 36px rgba(123,158,245,0.07),
+        inset 0 0 0 1px rgba(255,255,255,0.04);
+      will-change: transform, opacity;
+      opacity: 0;
+    }
+
+    /* Each corner image has a unique size */
+    .ci-tl { width: 238px; aspect-ratio: 16/10; top: 6vh;    left:  2vw; }
+    .ci-tr { width: 272px; aspect-ratio: 16/10; top: 7vh;    right: 2vw; }
+    .ci-bl { width: 218px; aspect-ratio: 16/10; bottom: 6vh; left:  2vw; }
+    .ci-br { width: 256px; aspect-ratio: 16/10; bottom: 7vh; right: 2vw; }
+
+    .ci img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .ci { display: none !important; }
+    }
+
     /* ── BROWSER COMPAT ── */
     .hero-compat {
       margin-top: 28px;
@@ -1075,6 +1108,12 @@
   </style>
 </head>
 <body>
+
+  <!-- CORNER IMAGES -->
+  <div class="ci ci-tl" aria-hidden="true"><img class="ci-img" src="images/bundled-bg.jpg" alt="" /></div>
+  <div class="ci ci-tr" aria-hidden="true"><img class="ci-img" src="images/bundled-bg2.jpg" alt="" /></div>
+  <div class="ci ci-bl" aria-hidden="true"><img class="ci-img" src="images/bundled-bg3.jpg" alt="" /></div>
+  <div class="ci ci-br" aria-hidden="true"><img class="ci-img" src="images/bundled-bg4.png" alt="" /></div>
 
   <!-- SCROLL-DRIVEN BACKGROUND -->
   <div class="scroll-bg" aria-hidden="true">
@@ -1742,6 +1781,102 @@
         if (!isOpen) item.classList.add('open');
       });
     });
+
+    // ── Corner images + scroll companion ─────────────────────────────────────
+    (function () {
+      if (window.innerWidth <= 900) return;
+
+      // Float offsets push each image inward from its corner toward the center.
+      // tx/ty are pixel translations; rx/ry/rz are 3D rotation degrees.
+      const FLOAT = {
+        tl: { tx:  88, ty:  68, rx: -7,  ry:  15, rz: -5  },
+        tr: { tx: -96, ty:  74, rx:  6,  ry: -17, rz:  4  },
+        bl: { tx:  80, ty: -72, rx:  9,  ry:  11, rz: -6  },
+        br: { tx: -92, ty: -80, rx: -8,  ry: -13, rz:  6  },
+      };
+
+      function lerp(a, b, t) { return a + (b - a) * t; }
+
+      function smoothstep(e0, e1, x) {
+        const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+        return t * t * (3 - 2 * t);
+      }
+
+      // ── DOM refs ────────────────────────────────────────────────────────────
+      const ciTl = document.querySelector('.ci-tl');
+      const ciTr = document.querySelector('.ci-tr');
+      const cibl = document.querySelector('.ci-bl');
+      const ciBr = document.querySelector('.ci-br');
+
+      // ── Corner transform helper ─────────────────────────────────────────────
+      function applyCorner(el, cfg, exitT) {
+        const tx = lerp(cfg.tx, 0, exitT);
+        const ty = lerp(cfg.ty, 0, exitT);
+        const rx = lerp(cfg.rx, 0, exitT);
+        const ry = lerp(cfg.ry, 0, exitT);
+        const rz = lerp(cfg.rz, 0, exitT);
+        const sc = lerp(1, 0.8, exitT);
+        el.style.opacity   = (1 - exitT).toFixed(4);
+        el.style.transform = `perspective(700px) translateX(${tx.toFixed(1)}px) translateY(${ty.toFixed(1)}px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) rotateZ(${rz.toFixed(2)}deg) scale(${sc.toFixed(4)})`;
+      }
+
+      // ── Entry animation — CSS transition for first appearance only ──────────
+      const CORNERS = [
+        { el: ciTl, cfg: FLOAT.tl },
+        { el: ciTr, cfg: FLOAT.tr },
+        { el: cibl, cfg: FLOAT.bl },
+        { el: ciBr, cfg: FLOAT.br },
+      ];
+
+      CORNERS.forEach(({ el, cfg }) => {
+        el.style.opacity   = '0';
+        el.style.transform = `perspective(700px) translateX(0px) translateY(0px) rotateX(${(cfg.rx * 0.3).toFixed(2)}deg) rotateY(${(cfg.ry * 0.3).toFixed(2)}deg) rotateZ(0deg) scale(0.72)`;
+      });
+
+      setTimeout(() => {
+        CORNERS.forEach(({ el, cfg }) => {
+          el.style.transition = 'opacity 0.95s ease, transform 1.15s cubic-bezier(0.22,1,0.36,1)';
+          el.style.opacity    = '1';
+          el.style.transform  = `perspective(700px) translateX(${cfg.tx}px) translateY(${cfg.ty}px) rotateX(${cfg.rx}deg) rotateY(${cfg.ry}deg) rotateZ(${cfg.rz}deg) scale(1)`;
+        });
+      }, 180);
+
+      // Remove transition so scroll handler takes over with no CSS interference
+      setTimeout(() => {
+        CORNERS.forEach(({ el }) => { el.style.transition = 'none'; });
+      }, 1500);
+
+      // ── Unified scroll handler ──────────────────────────────────────────────
+      let lastScrollY = -1;
+
+      function updateAll() {
+        const scrollY    = window.scrollY;
+        if (Math.abs(scrollY - lastScrollY) < 0.5) return;
+        lastScrollY = scrollY;
+
+        // Corner retract — driven by first viewport height
+        const heroProgress = scrollY / window.innerHeight;
+        const exitT        = smoothstep(0.05, 0.85, heroProgress);
+        applyCorner(ciTl, FLOAT.tl, exitT);
+        applyCorner(ciTr, FLOAT.tr, exitT);
+        applyCorner(cibl, FLOAT.bl, exitT);
+        applyCorner(ciBr, FLOAT.br, exitT);
+      }
+
+      let rafPending = false;
+      function onScroll() {
+        if (rafPending) return;
+        rafPending = true;
+        requestAnimationFrame(() => { updateAll(); rafPending = false; });
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', updateAll, { passive: true });
+
+      // Initialise at rest (scroll = 0)
+      updateAll();
+
+    })();
   </script>
 
 </body>
