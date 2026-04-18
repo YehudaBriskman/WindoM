@@ -76,8 +76,11 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
     integrations: {
       calendar: {
         days: isValidCalendarDays(l.calendarDays) ? l.calendarDays : d.integrations.calendar.days,
+        connected: typeof l.calendarConnected === 'boolean' ? l.calendarConnected : false,
       },
-      spotify: {},
+      spotify: {
+        connected: typeof l.spotifyConnected === 'boolean' ? l.spotifyConnected : false,
+      },
       finance: { ...d.integrations.finance },
     },
   };

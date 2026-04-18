@@ -41,7 +41,7 @@ export function FocusInput() {
     setTimeout(() => inputRef.current?.focus(), 0);
   }, []);
 
-  if (!settings.showFocus) return null;
+  if (!settings.widgets.showFocus) return null;
 
   // No text yet or actively editing: show input
   if (!text || editing) {

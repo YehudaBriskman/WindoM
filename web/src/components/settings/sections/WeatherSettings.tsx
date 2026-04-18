@@ -10,7 +10,7 @@ interface GeoResult {
 
 export function WeatherSettings() {
   const { settings, update } = useSettings();
-  const [query, setQuery] = useState(settings.location);
+  const [query, setQuery] = useState(settings.weather.location);
   const [results, setResults] = useState<GeoResult[]>([]);
   const [open, setOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -37,7 +37,7 @@ export function WeatherSettings() {
   const handleChange = (value: string) => {
     setQuery(value);
     if (!value.trim()) {
-      update('location', '');
+      update('weather', { location: '' });
       setResults([]);
       setOpen(false);
     }
@@ -47,7 +47,7 @@ export function WeatherSettings() {
 
   const handleSelect = (result: GeoResult) => {
     setQuery(result.name);
-    update('location', result.name);
+    update('weather', { location: result.name });
     setResults([]);
     setOpen(false);
   };
@@ -67,8 +67,8 @@ export function WeatherSettings() {
       <div className="settings-group">
         <label className="settings-label">Temperature Unit:</label>
         <GlassSelect
-          value={settings.temperatureUnit}
-          onChange={(value) => update('temperatureUnit', value as 'F' | 'C')}
+          value={settings.weather.unit}
+          onChange={(value) => update('weather', { unit: value as 'F' | 'C' })}
           options={[
             { value: 'F', label: 'Fahrenheit (°F)' },
             { value: 'C', label: 'Celsius (°C)' },

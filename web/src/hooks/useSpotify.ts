@@ -21,7 +21,7 @@ const POLL_INTERVAL_MS = 60_000;
 
 export function useSpotify() {
   const { settings } = useSettings();
-  const spotifyConnected = settings.spotifyConnected;
+  const spotifyConnected = settings.integrations.spotify.connected;
   const [state, setState] = useState<NowPlayingState>({ isPlaying: false, progressMs: 0, track: null });
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -129,7 +129,7 @@ export function useSpotify() {
 
 export function useSpotifyTopTracks() {
   const { settings } = useSettings();
-  const spotifyConnected = settings.spotifyConnected;
+  const spotifyConnected = settings.integrations.spotify.connected;
   const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
 
   useEffect(() => {

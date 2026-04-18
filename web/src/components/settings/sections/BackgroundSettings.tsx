@@ -16,7 +16,7 @@ export function BackgroundSettings() {
   const unsplashLiked = liked.filter((p) => p.source === 'unsplash' || !p.source);
   const localLiked = liked.filter((p) => p.source === 'local');
 
-  const isUnsplash = settings.backgroundSource === 'unsplash';
+  const isUnsplash = settings.background.source === 'unsplash';
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,7 +52,7 @@ export function BackgroundSettings() {
       };
       img.src = dataUrl;
 
-      await update('backgroundSource', 'local');
+      await update('background', { source: 'local' });
       showSettingsMessage('Background image uploaded successfully', 'success');
     };
     reader.onerror = () => showSettingsMessage('Error reading image file', 'error');
@@ -65,8 +65,8 @@ export function BackgroundSettings() {
       <div className="settings-group">
         <label className="settings-label">Background Source:</label>
         <GlassSelect
-          value={settings.backgroundSource}
-          onChange={(value) => update('backgroundSource', value as 'unsplash' | 'local')}
+          value={settings.background.source}
+          onChange={(value) => update('background', { source: value as 'unsplash' | 'local' })}
           options={[
             { value: 'unsplash', label: 'Unsplash' },
             { value: 'local', label: 'Local Image' },
@@ -81,9 +81,9 @@ export function BackgroundSettings() {
             <label className="settings-label">Unsplash API Key (optional):</label>
             <input
               type="text"
-              defaultValue={settings.unsplashApiKey}
+              defaultValue={settings.background.unsplashApiKey}
               placeholder="Your API key"
-              onChange={(e) => update('unsplashApiKey', e.target.value)}
+              onChange={(e) => update('background', { unsplashApiKey: e.target.value })}
               className="settings-input glass-input"
             />
             <small className="settings-hint">
@@ -97,9 +97,9 @@ export function BackgroundSettings() {
             <label className="settings-label">Unsplash Collection ID (optional):</label>
             <input
               type="text"
-              defaultValue={settings.unsplashCollectionId}
+              defaultValue={settings.background.unsplashCollectionId}
               placeholder="Collection ID"
-              onChange={(e) => update('unsplashCollectionId', e.target.value)}
+              onChange={(e) => update('background', { unsplashCollectionId: e.target.value })}
               className="settings-input glass-input"
             />
             <small className="settings-hint">Leave empty for random nature photos</small>

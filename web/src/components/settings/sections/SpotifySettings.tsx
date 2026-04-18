@@ -72,7 +72,7 @@ function launchWebAuth(url: string): Promise<string> {
 // ── State 1: No client ID saved ─────────────────────────────────────────────
 
 function NoClientIdState({ onSaved }: { onSaved: () => void }) {
-  const { update } = useSettings();
+  const { settings, update } = useSettings();
   const { user } = useAuth();
   const [clientIdInput, setClientIdInput] = useState('');
   const [busy, setBusy] = useState(false);
@@ -95,7 +95,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
     try {
       await runPkceFlow(trimmed);
       await chrome.storage.local.set({ [CLIENT_ID_KEY]: trimmed });
-      await update('spotifyConnected', true);
+      await update('integrations', { spotify: { ...settings.integrations.spotify, connected: true } });
       onSaved();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Connection failed';
@@ -192,7 +192,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
 // ── State 2: Client ID saved but not connected ──────────────────────────────
 
 function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { clientId: string; onConnected: () => void; onChangeApp: () => void }) {
-  const { update } = useSettings();
+  const { settings, update } = useSettings();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -201,7 +201,7 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
     setError('');
     try {
       await runPkceFlow(clientId);
-      await update('spotifyConnected', true);
+      await update('integrations', { spotify: { ...settings.integrations.spotify, connected: true } });
       onConnected();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Connection failed';
@@ -257,7 +257,7 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
 // ── State 3: Connected ──────────────────────────────────────────────────────
 
 function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisconnected: () => void }) {
-  const { update } = useSettings();
+  const { settings, update } = useSettings();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -268,7 +268,7 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
       const res = await apiFetch('/integrations/spotify', { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to disconnect Spotify');
       await chrome.storage.local.remove(CLIENT_ID_KEY);
-      await update('spotifyConnected', false);
+      await update('integrations', { spotify: { ...settings.integrations.spotify, connected: false } });
       onDisconnected();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Disconnect failed');
@@ -310,8 +310,8 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
 type SpotifyState = 'loading' | 'no-client-id' | 'saved-not-connected' | 'connected';
 
 export function SpotifySettings() {
-  const { get } = useSettings();
-  const spotifyConnected = get('spotifyConnected');
+  const { settings } = useSettings();
+  const spotifyConnected = settings.integrations.spotify.connected;
 
   const [uiState, setUiState] = useState<SpotifyState>('loading');
   const [savedClientId, setSavedClientId] = useState<string>('');

@@ -5,9 +5,9 @@ const MAX_LINKS = 27;
 
 export function useLinks() {
   const { settings, update } = useSettings();
-  const links = settings.quickLinks ?? defaultSettings.quickLinks;
+  const links = settings.widgets.quickLinks ?? defaultSettings.widgets.quickLinks;
 
-  const setLinks = (newLinks: QuickLink[]) => update('quickLinks', newLinks);
+  const setLinks = (newLinks: QuickLink[]) => update('widgets', { quickLinks: newLinks });
 
   const addLink = (link?: QuickLink) => {
     if (links.length >= MAX_LINKS) return;

@@ -4,8 +4,8 @@ import { GlassSelect } from '../../ui/GlassSelect';
 export function ClockSettings() {
   const { settings, update } = useSettings();
 
-  const clockStyle = settings.clockStyle ?? 'default';
-  const clockWeight = settings.clockWeight ?? 200;
+  const clockStyle = settings.clock.style;
+  const clockWeight = settings.clock.weight;
 
   return (
     <div>
@@ -18,14 +18,14 @@ export function ClockSettings() {
         <label className="settings-label">Time Format</label>
         <div className="segmented-control" style={{ marginBottom: 16 }}>
           <button
-            className={`segmented-btn${settings.timeFormat === '12h' ? ' active' : ''}`}
-            onClick={() => update('timeFormat', '12h')}
+            className={`segmented-btn${settings.clock.timeFormat === '12h' ? ' active' : ''}`}
+            onClick={() => update('clock', { timeFormat: '12h' })}
           >
             12-hour
           </button>
           <button
-            className={`segmented-btn${settings.timeFormat === '24h' ? ' active' : ''}`}
-            onClick={() => update('timeFormat', '24h')}
+            className={`segmented-btn${settings.clock.timeFormat === '24h' ? ' active' : ''}`}
+            onClick={() => update('clock', { timeFormat: '24h' })}
           >
             24-hour
           </button>
@@ -37,20 +37,20 @@ export function ClockSettings() {
             <label className="toggle-switch">
               <input
                 type="checkbox"
-                checked={settings.showSeconds ?? false}
-                onChange={(e) => update('showSeconds', e.target.checked)}
+                checked={settings.clock.showSeconds ?? false}
+                onChange={(e) => update('clock', { showSeconds: e.target.checked })}
               />
               <span className="toggle-track"><span className="toggle-knob" /></span>
             </label>
           </label>
-          {settings.timeFormat === '12h' && (
+          {settings.clock.timeFormat === '12h' && (
             <label className="visibility-row">
               <span style={{ flex: 1, fontSize: 14 }}>Leading Zero (09:05)</span>
               <label className="toggle-switch">
                 <input
                   type="checkbox"
-                  checked={settings.clockLeadingZero ?? false}
-                  onChange={(e) => update('clockLeadingZero', e.target.checked)}
+                  checked={settings.clock.leadingZero ?? false}
+                  onChange={(e) => update('clock', { leadingZero: e.target.checked })}
                 />
                 <span className="toggle-track"><span className="toggle-knob" /></span>
               </label>
@@ -71,7 +71,7 @@ export function ClockSettings() {
             <button
               key={style}
               className={`segmented-btn${clockStyle === style ? ' active' : ''}`}
-              onClick={() => update('clockStyle', style)}
+              onClick={() => update('clock', { style })}
             >
               {style.charAt(0).toUpperCase() + style.slice(1)}
             </button>
@@ -82,22 +82,22 @@ export function ClockSettings() {
         <div style={{ marginBottom: 16 }}>
           <input
             type="color"
-            value={settings.clockColor ?? '#ffffff'}
-            onChange={(e) => update('clockColor', e.target.value)}
+            value={settings.clock.color ?? '#ffffff'}
+            onChange={(e) => update('clock', { color: e.target.value })}
             className="clock-color-input"
           />
         </div>
 
         <label className="settings-label">
-          Size — {settings.clockSize ?? 120}px
+          Size — {settings.clock.size ?? 120}px
         </label>
         <input
           type="range"
           min={60}
           max={180}
           step={4}
-          value={settings.clockSize ?? 120}
-          onChange={(e) => update('clockSize', Number(e.target.value))}
+          value={settings.clock.size ?? 120}
+          onChange={(e) => update('clock', { size: Number(e.target.value) })}
           className="clock-size-slider"
           style={{ marginBottom: 16 }}
         />
@@ -108,7 +108,7 @@ export function ClockSettings() {
             <button
               key={weight}
               className={`segmented-btn${clockWeight === weight ? ' active' : ''}`}
-              onClick={() => update('clockWeight', weight)}
+              onClick={() => update('clock', { weight })}
             >
               {weight === 100 ? 'Thin' : weight === 200 ? 'Light' : weight === 400 ? 'Regular' : 'Bold'}
             </button>
@@ -128,20 +128,20 @@ export function ClockSettings() {
             <label className="toggle-switch">
               <input
                 type="checkbox"
-                checked={settings.showDate ?? false}
-                onChange={(e) => update('showDate', e.target.checked)}
+                checked={settings.clock.showDate ?? false}
+                onChange={(e) => update('clock', { showDate: e.target.checked })}
               />
               <span className="toggle-track"><span className="toggle-knob" /></span>
             </label>
           </label>
         </div>
 
-        {(settings.showDate ?? false) && (
+        {(settings.clock.showDate ?? false) && (
           <div style={{ marginTop: 12 }}>
             <label className="settings-label">Date Format</label>
             <GlassSelect
-              value={settings.dateFormat ?? 'long'}
-              onChange={(value) => update('dateFormat', value as 'long' | 'short' | 'numeric')}
+              value={settings.clock.dateFormat ?? 'long'}
+              onChange={(value) => update('clock', { dateFormat: value as 'long' | 'short' | 'numeric' })}
               options={[
                 { value: 'long', label: 'Monday, March 17' },
                 { value: 'short', label: 'Mon, Mar 17' },

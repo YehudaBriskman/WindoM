@@ -57,10 +57,13 @@ export interface FocusSettings {
 
 export interface CalendarIntegration {
   days: 7 | 14 | 30;
+  /** Derived from OAuth state — excluded from backend sync. */
+  connected: boolean;
 }
 
 export interface SpotifyIntegration {
-  // No user-configurable fields yet; clientId lives in OAuth state
+  /** Derived from OAuth state — excluded from backend sync. */
+  connected: boolean;
 }
 
 export interface FinanceIntegration {
@@ -179,8 +182,8 @@ export const defaultSettings: Settings = {
     completed: false,
   },
   integrations: {
-    calendar: { days: 7 },
-    spotify: {},
+    calendar: { days: 7, connected: false },
+    spotify: { connected: false },
     finance: {
       finnhubApiKey: '',
       watchlistTickers: [],

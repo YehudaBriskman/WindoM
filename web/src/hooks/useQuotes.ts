@@ -58,7 +58,7 @@ export function useQuotes() {
 
   const displayQuote = useCallback(async () => {
     let nextQuote: Quote;
-    if (settings.quoteSource === 'api') {
+    if (settings.widgets.quoteSource === 'api') {
       nextQuote = await fetchAPIQuote();
     } else {
       const quotes = await loadLocalQuotes();
@@ -70,7 +70,7 @@ export function useQuotes() {
       setQuote(nextQuote);
       setFading(false);
     }, 300);
-  }, [settings.quoteSource, fetchAPIQuote, loadLocalQuotes, getDailyQuote]);
+  }, [settings.widgets.quoteSource, fetchAPIQuote, loadLocalQuotes, getDailyQuote]);
 
   const refresh = useCallback(async () => {
     await syncStorage.remove('dailyQuote');
@@ -79,12 +79,12 @@ export function useQuotes() {
 
   // Initial load
   useEffect(() => {
-    if (settings.quotesEnabled) displayQuote();
-  }, [settings.quotesEnabled, settings.quoteSource]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (settings.widgets.showQuotes) displayQuote();
+  }, [settings.widgets.showQuotes, settings.widgets.quoteSource]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Schedule midnight rotation
   useEffect(() => {
-    if (!settings.quotesEnabled) return;
+    if (!settings.widgets.showQuotes) return;
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -92,7 +92,7 @@ export function useQuotes() {
     const ms = tomorrow.getTime() - now.getTime();
     const id = setTimeout(() => displayQuote(), ms);
     return () => clearTimeout(id);
-  }, [settings.quotesEnabled, displayQuote]);
+  }, [settings.widgets.showQuotes, displayQuote]);
 
-  return { quote, fading, refresh, enabled: settings.quotesEnabled };
+  return { quote, fading, refresh, enabled: settings.widgets.showQuotes };
 }

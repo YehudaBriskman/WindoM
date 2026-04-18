@@ -4,9 +4,9 @@ import { formatClock } from '../utils/time';
 
 export function useClock() {
   const { settings } = useSettings();
-  const use24h = settings.timeFormat === '24h';
-  const showSeconds = settings.showSeconds ?? false;
-  const leadingZero = settings.clockLeadingZero ?? false;
+  const use24h = settings.clock.timeFormat === '24h';
+  const showSeconds = settings.clock.showSeconds;
+  const leadingZero = settings.clock.leadingZero;
 
   const [clock, setClock] = useState(() => formatClock(new Date(), use24h, showSeconds, leadingZero));
 

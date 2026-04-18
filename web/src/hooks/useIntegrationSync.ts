@@ -9,23 +9,26 @@ interface IntegrationsResponse {
 }
 
 /**
- * Syncs calendarConnected / spotifyConnected from the server once both
+ * Syncs calendar/spotify connected state from the server once both
  * settings storage and auth init have finished. Clears both flags on logout.
  *
  * Must be called inside a component below both AuthProvider and SettingsProvider.
  */
 export function useIntegrationSync() {
   const { user, authLoading } = useAuth();
-  const { updateMultiple, loaded: settingsLoaded } = useSettings();
+  const { settings, updateMultiple, loaded: settingsLoaded } = useSettings();
 
   useEffect(() => {
-    // Wait until chrome.storage has loaded AND auth init has resolved.
-    // Running before either completes causes a race where stale storage
-    // overwrites a premature clear, or we fetch before we have a valid token.
     if (!settingsLoaded || authLoading) return;
 
     if (!user) {
-      updateMultiple({ calendarConnected: false, spotifyConnected: false });
+      void updateMultiple({
+        integrations: {
+          ...settings.integrations,
+          calendar: { ...settings.integrations.calendar, connected: false },
+          spotify: { ...settings.integrations.spotify, connected: false },
+        },
+      });
       return;
     }
 
@@ -34,14 +37,16 @@ export function useIntegrationSync() {
     apiGet<IntegrationsResponse>('/integrations')
       .then(({ google, spotify }) => {
         if (cancelled) return;
-        updateMultiple({
-          calendarConnected: google.connected,
-          spotifyConnected: spotify.connected,
+        void updateMultiple({
+          integrations: {
+            ...settings.integrations,
+            calendar: { ...settings.integrations.calendar, connected: google.connected },
+            spotify: { ...settings.integrations.spotify, connected: spotify.connected },
+          },
         });
       })
       .catch((err: unknown) => {
         console.error('[integrations] Failed to sync integration status:', err);
-        // Backend unreachable — flags stay as loaded from storage
       });
 
     return () => { cancelled = true; };

@@ -12,7 +12,7 @@ export function FocusPresets() {
   const { settings } = useSettings();
   const { phase, start } = useFocusTimer();
 
-  if (!settings.showFocus) return null;
+  if (!settings.widgets.showFocus) return null;
   if (phase !== 'idle') return null;
 
   return (

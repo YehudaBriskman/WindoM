@@ -63,7 +63,7 @@ export function useWeather() {
 
   // runId is passed in so fetchWeather can guard against being stale
   const fetchWeather = useCallback(async (runId: number) => {
-    const manualLocation = settings.location.trim();
+    const manualLocation = settings.weather.location.trim();
     let lat: number;
     let lon: number;
     let resolvedCity: string;
@@ -113,7 +113,7 @@ export function useWeather() {
 
     setState({ status: 'loading' });
 
-    const tempUnit = settings.temperatureUnit === 'C' ? 'celsius' : 'fahrenheit';
+    const tempUnit = settings.weather.unit === 'C' ? 'celsius' : 'fahrenheit';
     const weatherRes = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&temperature_unit=${tempUnit}&timezone=auto`
     );
@@ -130,14 +130,14 @@ export function useWeather() {
       iconCode: undefined,
       isDay: current.is_day === 1,
       city: resolvedCity,
-      unit: settings.temperatureUnit,
+      unit: settings.weather.unit,
       timestamp: Date.now(),
     };
 
     await ls.set('weatherCache', weatherRecord);
     if (runIdRef.current !== runId) return;
     setState({ status: 'ready', data: weatherRecord, displayTemp: weatherRecord.temp });
-  }, [settings.location, settings.temperatureUnit, getLocation]);
+  }, [settings.weather.location, settings.weather.unit, getLocation]);
 
   useEffect(() => {
     // Claim this run; any prior in-flight fetch will see a stale runId and bail out
@@ -148,8 +148,8 @@ export function useWeather() {
       if (runIdRef.current !== runId) return;
 
       if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
-        const displayTemp = cached.unit !== settings.temperatureUnit
-          ? convertTemperature(cached.temp, cached.unit, settings.temperatureUnit)
+        const displayTemp = cached.unit !== settings.weather.unit
+          ? convertTemperature(cached.temp, cached.unit, settings.weather.unit)
           : cached.temp;
         setState({ status: 'ready', data: cached, displayTemp });
       }
@@ -161,8 +161,8 @@ export function useWeather() {
         console.error('Error fetching weather:', error);
         const fallback = await ls.get<WeatherData | null>('weatherCache', null);
         if (fallback) {
-          const displayTemp = fallback.unit !== settings.temperatureUnit
-            ? convertTemperature(fallback.temp, fallback.unit, settings.temperatureUnit)
+          const displayTemp = fallback.unit !== settings.weather.unit
+            ? convertTemperature(fallback.temp, fallback.unit, settings.weather.unit)
             : fallback.temp;
           setState({ status: 'ready', data: fallback, displayTemp });
         } else {
@@ -181,9 +181,9 @@ export function useWeather() {
     })();
 
     return () => clearInterval(intervalRef.current);
-    // settings.temperatureUnit is listed directly so the cache conversion in the effect
+    // settings.weather.unit is listed directly so the cache conversion in the effect
     // body always runs with the current unit, not just when fetchWeather recreates.
-  }, [fetchWeather, settings.temperatureUnit]);
+  }, [fetchWeather, settings.weather.unit]);
 
   return state;
 }

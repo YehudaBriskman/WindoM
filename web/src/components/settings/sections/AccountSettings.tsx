@@ -144,7 +144,7 @@ function ProfileSection() {
     try {
       const updated = await apiPatch<{ name: string }>('/me', { name: trimmed });
       updateUser({ name: updated.name });
-      await updateSetting('userName', updated.name);
+      await updateSetting('general', { userName: updated.name });
       setName(updated.name);
       setNameMsg('Saved');
       setTimeout(() => setNameMsg(''), 2000);
@@ -251,8 +251,8 @@ function ProfileSection() {
 
 function SignedInView() {
   const { user, logout } = useAuth();
-  const { get, update } = useSettings();
-  const calendarConnected = get('calendarConnected');
+  const { settings, update } = useSettings();
+  const calendarConnected = settings.integrations.calendar.connected;
   const [signingOut, setSigningOut] = useState(false);
 
   // Danger zone state
@@ -277,7 +277,7 @@ function SignedInView() {
       if (!code || !state) throw new Error('No auth code returned');
       const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
       if (status !== 'linked') throw new Error('Linking failed');
-      await update('calendarConnected', true);
+      await update('integrations', { calendar: { ...settings.integrations.calendar, connected: true } });
     } catch (err) {
       throw new Error(mapIntegrationError(err));
     }
@@ -289,7 +289,7 @@ function SignedInView() {
       console.error('[integrations] Failed to disconnect Google:', res.status);
       throw new Error('Failed to disconnect Google Calendar');
     }
-    await update('calendarConnected', false);
+    await update('integrations', { calendar: { ...settings.integrations.calendar, connected: false } });
   }
 
   async function handleSignOut() {
@@ -309,8 +309,10 @@ function SignedInView() {
         const data = await res.json().catch(() => ({}));
         throw new Error((data as { message?: string }).message ?? 'Deletion failed');
       }
-      await update('calendarConnected', false);
-      await update('spotifyConnected', false);
+      await update('integrations', {
+        calendar: { ...settings.integrations.calendar, connected: false },
+        spotify: { ...settings.integrations.spotify, connected: false },
+      });
       await logout();
     } catch (err) {
       setDeleteError(err instanceof Error ? err.message : 'Something went wrong');

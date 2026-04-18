@@ -94,7 +94,7 @@ export function DockBar() {
     return () => document.removeEventListener('click', handleClick);
   }, [showForm]);
 
-  if (!settings.showLinks) return null;
+  if (!settings.widgets.showLinks) return null;
   if (!links.length) return null;
 
   return (

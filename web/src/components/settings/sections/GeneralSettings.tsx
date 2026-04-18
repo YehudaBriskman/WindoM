@@ -10,12 +10,37 @@ export function GeneralSettings({ onReset }: Props) {
   const { settings, update } = useSettings();
   const { user } = useAuth();
 
-  const widgets: { key: 'showWeather' | 'quotesEnabled' | 'showLinks' | 'showFocus' | 'showGreeting'; label: string; Icon: React.ElementType }[] = [
-    { key: 'showWeather', label: 'Weather', Icon: Cloud },
-    { key: 'quotesEnabled', label: 'Quotes', Icon: Quote },
-    { key: 'showLinks', label: 'Quick Links', Icon: Link2 },
-    { key: 'showFocus', label: 'Center Bar', Icon: Target },
-    { key: 'showGreeting', label: 'Greeting', Icon: User },
+  const widgets: { label: string; Icon: React.ElementType; checked: boolean; onChange: (v: boolean) => void }[] = [
+    {
+      label: 'Weather',
+      Icon: Cloud,
+      checked: settings.weather.show,
+      onChange: (v) => { void update('weather', { show: v }); },
+    },
+    {
+      label: 'Quotes',
+      Icon: Quote,
+      checked: settings.widgets.showQuotes,
+      onChange: (v) => { void update('widgets', { showQuotes: v }); },
+    },
+    {
+      label: 'Quick Links',
+      Icon: Link2,
+      checked: settings.widgets.showLinks,
+      onChange: (v) => { void update('widgets', { showLinks: v }); },
+    },
+    {
+      label: 'Center Bar',
+      Icon: Target,
+      checked: settings.widgets.showFocus,
+      onChange: (v) => { void update('widgets', { showFocus: v }); },
+    },
+    {
+      label: 'Greeting',
+      Icon: User,
+      checked: settings.general.showGreeting,
+      onChange: (v) => { void update('general', { showGreeting: v }); },
+    },
   ];
 
   return (
@@ -25,9 +50,9 @@ export function GeneralSettings({ onReset }: Props) {
           <label className="settings-label">Your Name:</label>
           <input
             type="text"
-            value={settings.userName}
+            value={settings.general.userName}
             placeholder="Friend"
-            onChange={(e) => update('userName', e.target.value || 'Friend')}
+            onChange={(e) => update('general', { userName: e.target.value || 'Friend' })}
             className="settings-input glass-input"
           />
         </div>
@@ -38,8 +63,8 @@ export function GeneralSettings({ onReset }: Props) {
           Widget Visibility
         </label>
         <div className="visibility-table">
-          {widgets.map(({ key, label, Icon }) => (
-            <label key={key} className="visibility-row">
+          {widgets.map(({ label, Icon, checked, onChange }) => (
+            <label key={label} className="visibility-row">
               <span className="visibility-row-icon">
                 <Icon size={16} strokeWidth={1.8} />
               </span>
@@ -47,8 +72,8 @@ export function GeneralSettings({ onReset }: Props) {
               <label className="toggle-switch">
                 <input
                   type="checkbox"
-                  checked={settings[key]}
-                  onChange={(e) => update(key, e.target.checked)}
+                  checked={checked}
+                  onChange={(e) => onChange(e.target.checked)}
                 />
                 <span className="toggle-track"><span className="toggle-knob" /></span>
               </label>
@@ -63,15 +88,15 @@ export function GeneralSettings({ onReset }: Props) {
         </label>
         <div className="segmented-control">
           <button
-            className={`segmented-btn${settings.tabSidebarSide === 'left' ? ' active' : ''}`}
-            onClick={() => update('tabSidebarSide', 'left')}
+            className={`segmented-btn${settings.general.sidebarSide === 'left' ? ' active' : ''}`}
+            onClick={() => update('general', { sidebarSide: 'left' })}
           >
             <PanelLeft size={14} strokeWidth={1.8} />
             Left
           </button>
           <button
-            className={`segmented-btn${settings.tabSidebarSide === 'right' ? ' active' : ''}`}
-            onClick={() => update('tabSidebarSide', 'right')}
+            className={`segmented-btn${settings.general.sidebarSide === 'right' ? ' active' : ''}`}
+            onClick={() => update('general', { sidebarSide: 'right' })}
           >
             <PanelRight size={14} strokeWidth={1.8} />
             Right
