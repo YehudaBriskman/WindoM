@@ -6,7 +6,7 @@
 
 **The new tab you always wanted.**
 
-A Chrome extension that turns every new tab into a personal productivity dashboard —
+A Chrome extension that turns every new tab into a personal productivity dashboard -
 clock, weather, todos, calendar, Spotify, quick links, focus timer, and more.
 Built with a clean glassmorphism design.
 
@@ -24,7 +24,7 @@ Built with a clean glassmorphism design.
 
 WindoM redefines the new tab experience. Instead of an empty page, every new tab opens to a thoughtfully designed personal dashboard that gives you everything you need to start your day with clarity and intention.
 
-Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks — smooth, minimal, and always out of the way when you need it to be.
+Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks - smooth, minimal, and always out of the way when you need it to be.
 
 At a glance, you see the time, the weather outside, your upcoming calendar events, what is playing on Spotify, and your tasks for the day. Everything you actually care about, nothing you do not.
 
@@ -82,4 +82,4 @@ WindoM does not track you. All personal data stays in your browser. An account i
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT - see [LICENSE](LICENSE)
