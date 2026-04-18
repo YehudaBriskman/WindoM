@@ -1,6 +1,6 @@
 <div align="center">
 
-## Coming Soon!
+## Just Came Out!
 
 # WindoM
 
