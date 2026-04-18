@@ -13,6 +13,7 @@ const SYNC_EXCLUDE = new Set<keyof Settings>([
 ]);
 
 const LOCAL_UPDATED_AT_KEY = 'windom_settings_updated_at';
+const KEY_TIMESTAMPS_STORAGE_KEY = 'windom_key_timestamps';
 
 function pickSyncable(s: Partial<Settings>): Partial<Settings> {
   return Object.fromEntries(
@@ -58,6 +59,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   // Ref so async callbacks can read the latest settings without stale closures
   const settingsRef = useRef<Settings>({ ...defaultSettings });
   useEffect(() => { settingsRef.current = settings; }, [settings]);
+  // Per-key write timestamps — used to resolve same-key conflicts across tabs
+  const keyTimestampsRef = useRef<Record<string, number>>({});
 
   // Debounced push to backend — accumulates changed keys and pushes only the delta.
   // Sending just the changed keys prevents a tab from overwriting another tab's
@@ -137,6 +140,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       const local = stored as unknown as Settings;
       setSettings(local);
 
+      // Load per-key write timestamps for cross-tab conflict resolution
+      keyTimestampsRef.current = await syncStorage.get(KEY_TIMESTAMPS_STORAGE_KEY, {} as Record<string, number>);
+
       // First install check
       const isFirstInstall = await syncStorage.get('isFirstInstall', true);
       if (isFirstInstall) {
@@ -168,15 +174,33 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('windom-auth-login', handler);
   }, [syncWithBackend]);
 
-  // Listen for cross-tab changes
+  // Listen for cross-tab changes.
+  // Per-key timestamps prevent a stale tab from silently overwriting a more
+  // recent change made in another tab to the same key (last-write-wins removed).
   useEffect(() => {
     const unsub = syncStorage.onChange((changes) => {
+      const remoteTimestamps = changes[KEY_TIMESTAMPS_STORAGE_KEY]?.newValue as Record<string, number> | undefined;
+
+      // Determine which keys to apply before entering the state updater
+      // so we can mutate keyTimestampsRef without side-effects inside a pure fn.
+      const toApply: Record<string, unknown> = {};
+      for (const [key, change] of Object.entries(changes)) {
+        if (key === KEY_TIMESTAMPS_STORAGE_KEY) continue;
+        const localTs = keyTimestampsRef.current[key] ?? 0;
+        const remoteTs = remoteTimestamps?.[key] ?? 0;
+        if (remoteTs >= localTs) {
+          toApply[key] = change.newValue;
+          keyTimestampsRef.current[key] = remoteTs;
+        }
+        // Remote is older than our local write — discard silently.
+      }
+
+      if (Object.keys(toApply).length === 0) return;
+
       setSettings((prev) => {
         const next = { ...prev };
-        for (const [key, change] of Object.entries(changes)) {
-          if (key in next) {
-            (next as Record<string, unknown>)[key] = change.newValue;
-          }
+        for (const [key, value] of Object.entries(toApply)) {
+          if (key in next) (next as Record<string, unknown>)[key] = value;
         }
         return next;
       });
@@ -191,10 +215,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(
     async <K extends keyof Settings>(key: K, value: Settings[K]) => {
+      keyTimestampsRef.current[key as string] = Date.now();
       setSettings((prev) => ({ ...prev, [key]: value }));
       debouncedPush({ [key]: value } as Partial<Settings>);
       await Promise.all([
-        syncStorage.set(key, value),
+        syncStorage.setMultiple({
+          [key]: value,
+          [KEY_TIMESTAMPS_STORAGE_KEY]: { ...keyTimestampsRef.current },
+        } as Record<string, unknown>),
         setLocalUpdatedAt(),
       ]);
     },
@@ -203,10 +231,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const updateMultiple = useCallback(
     async (updates: Partial<Settings>) => {
+      const now = Date.now();
+      for (const k of Object.keys(updates)) keyTimestampsRef.current[k] = now;
       setSettings((prev) => ({ ...prev, ...updates }));
       debouncedPush(updates);
       await Promise.all([
-        syncStorage.setMultiple(updates as unknown as Record<string, unknown>),
+        syncStorage.setMultiple({
+          ...updates as Record<string, unknown>,
+          [KEY_TIMESTAMPS_STORAGE_KEY]: { ...keyTimestampsRef.current },
+        }),
         setLocalUpdatedAt(),
       ]);
     },
@@ -214,6 +247,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 
   const reset = useCallback(async () => {
+    keyTimestampsRef.current = {};
     setSettings({ ...defaultSettings });
     await syncStorage.clear();
     await syncStorage.setMultiple(defaultSettings as unknown as Record<string, unknown>);
