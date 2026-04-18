@@ -133,7 +133,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    if (!settings.unsplashApiKey) {
+    if (!settings.background.unsplashApiKey) {
       applyBackground(DEFAULT_GRADIENT);
       setPhotographer(null);
       setCurrentPhotoSource(null);
@@ -142,7 +142,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
 
     try {
       const res = await fetch(`${UNSPLASH_API_URL}?orientation=landscape&query=nature`, {
-        headers: { Authorization: `Client-ID ${settings.unsplashApiKey}` },
+        headers: { Authorization: `Client-ID ${settings.background.unsplashApiKey}` },
       });
       if (!res.ok) throw new Error(`Unsplash API error: ${res.status}`);
       const data = await res.json();
@@ -176,7 +176,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setCurrentPhotoSource(null);
     }
   // addPhoto is a stable useCallback — safe dep; do NOT add photoHistory here
-  }, [settings.unsplashApiKey, applyBackground, addPhoto]);
+  }, [settings.background.unsplashApiKey, applyBackground, addPhoto]);
 
   const loadLocal = useCallback(async () => {
     let localImage = await ls.get<string | null>(bgImageKey, null);
@@ -199,35 +199,28 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setCurrentPhotoSource('local');
       return;
     }
-    if (settings.localBackground) {
-      applyBackground(settings.localBackground);
-      setPhotographer(null);
-      setCurrentPhotoId(null);
-      setCurrentPhotoSource('local');
-      return;
-    }
     applyBackground(BUNDLED_BG_URL);
     setPhotographer(null);
     setCurrentPhotoId('bundled-1');
     setCurrentPhotoSource('bundled');
-  }, [bgImageKey, settings.localBackground, applyBackground]);
+  }, [bgImageKey, applyBackground]);
 
   const refresh = useCallback(async () => {
-    if (settings.backgroundSource === 'unsplash') {
+    if (settings.background.source === 'unsplash') {
       await ls.set('unsplashCache', null);
       await loadUnsplash();
     } else {
       await loadLocal();
     }
-  }, [settings.backgroundSource, loadUnsplash, loadLocal]);
+  }, [settings.background.source, loadUnsplash, loadLocal]);
 
   useEffect(() => {
-    if (settings.backgroundSource === 'local') {
+    if (settings.background.source === 'local') {
       loadLocal();
     } else {
       loadUnsplash();
     }
-  }, [settings.backgroundSource, loadUnsplash, loadLocal]);
+  }, [settings.background.source, loadUnsplash, loadLocal]);
 
   return (
     <BackgroundContext.Provider value={{

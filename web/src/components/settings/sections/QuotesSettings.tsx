@@ -10,8 +10,8 @@ export function QuotesSettings() {
         <label className="settings-checkbox-label">
           <input
             type="checkbox"
-            checked={settings.quotesEnabled}
-            onChange={(e) => update('quotesEnabled', e.target.checked)}
+            checked={settings.widgets.showQuotes}
+            onChange={(e) => update('widgets', { showQuotes: e.target.checked })}
           />
           Show daily quotes
         </label>
@@ -19,8 +19,8 @@ export function QuotesSettings() {
       <div className="settings-group">
         <label className="settings-label">Quote Source:</label>
         <GlassSelect
-          value={settings.quoteSource}
-          onChange={(value) => update('quoteSource', value as 'local' | 'api')}
+          value={settings.widgets.quoteSource}
+          onChange={(value) => update('widgets', { quoteSource: value as 'local' | 'api' })}
           options={[
             { value: 'local', label: 'Local Quotes' },
             { value: 'api', label: 'API Quotes' },

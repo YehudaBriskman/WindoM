@@ -7,12 +7,12 @@ export function EditableName() {
 
   const handleBlur = useCallback(async () => {
     const newName = ref.current?.textContent?.trim();
-    if (newName && newName !== settings.userName) {
-      await update('userName', newName);
+    if (newName && newName !== settings.general.userName) {
+      await update('general', { userName: newName });
     } else if (!newName && ref.current) {
-      ref.current.textContent = settings.userName;
+      ref.current.textContent = settings.general.userName;
     }
-  }, [settings.userName, update]);
+  }, [settings.general.userName, update]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -40,7 +40,7 @@ export function EditableName() {
       onFocus={handleFocus}
       className="editable-name"
     >
-      {settings.userName}
+      {settings.general.userName}
     </span>
   );
 }

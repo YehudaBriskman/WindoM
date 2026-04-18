@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Search, Globe, Clock, LayoutGrid, ChevronDown, Terminal, Plus, X, RotateCcw, Copy, Pin, ExternalLink, type LucideIcon } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
-import type { Settings } from '../../types/settings';
+import type { GeneralSettings } from '../../types/settings';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -37,7 +37,7 @@ const ENGINE_LABELS: Record<string, string> = {
   brave: 'Brave',
 };
 
-const ENGINE_LIST: Settings['searchEngine'][] = ['google', 'bing', 'duckduckgo', 'brave'];
+const ENGINE_LIST: GeneralSettings['searchEngine'][] = ['google', 'bing', 'duckduckgo', 'brave'];
 
 const hasChromeApi = typeof chrome !== 'undefined';
 // Content scripts cannot use chrome.tabs.* in MV3; detect and route via background
@@ -251,10 +251,10 @@ export function SearchOverlay() {
         text: commandQuery,
         subtext: isUrl
           ? 'Open URL in new tab'
-          : `Search in new tab · ${ENGINE_LABELS[settings.searchEngine] ?? 'Google'}`,
+          : `Search in new tab · ${ENGINE_LABELS[settings.general.searchEngine] ?? 'Google'}`,
         Icon: ExternalLink,
         action: () => {
-          const url = resolveAsUrl(commandQuery) || ENGINES[settings.searchEngine] + encodeURIComponent(commandQuery);
+          const url = resolveAsUrl(commandQuery) || ENGINES[settings.general.searchEngine] + encodeURIComponent(commandQuery);
           if (hasChromeApi) {
             if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_OPEN_URL', url });
             else chrome.tabs.create({ url });
@@ -267,7 +267,7 @@ export function SearchOverlay() {
     }
 
     return matched;
-  }, [isCommandMode, commandQuery, settings.searchEngine]);
+  }, [isCommandMode, commandQuery, settings.general.searchEngine]);
 
   // Global shortcut: Ctrl+Super+H (Ctrl+Meta+H)
   useEffect(() => {
@@ -340,7 +340,7 @@ export function SearchOverlay() {
       if (value.startsWith('>')) {
         const q = value.slice(1).trimStart();
         if (!q) return;
-        const url = resolveAsUrl(q) || ENGINES[settings.searchEngine] + encodeURIComponent(q);
+        const url = resolveAsUrl(q) || ENGINES[settings.general.searchEngine] + encodeURIComponent(q);
         if (hasChromeApi) {
           if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_OPEN_URL', url });
           else chrome.tabs.create({ url });
@@ -355,10 +355,10 @@ export function SearchOverlay() {
       const input = (overrideText ?? value).trim();
       if (!input) return;
       const url = suggestion?.url ?? resolveAsUrl(input);
-      window.location.href = url || (ENGINES[settings.searchEngine] ?? ENGINES.google) + encodeURIComponent(input);
+      window.location.href = url || (ENGINES[settings.general.searchEngine] ?? ENGINES.google) + encodeURIComponent(input);
       setOpen(false);
     },
-    [value, settings.searchEngine],
+    [value, settings.general.searchEngine],
   );
 
   const handleKeyDown = useCallback(
@@ -438,7 +438,7 @@ export function SearchOverlay() {
               tabIndex={-1}
               type="button"
             >
-              {ENGINE_LABELS[settings.searchEngine] ?? 'Google'}
+              {ENGINE_LABELS[settings.general.searchEngine] ?? 'Google'}
               <ChevronDown size={11} strokeWidth={2} />
             </button>
             {enginePickerOpen && (
@@ -446,10 +446,10 @@ export function SearchOverlay() {
                 {ENGINE_LIST.map(eng => (
                   <button
                     key={eng}
-                    className={`search-engine-option${settings.searchEngine === eng ? ' active' : ''}`}
+                    className={`search-engine-option${settings.general.searchEngine === eng ? ' active' : ''}`}
                     onMouseDown={e => {
                       e.preventDefault();
-                      update('searchEngine', eng);
+                      update('general', { searchEngine: eng });
                       setEnginePickerOpen(false);
                       inputRef.current?.focus();
                     }}

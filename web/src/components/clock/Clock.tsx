@@ -7,12 +7,12 @@ export function Clock({ id }: { id?: string }) {
   const { settings } = useSettings();
   const { time, ampm } = useClock();
 
-  const style = settings.clockStyle ?? 'default';
-  const color = settings.clockColor ?? '#ffffff';
+  const style = settings.clock.style;
+  const color = settings.clock.color;
 
   const inlineStyle = {
-    fontSize: `${settings.clockSize ?? 120}px`,
-    fontWeight: settings.clockWeight ?? 200,
+    fontSize: `${settings.clock.size}px`,
+    fontWeight: settings.clock.weight,
     ...(style === 'outline'
       ? { color: 'transparent', WebkitTextStroke: `2px ${color}` }
       : style === 'glass'
@@ -29,7 +29,7 @@ export function Clock({ id }: { id?: string }) {
     .filter(Boolean)
     .join(' ');
 
-  const dateStr = settings.showDate ? formatDate(new Date(), settings.dateFormat ?? 'long') : null;
+  const dateStr = settings.clock.showDate ? formatDate(new Date(), settings.clock.dateFormat) : null;
 
   return (
     <>

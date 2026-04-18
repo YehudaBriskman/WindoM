@@ -16,8 +16,8 @@ export function CalendarSettings() {
       <div className="settings-row">
         <label className="settings-label">Look-ahead window</label>
         <GlassSelect
-          value={String(settings.calendarDays)}
-          onChange={(v) => update('calendarDays', Number(v) as 7 | 14 | 30)}
+          value={String(settings.integrations.calendar.days)}
+          onChange={(v) => update('integrations', { calendar: { ...settings.integrations.calendar, days: Number(v) as 7 | 14 | 30 } })}
           options={[
             { value: '7', label: '7 days' },
             { value: '14', label: '14 days' },

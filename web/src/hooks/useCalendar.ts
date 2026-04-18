@@ -6,8 +6,8 @@ import type { CalendarEvent } from '../types/calendar';
 
 export function useCalendar() {
   const { settings } = useSettings();
-  const calendarConnected = settings.calendarConnected;
-  const calendarDays = settings.calendarDays ?? 7;
+  const calendarConnected = settings.integrations.calendar.connected;
+  const calendarDays = settings.integrations.calendar.days;
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   // Load events — from backend if connected, otherwise from local storage

@@ -7,7 +7,7 @@ export function WeatherWidget() {
   const { settings } = useSettings();
   const state = useWeather();
 
-  if (!settings.showWeather) return null;
+  if (!settings.weather.show) return null;
 
   if (state.status === 'placeholder') {
     return (

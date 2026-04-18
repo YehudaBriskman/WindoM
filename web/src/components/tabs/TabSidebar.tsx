@@ -19,7 +19,7 @@ export function TabSidebar() {
   const [tabs, setTabs] = useState<TabEntry[]>([]);
   const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const side = settings.tabSidebarSide ?? 'right';
+  const side = settings.general.sidebarSide;
 
   const normalizeTabs = useCallback((chromeTabs: chrome.tabs.Tab[]) => {
     return chromeTabs

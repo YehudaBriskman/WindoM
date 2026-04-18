@@ -6,7 +6,7 @@ export function Greeting() {
   const { settings } = useSettings();
   const greeting = useGreeting();
 
-  if (!settings.showGreeting) return null;
+  if (!settings.general.showGreeting) return null;
 
   return (
     <div className="greeting text-shadow-sm">
