@@ -1,14 +1,17 @@
 <div align="center">
 
-<img src="docs/icons/icon128.png" alt="WindoM" width="90" />
+<img src="docs/images/banner.png" alt="WindoM - Your Space, Your Flow" width="100%" style="border-radius:12px;" />
+
+<br />
+<br />
 
 # WindoM
 
-**The new tab you always wanted.**
+**Your Space, Your Flow · Made to Fit You**
 
 A Chrome extension that turns every new tab into a personal productivity dashboard -
 clock, weather, todos, calendar, Spotify, quick links, focus timer, and more.
-Built with a clean glassmorphism design.
+All the essentials in one new tab, built with a clean glassmorphism design.
 
 <br />
 
@@ -86,6 +89,7 @@ At a glance, you see the time, the weather outside, your upcoming calendar event
 ## Why WindoM?
 
 Most new tab extensions do one thing. WindoM does everything - and does it beautifully.
+A clean new tab dashboard built for focus, customization, and your daily flow.
 
 | Pain point | WindoM's answer |
 |---|---|
