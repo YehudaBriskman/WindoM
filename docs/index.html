@@ -623,10 +623,10 @@
     }
 
     /* Each corner image has a unique size */
-    .ci-tl { width: 238px; aspect-ratio: 16/10; top: 6vh;    left:  2vw; }
-    .ci-tr { width: 272px; aspect-ratio: 16/10; top: 7vh;    right: 2vw; }
-    .ci-bl { width: 218px; aspect-ratio: 16/10; bottom: 6vh; left:  2vw; }
-    .ci-br { width: 256px; aspect-ratio: 16/10; bottom: 7vh; right: 2vw; }
+    .ci-tl { width: 13vw; aspect-ratio: 16/10; top: 6vh;    left:  2vw; }
+    .ci-tr { width: 15vw; aspect-ratio: 16/10; top: 3vh;    right: 1vw; }
+    .ci-bl { width: 15vw; aspect-ratio: 16/10; bottom: 4vh; left:  1vw; }
+    .ci-br { width: 14vw; aspect-ratio: 16/10; bottom: 7vh; right: 2vw; }
 
     .ci img {
       width: 100%; height: 100%;
@@ -634,7 +634,14 @@
       display: block;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 1300px) {
+      .ci-tl { width: 10vw; aspect-ratio: 16/10; top: 6vh;    left:  2vw; }
+      .ci-tr { width: 11vw; aspect-ratio: 16/10; top: 3vh;    right: 1vw; }
+      .ci-bl { width: 12vw; aspect-ratio: 16/10; bottom: 2vh; left:  1vw; }
+      .ci-br { width: 11vw; aspect-ratio: 16/10; bottom: 7vh; right: 2vw; }
+    }
+
+    @media (max-width: 1200px) {
       .ci { display: none !important; }
     }
 
@@ -1850,7 +1857,7 @@
       let lastScrollY = -1;
 
       function updateAll() {
-        const scrollY    = window.scrollY;
+        const scrollY    = window.scrollY * 3;
         if (Math.abs(scrollY - lastScrollY) < 0.5) return;
         lastScrollY = scrollY;
 
