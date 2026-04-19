@@ -25,7 +25,7 @@ All the essentials in one new tab, built with a clean glassmorphism design.
 [![Contributors](https://img.shields.io/github/contributors/YehudaBriskman/WindoM?style=for-the-badge&color=f97316&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/YehudaBriskman/WindoM?style=for-the-badge&color=06b6d4&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/network/members)
 <!-- Meta -->
-[![Version](https://img.shields.io/badge/version-1.3.2-7b9ef5?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.3.5-7b9ef5?style=for-the-badge)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-22c55e?style=for-the-badge)](CONTRIBUTING.md)
 [![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=for-the-badge&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
@@ -204,7 +204,7 @@ Ways to contribute:
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
-Current version: **1.3.2**
+Current version: **1.3.5**
 
 ---
 
