@@ -43,12 +43,12 @@ export default tseslint.config(
       'no-var': 'error',
       'eqeqeq': ['error', 'always'],
 
-      // Logging — use req.log / app.log in production code, not console
+      // Logging - use req.log / app.log in production code, not console
       'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
 
-  // ── Test-file overrides — relax rules that are awkward in test assertions ──
+  // ── Test-file overrides - relax rules that are awkward in test assertions ──
   {
     files: ['src/**/*.test.ts', 'src/test-utils/**/*.ts'],
     rules: {
@@ -59,6 +59,6 @@ export default tseslint.config(
     },
   },
 
-  // ── Prettier must be last — disables conflicting formatting rules ───────────
+  // ── Prettier must be last - disables conflicting formatting rules ───────────
   prettier,
 );

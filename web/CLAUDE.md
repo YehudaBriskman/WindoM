@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**WindoM** — A Chrome extension new tab dashboard built with React 18, TypeScript, Vite 5, Tailwind CSS v4, and lucide-react icons.
+**WindoM** - A Chrome extension new tab dashboard built with React 18, TypeScript, Vite 5, Tailwind CSS v4, and lucide-react icons.
 
 Features: clock, greeting, background images (Unsplash/local), weather widget, quick links + dock bar, daily quotes, focus mode with timer, todo list, calendar events, and a full settings panel.
 
 ## Tech Stack
 
-- **React 18** — Functional components + hooks
-- **TypeScript** — Strict mode
-- **Vite 5** + `@crxjs/vite-plugin` — Chrome extension builds with HMR
-- **Tailwind CSS v4** — CSS-first config in `src/styles/globals.css` (no `tailwind.config.js`); custom `@utility` directives for glassmorphism
-- **lucide-react** — SVG icon library
+- **React 18** - Functional components + hooks
+- **TypeScript** - Strict mode
+- **Vite 5** + `@crxjs/vite-plugin` - Chrome extension builds with HMR
+- **Tailwind CSS v4** - CSS-first config in `src/styles/globals.css` (no `tailwind.config.js`); custom `@utility` directives for glassmorphism
+- **lucide-react** - SVG icon library
 
 ## Development Commands
 
@@ -33,7 +33,7 @@ npm run preview  # Preview production build locally
 
 ```
 web/                               (repo root for the extension)
-├── manifest.json                  (CRXJS reads this directly — Manifest V3)
+├── manifest.json                  (CRXJS reads this directly - Manifest V3)
 ├── newtab.html                    (Vite entry: <div id="root">)
 ├── vite.config.ts
 ├── tsconfig.json / tsconfig.node.json
@@ -76,7 +76,7 @@ web/                               (repo root for the extension)
 
 ## Key Patterns
 
-- Settings changes trigger re-renders through `SettingsContext` — no manual DOM manipulation
+- Settings changes trigger re-renders through `SettingsContext` - no manual DOM manipulation
 - Cross-tab sync happens automatically via `chrome.storage.onChanged` listener in `SettingsContext`
 - Weather/background data cached in `chrome.storage.local` (larger quota) rather than sync storage
 - Focus timer uses `body.focus-active` CSS class to hide all UI except the overlay

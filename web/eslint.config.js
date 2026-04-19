@@ -21,7 +21,7 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      // React Compiler optimisation hints — disabled: project does not use React Compiler
+      // React Compiler optimisation hints - disabled: project does not use React Compiler
       // and the flagged patterns (setState guard at top of effect, dynamic icon component,
       // manual memoization) are valid idioms that would require invasive refactoring for
       // no runtime benefit.
@@ -46,6 +46,6 @@ export default tseslint.config(
     },
   },
 
-  // ── Prettier must be last — disables conflicting formatting rules ───────────
+  // ── Prettier must be last - disables conflicting formatting rules ───────────
   prettier,
 );

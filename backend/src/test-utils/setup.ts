@@ -1,5 +1,5 @@
 /**
- * Vitest global setup — runs before every test file.
+ * Vitest global setup - runs before every test file.
  *
  * Points DATABASE_URL at the test database so client.ts connects to the
  * right pool. Requires DATABASE_URL_TEST to be set in the environment

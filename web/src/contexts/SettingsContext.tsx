@@ -53,7 +53,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => { settingsRef.current = settings; }, [settings]);
   const keyTimestampsRef = useRef<Record<string, number>>({});
 
-  // Debounced push to backend — accumulates changed sections and pushes only the delta.
+  // Debounced push to backend - accumulates changed sections and pushes only the delta.
   const debouncedPush = useCallback((delta: Partial<Settings>) => {
     pendingDeltaRef.current = { ...pendingDeltaRef.current, ...delta };
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
@@ -123,7 +123,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       );
       await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
     } catch (err) {
-      console.error('[settings] Backend sync failed — staying on local:', err);
+      console.error('[settings] Backend sync failed - staying on local:', err);
     }
   }, []);
 
@@ -139,7 +139,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       let local: Settings;
       if (isLegacySettings(raw)) {
-        // Legacy v1 flat shape detected — migrate and rewrite storage as sectioned
+        // Legacy v1 flat shape detected - migrate and rewrite storage as sectioned
         local = migrateFlatToSectioned(raw);
         await chrome.storage.sync.clear();
         await syncStorage.setMultiple(local as unknown as Record<string, unknown>);
@@ -161,7 +161,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     })();
   }, [syncWithBackend]);
 
-  // Re-sync on login — backend always wins to overwrite local state with account's settings
+  // Re-sync on login - backend always wins to overwrite local state with account's settings
   useEffect(() => {
     const handler = async (e: Event) => {
       const authName = (e as CustomEvent<{ name?: string }>).detail?.name ?? '';

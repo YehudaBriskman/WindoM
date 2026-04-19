@@ -62,7 +62,7 @@ export async function startGoogleOAuthController(req: FastifyRequest, reply: Fas
     return;
   }
 
-  // Validate redirect URI before creating state (fail fast — avoids orphaned state rows)
+  // Validate redirect URI before creating state (fail fast - avoids orphaned state rows)
   if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_OAUTH_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Google Calendar. Contact support.' });
     return;

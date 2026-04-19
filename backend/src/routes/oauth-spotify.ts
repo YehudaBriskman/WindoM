@@ -9,7 +9,7 @@ import {
 
 export function oauthSpotifyRoutes(app: FastifyInstance): void {
   if (!config.SPOTIFY_CLIENT_ID || !config.SPOTIFY_CLIENT_SECRET) {
-    app.log.warn('Spotify OAuth not configured — /oauth/spotify routes disabled');
+    app.log.warn('Spotify OAuth not configured - /oauth/spotify routes disabled');
     return;
   }
 

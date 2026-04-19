@@ -15,7 +15,7 @@ Follow the [Local Setup Guide](https://yehudabriskman.github.io/WindoM/local-set
 ## Making changes
 
 1. Fork the repository and create a branch from `main`.
-2. Name your branch clearly — for example `fix/weather-refresh` or `feat/new-widget`.
+2. Name your branch clearly - for example `fix/weather-refresh` or `feat/new-widget`.
 3. Make your changes. Keep commits focused and readable.
 4. Make sure the extension builds without errors: `cd web && npm run build`.
 5. If you changed backend code, make sure it compiles: `cd backend && npm run build`.
@@ -31,7 +31,7 @@ docs/       GitHub Pages (privacy policy, setup guide)
 
 ## Code style
 
-- TypeScript everywhere — no implicit `any`.
+- TypeScript everywhere - no implicit `any`.
 - Follow the existing patterns in each package. There is no linter config to fight with.
 - For the extension, keep new components in `web/src/components/` and new hooks in `web/src/hooks/`.
 - For CSS, use the existing classes from `globals.css`. Do not add Tailwind utility classes for backgrounds, borders, or shadows.

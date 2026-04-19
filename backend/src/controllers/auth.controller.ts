@@ -7,7 +7,7 @@ import * as authService from '../services/auth.service.js';
 
 const cookieOpts = {
   httpOnly: true,
-  // Always true — modern browsers exempt localhost from the Secure requirement,
+  // Always true - modern browsers exempt localhost from the Secure requirement,
   // so local dev still works. Never send refresh tokens over plain HTTP.
   secure: true,
   // SameSite=None is required for cross-origin requests from the extension;
@@ -90,7 +90,7 @@ export async function refreshController(req: FastifyRequest, reply: FastifyReply
     if (result.error === 'SESSION_LIMIT_REACHED') {
       void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', code: 'SESSION_LIMIT_REACHED', message: 'Session expired. Please log in again.' });
     } else if (result.error === 'TOKEN_REUSE_DETECTED') {
-      req.log.error('refresh: TOKEN_REUSE_DETECTED — all sessions for user revoked');
+      req.log.error('refresh: TOKEN_REUSE_DETECTED - all sessions for user revoked');
       void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Refresh token reuse detected. Please log in again.' });
     } else {
       void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired refresh token' });
@@ -109,7 +109,7 @@ export async function logoutController(req: FastifyRequest, reply: FastifyReply)
     req.log.info('logout: revoking session');
     await authService.logout(rawToken);
   } else {
-    req.log.warn('logout: no refresh token cookie — session not revoked server-side');
+    req.log.warn('logout: no refresh token cookie - session not revoked server-side');
   }
   reply.clearCookie(COOKIE_NAME, { path: '/auth' });
   void reply.send({ success: true });

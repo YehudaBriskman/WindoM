@@ -1,5 +1,5 @@
 /**
- * End-to-end test suite — full user journeys from HTTP request to DB.
+ * End-to-end test suite - full user journeys from HTTP request to DB.
  *
  * Every test uses app.inject() (no real port), hits the full Fastify stack
  * (auth middleware, services, Drizzle ORM) against a real PostgreSQL test DB.
@@ -11,7 +11,7 @@
  *  4. Profile management (name + password update, Google-only account guard)
  *  5. Settings isolation and persistence (cross-user, overwrite, bootstrap)
  *  6. Account deletion and DB cleanup (all cascades verified)
- *  7. Refresh token reuse detection — security invariant
+ *  7. Refresh token reuse detection - security invariant
  *  8. Multi-session management (parallel sessions, selective logout)
  *  9. Integration lifecycle (seed OAuth account → list → disconnect)
  * 10. Cross-service: settings survive auth events; isolation across users
@@ -121,7 +121,7 @@ async function getUserByEmail(email: string) {
 // 1. COMPLETE AUTH LIFECYCLE
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 1 — auth lifecycle', () => {
+describe('Journey 1 - auth lifecycle', () => {
   it('register → GET /me → refresh → logout → refresh fails', async () => {
     // Register
     const { accessToken, cookie } = await fullRegister();
@@ -204,7 +204,7 @@ describe('Journey 1 — auth lifecycle', () => {
 // 2. EMAIL VERIFICATION LIFECYCLE
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 2 — email verification', () => {
+describe('Journey 2 - email verification', () => {
   it('new user has emailVerified=false; token exists in DB; verify succeeds; flag flips to true', async () => {
     const { accessToken } = await fullRegister();
 
@@ -213,7 +213,7 @@ describe('Journey 2 — email verification', () => {
       .json<{ emailVerified: boolean }>();
     expect(me1.emailVerified).toBe(false);
 
-    // Token written to DB (fire-and-forget from register — poll until it appears)
+    // Token written to DB (fire-and-forget from register - poll until it appears)
     const user = await getUserByEmail('user@e2e.test');
     expect(user).toBeTruthy();
     const emailToken = await waitForEmailToken(user.id, 'verify_email');
@@ -233,7 +233,7 @@ describe('Journey 2 — email verification', () => {
     const usedToken = await getLatestEmailToken(user.id, 'verify_email');
     expect(usedToken!.usedAt).not.toBeNull();
 
-    // Refresh access token — new token carries emailVerified=true
+    // Refresh access token - new token carries emailVerified=true
     const newLoginRes = await login();
     const newToken = newLoginRes.json<{ accessToken: string }>().accessToken;
     const me2 = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(newToken) }))
@@ -315,12 +315,12 @@ describe('Journey 2 — email verification', () => {
 // 3. PASSWORD RESET LIFECYCLE
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 3 — password reset', () => {
+describe('Journey 3 - password reset', () => {
   it('full flow: forgot → read DB token → reset → old password rejected → new works', async () => {
     await register();
     const user = await getUserByEmail('user@e2e.test');
 
-    // Request reset (always 200 — no user enumeration)
+    // Request reset (always 200 - no user enumeration)
     const forgotRes = await app.inject({
       method: 'POST', url: '/auth/forgot-password',
       payload: { email: 'user@e2e.test' },
@@ -445,7 +445,7 @@ describe('Journey 3 — password reset', () => {
 // 4. PROFILE MANAGEMENT (PATCH /me)
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 4 — profile management', () => {
+describe('Journey 4 - profile management', () => {
   it('PATCH name → GET /me reflects updated name', async () => {
     const { accessToken } = await fullRegister();
 
@@ -514,7 +514,7 @@ describe('Journey 4 — profile management', () => {
 // 5. SETTINGS ISOLATION AND PERSISTENCE
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 5 — settings persistence and cross-user isolation', () => {
+describe('Journey 5 - settings persistence and cross-user isolation', () => {
   it('GET /settings returns null for new user', async () => {
     const { accessToken } = await fullRegister();
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(accessToken) });
@@ -581,7 +581,7 @@ describe('Journey 5 — settings persistence and cross-user isolation', () => {
 // 6. ACCOUNT DELETION AND CASCADING DB CLEANUP
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 6 — account deletion', () => {
+describe('Journey 6 - account deletion', () => {
   it('DELETE /me removes user and all related DB rows', async () => {
     const { accessToken, cookie } = await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
@@ -611,7 +611,7 @@ describe('Journey 6 — account deletion', () => {
     const tokenRows = await db.select().from(emailTokens).where(eq(emailTokens.userId, user.id));
     expect(tokenRows).toHaveLength(0);
 
-    // Access token JWT is still valid but user no longer exists — 404
+    // Access token JWT is still valid but user no longer exists - 404
     const meRes = await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) });
     expect(meRes.statusCode).toBe(404);
 
@@ -644,11 +644,11 @@ describe('Journey 6 — account deletion', () => {
 // 7. REFRESH TOKEN REUSE DETECTION (SECURITY INVARIANT)
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 7 — refresh token reuse detection', () => {
+describe('Journey 7 - refresh token reuse detection', () => {
   it('replaying a used (stale) refresh token is rejected; new rotated token still valid', async () => {
     const { cookie: originalCookie } = await fullRegister();
 
-    // Use the original token once — this rotates it (revokes original, issues new)
+    // Use the original token once - this rotates it (revokes original, issues new)
     const firstRefresh = await app.inject({
       method: 'POST', url: '/auth/refresh',
       cookies: { windom_refresh: originalCookie },
@@ -656,14 +656,14 @@ describe('Journey 7 — refresh token reuse detection', () => {
     expect(firstRefresh.statusCode).toBe(200);
     const rotatedCookie = refreshCookie(firstRefresh);
 
-    // Attacker replays the ORIGINAL (now stale/revoked) token — must be rejected
+    // Attacker replays the ORIGINAL (now stale/revoked) token - must be rejected
     const replayRes = await app.inject({
       method: 'POST', url: '/auth/refresh',
       cookies: { windom_refresh: originalCookie },
     });
     expect(replayRes.statusCode).toBe(401);
 
-    // The legitimately-rotated token remains valid — sequential replay doesn't nuke the family
+    // The legitimately-rotated token remains valid - sequential replay doesn't nuke the family
     const legitimateRes = await app.inject({
       method: 'POST', url: '/auth/refresh',
       cookies: { windom_refresh: rotatedCookie },
@@ -685,7 +685,7 @@ describe('Journey 7 — refresh token reuse detection', () => {
 // 8. MULTI-SESSION MANAGEMENT
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 8 — multi-session management', () => {
+describe('Journey 8 - multi-session management', () => {
   it('multiple parallel sessions all work independently', async () => {
     await register();
     const s1 = refreshCookie(await login());
@@ -735,7 +735,7 @@ describe('Journey 8 — multi-session management', () => {
 // 9. INTEGRATION LIFECYCLE (SEEDED OAUTH ACCOUNTS)
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 9 — integration lifecycle', () => {
+describe('Journey 9 - integration lifecycle', () => {
   async function seedOAuthAccount(userId: string, provider: 'spotify' | 'google') {
     await db.insert(oauthAccounts).values({
       userId,
@@ -816,7 +816,7 @@ describe('Journey 9 — integration lifecycle', () => {
     expect(body.spotify.connected).toBe(true);
   });
 
-  it('disconnect is idempotent — DELETE on non-linked provider returns 200', async () => {
+  it('disconnect is idempotent - DELETE on non-linked provider returns 200', async () => {
     const { accessToken } = await fullRegister();
     const res = await app.inject({ method: 'DELETE', url: '/integrations/spotify', headers: authHeader(accessToken) });
     expect(res.statusCode).toBe(200);
@@ -850,7 +850,7 @@ describe('Journey 9 — integration lifecycle', () => {
 // 10. CROSS-SERVICE: SETTINGS + AUTH INTERACTION
 // ══════════════════════════════════════════════════════════════════════════
 
-describe('Journey 10 — cross-service interactions', () => {
+describe('Journey 10 - cross-service interactions', () => {
   it('settings are preserved when password is changed mid-session', async () => {
     const { accessToken } = await fullRegister();
 

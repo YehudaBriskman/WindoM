@@ -114,7 +114,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     setCurrentPhotoSource('local');
   }, [bgImageKey, applyBackground]);
 
-  // Used by BackgroundSettings upload handler — writes to the correct per-user key.
+  // Used by BackgroundSettings upload handler - writes to the correct per-user key.
   const setUploadedBackground = useCallback(async (dataUrl: string) => {
     await ls.set(bgImageKey, dataUrl);
     applyBackground(dataUrl);
@@ -175,7 +175,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setPhotographer(null);
       setCurrentPhotoSource(null);
     }
-  // addPhoto is a stable useCallback — safe dep; do NOT add photoHistory here
+  // addPhoto is a stable useCallback - safe dep; do NOT add photoHistory here
   }, [settings.background.unsplashApiKey, applyBackground, addPhoto]);
 
   const loadLocal = useCallback(async () => {

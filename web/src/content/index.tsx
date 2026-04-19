@@ -25,7 +25,7 @@ shadow.appendChild(styleEl);
 const container = document.createElement('div');
 container.className = 'windom-content';
 
-// Detect page direction from explicit dir attributes only — avoiding getComputedStyle
+// Detect page direction from explicit dir attributes only - avoiding getComputedStyle
 // which can be influenced by the browser's UI locale rather than the page's content direction.
 function syncDirection() {
   const dir = document.documentElement.dir || document.body?.dir;

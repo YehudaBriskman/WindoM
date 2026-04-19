@@ -6,7 +6,7 @@ on:
     tags:
       - 'v*'
 
-# Restrict the GITHUB_TOKEN to read-only — this workflow only needs
+# Restrict the GITHUB_TOKEN to read-only - this workflow only needs
 # to build code and call the Chrome Web Store API, never write back to the repo.
 permissions:
   contents: read

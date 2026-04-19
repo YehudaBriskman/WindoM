@@ -29,7 +29,7 @@ function isTokenExpired(token: string, bufferMs = 30_000): boolean {
   return Date.now() > expMs - bufferMs;
 }
 
-// ── Token storage (chrome.storage.local only — never sync) ─────────────────
+// ── Token storage (chrome.storage.local only - never sync) ─────────────────
 
 /**
  * Returns the stored access token only if it's still valid (not expired).
@@ -40,7 +40,7 @@ export async function getAccessToken(): Promise<string | null> {
   if (!token) return null;
 
   if (isTokenExpired(token)) {
-    console.log('[auth] Stored access token is expired — treating as null');
+    console.log('[auth] Stored access token is expired - treating as null');
     return null;
   }
 
@@ -70,7 +70,7 @@ export async function clearRefreshToken(): Promise<void> {
 // ── Refresh ─────────────────────────────────────────────────────────────────
 
 const REFRESH_LOCK_KEY = 'windom_refresh_lock';
-const REFRESH_LOCK_TTL_MS = 10_000; // 10s max — prevents stale locks
+const REFRESH_LOCK_TTL_MS = 10_000; // 10s max - prevents stale locks
 
 let refreshPromise: Promise<string | null> | null = null;
 
@@ -99,7 +99,7 @@ async function doRefresh(): Promise<string | null> {
   // refreshing, wait for it to finish and use its token instead.
   const won = await acquireRefreshLock();
   if (!won) {
-    console.log('[auth:refresh] Another tab holds the refresh lock — polling...');
+    console.log('[auth:refresh] Another tab holds the refresh lock - polling...');
     const POLL_MS = 200;
     const POLL_DEADLINE = Date.now() + REFRESH_LOCK_TTL_MS;
     while (Date.now() < POLL_DEADLINE) {
@@ -110,12 +110,12 @@ async function doRefresh(): Promise<string | null> {
         return stored;
       }
       const lock = await chromeLocal.get<number | null>(REFRESH_LOCK_KEY, null);
-      if (!lock) break; // Lock released — winning tab finished, check token once more
+      if (!lock) break; // Lock released - winning tab finished, check token once more
     }
     const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
     if (stored && !isTokenExpired(stored)) return stored;
-    // Winning tab failed — fall through and try ourselves
-    console.warn('[auth:refresh] Winning tab did not produce a fresh token — proceeding');
+    // Winning tab failed - fall through and try ourselves
+    console.warn('[auth:refresh] Winning tab did not produce a fresh token - proceeding');
   }
 
   console.log('[auth:refresh] Sending refresh request...');
@@ -139,7 +139,7 @@ async function doRefresh(): Promise<string | null> {
         await new Promise<void>((r) => setTimeout(r, 250));
         const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
         if (stored && !isTokenExpired(stored)) {
-          console.log('[auth:refresh] Found valid token stored by another tab — using it');
+          console.log('[auth:refresh] Found valid token stored by another tab - using it');
           return stored;
         }
       }
@@ -154,7 +154,7 @@ async function doRefresh(): Promise<string | null> {
         }
       } catch { /* ignore parse errors */ }
 
-      // Do NOT call clearAccessToken() here — another tab may have just
+      // Do NOT call clearAccessToken() here - another tab may have just
       // stored a fresh token. The expired-token guard in getAccessToken()
       // handles cleanup on the next read.
       return null;
@@ -163,7 +163,7 @@ async function doRefresh(): Promise<string | null> {
     const data = (await res.json()) as { accessToken: string; refreshToken?: string };
     await setAccessToken(data.accessToken);
     if (data.refreshToken) await setRefreshToken(data.refreshToken);
-    console.log('[auth:refresh] Success — new access token stored');
+    console.log('[auth:refresh] Success - new access token stored');
     return data.accessToken;
   } catch (err) {
     console.error('[auth:refresh] Network error:', err);
@@ -214,17 +214,17 @@ export async function apiFetch(path: string, options: RequestInit = {}, _retry =
       },
     });
   } catch {
-    throw new Error('Network error — check your connection and try again.');
+    throw new Error('Network error - check your connection and try again.');
   }
 
   if (res.status === 401 && _retry) {
-    console.warn(`[auth] 401 on ${path} — attempting token refresh`);
+    console.warn(`[auth] 401 on ${path} - attempting token refresh`);
     const newToken = await refreshAccessToken();
     if (newToken) {
-      console.log(`[auth] Refresh succeeded — retrying ${path}`);
+      console.log(`[auth] Refresh succeeded - retrying ${path}`);
       return apiFetch(path, options, false);
     }
-    console.warn(`[auth] Refresh failed — triggering logout`);
+    console.warn(`[auth] Refresh failed - triggering logout`);
     triggerLogout();
   }
 

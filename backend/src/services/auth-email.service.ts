@@ -79,7 +79,7 @@ export async function sendPasswordReset(email: string): Promise<void> {
     .where(eq(users.email, email))
     .limit(1);
 
-  if (!user) return; // silent — no user enumeration
+  if (!user) return; // silent - no user enumeration
 
   if (!user.passwordHash) {
     await sendGoogleOnlyResetEmail(email, user.name);

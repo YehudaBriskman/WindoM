@@ -98,7 +98,7 @@ function EmailVerificationBanner() {
       // Disable resend for 60s
       cooldownRef.current = setTimeout(() => setSent(false), 60_000);
     } catch {
-      // ignore — user can retry
+      // ignore - user can retry
     } finally {
       setSending(false);
     }

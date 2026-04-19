@@ -67,7 +67,7 @@ export function SettingsPanel() {
         className={`settings-container glass-panel${isOpen ? " open" : ""}`}
         onClick={!isOpen ? () => setIsOpen(true) : undefined}
       >
-        {/* Collapsed state: gear icon — direct child so it's always visible */}
+        {/* Collapsed state: gear icon - direct child so it's always visible */}
         <div className="settings-icon">
           <Settings size={20} />
         </div>

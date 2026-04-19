@@ -21,11 +21,11 @@ export default defineConfig({
     // Load env vars before each test file
     setupFiles: ['./src/test-utils/setup.ts'],
 
-    // Only pick up test files — not source or config
+    // Only pick up test files - not source or config
     include: ['src/**/*.test.ts'],
     passWithNoTests: true,
 
-    // Run test files serially — all integration tests hit the same real DB
+    // Run test files serially - all integration tests hit the same real DB
     // and use truncateAll() in beforeEach; parallel execution causes FK races.
     fileParallelism: false,
 
@@ -35,8 +35,8 @@ export default defineConfig({
       exclude: [
         'src/**/*.test.ts',
         'src/test-utils/**',
-        'src/db/migrate.ts', // migration runner — not unit-testable
-        'src/index.ts',      // entry point — only calls buildApp + listen
+        'src/db/migrate.ts', // migration runner - not unit-testable
+        'src/index.ts',      // entry point - only calls buildApp + listen
       ],
       reporter: ['text', 'html', 'lcov'],
 

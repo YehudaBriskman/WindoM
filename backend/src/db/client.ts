@@ -8,7 +8,7 @@ const { Pool } = pg;
 
 // Use 20 connections in production for better concurrency headroom.
 // connectionTimeoutMillis: requests that cannot acquire a connection within 5 s
-// will throw — the global error handler converts these to 503 responses.
+// will throw - the global error handler converts these to 503 responses.
 export const pool = new Pool({
   connectionString: config.DATABASE_URL,
   max: config.isProd ? 20 : 10,

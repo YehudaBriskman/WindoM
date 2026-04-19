@@ -89,7 +89,7 @@ export function ClockSettings() {
         </div>
 
         <label className="settings-label">
-          Size — {settings.clock.size ?? 120}px
+          Size - {settings.clock.size ?? 120}px
         </label>
         <input
           type="range"

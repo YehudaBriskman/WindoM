@@ -33,7 +33,7 @@ export const refreshSessions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     tokenHash: text('token_hash').notNull(),
-    /** SHA-256 hex of the raw token — uniquely indexed for O(1) session lookup. */
+    /** SHA-256 hex of the raw token - uniquely indexed for O(1) session lookup. */
     tokenLookup: text('token_lookup'),
     rotatedFromId: uuid('rotated_from_id'),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
@@ -65,7 +65,7 @@ export const oauthAccounts = pgTable(
     refreshTokenEnc: text('refresh_token_enc'),
     tokenExpiresAt: timestamp('token_expires_at', { withTimezone: true }),
     scopes: text('scopes').array().notNull().default([]),
-    /** For PKCE (BYOA) Spotify connections — the user's own Spotify app client_id. Null for legacy shared-app connections. */
+    /** For PKCE (BYOA) Spotify connections - the user's own Spotify app client_id. Null for legacy shared-app connections. */
     providerClientId: text('provider_client_id'),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
@@ -86,7 +86,7 @@ export const oauthStates = pgTable('oauth_states', {
   provider: text('provider').notNull(),
   purpose: text('purpose').notNull(), // 'login' | 'link'
   used: boolean('used').notNull().default(false),
-  /** For PKCE (BYOA) Spotify flows — the user's own Spotify app client_id. Null for legacy flows. */
+  /** For PKCE (BYOA) Spotify flows - the user's own Spotify app client_id. Null for legacy flows. */
   clientId: text('client_id'),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

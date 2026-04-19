@@ -48,7 +48,7 @@ export const pauseController = playbackCommandController('pause');
 export const nextController = playbackCommandController('next');
 export const previousController = playbackCommandController('previous');
 
-// GET /spotify/me — proxy Spotify user profile
+// GET /spotify/me - proxy Spotify user profile
 export async function getSpotifyMeController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Re-use getNowPlaying token path via the service to get account
   // We only need to confirm connectivity; return raw Spotify /me data

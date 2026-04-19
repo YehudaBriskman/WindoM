@@ -1,9 +1,9 @@
 export const DEFAULT_GRADIENT = [
-  // Glassy light streaks — simulate refraction/reflection through glass
+  // Glassy light streaks - simulate refraction/reflection through glass
   'linear-gradient(125deg, rgba(255,255,255,0.13) 0%, transparent 38%, rgba(255,255,255,0.07) 58%, transparent 82%)',
   'linear-gradient(218deg, transparent 22%, rgba(255,255,255,0.09) 44%, transparent 66%)',
   'linear-gradient(to bottom, rgba(255,255,255,0.05) 0%, transparent 60%)',
-  // Color orbs — two-stop fade for a glass-like glow rather than flat blobs
+  // Color orbs - two-stop fade for a glass-like glow rather than flat blobs
   'radial-gradient(ellipse at 18% 82%, rgba(236, 72, 153, 0.80) 0%, rgba(236, 72, 153, 0.18) 32%, transparent 54%)',   // hot pink
   'radial-gradient(ellipse at 78% 12%, rgba(139, 92, 246, 0.85) 0%, rgba(139, 92, 246, 0.18) 30%, transparent 50%)',   // violet
   'radial-gradient(ellipse at 48% 48%, rgba(99, 102, 241, 0.38) 0%, transparent 52%)',                                  // indigo center bloom

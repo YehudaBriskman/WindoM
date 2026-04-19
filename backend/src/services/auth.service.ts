@@ -28,7 +28,7 @@ export async function register(
   const passwordHash = await hashPassword(password);
   const [user] = await db.insert(users).values({ email, name, passwordHash }).returning();
 
-  // Send verification email — fire-and-forget so register doesn't fail on email errors
+  // Send verification email - fire-and-forget so register doesn't fail on email errors
   void sendVerification(user.id).catch((err) => logger.error({ err }, 'register: verification email failed'));
 
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false });
@@ -44,7 +44,7 @@ export async function login(
 ): Promise<Result<TokenPair, AuthError>> {
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-  // Constant-time rejection — prevents timing attacks that reveal whether email exists
+  // Constant-time rejection - prevents timing attacks that reveal whether email exists
   const dummyHash = '$2b$12$invalidhashpadding000000000000000000000000000000000000';
   const passwordOk = user?.passwordHash
     ? await verifyPassword(password, user.passwordHash)
@@ -67,7 +67,7 @@ export async function refresh(
 ): Promise<Result<TokenPair, AuthError>> {
   const session = await findSessionByToken(rawToken);
   if (!session) {
-    logger.warn('refresh: SESSION_NOT_FOUND — token revoked, expired, or invalid (may be a multi-tab race)');
+    logger.warn('refresh: SESSION_NOT_FOUND - token revoked, expired, or invalid (may be a multi-tab race)');
     return { ok: false, error: 'SESSION_NOT_FOUND' };
   }
 
@@ -79,7 +79,7 @@ export async function refresh(
 
   // Token reuse: if a child session already exists, the old cookie was replayed
   if (await hasChildSession(session.id)) {
-    logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED — revoking ALL sessions for user');
+    logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
     await revokeAllUserSessions(session.userId);
     return { ok: false, error: 'TOKEN_REUSE_DETECTED' };
   }
@@ -99,7 +99,7 @@ export async function refresh(
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
 
-/** Revoke the session matching the given raw token (best-effort — no error if not found). */
+/** Revoke the session matching the given raw token (best-effort - no error if not found). */
 export async function logout(rawToken: string): Promise<void> {
   const session = await findSessionByToken(rawToken);
   if (session) await revokeSession(session.id);
@@ -107,7 +107,7 @@ export async function logout(rawToken: string): Promise<void> {
 
 /**
  * Upsert a user from a Google OAuth sign-in and create a session.
- * Always succeeds — Google has already authenticated the user.
+ * Always succeeds - Google has already authenticated the user.
  */
 export async function loginWithGoogle(
   googleEmail: string,

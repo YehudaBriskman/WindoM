@@ -1,4 +1,4 @@
-/** Background service worker — manages tab state and broadcasts to content scripts */
+/** Background service worker - manages tab state and broadcasts to content scripts */
 
 async function broadcastTabsChanged() {
   const tabs = await chrome.tabs.query({});

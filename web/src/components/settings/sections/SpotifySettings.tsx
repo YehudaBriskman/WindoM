@@ -102,7 +102,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
       if (/cancelled|canceled/i.test(msg)) {
         setError('Connection cancelled.');
       } else if (/invalid_client|INVALID_CLIENT/i.test(msg) || /Invalid Client/i.test(msg)) {
-        setError('Invalid Client ID — check your app settings at developer.spotify.com.');
+        setError('Invalid Client ID - check your app settings at developer.spotify.com.');
       } else if (!user) {
         setError('You must be signed in to connect Spotify.');
       } else {
@@ -118,7 +118,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
       <div className="settings-group">
         <label className="settings-label">Connect Spotify</label>
         <p className="settings-hint" style={{ marginBottom: '16px', lineHeight: '1.6' }}>
-          Connect your own free Spotify Developer app — no shared quota, works for everyone.
+          Connect your own free Spotify Developer app - no shared quota, works for everyone.
         </p>
 
         <ol style={{ paddingLeft: '18px', margin: '0 0 16px', lineHeight: '1.7' }} className="settings-hint">
@@ -208,7 +208,7 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
       if (/cancelled|canceled/i.test(msg)) {
         setError('Connection cancelled.');
       } else if (/invalid_client|INVALID_CLIENT/i.test(msg) || /Invalid Client/i.test(msg)) {
-        setError('Invalid Client ID — check your app settings at developer.spotify.com.');
+        setError('Invalid Client ID - check your app settings at developer.spotify.com.');
       } else {
         setError(msg);
       }

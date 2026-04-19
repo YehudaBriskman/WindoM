@@ -12,7 +12,7 @@ permissions:
 jobs:
   # ── Backend ──────────────────────────────────────────────────────────────
   ci-backend:
-    name: Backend — lint / typecheck / test
+    name: Backend - lint / typecheck / test
     runs-on: ubuntu-latest
 
     services:
@@ -72,7 +72,7 @@ jobs:
 
   # ── Web extension ─────────────────────────────────────────────────────────
   ci-web:
-    name: Web — lint / typecheck / build
+    name: Web - lint / typecheck / build
     runs-on: ubuntu-latest
 
     defaults:

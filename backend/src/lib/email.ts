@@ -18,11 +18,11 @@ const transporter =
     : null;
 
 // ── HTML shell ─────────────────────────────────────────────────────────────
-// 600px wide — the email standard width.
+// 600px wide - the email standard width.
 // Background: layered radial gradients to simulate glowing orbs on dark bg.
 // A <div> wrapper inside each <td> carries the gradient (Gmail ignores
 // background-image on tables but renders it on divs).
-// Outlook sees only the bgcolor fallback — clean dark, still readable.
+// Outlook sees only the bgcolor fallback - clean dark, still readable.
 
 function buildEmail(opts: {
   preheader: string;
@@ -61,7 +61,7 @@ function buildEmail(opts: {
     img{-ms-interpolation-mode:bicubic;border:0;height:auto;line-height:100%;outline:none;text-decoration:none}
     body{margin:0;padding:0;background-color:#07080f}
     .preheader{display:none!important;visibility:hidden;mso-hide:all;font-size:1px;color:#07080f;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden}
-    /* Hover on CTA — works in Apple Mail / web clients */
+    /* Hover on CTA - works in Apple Mail / web clients */
     .cta-btn:hover{opacity:0.88!important}
   </style>
 </head>
@@ -75,7 +75,7 @@ function buildEmail(opts: {
     <tr>
       <td align="center" bgcolor="#07080f" style="padding:40px 16px 48px;">
 
-        <!-- ░░ CONTENT TABLE — 600px ░░ -->
+        <!-- ░░ CONTENT TABLE - 600px ░░ -->
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%;">
 
           <!-- ═══ HERO ZONE ═══ -->
@@ -116,7 +116,7 @@ function buildEmail(opts: {
               <!-- Body text -->
               ${bodyHtml}
 
-              <!-- CTA button — full width inside card, centered -->
+              <!-- CTA button - full width inside card, centered -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:32px 0 0 0;">
                 <tr>
                   <td align="center">
@@ -185,7 +185,7 @@ function buildEmail(opts: {
 
 async function send(to: string, subject: string, html: string): Promise<void> {
   if (!transporter) {
-    logger.warn({ to, subject }, 'email: SMTP not configured — skipping send');
+    logger.warn({ to, subject }, 'email: SMTP not configured - skipping send');
     return;
   }
   await transporter.sendMail({
@@ -231,7 +231,7 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
       ],
       ctaLabel: 'Reset Password',
       ctaUrl: url,
-      footerNote: "Didn't request this? Your account is safe — no changes have been made.",
+      footerNote: "Didn't request this? Your account is safe - no changes have been made.",
     }),
   );
 }
@@ -239,9 +239,9 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
 export async function sendGoogleOnlyResetEmail(to: string, name: string): Promise<void> {
   await send(
     to,
-    'WindoM — this account uses Google sign-in',
+    'WindoM - this account uses Google sign-in',
     buildEmail({
-      preheader: 'Your WindoM account uses Google sign-in — no password needed.',
+      preheader: 'Your WindoM account uses Google sign-in - no password needed.',
       heading: 'No password on this account',
       bodyLines: [
         `Hi${name ? ` ${name}` : ''}, your WindoM account was created with Google sign-in and doesn't have a separate password.`,
@@ -249,7 +249,7 @@ export async function sendGoogleOnlyResetEmail(to: string, name: string): Promis
       ],
       ctaLabel: 'Sign in with Google',
       ctaUrl: `${config.APP_URL}`,
-      footerNote: "Didn't request this? Your account is safe — no changes have been made.",
+      footerNote: "Didn't request this? Your account is safe - no changes have been made.",
     }),
   );
 }

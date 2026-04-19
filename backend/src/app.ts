@@ -18,13 +18,13 @@ import { spotifyRoutes } from './routes/spotify.js';
 import { settingsRoutes } from './routes/settings.js';
 
 export interface BuildAppOptions extends FastifyServerOptions {
-  /** Skip rate limiting — set to true in tests to prevent limit accumulation across test runs. */
+  /** Skip rate limiting - set to true in tests to prevent limit accumulation across test runs. */
   skipRateLimit?: boolean;
 }
 
 /**
  * Builds and fully registers the Fastify application.
- * Does NOT bind a port — call app.listen() in the entry point.
+ * Does NOT bind a port - call app.listen() in the entry point.
  *
  * Accepts optional overrides so tests can disable the logger and rate limiter.
  */
@@ -109,7 +109,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
       error.message?.includes('Connection terminated') ||
       (error as { code?: string }).code === 'CONNECTION_TIMEOUT';
     if (isPoolTimeout) {
-      app.log.warn('DB pool connection timeout — returning 503');
+      app.log.warn('DB pool connection timeout - returning 503');
       void reply.status(503).send({
         statusCode: 503,
         error: 'Service Unavailable',

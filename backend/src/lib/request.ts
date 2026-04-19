@@ -5,7 +5,7 @@ import type { SessionMeta } from '../types/auth.types.js';
  * Check whether a redirect URI is allowed for an OAuth exchange.
  * Accepts:
  *   - An exact match against `configured` (the server-side env value for this provider)
- *   - A https://*.chromiumapp.org URI — if `extensionRedirectBase` is set, only URIs that
+ *   - A https://*.chromiumapp.org URI - if `extensionRedirectBase` is set, only URIs that
  *     start with that base are accepted (locks to a specific extension ID); otherwise any
  *     chromiumapp.org URI is accepted (dev/test fallback).
  */

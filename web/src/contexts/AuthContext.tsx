@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Listen for session hard-expiry (renewal cap reached) to show re-login message
   useEffect(() => {
     const handler = () => {
-      console.warn('[auth] Session expired (renewal cap reached) — user must re-login');
+      console.warn('[auth] Session expired (renewal cap reached) - user must re-login');
       setUser(null);
       setTokenState(null);
       setSessionExpired(true);
@@ -68,10 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('windom-session-expired', handler);
   }, []);
 
-  // Listen for session limit reached — too many active sessions
+  // Listen for session limit reached - too many active sessions
   useEffect(() => {
     const handler = () => {
-      console.warn('[auth] Session limit reached — user must sign out from another device');
+      console.warn('[auth] Session limit reached - user must sign out from another device');
       setUser(null);
       setTokenState(null);
       setSessionLimitReached(true);
@@ -90,8 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token) {
           console.log('[auth:init] Valid stored access token found');
         } else {
-          console.log('[auth:init] No valid stored token — attempting silent refresh');
-          // Try silent refresh — race against a 5s timeout
+          console.log('[auth:init] No valid stored token - attempting silent refresh');
+          // Try silent refresh - race against a 5s timeout
           token = await Promise.race([
             refreshAccessToken(),
             new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_REFRESH_TIMEOUT_MS)),
@@ -99,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (token) {
             console.log('[auth:init] Silent refresh succeeded');
           } else {
-            console.warn('[auth:init] Silent refresh failed or timed out — user stays unauthenticated');
+            console.warn('[auth:init] Silent refresh failed or timed out - user stays unauthenticated');
           }
         }
         if (token) {
@@ -115,12 +115,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.log('[auth:init] User loaded:', me.email ?? me.name);
             window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
           } catch (err) {
-            console.error('[auth:init] /me failed — clearing token:', err);
+            console.error('[auth:init] /me failed - clearing token:', err);
             await clearAccessToken();
           }
         }
       } catch (err) {
-        // Silently fail — user stays unauthenticated
+        // Silently fail - user stays unauthenticated
         console.error('[auth:init] Unexpected error:', err);
       }
       setLoading(false);

@@ -12,7 +12,7 @@ export interface TokenRefreshConfig {
   extraBody: Record<string, string>;
   /** Optional Authorization header (e.g. Basic auth for Spotify legacy shared-app). */
   authHeader?: string;
-  /** For PKCE (BYOA) Spotify connections — the user's own Spotify app client_id. When set, omits Authorization header and sends client_id in body instead. */
+  /** For PKCE (BYOA) Spotify connections - the user's own Spotify app client_id. When set, omits Authorization header and sends client_id in body instead. */
   pkceClientId?: string;
 }
 

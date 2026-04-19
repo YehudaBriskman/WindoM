@@ -145,7 +145,7 @@ describe('getCalendarEvents', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: false });
     vi.stubGlobal('fetch', mockFetch);
 
-    // Pass an absurdly large number — should not throw
+    // Pass an absurdly large number - should not throw
     const result = await getCalendarEvents('user-1', 999);
     expect(result.ok).toBe(true);
   });

@@ -55,7 +55,7 @@ export function useSpotify() {
       startTicker(data.isPlaying, data.track?.durationMs ?? 0);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Failed to fetch';
-      // NO_DEVICE is a normal state (Spotify closed) — show friendly message, not error
+      // NO_DEVICE is a normal state (Spotify closed) - show friendly message, not error
       if (msg.includes('No active') || msg.includes('NO_DEVICE') || msg.includes('422')) {
         setState({ isPlaying: false, progressMs: 0, track: null });
         setError('Open Spotify on a device to start playing');
@@ -99,7 +99,7 @@ export function useSpotify() {
     });
 
     if (!res) {
-      setError('Network error — could not reach server');
+      setError('Network error - could not reach server');
       return;
     }
 
@@ -108,7 +108,7 @@ export function useSpotify() {
       if (res.status === 422 || body.error === 'NO_DEVICE') {
         setError('Open Spotify on a device to control playback');
       } else if (res.status === 401) {
-        setError('Session expired — sign in again via Settings → Account');
+        setError('Session expired - sign in again via Settings → Account');
       } else if (res.status === 403) {
         setError('Spotify Premium required for playback control');
       } else {

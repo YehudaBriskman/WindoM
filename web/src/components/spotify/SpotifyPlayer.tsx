@@ -15,7 +15,7 @@ export function SpotifyPlayer() {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Disc button — always visible, anchored to left */}
+      {/* Disc button - always visible, anchored to left */}
       <button
         className="spotify-dock-disc-btn"
         onClick={() => control(isPlaying ? 'pause' : 'play')}
@@ -39,7 +39,7 @@ export function SpotifyPlayer() {
         )}
       </button>
 
-      {/* Expandable right panel — hidden until hover */}
+      {/* Expandable right panel - hidden until hover */}
       <div className="spotify-dock-expand">
         <div className="spotify-dock-expand-inner">
           <button

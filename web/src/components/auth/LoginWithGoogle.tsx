@@ -23,7 +23,7 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
         `/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`,
       );
 
-      // Open Google consent — launchWebAuthFlow captures the redirect to chromiumapp.org.
+      // Open Google consent - launchWebAuthFlow captures the redirect to chromiumapp.org.
       // Wrap in a 2-minute timeout so a hanging popup doesn't block the UI forever.
       const redirectUrl = await new Promise<string>((resolve, reject) => {
         let settled = false;

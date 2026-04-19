@@ -15,7 +15,7 @@ interface Suggestion {
   tabId?: number;
   windowId?: number;
   favicon?: string;
-  /** For command suggestions — called instead of navigation */
+  /** For command suggestions - called instead of navigation */
   action?: () => void | Promise<void>;
   /** Icon component to render in the suggestion row */
   Icon?: LucideIcon;
@@ -227,7 +227,7 @@ export function SearchOverlay() {
   const isCommandMode = value.startsWith('>');
   const commandQuery = isCommandMode ? value.slice(1).trimStart() : '';
 
-  // Build command suggestions from the query — includes fallback "open in new tab"
+  // Build command suggestions from the query - includes fallback "open in new tab"
   const commandSuggestions = useMemo<Suggestion[]>(() => {
     if (!isCommandMode) return [];
     const q = commandQuery.toLowerCase();
@@ -297,7 +297,7 @@ export function SearchOverlay() {
     }
   }, [open]);
 
-  // Regular suggestions — skipped entirely in command mode
+  // Regular suggestions - skipped entirely in command mode
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (isCommandMode || !value.trim()) {

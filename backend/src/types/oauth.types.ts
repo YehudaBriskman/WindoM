@@ -19,7 +19,7 @@ export interface OAuthStateRecord {
   userId: string | null;
   provider: OAuthProvider;
   purpose: OAuthPurpose;
-  /** For PKCE (BYOA) Spotify flows — the user's own Spotify app client_id. Null for legacy flows. */
+  /** For PKCE (BYOA) Spotify flows - the user's own Spotify app client_id. Null for legacy flows. */
   clientId: string | null;
 }
 
@@ -30,6 +30,6 @@ export interface OAuthTokenSet {
   expiresIn: number;
   scope?: string;
   providerUserId: string;
-  /** For PKCE (BYOA) Spotify connections — the user's own Spotify app client_id. */
+  /** For PKCE (BYOA) Spotify connections - the user's own Spotify app client_id. */
   providerClientId?: string;
 }

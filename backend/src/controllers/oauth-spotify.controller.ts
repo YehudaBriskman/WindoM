@@ -72,7 +72,7 @@ export async function startSpotifyOAuthController(req: FastifyRequest, reply: Fa
     return;
   }
 
-  // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL — skip shared-URI validation.
+  // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL - skip shared-URI validation.
   // For legacy shared-app flows, validate against the configured server redirect URI.
   if (!pkceClientId && !isAllowedRedirectUri(effectiveUri, config.SPOTIFY_REDIRECT_URI)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Spotify. Contact support.' });
@@ -105,7 +105,7 @@ export async function exchangeSpotifyOAuthController(req: FastifyRequest, reply:
     return;
   }
 
-  // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL — skip shared-URI validation.
+  // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL - skip shared-URI validation.
   const isPkce = parsed.data.codeVerifier !== undefined;
   if (!isPkce && !isAllowedRedirectUri(parsed.data.redirectUri, config.SPOTIFY_REDIRECT_URI)) {
     void reply.status(400).send({ error: 'Redirect URI not allowed' });

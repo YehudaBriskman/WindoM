@@ -8,7 +8,7 @@ import type { SessionMeta } from '../types/auth.types.js';
 
 type SessionRow = typeof refreshSessions.$inferSelect;
 
-/** SHA-256 of raw token — used as a fast indexed lookup key. */
+/** SHA-256 of raw token - used as a fast indexed lookup key. */
 function sha256Hex(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
 }
@@ -58,7 +58,7 @@ export async function findSessionByToken(rawToken: string): Promise<SessionRow |
   if (session.revokedAt !== null) return null;
   if (new Date(session.expiresAt) < new Date()) return null;
 
-  // bcrypt verify authenticates the lookup — prevents SHA-256 preimage attacks
+  // bcrypt verify authenticates the lookup - prevents SHA-256 preimage attacks
   const valid = await bcrypt.compare(rawToken, session.tokenHash);
   return valid ? session : null;
 }

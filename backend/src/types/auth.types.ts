@@ -1,6 +1,6 @@
 // ── Result type ────────────────────────────────────────────────────────────
 
-/** Discriminated union for service return values — avoids throwing for expected errors. */
+/** Discriminated union for service return values - avoids throwing for expected errors. */
 export type Result<T, E extends string = string> = { ok: true; data: T } | { ok: false; error: E };
 
 // ── Error codes ────────────────────────────────────────────────────────────

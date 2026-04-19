@@ -1,5 +1,5 @@
 /* ============================================================
-   Glass — all glass-morphism styles extracted from globals.css
+   Glass - all glass-morphism styles extracted from globals.css
    Import this after globals.css in main.tsx.
    ============================================================ */
 
@@ -7,7 +7,7 @@
    Liquid Glass Utilities (iOS-style with SVG distortion)
    ============================================================ */
 
-/* Shared base — positioning + stacking context for pseudo-elements */
+/* Shared base - positioning + stacking context for pseudo-elements */
 .glass-panel,
 .glass-sidebar,
 .glass-settings,
@@ -19,7 +19,7 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-/* Inner glow layer — liquid highlight edges */
+/* Inner glow layer - liquid highlight edges */
 .glass-panel::before,
 .glass-sidebar::before,
 .glass-settings::before,
@@ -37,7 +37,7 @@
   z-index: 2;
 }
 
-/* Backdrop distortion layer — shared base */
+/* Backdrop distortion layer - shared base */
 .glass-panel::after,
 .glass-sidebar::after,
 .glass-settings::after,
@@ -113,7 +113,7 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Glass input — inputs can't use pseudo-elements, inline liquid glass */
+/* Glass input - inputs can't use pseudo-elements, inline liquid glass */
 .glass-input {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px) saturate(150%);
@@ -134,7 +134,7 @@
 }
 
 /* ============================================================
-   Shared element glass — grouped by identical values
+   Shared element glass - grouped by identical values
    ============================================================ */
 
 /* Standard field glass: bg 0.05 · border 0.1 · inset shadow 0.4/0.15 */

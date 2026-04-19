@@ -10,7 +10,7 @@ export function useCalendar() {
   const calendarDays = settings.integrations.calendar.days;
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
-  // Load events — from backend if connected, otherwise from local storage
+  // Load events - from backend if connected, otherwise from local storage
   useEffect(() => {
     if (calendarConnected) {
       apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`)

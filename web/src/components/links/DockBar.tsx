@@ -115,7 +115,7 @@ export function DockBar() {
         </div>
       </div>
 
-      {/* Row indicator — only shown when there are multiple rows */}
+      {/* Row indicator - only shown when there are multiple rows */}
       {rows.length > 1 && (
         <div className="dock-page-indicator">
           {rows.map((_, i) => (

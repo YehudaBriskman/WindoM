@@ -1,5 +1,5 @@
 /* ============================================================
-   Spring easing tokens — shared across all expanding elements
+   Spring easing tokens - shared across all expanding elements
    ============================================================ */
 :root {
   --spring:        cubic-bezier(0.34, 1.56, 0.64, 1);  /* full bounce   */
@@ -311,7 +311,7 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Liquid Glass Text Utility
    Semi-transparent, multi-layer gradient fill that lets the
-   background show through the text — like real frosted glass.
+   background show through the text - like real frosted glass.
    Set --glass-tint on the element to drive the tint color from
    a color picker; defaults to white when not set.
    ============================================================ */
@@ -321,9 +321,9 @@ input[type="file"]::file-selector-button:hover {
 
   /* Three composited gradient layers, all semi-transparent so the
      background bleeds through the text characters:
-     1. Specular highlight — primary light-source bloom (upper-left)
-     2. Refracted tint    — transmitted-light wash (lower-right)
-     3. Main glass body   — diagonal sweep with a near-clear center */
+     1. Specular highlight - primary light-source bloom (upper-left)
+     2. Refracted tint    - transmitted-light wash (lower-right)
+     3. Main glass body   - diagonal sweep with a near-clear center */
   background:
     radial-gradient(
       ellipse 55% 45% at 20% 15%,
@@ -360,7 +360,7 @@ input[type="file"]::file-selector-button:hover {
   text-shadow: none;
 }
 
-/* Clock glass — delegates entirely to the shared text-liquid-glass utility */
+/* Clock glass - delegates entirely to the shared text-liquid-glass utility */
 .clock-glass {}
 
 /* Outline style: stroke only, no fill */
@@ -532,7 +532,7 @@ input[type="file"]::file-selector-button:hover {
    ============================================================ */
 /* glass-dock styles are defined in the Liquid Glass Utilities section above */
 
-/* Shared top row — centers the dock bar; spotify dock grows to the right */
+/* Shared top row - centers the dock bar; spotify dock grows to the right */
 .top-dock-area {
   position: absolute;
   top: 16px;
@@ -542,7 +542,7 @@ input[type="file"]::file-selector-button:hover {
   height: 46px;
 }
 
-/* Spotify player anchored right of the dock — grows right without shifting the dock */
+/* Spotify player anchored right of the dock - grows right without shifting the dock */
 .spotify-anchor {
   position: absolute;
   left: calc(100% + 8px);
@@ -563,7 +563,7 @@ input[type="file"]::file-selector-button:hover {
   overflow: hidden;
 }
 
-/* Scrollable inner — snaps one row at a time */
+/* Scrollable inner - snaps one row at a time */
 .dock-rows {
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -627,7 +627,7 @@ input[type="file"]::file-selector-button:hover {
   transform: scale(1.08);
 }
 
-/* Delete button — top-right badge, stays within the row bounds */
+/* Delete button - top-right badge, stays within the row bounds */
 .dock-item-remove {
   position: absolute;
   top: -5px;
@@ -654,7 +654,7 @@ input[type="file"]::file-selector-button:hover {
   pointer-events: auto;
 }
 
-/* Row page indicator — vertical dots to the right of the dock bar */
+/* Row page indicator - vertical dots to the right of the dock bar */
 .dock-page-indicator {
   display: flex;
   flex-direction: column;
@@ -700,7 +700,7 @@ input[type="file"]::file-selector-button:hover {
   display: none;
 }
 
-/* Dock Expandable — single element that morphs from add button into form */
+/* Dock Expandable - single element that morphs from add button into form */
 .dock-expandable {
   position: absolute;
   top: calc(100% + 8px);
@@ -1536,7 +1536,7 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Right Sidebar
    ============================================================ */
-/* Sidebar Container — single element that morphs from toggle button into sidebar panel */
+/* Sidebar Container - single element that morphs from toggle button into sidebar panel */
 .sidebar-container {
   position: fixed;
   right: 10px;
@@ -1787,7 +1787,7 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Settings Button
    ============================================================ */
-/* Settings Container — single element that morphs from gear button into full settings panel */
+/* Settings Container - single element that morphs from gear button into full settings panel */
 .settings-container {
   position: fixed;
   bottom: 10px;
@@ -2367,7 +2367,7 @@ input[type="checkbox"]:focus-visible {
 }
 
 /* ============================================================
-   Focus Active — sequential enter/exit animations
+   Focus Active - sequential enter/exit animations
    Enter:  UI fades out (1.5s) → overlay fades in (1.5s)
    Exit:   overlay fades out (1.5s) → UI fades in (1.5s)
    Background zoom spans the full 3s of each sequence.
@@ -3528,7 +3528,7 @@ body.focus-exiting .sidebar-container {
   border-color: rgba(250, 190, 70, 0.8);
 }
 
-/* Command suggestion rows — amber icon */
+/* Command suggestion rows - amber icon */
 .search-suggestion.command .suggestion-icon {
   color: rgba(250, 190, 70, 0.9);
 }

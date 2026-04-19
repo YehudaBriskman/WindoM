@@ -8,7 +8,7 @@ interface Props {
 }
 
 /**
- * Inline login/register form — rendered inside the Account settings tab.
+ * Inline login/register form - rendered inside the Account settings tab.
  * Not a full-page blocker; the dashboard is always accessible.
  */
 interface FieldErrors {

@@ -49,7 +49,7 @@ export interface WidgetsSettings {
   quickLinks: QuickLink[];
 }
 
-/** Device-only — stored under a separate key, never sent to the backend. */
+/** Device-only - stored under a separate key, never sent to the backend. */
 export interface FocusSettings {
   mainFocus: string;
   completed: boolean;
@@ -57,12 +57,12 @@ export interface FocusSettings {
 
 export interface CalendarIntegration {
   days: 7 | 14 | 30;
-  /** Derived from OAuth state — excluded from backend sync. */
+  /** Derived from OAuth state - excluded from backend sync. */
   connected: boolean;
 }
 
 export interface SpotifyIntegration {
-  /** Derived from OAuth state — excluded from backend sync. */
+  /** Derived from OAuth state - excluded from backend sync. */
   connected: boolean;
 }
 
@@ -93,14 +93,14 @@ export interface Settings {
   integrations: IntegrationsSettings;
 }
 
-/** Schema version — increment whenever the shape changes incompatibly. */
+/** Schema version - increment whenever the shape changes incompatibly. */
 export const SETTINGS_VERSION = 2;
 
 // ─── Legacy flat type (kept for migration only) ───────────────────────────────
 
 /**
  * The old 28-field flat Settings shape (v1).
- * Used exclusively by the migration function — do not use in new code.
+ * Used exclusively by the migration function - do not use in new code.
  */
 export interface LegacySettings {
   userName: string;

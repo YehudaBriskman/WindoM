@@ -15,7 +15,7 @@ function buildPage(opts: {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WindoM — ${opts.title}</title>
+  <title>WindoM - ${opts.title}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -245,7 +245,7 @@ function resetFormBody(token: string): string {
         <input
           type="password"
           name="newPassword"
-          placeholder="New password — min 8 characters"
+          placeholder="New password - min 8 characters"
           required
           minlength="8"
           autocomplete="new-password"
@@ -279,7 +279,7 @@ function verifySuccessBody(): string {
     <h1>Email verified</h1>
     <div class="msg-success">
       <span class="icon">✓</span>
-      <span>Your email address has been verified. You're all set — close this tab and return to WindoM.</span>
+      <span>Your email address has been verified. You're all set - close this tab and return to WindoM.</span>
     </div>`;
 }
 

@@ -26,7 +26,7 @@ export function isLegacySettings(raw: unknown): raw is LegacySettings {
 
 /**
  * Converts a v1 flat LegacySettings object to the v2 sectioned Settings shape.
- * Pure function — no side effects, no storage access.
+ * Pure function - no side effects, no storage access.
  * Falls back to section defaults for any missing or invalid legacy field.
  */
 export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
@@ -88,7 +88,7 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
 
 /**
  * Extracts `localBackground` from a legacy flat settings object.
- * Returns null if absent or empty — callers should write it to chrome.storage.local.
+ * Returns null if absent or empty - callers should write it to chrome.storage.local.
  */
 export function extractLocalBackground(legacy: LegacySettings): string | null {
   const bg = legacy.localBackground;

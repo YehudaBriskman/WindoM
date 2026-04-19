@@ -94,7 +94,7 @@ describe('verifyAndConsumeOAuthState', () => {
       id: 'state-2',
       state: 'abc',
       provider: 'google',
-      purpose: 'link', // mismatch — caller expects 'login'
+      purpose: 'link', // mismatch - caller expects 'login'
       used: false,
       userId: null,
       expiresAt: new Date(Date.now() + 60_000),

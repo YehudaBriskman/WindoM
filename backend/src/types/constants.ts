@@ -20,7 +20,7 @@ export const ACCESS_TOKEN_TTL = '15m';
 /** Cookie name for the HttpOnly refresh token. */
 export const COOKIE_NAME = 'windom_refresh';
 
-/** Cookie maxAge in seconds — matches REFRESH_WINDOW_DAYS. */
+/** Cookie maxAge in seconds - matches REFRESH_WINDOW_DAYS. */
 export const COOKIE_MAX_AGE_SECONDS = REFRESH_WINDOW_DAYS * 24 * 60 * 60;
 
 // ── OAuth ─────────────────────────────────────────────────────────────────

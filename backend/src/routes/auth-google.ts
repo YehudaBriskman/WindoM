@@ -8,7 +8,7 @@ import {
 
 export function authGoogleRoutes(app: FastifyInstance): void {
   if (!config.GOOGLE_CLIENT_ID || !config.GOOGLE_CLIENT_SECRET) {
-    app.log.warn('Google OAuth not configured — /auth/google routes disabled');
+    app.log.warn('Google OAuth not configured - /auth/google routes disabled');
     return;
   }
 

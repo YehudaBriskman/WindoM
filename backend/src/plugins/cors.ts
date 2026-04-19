@@ -15,7 +15,7 @@ export async function registerCors(app: FastifyInstance): Promise<void> {
         return cb(null, true);
       }
 
-      // Allow the server's own origin — needed for the reset-password HTML form
+      // Allow the server's own origin - needed for the reset-password HTML form
       // that is served from APP_URL and POSTs back to the same server.
       if (config.APP_URL && origin === config.APP_URL) {
         return cb(null, true);

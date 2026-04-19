@@ -106,11 +106,11 @@ export async function hasOAuthAccount(userId: string, provider: OAuthProvider): 
 
 /**
  * Check whether a provider account (identified by providerUserId) is already
- * linked to a WindoM user — and if so, whether it's the same user or a different one.
+ * linked to a WindoM user - and if so, whether it's the same user or a different one.
  *
  * - 'none'       → no existing link, safe to insert
  * - 'same_user'  → already linked to this user, safe to update
- * - 'other_user' → linked to a different user — must reject
+ * - 'other_user' → linked to a different user - must reject
  */
 export async function checkOAuthConflict(
   userId: string,

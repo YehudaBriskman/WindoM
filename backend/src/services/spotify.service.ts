@@ -86,7 +86,7 @@ async function getSpotifyToken(userId: string): Promise<string | null> {
 
   if (!account) return null;
 
-  // PKCE (BYOA) mode: use the user's own client_id in the token body — no shared Authorization header.
+  // PKCE (BYOA) mode: use the user's own client_id in the token body - no shared Authorization header.
   // Legacy mode: use the shared app's Basic auth header.
   if (account.providerClientId) {
     return getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, pkceClientId: account.providerClientId, extraBody: {} });

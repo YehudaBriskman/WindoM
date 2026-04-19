@@ -7,7 +7,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.0.0] — 2026-03-19
+## [1.0.0] - 2026-03-19
 
 ### Added
 - New tab dashboard with glassmorphism design

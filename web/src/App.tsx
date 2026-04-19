@@ -15,20 +15,20 @@ import { SpotifyPlayer } from './components/spotify/SpotifyPlayer';
 import { GlassFilters } from './components/GlassFilters';
 import { AppLoader } from './components/AppLoader';
 
-// Heavy non-critical chunks — loaded after the initial paint
+// Heavy non-critical chunks - loaded after the initial paint
 const SettingsPanel  = lazy(() => import('./components/settings/SettingsPanel').then(m => ({ default: m.SettingsPanel })));
 const FocusOverlay   = lazy(() => import('./components/focus/FocusOverlay').then(m => ({ default: m.FocusOverlay })));
 const SearchOverlay  = lazy(() => import('./components/search/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
 const TabSidebar     = lazy(() => import('./components/tabs/TabSidebar').then(m => ({ default: m.TabSidebar })));
 
-// Dashboard is always accessible — auth is optional.
+// Dashboard is always accessible - auth is optional.
 // Sign-in lives in Settings → Account tab.
 function Dashboard() {
   useIntegrationSync();
 
   return (
     <>
-      {/* Background zoom layer — separate element so transform:scale animates smoothly */}
+      {/* Background zoom layer - separate element so transform:scale animates smoothly */}
       <div id="bg-zoom-layer" />
       <GlassFilters />
       <BackgroundOverlay />

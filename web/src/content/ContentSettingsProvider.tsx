@@ -4,7 +4,7 @@ import { type Settings, defaultSettings } from '../types/settings';
 import { migrateFlatToSectioned, isLegacySettings } from '../lib/migrateSettings';
 import { SettingsContext } from '../contexts/SettingsContext';
 
-/** Settings provider for content scripts — reads and writes via chrome.storage.sync */
+/** Settings provider for content scripts - reads and writes via chrome.storage.sync */
 export function ContentSettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
   const [loaded, setLoaded] = useState(false);
