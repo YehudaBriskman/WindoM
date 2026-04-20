@@ -5,54 +5,62 @@ import * as settingsService from '../services/settings.service.js';
 const quickLinkSchema = z.object({
   name: z.string().max(100),
   url: z.string().url().max(2048),
-  icon: z.string().max(2048),
+  icon: z.string().max(2048).optional(),
 });
 
-const settingsSchema = z.object({
-  userName: z.string().max(50),
-  theme: z.string().max(50),
-  language: z.string().max(10),
-  timeFormat: z.enum(['12h', '24h']),
-  showSeconds: z.boolean(),
-  clockLeadingZero: z.boolean(),
-  clockStyle: z.enum(['default', 'glass', 'outline']),
-  clockColor: z.string().max(50),
-  clockSize: z.number().int().min(20).max(500),
-  clockWeight: z.union([z.literal(100), z.literal(200), z.literal(400), z.literal(600)]),
-  showDate: z.boolean(),
-  dateFormat: z.enum(['long', 'short', 'numeric']),
-  temperatureUnit: z.enum(['F', 'C']),
-  backgroundSource: z.enum(['unsplash', 'local']),
-  unsplashApiKey: z.string().max(100),
-  unsplashCollectionId: z.string().max(100),
-  // Base64-encoded image: must start with a data URI for a supported image type.
-  // Capped at 600 KB (encoded) ≈ ~450 KB actual image to prevent storage exhaustion.
-  localBackground: z
-    .string()
-    .max(600_000)
-    .refine(
-      (v) => v === '' || /^data:image\/(jpeg|png|webp|gif);base64,/.test(v),
-      { message: 'localBackground must be a base64-encoded JPEG, PNG, WebP, or GIF data URI' },
-    ),
-  location: z.string().max(100),
-  weatherApiKey: z.string().max(100),
-  calendarConnected: z.boolean(),
-  calendarDays: z.union([z.literal(7), z.literal(14), z.literal(30)]),
-  spotifyConnected: z.boolean(),
-  quickLinks: z.array(quickLinkSchema),
-  quotesEnabled: z.boolean(),
-  quoteSource: z.enum(['local', 'api']),
-  mainFocus: z.string().max(200),
-  focusCompleted: z.boolean(),
-  showWeather: z.boolean(),
-  showLinks: z.boolean(),
-  showFocus: z.boolean(),
-  showGreeting: z.boolean(),
-  searchEngine: z.enum(['google', 'bing', 'duckduckgo', 'brave']),
-  tabSidebarSide: z.enum(['left', 'right']),
-  // Allow the sync timestamp sent by the client
+const settingsSectionSchema = z.object({
+  general: z.object({
+    userName: z.string().max(50),
+    searchEngine: z.enum(['google', 'bing', 'duckduckgo', 'brave']),
+    sidebarSide: z.enum(['left', 'right']),
+    showGreeting: z.boolean(),
+  }).partial().optional(),
+
+  clock: z.object({
+    timeFormat: z.enum(['12h', '24h']),
+    showSeconds: z.boolean(),
+    leadingZero: z.boolean(),
+    style: z.enum(['default', 'glass', 'outline']),
+    color: z.string().max(50),
+    size: z.number().int().min(20).max(500),
+    weight: z.union([z.literal(100), z.literal(200), z.literal(400), z.literal(600)]),
+    showDate: z.boolean(),
+    dateFormat: z.enum(['long', 'short', 'numeric']),
+  }).partial().optional(),
+
+  background: z.object({
+    source: z.enum(['unsplash', 'local']),
+    unsplashApiKey: z.string().max(100),
+    unsplashCollectionId: z.string().max(100),
+  }).partial().optional(),
+
+  weather: z.object({
+    show: z.boolean(),
+    unit: z.enum(['F', 'C']),
+    location: z.string().max(100),
+    apiKey: z.string().max(100),
+  }).partial().optional(),
+
+  widgets: z.object({
+    showLinks: z.boolean(),
+    showFocus: z.boolean(),
+    showQuotes: z.boolean(),
+    quoteSource: z.enum(['local', 'api']),
+    quickLinks: z.array(quickLinkSchema).max(50),
+  }).partial().optional(),
+
+  integrations: z.object({
+    calendar: z.object({
+      days: z.union([z.literal(7), z.literal(14), z.literal(30)]),
+      connected: z.boolean(),
+    }).partial().optional(),
+    spotify: z.object({
+      connected: z.boolean(),
+    }).partial().optional(),
+  }).partial().optional(),
+
   _updatedAt: z.number().optional(),
-}).partial();
+});
 
 export async function getSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const data = await settingsService.getSettings(req.user.sub);
@@ -60,14 +68,25 @@ export async function getSettingsController(req: FastifyRequest, reply: FastifyR
 }
 
 export async function putSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const result = settingsSchema.safeParse(req.body);
-  if (!result.success) {
-    void reply.status(400).send({
-      error: 'Invalid settings payload',
-      details: result.error.flatten().fieldErrors,
-    });
-    return;
+  const incoming = settingsSectionSchema.parse(req.body);
+
+  // Strip _updatedAt from stored data (sync metadata, not settings)
+  const { _updatedAt, ...incomingSections } = incoming;
+
+  const existing = (await settingsService.getSettings(req.user.sub)) ?? {};
+
+  const merged: Record<string, unknown> = { ...existing };
+  for (const [section, value] of Object.entries(incomingSections)) {
+    if (value !== undefined) {
+      merged[section] = {
+        ...(typeof existing[section] === 'object' && existing[section] !== null
+          ? (existing[section] as Record<string, unknown>)
+          : {}),
+        ...(value as Record<string, unknown>),
+      };
+    }
   }
-  const data = await settingsService.saveSettings(req.user.sub, result.data as Record<string, unknown>);
-  void reply.send({ data });
+
+  const saved = await settingsService.saveSettings(req.user.sub, merged);
+  void reply.send({ data: saved });
 }
