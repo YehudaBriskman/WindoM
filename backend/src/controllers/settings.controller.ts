@@ -71,7 +71,8 @@ export async function putSettingsController(req: FastifyRequest, reply: FastifyR
   const incoming = settingsSectionSchema.parse(req.body);
 
   // Strip _updatedAt from stored data (sync metadata, not settings)
-  const { _updatedAt, ...incomingSections } = incoming;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _updatedAt: _, ...incomingSections } = incoming;
 
   const existing = (await settingsService.getSettings(req.user.sub)) ?? {};
 
