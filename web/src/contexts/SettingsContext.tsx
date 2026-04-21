@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
-import { syncStorage } from '../lib/chrome-storage';
+import { syncStorage, localStore } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { migrateFlatToSectioned, isLegacySettings } from '../lib/migrateSettings';
 import { getAccessToken, apiGet, apiPut } from '../lib/api';
@@ -141,11 +141,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (isLegacySettings(raw)) {
         // Legacy v1 flat shape detected - migrate and rewrite storage as sectioned
         local = migrateFlatToSectioned(raw);
+        const { focus: migratedFocus, ...localWithoutFocus } = local;
         await chrome.storage.sync.clear();
-        await syncStorage.setMultiple(local as unknown as Record<string, unknown>);
+        await syncStorage.setMultiple(localWithoutFocus as unknown as Record<string, unknown>);
+        await localStore.set('windom_focus', migratedFocus);
       } else {
         const stored = await syncStorage.getMultiple(defaultSettings as unknown as Record<string, unknown>);
         local = stored as unknown as Settings;
+        // Focus is device-local — load from chrome.storage.local, not sync
+        const focusData = await localStore.get<Settings['focus']>('windom_focus', defaultSettings.focus);
+        local = { ...local, focus: focusData };
       }
 
       setSettings(local);
@@ -220,6 +225,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(
     async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => {
+      // Focus is device-local — store in chrome.storage.local only, never sync or backend
+      if (section === 'focus') {
+        const next = { ...(settingsRef.current.focus as object), ...(patch as object) } as Settings['focus'];
+        setSettings(prev => ({ ...prev, focus: next }));
+        await localStore.set('windom_focus', next);
+        return;
+      }
+
       keyTimestampsRef.current[section as string] = Date.now();
 
       const mergedSection = { ...(settingsRef.current[section] as object), ...(patch as object) } as Settings[S];
@@ -287,6 +300,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     setSettings({ ...defaultSettings });
     await syncStorage.clear();
     await syncStorage.setMultiple(defaultSettings as unknown as Record<string, unknown>);
+    await localStore.set('windom_focus', defaultSettings.focus);
   }, []);
 
   return (

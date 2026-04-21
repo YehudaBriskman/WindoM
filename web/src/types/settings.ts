@@ -88,7 +88,7 @@ export interface Settings {
   background: BackgroundSettings;
   weather: WeatherSettings;
   widgets: WidgetsSettings;
-  /** Stored under a separate chrome.storage.sync key (windom_focus). */
+  /** Stored under chrome.storage.local key (windom_focus) — device-local, never synced. */
   focus: FocusSettings;
   integrations: IntegrationsSettings;
 }
