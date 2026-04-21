@@ -9,6 +9,10 @@ export type OAuthError =
   | 'TOKEN_EXCHANGE_FAILED'
   | 'USERINFO_FAILED'
   | 'TOKEN_REFRESH_FAILED'
+  /** Provider returned 401/403 — refresh token is revoked/expired, user must re-authorize. */
+  | 'TOKEN_REFRESH_REVOKED'
+  /** Network or 5xx error during refresh — transient, safe to retry. */
+  | 'TOKEN_REFRESH_NETWORK_ERROR'
   | 'NO_REDIRECT_URI'
   | 'API_ERROR'
   | 'FORBIDDEN';

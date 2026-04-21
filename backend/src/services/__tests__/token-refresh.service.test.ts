@@ -44,13 +44,13 @@ describe('getValidAccessToken', () => {
 
     const result = await getValidAccessToken(makeAccount(), refreshConfig);
 
-    expect(result).toBe('plain-access-token');
+    expect(result).toEqual({ ok: true, data: 'plain-access-token' });
     expect(mockDecrypt).toHaveBeenCalledWith('encrypted-access');
     // Should NOT call fetch when token is valid
     expect(vi.isMockFunction(global.fetch)).toBe(false);
   });
 
-  it('returns null when token is expired and no refresh token', async () => {
+  it('returns TOKEN_REFRESH_FAILED when token is expired and no refresh token', async () => {
     const account = makeAccount({
       tokenExpiresAt: new Date(Date.now() - 1000), // expired
       refreshTokenEnc: null,
@@ -58,10 +58,10 @@ describe('getValidAccessToken', () => {
 
     const result = await getValidAccessToken(account, refreshConfig);
 
-    expect(result).toBeNull();
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
   });
 
-  it('returns null when token expires within buffer and no refresh token', async () => {
+  it('returns TOKEN_REFRESH_FAILED when token expires within buffer and no refresh token', async () => {
     const account = makeAccount({
       tokenExpiresAt: new Date(Date.now() + TOKEN_REFRESH_BUFFER_MS / 2), // within buffer
       refreshTokenEnc: null,
@@ -69,7 +69,7 @@ describe('getValidAccessToken', () => {
 
     const result = await getValidAccessToken(account, refreshConfig);
 
-    expect(result).toBeNull();
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
   });
 
   it('refreshes and returns new access token when expired', async () => {
@@ -89,31 +89,44 @@ describe('getValidAccessToken', () => {
 
     const result = await getValidAccessToken(account, refreshConfig);
 
-    expect(result).toBe('new-access-token');
+    expect(result).toEqual({ ok: true, data: 'new-access-token' });
     expect(mockDecrypt).toHaveBeenCalledWith('encrypted-refresh');
     expect(mockEncrypt).toHaveBeenCalledWith('new-access-token');
     expect(mockDb.update).toHaveBeenCalledOnce();
   });
 
-  it('returns null when the refresh request fails', async () => {
+  it('returns TOKEN_REFRESH_REVOKED when provider returns 401', async () => {
     const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
 
     mockDecrypt.mockResolvedValue('old-refresh-token');
 
-    const mockFetch = vi.fn().mockResolvedValue({ ok: false });
+    const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 401 });
     vi.stubGlobal('fetch', mockFetch);
 
     const result = await getValidAccessToken(account, refreshConfig);
 
-    expect(result).toBeNull();
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_REVOKED' });
   });
 
-  it('returns null when tokenExpiresAt is null', async () => {
+  it('returns TOKEN_REFRESH_NETWORK_ERROR when provider returns 5xx', async () => {
+    const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
+
+    mockDecrypt.mockResolvedValue('old-refresh-token');
+
+    const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
+    vi.stubGlobal('fetch', mockFetch);
+
+    const result = await getValidAccessToken(account, refreshConfig);
+
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_NETWORK_ERROR' });
+  });
+
+  it('returns TOKEN_REFRESH_FAILED when tokenExpiresAt is null and no refresh token', async () => {
     const account = makeAccount({ tokenExpiresAt: null, refreshTokenEnc: null });
 
     const result = await getValidAccessToken(account, refreshConfig);
 
-    expect(result).toBeNull();
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
   });
 
   it('passes authHeader when provided in refreshConfig', async () => {

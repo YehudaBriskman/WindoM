@@ -86,12 +86,13 @@ export async function getCalendarEvents(
 
   if (!account) return { ok: false, error: 'NOT_CONNECTED' };
 
-  const accessToken = await getValidAccessToken(account, {
+  const tokenResult = await getValidAccessToken(account, {
     tokenUrl: GOOGLE_TOKEN_URL,
     extraBody: { client_id: config.GOOGLE_CLIENT_ID ?? '', client_secret: config.GOOGLE_CLIENT_SECRET ?? '' },
   });
 
-  if (!accessToken) return { ok: false, error: 'TOKEN_REFRESH_FAILED' };
+  if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
+  const accessToken = tokenResult.data;
 
   const timeMin = new Date().toISOString();
   const timeMax = new Date(Date.now() + dayCount * 24 * 60 * 60 * 1000).toISOString();

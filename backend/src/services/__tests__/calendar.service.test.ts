@@ -40,7 +40,7 @@ describe('getCalendarEvents', () => {
 
   it('returns TOKEN_REFRESH_FAILED when access token is unavailable', async () => {
     dbReturnsAccount(mockAccount());
-    mockGetToken.mockResolvedValue(null);
+    mockGetToken.mockResolvedValue({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
 
     const result = await getCalendarEvents('user-1', 7);
 
@@ -50,7 +50,7 @@ describe('getCalendarEvents', () => {
 
   it('returns an empty array when all calendar fetches fail', async () => {
     dbReturnsAccount(mockAccount());
-    mockGetToken.mockResolvedValue('access-token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
 
     // calendarList fails → falls back to primary; then primary events fetch fails
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
@@ -63,7 +63,7 @@ describe('getCalendarEvents', () => {
 
   it('returns events from the primary calendar', async () => {
     dbReturnsAccount(mockAccount());
-    mockGetToken.mockResolvedValue('access-token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
 
     const calListResponse = {
       ok: true,
@@ -100,7 +100,7 @@ describe('getCalendarEvents', () => {
 
   it('deduplicates events appearing in multiple calendar responses', async () => {
     dbReturnsAccount(mockAccount());
-    mockGetToken.mockResolvedValue('access-token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
 
     const calListResponse = {
       ok: true,
@@ -140,7 +140,7 @@ describe('getCalendarEvents', () => {
 
   it('clamps days to MAX_CALENDAR_DAYS', async () => {
     dbReturnsAccount(mockAccount());
-    mockGetToken.mockResolvedValue('access-token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
 
     const mockFetch = vi.fn().mockResolvedValue({ ok: false });
     vi.stubGlobal('fetch', mockFetch);

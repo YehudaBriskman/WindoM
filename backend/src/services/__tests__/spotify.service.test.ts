@@ -37,7 +37,7 @@ beforeEach(() => {
 describe('getNowPlaying', () => {
   it('returns NOT_CONNECTED when no spotify account exists', async () => {
     dbReturnsAccount(null);
-    mockGetToken.mockResolvedValue(null);
+    mockGetToken.mockResolvedValue({ ok: false, error: 'NOT_CONNECTED' });
 
     const result = await getNowPlaying('user-1');
 
@@ -47,7 +47,7 @@ describe('getNowPlaying', () => {
 
   it('returns isPlaying: false and null track on 204 response', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 204, ok: true }));
 
@@ -62,7 +62,7 @@ describe('getNowPlaying', () => {
 
   it('returns API_ERROR on non-ok response', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 500, ok: false }));
 
@@ -74,7 +74,7 @@ describe('getNowPlaying', () => {
 
   it('returns normalized track data when playing', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       status: 200,
@@ -98,7 +98,7 @@ describe('getNowPlaying', () => {
 describe('getTopTracks', () => {
   it('returns NOT_CONNECTED when token is unavailable', async () => {
     dbReturnsAccount(null);
-    mockGetToken.mockResolvedValue(null);
+    mockGetToken.mockResolvedValue({ ok: false, error: 'NOT_CONNECTED' });
 
     const result = await getTopTracks('user-1', 10, 'short_term');
 
@@ -108,7 +108,7 @@ describe('getTopTracks', () => {
 
   it('returns API_ERROR on non-ok response', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
 
@@ -120,7 +120,7 @@ describe('getTopTracks', () => {
 
   it('returns normalized tracks on success', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
@@ -138,7 +138,7 @@ describe('getTopTracks', () => {
 
   it('defaults to short_term for unknown time range', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     let capturedUrl = '';
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
@@ -170,7 +170,7 @@ describe('sendPlaybackCommand', () => {
 
   it('returns NOT_CONNECTED when token is unavailable', async () => {
     dbReturnsAccount(null);
-    mockGetToken.mockResolvedValue(null);
+    mockGetToken.mockResolvedValue({ ok: false, error: 'NOT_CONNECTED' });
 
     const result = await sendPlaybackCommand('user-1', 'play');
 
@@ -180,7 +180,7 @@ describe('sendPlaybackCommand', () => {
 
   it('returns ok:true for a successful play command (204)', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     // player state (no device), devices list (empty), then command succeeds
     mockFetchSequence(
@@ -195,7 +195,7 @@ describe('sendPlaybackCommand', () => {
 
   it('returns FORBIDDEN on 403', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     mockFetchSequence(
       { status: 200, ok: true, body: { device: { id: 'dev-1', name: 'PC', is_active: true } } },
@@ -210,7 +210,7 @@ describe('sendPlaybackCommand', () => {
 
   it('returns API_ERROR on generic failure', async () => {
     dbReturnsAccount({ id: 'acct-1' });
-    mockGetToken.mockResolvedValue('token');
+    mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     mockFetchSequence(
       { status: 200, ok: true, body: { device: { id: 'dev-1', name: 'PC', is_active: true } } },
