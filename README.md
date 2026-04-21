@@ -216,7 +216,7 @@ WindoM does not track you. All personal data stays in your browser. An account i
 
 ## Links
 
-| | |
+| Description | Links |
 |---|---|
 | Website | [windom.app](https://windom.app) |
 | Chrome Web Store | [Install WindoM](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb) |
