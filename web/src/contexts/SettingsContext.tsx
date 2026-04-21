@@ -1,9 +1,30 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useSyncExternalStore, type ReactNode } from 'react';
 import { syncStorage, localStore } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { migrateFlatToSectioned, isLegacySettings } from '../lib/migrateSettings';
 import { getAccessToken, apiGet, apiPut } from '../lib/api';
 
+// ── External store for per-section subscriptions ──────────────────────────
+// Holds a mutable snapshot of the current settings so useSyncExternalStore
+// consumers can subscribe to individual sections without re-rendering on
+// unrelated section changes. The Provider updates this alongside its own
+// useState so both stay in sync.
+
+type StoreListener = () => void;
+const storeListeners = new Set<StoreListener>();
+let storeSnapshot: Settings = { ...defaultSettings };
+
+function subscribeToStore(listener: StoreListener): () => void {
+  storeListeners.add(listener);
+  return () => storeListeners.delete(listener);
+}
+
+function notifyStore(next: Settings): void {
+  storeSnapshot = next;
+  for (const l of storeListeners) l();
+}
+
+// ── Settings sections excluded from backend sync ───────────────────────────
 // Sections excluded from backend sync (ephemeral / device-specific state)
 const SYNC_EXCLUDE = new Set<keyof Settings>(['focus']);
 
@@ -45,8 +66,17 @@ interface SettingsContextValue {
 export const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<Settings>({ ...defaultSettings });
+  const [settings, setSettingsRaw] = useState<Settings>({ ...defaultSettings });
   const [loaded, setLoaded] = useState(false);
+
+  // Wrap the setter so the external store is always updated in the same tick.
+  const setSettings = useCallback((next: Settings | ((prev: Settings) => Settings)) => {
+    setSettingsRaw((prev) => {
+      const resolved = typeof next === 'function' ? next(prev) : next;
+      notifyStore(resolved);
+      return resolved;
+    });
+  }, []);
   const pushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingDeltaRef = useRef<Partial<Settings>>({});
   const settingsRef = useRef<Settings>({ ...defaultSettings });
@@ -314,4 +344,16 @@ export function useSettings() {
   const ctx = useContext(SettingsContext);
   if (!ctx) throw new Error('useSettings must be used within SettingsProvider');
   return ctx;
+}
+
+/**
+ * Subscribe to a single settings section. Only re-renders when that section's
+ * object reference changes — unrelated section updates are invisible to this hook.
+ * Use instead of `useSettings().settings[section]` in performance-sensitive components.
+ */
+export function useSettingsSection<S extends keyof Settings>(section: S): Settings[S] {
+  return useSyncExternalStore(
+    subscribeToStore,
+    () => storeSnapshot[section],
+  );
 }
