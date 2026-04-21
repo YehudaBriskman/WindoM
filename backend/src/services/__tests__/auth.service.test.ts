@@ -25,6 +25,10 @@ vi.mock('../../lib/jwt.js', () => ({
   signAccessToken: vi.fn().mockResolvedValue('access-token-xyz'),
 }));
 
+vi.mock('../auth-email.service.js', () => ({
+  sendVerification: vi.fn().mockResolvedValue(undefined),
+}));
+
 import { db } from '../../db/client.js';
 import * as sessionService from '../session.service.js';
 import { verifyPassword } from '../../lib/password.js';
