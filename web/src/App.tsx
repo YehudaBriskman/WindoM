@@ -4,6 +4,7 @@ import { BackgroundProvider } from './contexts/BackgroundContext';
 import { FocusTimerProvider } from './contexts/FocusTimerContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { useIntegrationSync } from './hooks/useIntegrationSync';
+import { useOnboarding } from './hooks/useOnboarding';
 import { BackgroundOverlay } from './components/background/BackgroundOverlay';
 import { PhotographerCredit } from './components/background/PhotographerCredit';
 import { TopBar } from './components/layout/TopBar';
@@ -14,6 +15,8 @@ import { RightSidebar } from './components/layout/RightSidebar';
 import { SpotifyPlayer } from './components/spotify/SpotifyPlayer';
 import { GlassFilters } from './components/GlassFilters';
 import { AppLoader } from './components/AppLoader';
+import { OnboardingModal } from './components/onboarding/OnboardingModal';
+import { SpotifyNotice } from './components/onboarding/SpotifyNotice';
 
 // Heavy non-critical chunks - loaded after the initial paint
 const SettingsPanel  = lazy(() => import('./components/settings/SettingsPanel').then(m => ({ default: m.SettingsPanel })));
@@ -23,8 +26,9 @@ const TabSidebar     = lazy(() => import('./components/tabs/TabSidebar').then(m 
 
 // Dashboard is always accessible - auth is optional.
 // Sign-in lives in Settings → Account tab.
-function Dashboard() {
+function Dashboard(): React.ReactElement {
   useIntegrationSync();
+  const { showOnboarding, showSpotifyNotice, completeOnboarding, dismissSpotifyNotice } = useOnboarding();
 
   return (
     <>
@@ -50,11 +54,14 @@ function Dashboard() {
         <TabSidebar />
       </Suspense>
       <PhotographerCredit />
+
+      {showOnboarding && <OnboardingModal onComplete={completeOnboarding} />}
+      {showSpotifyNotice && <SpotifyNotice onDismiss={dismissSpotifyNotice} />}
     </>
   );
 }
 
-export function App() {
+export function App(): React.ReactElement {
   return (
     <AuthProvider>
       <SettingsProvider>
