@@ -22,9 +22,18 @@ export async function getNowPlayingController(req: FastifyRequest, reply: Fastif
   void reply.send(result.data);
 }
 
+const topTracksQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+  time_range: z.enum(['short_term', 'medium_term', 'long_term']).default('short_term'),
+});
+
 export async function getTopTracksController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const { limit = '10', time_range = 'short_term' } = req.query as { limit?: string; time_range?: string };
-  const result = await spotifyService.getTopTracks(req.user.sub, parseInt(limit, 10) || 10, time_range);
+  const parsed = topTracksQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'limit must be 1–50; time_range must be short_term, medium_term, or long_term' });
+    return;
+  }
+  const result = await spotifyService.getTopTracks(req.user.sub, parsed.data.limit, parsed.data.time_range);
   if (!result.ok) { sendSpotifyError(result.error, reply); return; }
   reply.header('Cache-Control', 'private, max-age=300');
   void reply.send({ tracks: result.data });

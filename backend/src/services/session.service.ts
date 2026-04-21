@@ -33,8 +33,8 @@ export async function createSession(
     tokenHash,
     tokenLookup,
     rotatedFromId: rotatedFromId ?? null,
-    ip: meta.ip,
-    userAgent: meta.userAgent,
+    ip: sha256Hex(meta.ip),
+    userAgent: sha256Hex(meta.userAgent),
     expiresAt,
     renewalCount,
   });

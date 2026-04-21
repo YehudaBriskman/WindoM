@@ -4,7 +4,6 @@ import {
   text,
   timestamp,
   boolean,
-  inet,
   index,
   uniqueIndex,
   integer,
@@ -38,7 +37,8 @@ export const refreshSessions = pgTable(
     rotatedFromId: uuid('rotated_from_id'),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     userAgent: text('user_agent').notNull().default(''),
-    ip: inet('ip').notNull(),
+    /** SHA-256 hex of the client IP — stored hashed for anomaly detection, never as plaintext. */
+    ip: text('ip').notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     renewalCount: integer('renewal_count').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
