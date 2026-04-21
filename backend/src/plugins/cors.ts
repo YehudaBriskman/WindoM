@@ -21,8 +21,11 @@ export async function registerCors(app: FastifyInstance): Promise<void> {
         return cb(null, true);
       }
 
-      // In dev, allow any chrome-extension:// origin (extension ID changes between dev builds)
-      if (!config.isProd && origin.startsWith('chrome-extension://')) {
+      // When CHROME_EXTENSION_ID is set, enforce the specific extension origin in all envs.
+      if (config.CHROME_EXTENSION_ID) {
+        if (origin === `chrome-extension://${config.CHROME_EXTENSION_ID}`) return cb(null, true);
+      } else if (!config.isProd && origin.startsWith('chrome-extension://')) {
+        // In dev without a pinned ID, allow any extension origin (ID changes between builds).
         return cb(null, true);
       }
 

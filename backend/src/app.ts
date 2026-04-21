@@ -120,12 +120,16 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
 
     const statusCode = error.statusCode ?? 500;
     app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
-    // In production, never leak internal error messages or stack traces to clients.
     const isClientError = statusCode >= 400 && statusCode < 500;
+    // In production, never send internal error details to clients — log-only.
     void reply.status(statusCode).send({
       statusCode,
       error: isClientError ? error.name : 'Internal Server Error',
-      message: isClientError || !config.isProd ? error.message : 'An unexpected error occurred',
+      message: !config.isProd
+        ? error.message
+        : isClientError
+        ? 'Invalid request'
+        : 'An unexpected error occurred',
     });
   });
 

@@ -7,7 +7,11 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
   JWT_ACCESS_SECRET: z.string().min(32),
   REFRESH_TOKEN_SECRET: z.string().min(32),
-  TOKEN_ENC_KEY_BASE64: z.string().min(1),
+  TOKEN_ENC_KEY_BASE64: z.string().min(1).refine(
+    (val) => { try { return Buffer.from(val, 'base64').length === 32; } catch { return false; } },
+    { message: 'TOKEN_ENC_KEY_BASE64 must decode to exactly 32 bytes (AES-256 key)' },
+  ),
+  CHROME_EXTENSION_ID: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().url().optional(),
