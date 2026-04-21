@@ -11,8 +11,9 @@ export const REFRESH_WINDOW_DAYS = 7;
  */
 export const MAX_RENEWALS = 2016;
 
-/** bcrypt rounds for password and token hashing. */
-export const BCRYPT_ROUNDS = 10;
+/** bcrypt rounds for session token hashing. Tokens are random 48-byte values so 2^384
+ *  brute-force is already infeasible — work factor only needs to slow direct DB leaks. */
+export const BCRYPT_ROUNDS = 6;
 
 /** Access token lifetime passed to jose. */
 export const ACCESS_TOKEN_TTL = '15m';
