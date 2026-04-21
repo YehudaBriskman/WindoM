@@ -30,12 +30,12 @@ const STEPS: Step[] = [
   {
     icon: <Music size={36} />,
     title: 'Connect Spotify',
-    description: 'See what\'s playing right in your new tab. Go to Settings → Account to link your Spotify account.',
+    description: 'WindoM uses your own free Spotify Developer app — no shared limits. Create one at developer.spotify.com, add your redirect URI from Settings → Spotify, paste your Client ID, and hit connect. Full steps are in the ? guide.',
   },
   {
     icon: <Calendar size={36} />,
-    title: 'Connect your calendar',
-    description: 'Pull in Google Calendar events so your day is always visible. Settings → Account → Connect Google Calendar.',
+    title: 'Connect Google Calendar',
+    description: 'Create a free WindoM account (Settings → Account), then click "Connect Google Calendar". Your upcoming events will appear in the right sidebar.',
   },
 ];
 
