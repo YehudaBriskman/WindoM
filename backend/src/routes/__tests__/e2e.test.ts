@@ -522,32 +522,34 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
     expect(res.json<{ data: null }>().data).toBeNull();
   });
 
-  it('PUT then GET round-trips JSON data using valid settings fields', async () => {
+  it('PUT then GET round-trips JSON data using valid sectioned fields', async () => {
     const { accessToken } = await fullRegister();
-    const payload = { theme: 'dark', language: 'en', quotesEnabled: true };
+    const payload = { general: { showGreeting: true }, widgets: { showQuotes: true } };
 
     await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload });
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(accessToken) });
-    expect(res.json<{ data: typeof payload }>().data).toEqual(payload);
+    expect(res.json<{ data: typeof payload }>().data).toMatchObject(payload);
   });
 
-  it('PUT overwrites previous settings completely', async () => {
+  it('PUT deep-merges sections without erasing unrelated sections', async () => {
     const { accessToken } = await fullRegister();
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { theme: 'dark', language: 'en' } });
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { userName: 'Override' } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'First' }, clock: { showSeconds: false } } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'Override' } } });
 
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(accessToken) });
-    const data = res.json<{ data: Record<string, unknown> }>().data;
-    // Old keys gone after full overwrite
-    expect(data).toEqual({ userName: 'Override' });
+    const data = res.json<{ data: Record<string, Record<string, unknown>> }>().data;
+    // General section updated
+    expect(data?.general?.userName).toBe('Override');
+    // Clock section preserved from first PUT (deep-merge, not overwrite)
+    expect(data?.clock?.showSeconds).toBe(false);
   });
 
   it('user A settings are not visible to user B', async () => {
     const a = await fullRegister('a@e2e.test');
     const b = await fullRegister('b@e2e.test');
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(a.accessToken), payload: { userName: 'user-a-data' } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(a.accessToken), payload: { general: { userName: 'user-a-data' } } });
 
     const bRes = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(b.accessToken) });
     expect(bRes.json<{ data: null }>().data).toBeNull();
@@ -555,25 +557,25 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
 
   it('settings survive a logout + login cycle', async () => {
     const { accessToken: tok1, cookie } = await fullRegister();
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(tok1), payload: { spotifyConnected: true } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(tok1), payload: { integrations: { spotify: { connected: true } } } });
 
     // Logout then log back in
     await app.inject({ method: 'POST', url: '/auth/logout', cookies: { windom_refresh: cookie } });
     const newToken = (await login()).json<{ accessToken: string }>().accessToken;
 
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(newToken) });
-    expect(res.json<{ data: { spotifyConnected: boolean } }>().data?.spotifyConnected).toBe(true);
+    expect(res.json<{ data: { integrations: { spotify: { connected: boolean } } } }>().data?.integrations?.spotify?.connected).toBe(true);
   });
 
   it('settings row is written to DB with correct userId', async () => {
     const { accessToken } = await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { userName: 'val' } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'val' } } });
 
     const rows = await db.select().from(userSettings).where(eq(userSettings.userId, user.id));
     expect(rows).toHaveLength(1);
-    expect((rows[0].data as Record<string, string>)['userName']).toBe('val');
+    expect((rows[0].data as Record<string, Record<string, string>>)['general']['userName']).toBe('val');
   });
 });
 
@@ -587,7 +589,7 @@ describe('Journey 6 - account deletion', () => {
     const user = await getUserByEmail('user@e2e.test');
 
     // Create some related data
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { spotifyConnected: true } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'to-be-deleted' } } });
     await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'user@e2e.test' } });
 
     // Delete account
@@ -855,7 +857,7 @@ describe('Journey 10 - cross-service interactions', () => {
     const { accessToken } = await fullRegister();
 
     // Save settings
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { mainFocus: 'clock' } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'persisted-name' } } });
 
     // Change password
     await app.inject({
@@ -866,7 +868,7 @@ describe('Journey 10 - cross-service interactions', () => {
     // Settings still there after re-login with new password
     const newToken = (await login('user@e2e.test', 'Updated456!')).json<{ accessToken: string }>().accessToken;
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(newToken) });
-    expect(res.json<{ data: { mainFocus: string } }>().data?.mainFocus).toBe('clock');
+    expect(res.json<{ data: { general: { userName: string } } }>().data?.general?.userName).toBe('persisted-name');
   });
 
   it('OAuth accounts deleted when user account is deleted', async () => {
@@ -894,16 +896,16 @@ describe('Journey 10 - cross-service interactions', () => {
     const a = await fullRegister('a@same.test', 'Password123!', 'Alex');
     const b = await fullRegister('b@same.test', 'Password123!', 'Alex');
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(a.accessToken), payload: { mainFocus: 'focus-a' } });
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(b.accessToken), payload: { mainFocus: 'focus-b' } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(a.accessToken), payload: { general: { userName: 'focus-a' } } });
+    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(b.accessToken), payload: { general: { userName: 'focus-b' } } });
 
     const aSettings = (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(a.accessToken) }))
-      .json<{ data: { mainFocus: string } }>().data;
+      .json<{ data: { general: { userName: string } } }>().data;
     const bSettings = (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(b.accessToken) }))
-      .json<{ data: { mainFocus: string } }>().data;
+      .json<{ data: { general: { userName: string } } }>().data;
 
-    expect(aSettings?.mainFocus).toBe('focus-a');
-    expect(bSettings?.mainFocus).toBe('focus-b');
+    expect(aSettings?.general?.userName).toBe('focus-a');
+    expect(bSettings?.general?.userName).toBe('focus-b');
   });
 
   it('name update via PATCH /me persists in DB', async () => {

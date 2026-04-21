@@ -188,14 +188,14 @@ describe('settings', () => {
 
   it('PUT /settings saves and returns data', async () => {
     const { accessToken } = (await register('s2@s.com', 'password123', 'S2')).json<{ accessToken: string }>();
-    const payload = { theme: 'dark', language: 'en' };
+    const payload = { general: { userName: 'TestUser', showGreeting: true } };
 
     const putRes = await app.inject({ method: 'PUT', url: '/settings', headers: { Authorization: `Bearer ${accessToken}` }, payload });
     expect(putRes.statusCode).toBe(200);
-    expect(putRes.json<{ data: typeof payload }>().data).toEqual(payload);
+    expect(putRes.json<{ data: typeof payload }>().data).toMatchObject(payload);
 
     const getRes = await app.inject({ method: 'GET', url: '/settings', headers: { Authorization: `Bearer ${accessToken}` } });
-    expect(getRes.json<{ data: typeof payload }>().data).toEqual(payload);
+    expect(getRes.json<{ data: typeof payload }>().data).toMatchObject(payload);
   });
 });
 
