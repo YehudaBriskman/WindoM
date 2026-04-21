@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { z } from 'zod';
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { oauthStates, oauthAccounts } from '../db/schema.js';
@@ -129,19 +130,22 @@ export async function checkOAuthConflict(
 
 // ── Google code exchange ──────────────────────────────────────────────────
 
-interface GoogleTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-  expires_in: number;
-  scope: string;
-  error?: string;
-}
+const googleTokenSchema = z.object({
+  access_token: z.string(),
+  refresh_token: z.string().optional(),
+  expires_in: z.number(),
+  scope: z.string(),
+  error: z.string().optional(),
+});
 
-interface GoogleUserInfo {
-  sub: string;
-  email: string;
-  name: string;
-}
+const googleUserInfoSchema = z.object({
+  sub: z.string(),
+  email: z.string(),
+  name: z.string().default(''),
+});
+
+type GoogleTokenResponse = z.infer<typeof googleTokenSchema>;
+type GoogleUserInfo = z.infer<typeof googleUserInfoSchema>;
 
 /**
  * Exchange a Google auth code for tokens and fetch the user's profile.
@@ -174,13 +178,18 @@ export async function exchangeGoogleCode(
     return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
   }
 
-  const tokens = (await tokenRes.json()) as GoogleTokenResponse;
-  if (!tokens.access_token || tokens.error) return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
+  const tokenParsed = googleTokenSchema.safeParse(await tokenRes.json());
+  if (!tokenParsed.success || !tokenParsed.data.access_token || tokenParsed.data.error) {
+    return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
+  }
+  const tokens = tokenParsed.data;
 
   let userInfo: GoogleUserInfo;
   try {
     const infoRes = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: `Bearer ${tokens.access_token}` } });
-    userInfo = (await infoRes.json()) as GoogleUserInfo;
+    const userInfoParsed = googleUserInfoSchema.safeParse(await infoRes.json());
+    if (!userInfoParsed.success) return { ok: false, error: 'USERINFO_FAILED' };
+    userInfo = userInfoParsed.data;
   } catch {
     return { ok: false, error: 'USERINFO_FAILED' };
   }
@@ -190,13 +199,19 @@ export async function exchangeGoogleCode(
 
 // ── Spotify code exchange ─────────────────────────────────────────────────
 
-interface SpotifyTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-  expires_in: number;
-  scope: string;
-  error?: string;
-}
+const spotifyTokenSchema = z.object({
+  access_token: z.string(),
+  refresh_token: z.string().optional(),
+  expires_in: z.number(),
+  scope: z.string(),
+  error: z.string().optional(),
+});
+
+const spotifyMeSchema = z.object({
+  id: z.string(),
+});
+
+type SpotifyTokenResponse = z.infer<typeof spotifyTokenSchema>;
 
 function spotifyBasicAuth(): string {
   return `Basic ${Buffer.from(`${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`;
@@ -230,14 +245,18 @@ export async function exchangeSpotifyCode(
     return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
   }
 
-  const tokens = (await tokenRes.json()) as SpotifyTokenResponse;
-  if (!tokens.access_token || tokens.error) return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
+  const tokenParsed = spotifyTokenSchema.safeParse(await tokenRes.json());
+  if (!tokenParsed.success || !tokenParsed.data.access_token || tokenParsed.data.error) {
+    return { ok: false, error: 'TOKEN_EXCHANGE_FAILED' };
+  }
+  const tokens = tokenParsed.data;
 
   let providerUserId: string;
   try {
     const meRes = await fetch('https://api.spotify.com/v1/me', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
-    const me = (await meRes.json()) as { id: string };
-    providerUserId = me.id;
+    const meParsed = spotifyMeSchema.safeParse(await meRes.json());
+    if (!meParsed.success) return { ok: false, error: 'USERINFO_FAILED' };
+    providerUserId = meParsed.data.id;
   } catch {
     return { ok: false, error: 'USERINFO_FAILED' };
   }

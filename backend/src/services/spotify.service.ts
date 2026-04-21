@@ -77,21 +77,23 @@ function normalizeTrack(item: RawSpotifyTrack): SpotifyTrack {
   };
 }
 
-async function getSpotifyToken(userId: string): Promise<string | null> {
+async function getSpotifyToken(userId: string): Promise<Result<string, SpotifyError>> {
   const [account] = await db
     .select()
     .from(oauthAccounts)
     .where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, 'spotify')))
     .limit(1);
 
-  if (!account) return null;
+  if (!account) return { ok: false, error: 'NOT_CONNECTED' };
 
   // PKCE (BYOA) mode: use the user's own client_id in the token body - no shared Authorization header.
   // Legacy mode: use the shared app's Basic auth header.
-  if (account.providerClientId) {
-    return getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, pkceClientId: account.providerClientId, extraBody: {} });
-  }
-  return getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, authHeader: spotifyBasicAuth(), extraBody: {} });
+  const tokenResult = account.providerClientId
+    ? await getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, pkceClientId: account.providerClientId, extraBody: {} })
+    : await getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, authHeader: spotifyBasicAuth(), extraBody: {} });
+
+  if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
+  return { ok: true, data: tokenResult.data };
 }
 
 /** Resolve the best available Spotify device ID to target for playback commands. */
@@ -119,8 +121,9 @@ export async function getNowPlaying(userId: string): Promise<Result<NowPlayingRe
   const cached = nowPlayingCache.get(userId);
   if (cached && Date.now() < cached.expiresAt) return cached.data;
 
-  const token = await getSpotifyToken(userId);
-  if (!token) return { ok: false, error: 'NOT_CONNECTED' };
+  const tokenResult = await getSpotifyToken(userId);
+  if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
+  const token = tokenResult.data;
 
   const res = await fetch(`${SPOTIFY_API}/me/player/currently-playing`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -163,8 +166,9 @@ export async function getTopTracks(
   limit: number,
   timeRange: string,
 ): Promise<Result<SpotifyTrack[], SpotifyError>> {
-  const token = await getSpotifyToken(userId);
-  if (!token) return { ok: false, error: 'NOT_CONNECTED' };
+  const tokenResult = await getSpotifyToken(userId);
+  if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
+  const token = tokenResult.data;
 
   const safeLimit = Math.min(MAX_TOP_TRACKS, Math.max(1, limit || DEFAULT_TOP_TRACKS));
   const safeRange: TimeRange = VALID_TIME_RANGES.includes(timeRange as TimeRange)
@@ -186,8 +190,9 @@ export async function sendPlaybackCommand(
   userId: string,
   command: PlaybackCommand,
 ): Promise<Result<void, SpotifyError>> {
-  const token = await getSpotifyToken(userId);
-  if (!token) return { ok: false, error: 'NOT_CONNECTED' };
+  const tokenResult = await getSpotifyToken(userId);
+  if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
+  const token = tokenResult.data;
 
   const deviceId = await resolveActiveDeviceId(token);
   if (!deviceId) return { ok: false, error: 'NO_DEVICE' };
