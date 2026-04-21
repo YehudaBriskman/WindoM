@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
 import { apiGet } from '../lib/api';
 import { useSettings } from '../contexts/SettingsContext';
@@ -10,18 +10,30 @@ export function useCalendar() {
   const calendarDays = settings.integrations.calendar.days;
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
-  // Load events - from backend if connected, otherwise from local storage
+  const fetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load events - from backend if connected, otherwise from local storage.
+  // calendarDays changes are debounced 500ms so rapid setting adjustments
+  // don't fire multiple API calls.
   useEffect(() => {
-    if (calendarConnected) {
+    if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
+
+    if (!calendarConnected) {
+      syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
+      return;
+    }
+
+    fetchTimerRef.current = setTimeout(() => {
       apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`)
         .then((data) => setEvents(data.events))
         .catch(() => {
-          // Fall back to local events on error
           syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
         });
-    } else {
-      syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
-    }
+    }, 500);
+
+    return () => {
+      if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
+    };
   }, [calendarConnected, calendarDays]);
 
   // Cross-tab sync for local events
