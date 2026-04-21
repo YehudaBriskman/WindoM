@@ -4,15 +4,18 @@ import * as calendarService from '../services/calendar.service.js';
 
 const calendarQuerySchema = z.object({
   days: z.coerce.number().int().min(1).max(90).default(7),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
 });
 
 export async function getCalendarEventsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const parsed = calendarQuerySchema.safeParse(req.query);
   if (!parsed.success) {
-    void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'days must be an integer between 1 and 90' });
+    void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: parsed.error.issues[0]?.message ?? 'Invalid query params' });
     return;
   }
-  const result = await calendarService.getCalendarEvents(req.user.sub, parsed.data.days);
+  const { days, limit, offset } = parsed.data;
+  const result = await calendarService.getCalendarEvents(req.user.sub, days);
 
   if (!result.ok) {
     if (result.error === 'NOT_CONNECTED') {
@@ -23,6 +26,9 @@ export async function getCalendarEventsController(req: FastifyRequest, reply: Fa
     return;
   }
 
+  const all = result.data;
+  const page = all.slice(offset, offset + limit);
+
   reply.header('Cache-Control', 'private, max-age=60');
-  void reply.send({ events: result.data });
+  void reply.send({ events: page, total: all.length, limit, offset });
 }

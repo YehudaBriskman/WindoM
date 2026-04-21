@@ -28,6 +28,11 @@ export interface TokenPair {
   rawRefreshToken: string;
 }
 
+/** TokenPair extended with email delivery status, returned only by register. */
+export interface RegisterResult extends TokenPair {
+  emailSent: boolean;
+}
+
 /** User data returned by /me and stored in access token payload. */
 export interface UserRecord {
   id: string;

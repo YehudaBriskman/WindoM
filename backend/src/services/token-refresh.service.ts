@@ -25,6 +25,10 @@ const refreshResponseSchema = z.object({
   expires_in: z.number(),
 });
 
+// Deduplicates concurrent refresh calls for the same account — the second caller
+// awaits the first refresh rather than triggering a parallel token rotation race.
+const inflight = new Map<string, Promise<Result<string, RefreshError>>>();
+
 /**
  * Return a valid decrypted access token for the given account.
  * Automatically refreshes using the stored refresh token if the current one
@@ -35,14 +39,10 @@ const refreshResponseSchema = z.object({
  * - TOKEN_REFRESH_NETWORK_ERROR: network/5xx failure — transient, safe to retry
  * - TOKEN_REFRESH_FAILED: malformed provider response or missing refresh token
  */
-export async function getValidAccessToken(
+async function doRefresh(
   account: OAuthAccountRow,
   refreshConfig: TokenRefreshConfig,
 ): Promise<Result<string, RefreshError>> {
-  const expiresAt = account.tokenExpiresAt ? new Date(account.tokenExpiresAt) : null;
-  const isStillValid = expiresAt && expiresAt.getTime() - Date.now() > TOKEN_REFRESH_BUFFER_MS;
-
-  if (isStillValid) return { ok: true, data: await decryptToken(account.accessTokenEnc) };
   if (!account.refreshTokenEnc) return { ok: false, error: 'TOKEN_REFRESH_FAILED' };
 
   const refreshToken = await decryptToken(account.refreshTokenEnc);
@@ -92,4 +92,27 @@ export async function getValidAccessToken(
     .where(eq(oauthAccounts.id, account.id));
 
   return { ok: true, data: access_token };
+}
+
+/**
+ * Return a valid decrypted access token for the given account.
+ * Automatically refreshes using the stored refresh token if the current one
+ * expires within TOKEN_REFRESH_BUFFER_MS. Updates the DB on refresh.
+ * Concurrent calls for the same account share a single in-flight refresh promise.
+ */
+export async function getValidAccessToken(
+  account: OAuthAccountRow,
+  refreshConfig: TokenRefreshConfig,
+): Promise<Result<string, RefreshError>> {
+  const expiresAt = account.tokenExpiresAt ? new Date(account.tokenExpiresAt) : null;
+  const isStillValid = expiresAt && expiresAt.getTime() - Date.now() > TOKEN_REFRESH_BUFFER_MS;
+
+  if (isStillValid) return { ok: true, data: await decryptToken(account.accessTokenEnc) };
+
+  const existing = inflight.get(account.id);
+  if (existing) return existing;
+
+  const promise = doRefresh(account, refreshConfig).finally(() => inflight.delete(account.id));
+  inflight.set(account.id, promise);
+  return promise;
 }
