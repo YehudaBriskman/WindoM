@@ -3806,26 +3806,26 @@ body.focus-exiting .sidebar-container {
   top: 60px;
   right: 16px;
   z-index: 1201;
-  width: min(400px, calc(100vw - 32px));
-  max-height: calc(100vh - 80px);
-  border-radius: 16px;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(480px, calc(100vh - 80px));
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: onboarding-slide-up 0.3s var(--spring-gentle);
+  animation: onboarding-slide-up 0.25s var(--spring-gentle);
 }
 
 .guide-panel-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 16px 18px 13px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 13px 15px 11px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   flex-shrink: 0;
   gap: 10px;
 }
@@ -3881,8 +3881,8 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin: 0 12px 0;
-  padding: 11px 14px;
+  margin: 10px 12px 0;
+  padding: 9px 12px;
   border-radius: 10px;
   background: rgba(123, 158, 245, 0.1);
   border: 1px solid rgba(123, 158, 245, 0.22);
@@ -3920,7 +3920,7 @@ body.focus-exiting .sidebar-container {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.22);
-  padding: 10px 18px 4px;
+  padding: 8px 14px 3px;
 }
 
 /* ── Scrollable body ── */
@@ -3954,19 +3954,19 @@ body.focus-exiting .sidebar-container {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 12px 18px;
+  padding: 9px 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   text-align: left;
   transition: background 0.15s;
 }
 .guide-section-header:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
 }
 .guide-section.open .guide-section-header {
-  background: rgba(255, 255, 255, 0.05);
+  background: none;
 }
 
 .guide-section-meta {
@@ -4002,10 +4002,10 @@ body.focus-exiting .sidebar-container {
 
 /* ── Section body ── */
 .guide-section-body {
-  padding: 0 18px 14px;
+  padding: 0 14px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* ── Numbered steps ── */
@@ -4015,7 +4015,7 @@ body.focus-exiting .sidebar-container {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 5px;
   counter-reset: guide-step;
 }
 .guide-block-steps li {
@@ -4049,16 +4049,16 @@ body.focus-exiting .sidebar-container {
 .guide-block-note {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 7px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 .guide-block-note p {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.58);
-  line-height: 1.5;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  line-height: 1.45;
   margin: 0;
 }
 
@@ -4066,16 +4066,16 @@ body.focus-exiting .sidebar-container {
 .guide-block-tip {
   background: rgba(255, 220, 100, 0.07);
   border: 1px solid rgba(255, 220, 100, 0.18);
-  border-radius: 8px;
-  padding: 10px 12px;
+  border-radius: 7px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 .guide-block-tip p {
-  font-size: 0.8rem;
-  color: rgba(255, 220, 100, 0.7);
-  line-height: 1.5;
+  font-size: 0.78rem;
+  color: rgba(255, 220, 100, 0.68);
+  line-height: 1.45;
   margin: 0;
 }
 
