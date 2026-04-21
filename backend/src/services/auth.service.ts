@@ -13,27 +13,31 @@ import {
 } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
-import type { Result, TokenPair, SessionMeta, AuthError } from '../types/auth.types.js';
+import type { Result, TokenPair, RegisterResult, SessionMeta, AuthError } from '../types/auth.types.js';
 
-/** Register a new user with email + password. Returns TOKEN_PAIR or EMAIL_TAKEN. */
+/** Register a new user with email + password. Returns RegisterResult or EMAIL_TAKEN. */
 export async function register(
   email: string,
   password: string,
   name: string,
   meta: SessionMeta,
-): Promise<Result<TokenPair, AuthError>> {
+): Promise<Result<RegisterResult, AuthError>> {
   const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
   if (existing.length > 0) return { ok: false, error: 'EMAIL_TAKEN' };
 
   const passwordHash = await hashPassword(password);
   const [user] = await db.insert(users).values({ email, name, passwordHash }).returning();
 
-  // Send verification email - fire-and-forget so register doesn't fail on email errors
-  void sendVerification(user.id).catch((err) => logger.error({ err }, 'register: verification email failed'));
+  const [emailSent, accessToken, rawRefreshToken] = await Promise.all([
+    sendVerification(user.id).then(() => true).catch((err: unknown) => {
+      logger.error({ err, userId: user.id }, 'register: verification email failed');
+      return false;
+    }),
+    signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false }),
+    createSession(user.id, meta),
+  ]);
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false });
-  const rawRefreshToken = await createSession(user.id, meta);
-  return { ok: true, data: { accessToken, rawRefreshToken } };
+  return { ok: true, data: { accessToken, rawRefreshToken, emailSent } };
 }
 
 /** Authenticate with email + password. Returns TOKEN_PAIR or INVALID_CREDENTIALS. */
