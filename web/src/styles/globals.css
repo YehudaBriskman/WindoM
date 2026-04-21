@@ -3533,3 +3533,374 @@ body.focus-exiting .sidebar-container {
   color: rgba(250, 190, 70, 0.9);
 }
 
+/* ============================================================
+   Onboarding Modal
+   ============================================================ */
+.onboarding-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: onboarding-fade-in 0.3s ease;
+}
+
+@keyframes onboarding-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.onboarding-modal {
+  position: relative;
+  width: min(420px, 90vw);
+  padding: 36px 32px 28px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: onboarding-slide-up 0.35s var(--spring-gentle);
+}
+
+@keyframes onboarding-slide-up {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.onboarding-skip {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.onboarding-skip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.onboarding-icon {
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 4px;
+}
+
+.onboarding-body {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: -0.01em;
+}
+
+.onboarding-description {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.55;
+}
+
+.onboarding-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.onboarding-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+.onboarding-dot.active {
+  background: rgba(255, 255, 255, 0.85);
+  transform: scale(1.2);
+}
+
+.onboarding-footer {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.onboarding-btn-back {
+  flex: 0 0 auto;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.onboarding-btn-back:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.onboarding-btn-next {
+  flex: 1;
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.onboarding-btn-next:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* ============================================================
+   Spotify Notice (existing-user one-time banner)
+   ============================================================ */
+.spotify-notice {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: notice-slide-up 0.4s var(--spring-gentle);
+  white-space: nowrap;
+}
+
+@keyframes notice-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);     }
+}
+
+.spotify-notice-icon {
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.spotify-notice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.spotify-notice-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.spotify-notice-sub {
+  font-size: 0.775rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.spotify-notice-connect {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.spotify-notice-connect:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.spotify-notice-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+.spotify-notice-dismiss:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ============================================================
+   Guide Button & Panel
+   ============================================================ */
+.guide-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+  flex-shrink: 0;
+}
+.guide-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.95);
+  transform: scale(1.08);
+}
+
+.guide-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: onboarding-fade-in 0.2s ease;
+}
+
+.guide-panel {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  z-index: 1201;
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100vh - 80px);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: onboarding-slide-up 0.3s var(--spring-gentle);
+}
+
+.guide-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.guide-panel-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.guide-panel-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 3px 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.guide-panel-close:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.guide-panel-body {
+  overflow-y: auto;
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.guide-section {
+  padding: 10px 18px;
+  border-radius: 0;
+}
+.guide-section:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.guide-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+}
+
+.guide-section-steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  counter-reset: guide-step;
+}
+
+.guide-section-steps li {
+  counter-increment: guide-step;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.45;
+  padding-left: 18px;
+  position: relative;
+}
+.guide-section-steps li::before {
+  content: counter(guide-step) '.';
+  position: absolute;
+  left: 0;
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 0.75rem;
+}
+
