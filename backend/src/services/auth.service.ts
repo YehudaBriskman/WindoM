@@ -89,16 +89,23 @@ export async function refresh(
   }
 
   logger.warn({ sessionId: session.id, renewal: session.renewalCount + 1 }, 'refresh: rotating session');
-  await revokeSession(session.id);
 
-  const [user] = await db.select().from(users).where(eq(users.id, session.userId)).limit(1);
+  // Revoke old session and fetch user in parallel — both are independent at this point.
+  const [[user]] = await Promise.all([
+    db.select({ id: users.id, email: users.email, name: users.name, emailVerified: users.emailVerified })
+      .from(users).where(eq(users.id, session.userId)).limit(1),
+    revokeSession(session.id),
+  ]);
+
   if (!user) {
     logger.error({ userId: session.userId }, 'refresh: USER_NOT_FOUND');
     return { ok: false, error: 'USER_NOT_FOUND' };
   }
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
-  const rawRefreshToken = await createSession(user.id, meta, session.id, session.renewalCount + 1);
+  const [accessToken, rawRefreshToken] = await Promise.all([
+    signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified }),
+    createSession(user.id, meta, session.id, session.renewalCount + 1),
+  ]);
   logger.warn({ userId: user.id }, 'refresh: new session created');
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
