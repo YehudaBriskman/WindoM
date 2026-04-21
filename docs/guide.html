@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WindoM - User Guide</title>
+  <meta name="description" content="How to use WindoM — connect Spotify, set up Google Calendar, use the Focus timer, and customize your new tab." />
+  <meta property="og:title" content="WindoM - User Guide" />
+  <meta property="og:description" content="Step-by-step guide to every WindoM feature — Spotify BYOA setup, Google Calendar, Focus timer, backgrounds, and more." />
+  <meta property="og:image" content="https://windom.app/images/preview.png" />
+  <meta property="og:url" content="https://windom.app/guide.html" />
+  <meta property="og:type" content="website" />
+  <link rel="canonical" href="https://windom.app/guide.html" />
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png" />
+  <link rel="apple-touch-icon" href="icons/icon128.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080810;
+      --surface: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.08);
+      --text: #e8e8f0;
+      --muted: #6b6b85;
+      --accent: #7b9ef5;
+      --accent2: #a78bfa;
+      --green: #6dca6d;
+      --amber: #e2b96e;
+      --spotify: #1DB954;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    .wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 24px 100px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 64px 0 44px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 52px;
+    }
+
+    .header-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      margin-bottom: 28px;
+      transition: color 0.2s ease;
+    }
+    .header-back:hover { color: var(--accent); }
+    .header-back svg { width: 14px; height: 14px; }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(123,158,245,0.1);
+      border: 1px solid rgba(123,158,245,0.2);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.76rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    header h1 {
+      font-size: clamp(1.9rem, 4vw, 2.6rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #fff 30%, #a78bfa 70%, #7b9ef5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    header > p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 0;
+    }
+
+    nav {
+      display: flex;
+      gap: 8px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    nav a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+    nav a:hover {
+      color: var(--accent);
+      border-color: rgba(123,158,245,0.25);
+      background: rgba(123,158,245,0.06);
+    }
+
+    /* ── TYPOGRAPHY ── */
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 52px 0 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    h2 .section-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    h3 {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 28px 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    p { color: var(--muted); margin-bottom: 12px; font-size: 0.97rem; }
+    ul, ol { color: var(--muted); padding-left: 22px; margin-bottom: 12px; font-size: 0.97rem; }
+    li { margin-bottom: 6px; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    strong { color: var(--text); }
+
+    /* ── CODE ── */
+    code {
+      background: rgba(255,255,255,0.06);
+      color: #e2c97e;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-size: 0.87em;
+      font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      border: 1px solid rgba(255,255,255,0.08);
+      word-break: break-all;
+    }
+
+    pre {
+      background: rgba(0,0,0,0.35);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      max-width: 100%;
+      margin: 12px 0 20px;
+    }
+
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #d4d4d4;
+      font-size: 0.88rem;
+      white-space: pre;
+      word-break: normal;
+    }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-block;
+      background: rgba(92,184,92,0.1);
+      color: var(--green);
+      border: 1px solid rgba(92,184,92,0.25);
+      border-radius: 999px;
+      padding: 3px 12px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-left: 8px;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+    .badge.optional {
+      background: rgba(123,158,245,0.1);
+      color: var(--accent);
+      border-color: rgba(123,158,245,0.25);
+    }
+    .badge.byoa {
+      background: rgba(29,185,84,0.1);
+      color: var(--spotify);
+      border-color: rgba(29,185,84,0.25);
+    }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      background: rgba(123,158,245,0.05);
+      border: 1px solid rgba(123,158,245,0.15);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 14px 18px;
+      margin: 16px 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+    .callout strong { color: var(--text); }
+
+    .callout.tip {
+      background: rgba(92,184,92,0.05);
+      border-color: rgba(92,184,92,0.15);
+      border-left-color: var(--green);
+    }
+    .callout.warning {
+      background: rgba(226,185,110,0.05);
+      border-color: rgba(226,185,110,0.15);
+      border-left-color: var(--amber);
+    }
+    .callout.spotify {
+      background: rgba(29,185,84,0.05);
+      border-color: rgba(29,185,84,0.15);
+      border-left-color: var(--spotify);
+    }
+
+    /* ── STEPS ── */
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      min-width: 28px;
+      height: 28px;
+      background: rgba(123,158,245,0.12);
+      border: 1px solid rgba(123,158,245,0.25);
+      color: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .step-body { flex: 1; min-width: 0; }
+    .step-body p { margin-bottom: 8px; }
+    .step-body p:last-child { margin-bottom: 0; }
+
+    /* ── SCREENSHOT PLACEHOLDER ── */
+    .screenshot {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin: 16px 0;
+      display: block;
+      background: rgba(255,255,255,0.03);
+    }
+
+    /* ── WHAT YOU GET GRID ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .feature-card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .feature-card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ── REDIRECT URI BOX ── */
+    .redirect-uri-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin: 10px 0;
+    }
+
+    .redirect-uri-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+      font-weight: 500;
+    }
+
+    .redirect-uri-value {
+      font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+      font-size: 0.82rem;
+      color: #e2c97e;
+      word-break: break-all;
+      flex: 1;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 60px;
+    }
+
+    footer a { color: var(--muted); text-decoration: none; margin: 0 12px; }
+    footer a:hover { color: var(--text); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    header { animation: fadeUp 0.5s ease both; }
+
+    /* ── SCROLL-DRIVEN SVG BACKGROUND ── */
+    .scroll-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .scroll-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(123,158,245,0.09) 1px, transparent 1px);
+      background-size: 48px 48px;
+      animation: dots-fade linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes dots-fade {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0.25; transform: translateY(24px); }
+    }
+
+    .bg-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+    .bg-orb-1 {
+      animation: orb1-move linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes orb1-move {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(70px, -160px) scale(1.18); }
+    }
+
+    .bg-orb-2 {
+      animation: orb2-move linear both;
+      animation-timeline: scroll(root);
+    }
+    @keyframes orb2-move {
+      from { transform: translate(0, 0) scale(1); opacity: 1; }
+      to   { transform: translate(-90px, -140px) scale(0.82); opacity: 0.45; }
+    }
+
+    .bg-path-1 {
+      stroke-dasharray: 3000;
+      stroke-dashoffset: 3000;
+      animation: path-draw-1 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0% 75%;
+    }
+    @keyframes path-draw-1 { to { stroke-dashoffset: 0; } }
+
+    .bg-path-2 {
+      stroke-dasharray: 3200;
+      stroke-dashoffset: 3200;
+      animation: path-draw-2 linear both;
+      animation-timeline: scroll(root);
+      animation-range: 10% 90%;
+    }
+    @keyframes path-draw-2 { to { stroke-dashoffset: 0; } }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-bg" aria-hidden="true">
+    <svg class="bg-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="g-blue" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#7b9ef5" stop-opacity="0.38"/>
+          <stop offset="100%" stop-color="#7b9ef5" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="g-purple" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#a78bfa" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#a78bfa" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <circle class="bg-orb bg-orb-1" cx="190" cy="270" r="300" fill="url(#g-blue)"/>
+      <circle class="bg-orb bg-orb-2" cx="1280" cy="520" r="240" fill="url(#g-purple)"/>
+      <path class="bg-path-1" d="M -220 380 Q 320 80 720 400 Q 1120 720 1660 280" stroke="#7b9ef5" stroke-width="1.2" stroke-opacity="0.18"/>
+      <path class="bg-path-2" d="M -220 640 Q 380 880 760 580 Q 1140 280 1660 620" stroke="#a78bfa" stroke-width="1" stroke-opacity="0.13"/>
+    </svg>
+  </div>
+
+<div class="wrap">
+
+  <header>
+    <a href="/" class="header-back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 12L6 8l4-4"/>
+      </svg>
+      Back to home
+    </a>
+    <div class="header-badge">User Guide</div>
+    <h1>How to use WindoM</h1>
+    <p>Everything in one place — from connecting Spotify to customizing your clock.</p>
+    <nav>
+      <a href="#account">Account</a>
+      <a href="#spotify">Spotify</a>
+      <a href="#calendar">Calendar</a>
+      <a href="#focus">Focus Timer</a>
+      <a href="#background">Background</a>
+      <a href="#weather">Weather</a>
+      <a href="#links">Quick Links</a>
+      <a href="#clock">Clock</a>
+    </nav>
+  </header>
+
+
+  <!-- ─────────────────────────────────────────────────
+       WHAT WORKS WITHOUT AN ACCOUNT
+  ───────────────────────────────────────────────── -->
+
+  <div class="callout tip">
+    <strong>No account required for most things.</strong>
+    Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in.
+    An account is only needed for Google Calendar sync and Spotify. You can always add one later.
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-card-title">🕐 Clock &amp; Date</div>
+      <div class="feature-card-desc">12h / 24h, custom color, font size, date format. Always on, no account needed.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">🌤 Weather</div>
+      <div class="feature-card-desc">Live temperature and conditions. Needs a free OpenWeatherMap API key.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">🖼 Background</div>
+      <div class="feature-card-desc">Rotating Unsplash photos or upload your own image. Stored locally.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">⏱ Focus Timer</div>
+      <div class="feature-card-desc">Set an intention and dim everything else. No account needed.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">🔗 Quick Links</div>
+      <div class="feature-card-desc">Pin your most-used sites to the dock bar at the top.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">📋 Todos</div>
+      <div class="feature-card-desc">Local task list in the right sidebar. Stays on your device.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">🎵 Spotify</div>
+      <div class="feature-card-desc">Now-playing in the top dock. Needs an account + a free Spotify Developer app.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-title">📅 Google Calendar</div>
+      <div class="feature-card-desc">Upcoming events in the right sidebar. Needs an account + Google authorization.</div>
+    </div>
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       ACCOUNT
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="account">
+    <span class="section-icon" style="background:rgba(123,158,245,0.1);">👤</span>
+    Create a WindoM Account
+    <span class="badge optional">Optional</span>
+  </h2>
+
+  <p>
+    A WindoM account syncs your settings across devices and is required to connect Google Calendar or Spotify.
+    Registration is free and takes under a minute.
+  </p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Open the gear icon (<strong>Settings</strong>) in the bottom-left corner of your new tab, then go to the <strong>Account</strong> tab.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Enter your email address and a password (minimum 8 characters) and click <strong>Create account</strong>.</p>
+      <p>Or click <strong>Continue with Google</strong> if you prefer not to manage a password.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>Check your inbox for a verification email and click the link inside. You're signed in.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <strong>Settings sync</strong> — once signed in, your clock format, background preference, widgets, and quick links all sync to the cloud and appear on any device where you're logged in to WindoM.
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       SPOTIFY
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="spotify">
+    <span class="section-icon" style="background:rgba(29,185,84,0.12);">🎵</span>
+    Connect Spotify
+    <span class="badge byoa">BYOA</span>
+  </h2>
+
+  <p>
+    WindoM shows your Spotify now-playing card directly in the new tab dock.
+    Because of how Spotify's API works, each user connects their own free Spotify Developer app —
+    this keeps your account private and avoids any shared rate limits.
+    The whole setup takes about 2 minutes.
+  </p>
+
+  <div class="callout spotify">
+    <strong>Why do I need my own app?</strong><br>
+    Spotify's Web API requires an OAuth app registered in their developer portal.
+    Instead of routing everyone through a shared WindoM app (which has quota limits and privacy implications),
+    each user creates their own free app — you get full control and there are no limits to worry about.
+  </div>
+
+  <h3>Before you start</h3>
+  <ul>
+    <li>You need a WindoM account (see above — free, takes 1 minute)</li>
+    <li>You need a Spotify account (free or premium both work)</li>
+  </ul>
+
+  <h3>Step 1 — Create a Spotify Developer app</h3>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer">developer.spotify.com/dashboard</a> and log in with your Spotify account.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Click <strong>Create app</strong>.</p>
+      <ul>
+        <li><strong>App name</strong> — anything you like, e.g. <em>My WindoM</em></li>
+        <li><strong>App description</strong> — anything, e.g. <em>Personal WindoM integration</em></li>
+        <li><strong>Redirect URI</strong> — leave this empty for now, you'll add it in Step 2</li>
+        <li><strong>Which API/SDKs are you planning to use?</strong> — select <strong>Web API</strong></li>
+      </ul>
+      <p>Agree to the terms and click <strong>Save</strong>.</p>
+    </div>
+  </div>
+
+  <h3>Step 2 — Copy your Redirect URI from WindoM</h3>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>
+        Open your WindoM new tab, click <strong>Settings</strong> (gear icon, bottom-left), then go to the <strong>Spotify</strong> tab.
+      </p>
+      <p>
+        You'll see a box labelled <strong>Redirect URI</strong> with a value that looks like this:
+      </p>
+      <div class="redirect-uri-box">
+        <span class="redirect-uri-label">Redirect URI</span>
+        <span class="redirect-uri-value">https://&lt;your-extension-id&gt;.chromiumapp.org/</span>
+      </div>
+      <p>Click the <strong>Copy</strong> button next to it. This URI is unique to your Chrome installation — do not type it manually.</p>
+    </div>
+  </div>
+
+  <h3>Step 3 — Add the Redirect URI to your Spotify app</h3>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p>Go back to the <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer">Spotify Developer Dashboard</a>, click on your app, then click <strong>Settings</strong> (top right of your app page).</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <p>Scroll to the <strong>Redirect URIs</strong> field. Paste the URI you copied from WindoM, then click <strong>Add</strong>, then <strong>Save</strong> at the bottom.</p>
+    </div>
+  </div>
+
+  <div class="callout warning">
+    <strong>This step is easy to miss.</strong>
+    If you skip adding the Redirect URI you'll get an <em>Invalid Client</em> error when you try to connect.
+    The URI must match exactly — copy it using the button in WindoM, don't type it by hand.
+  </div>
+
+  <h3>Step 4 — Copy your Client ID and connect</h3>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <p>Still on your Spotify app's Settings page, copy the <strong>Client ID</strong> at the top. It looks like a 32-character hex string, e.g. <code>b3d9a1f0c84e...</code></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <p>Go back to WindoM → Settings → <strong>Spotify</strong> tab. Paste the Client ID into the input field and click <strong>Save &amp; Connect</strong>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-body">
+      <p>A Spotify authorization popup will appear. Click <strong>Agree</strong>.</p>
+      <p>You're connected. The now-playing card will appear in the top dock the next time you play a track.</p>
+    </div>
+  </div>
+
+  <h3>Troubleshooting</h3>
+
+  <div class="callout">
+    <strong>Error: Invalid Client</strong> — the Client ID is wrong or the Redirect URI wasn't saved correctly in the Spotify dashboard.
+    Double-check both. The Redirect URI must be copied from WindoM's Spotify tab, not typed manually.
+  </div>
+
+  <div class="callout">
+    <strong>Error: Connection cancelled</strong> — you closed the Spotify popup before completing authorization.
+    Click Save &amp; Connect again and complete the authorization flow.
+  </div>
+
+  <div class="callout tip">
+    <strong>Changed Chrome profile or reinstalled Chrome?</strong>
+    Your Redirect URI will be different. Go to Settings → Spotify tab to see the new URI,
+    add it to your Spotify app settings (you can have multiple Redirect URIs), then reconnect.
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       GOOGLE CALENDAR
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="calendar">
+    <span class="section-icon" style="background:rgba(66,133,244,0.12);">📅</span>
+    Connect Google Calendar
+  </h2>
+
+  <p>
+    WindoM pulls your upcoming Google Calendar events into the right sidebar so your day is always visible.
+    This requires a WindoM account and a one-time Google authorization.
+  </p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Make sure you have a WindoM account and are signed in (Settings → Account tab).</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>In the Account tab, scroll to <strong>Connected Services</strong>. Click <strong>Connect</strong> on the Google Calendar card.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>A Google authorization window opens. Choose your Google account and click <strong>Allow</strong>.</p>
+      <p>WindoM only requests read-only access to your calendar events — it cannot create, edit, or delete anything.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p>Done. Your upcoming events appear in the right sidebar, grouped by day.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <strong>Look-ahead window</strong> — by default events for the next 7 days are shown.
+    You can change this to 14 or 30 days in Settings → <strong>Calendar</strong>.
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       FOCUS TIMER
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="focus">
+    <span class="section-icon" style="background:rgba(167,139,250,0.12);">⏱</span>
+    Focus Timer
+  </h2>
+
+  <p>
+    The focus timer lets you set an intention for your session.
+    While active, the background dims and all other UI fades away so nothing distracts you.
+  </p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Click the focus input in the center of your new tab — it says something like <em>"What are you working on?"</em></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Type what you're working on and press <strong>Enter</strong>. The timer starts and the tab dims.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>When you're done, click anywhere on the screen or press <strong>Escape</strong> to exit focus mode.</p>
+    </div>
+  </div>
+
+  <div class="callout tip">
+    <strong>Focus presets</strong> — go to Settings → <strong>Focus</strong> to save your most common focus tasks as one-click presets, so you don't have to type the same thing every day.
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       BACKGROUND
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="background">
+    <span class="section-icon" style="background:rgba(245,158,11,0.12);">🖼</span>
+    Change Your Background
+  </h2>
+
+  <p>
+    WindoM supports two background sources: curated photos from Unsplash, or an image you upload from your device.
+  </p>
+
+  <h3>Option A — Unsplash photos</h3>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Open Settings → <strong>Background</strong> tab. Select <strong>Unsplash</strong>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>
+        Optionally, paste a <strong>Collection ID</strong> from Unsplash to curate the photo style.
+        To find a collection ID: go to <a href="https://unsplash.com/collections" target="_blank" rel="noreferrer">unsplash.com/collections</a>,
+        open any collection, and copy the number from the URL —
+        e.g. <code>unsplash.com/collections/<strong>4324303</strong>/...</code>
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>A new photo loads each time you open a new tab.</p>
+    </div>
+  </div>
+
+  <h3>Option B — Your own image</h3>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Open Settings → <strong>Background</strong> tab. Select <strong>Local</strong>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Click <strong>Choose image</strong> and select any photo from your device. It's stored locally — never uploaded anywhere.</p>
+    </div>
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       WEATHER
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="weather">
+    <span class="section-icon" style="background:rgba(56,189,248,0.12);">🌤</span>
+    Weather Widget
+    <span class="badge optional">Needs API Key</span>
+  </h2>
+
+  <p>
+    The weather widget shows live temperature and conditions in the top bar.
+    It uses OpenWeatherMap's free tier — you need your own API key.
+  </p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Go to <a href="https://openweathermap.org" target="_blank" rel="noreferrer">openweathermap.org</a> and create a free account.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>
+        In your account dashboard, go to <strong>API Keys</strong> and copy your default key
+        (or create a new one labelled something like <em>WindoM</em>).
+      </p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>Open WindoM Settings → <strong>Weather</strong> tab. Paste your API key and enter your city name (e.g. <code>Tel Aviv</code> or <code>New York</code>). Choose °C or °F and click <strong>Save</strong>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <p>The weather widget appears in the top-left of your new tab.</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>New API key not working?</strong>
+    OpenWeatherMap free keys can take up to 2 hours to activate after creation. If you get an error right after creating the key, wait a bit and try again.
+  </div>
+
+  <div class="callout tip">
+    <strong>Free tier limits</strong> — OpenWeatherMap's free plan allows 1,000 API calls per day.
+    WindoM caches the weather for 10 minutes per new tab, so you'll never come close to that limit.
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       QUICK LINKS
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="links">
+    <span class="section-icon" style="background:rgba(52,211,153,0.12);">🔗</span>
+    Quick Links &amp; Dock Bar
+  </h2>
+
+  <p>
+    Pin your most-used sites to the dock bar that runs across the top of every new tab.
+    Each link shows as a favicon icon — hover to see the label.
+  </p>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <p>Open Settings → <strong>Links</strong> tab.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <p>Click <strong>Add link</strong>. Enter the full URL (e.g. <code>https://github.com</code>) and a display name.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <p>Drag to reorder. Click the <strong>×</strong> on any link to remove it.</p>
+    </div>
+  </div>
+
+
+  <!-- ─────────────────────────────────────────────────
+       CLOCK
+  ───────────────────────────────────────────────── -->
+
+  <h2 id="clock">
+    <span class="section-icon" style="background:rgba(244,114,182,0.12);">🕐</span>
+    Clock &amp; Date
+  </h2>
+
+  <p>
+    The clock is the centerpiece of your new tab. Everything about it is customizable.
+  </p>
+
+  <ul>
+    <li><strong>Format</strong> — 12-hour (with AM/PM) or 24-hour</li>
+    <li><strong>Size</strong> — small, medium, or large font</li>
+    <li><strong>Color</strong> — pick any color with the color picker</li>
+    <li><strong>Date</strong> — show or hide the date below the time; choose your preferred date format</li>
+    <li><strong>Style</strong> — plain digits or a more styled variant</li>
+  </ul>
+
+  <p>All options are in Settings → <strong>Clock</strong> tab.</p>
+
+
+</div>
+
+<footer>
+  <div style="margin-bottom:16px;">
+    <a href="/">Home</a>
+    <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb">Chrome Web Store</a>
+    <a href="https://github.com/YehudaBriskman/WindoM">GitHub</a>
+    <a href="local-setup.html">Local Setup</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="mailto:yehudabriskman@windom.app">Contact</a>
+  </div>
+  <p>MIT License &copy; 2026 Yehuda Briskman &nbsp;&middot;&nbsp; <a href="mailto:yehudabriskman@windom.app" style="color:inherit;text-decoration:none;">yehudabriskman@windom.app</a></p>
+</footer>
+
+</body>
+</html>

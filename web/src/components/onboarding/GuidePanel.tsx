@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react';
-import { HelpCircle, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { HelpCircle, X, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { SETTINGS_EVENT } from '../../lib/settings-events';
+
+const GUIDE_URL = 'https://windom.app/guide.html';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface GuideBlock {
-  type: 'steps' | 'note' | 'tip' | 'code';
+  type: 'steps' | 'note' | 'tip';
   content: string | string[];
 }
 
@@ -16,181 +18,119 @@ interface GuideSection {
   blocks: GuideBlock[];
 }
 
-// ── Guide content ─────────────────────────────────────────────────────────────
+// ── Condensed fallback content (shown when offline or preferred) ──────────────
 
 const SECTIONS: GuideSection[] = [
   {
     id: 'spotify',
     title: 'Connect Spotify',
-    summary: 'See what\'s playing right in your new tab — requires a free Spotify Developer app.',
+    summary: 'Needs a free Spotify Developer app (BYOA) — takes ~2 min.',
     blocks: [
       {
         type: 'note',
-        content:
-          'WindoM uses your own Spotify Developer app (BYOA — Bring Your Own App). This is free and takes about 2 minutes. It keeps your account private and avoids any shared rate limits.',
+        content: 'WindoM uses your own Spotify app so your account stays private. It\'s free and takes about 2 minutes to set up.',
       },
       {
         type: 'steps',
         content: [
-          'Go to developer.spotify.com/dashboard and log in with your Spotify account.',
-          'Click "Create app". Give it any name and description (e.g. "My WindoM").',
-          'Set the Redirect URI field — you\'ll copy the correct value from WindoM in the next step.',
-          'Set "Which API/SDKs are you planning to use?" to "Web API". Agree to the terms and click Save.',
-          'Open WindoM Settings (gear icon, bottom-left) → Spotify tab.',
-          'You\'ll see your Redirect URI displayed there — copy it using the Copy button.',
-          'Go back to your Spotify app → Edit Settings → Redirect URIs → paste it → click Add → Save.',
-          'Back in the Spotify Dashboard, click on your app name and copy the Client ID.',
-          'Paste the Client ID into the WindoM Spotify tab and click "Save & Connect".',
-          'A Spotify authorization window will open — click Agree. You\'re connected.',
+          'Go to developer.spotify.com/dashboard and create a free app. Set API to "Web API".',
+          'Open WindoM Settings → Spotify tab. Copy the Redirect URI shown there using the Copy button.',
+          'Back in the Spotify Dashboard → your app → Settings → Redirect URIs → paste it → Add → Save.',
+          'Copy the Client ID from your Spotify app dashboard.',
+          'Paste it into WindoM Settings → Spotify tab and click "Save & Connect".',
+          'Authorize in the Spotify popup. Done — now-playing appears in your dock.',
         ],
       },
       {
         type: 'tip',
-        content:
-          'The Redirect URI is unique to your Chrome installation. If you reinstall Chrome or use a different profile, you\'ll need to add the new URI in your Spotify app settings.',
+        content: 'Getting "Invalid Client"? The Redirect URI wasn\'t saved in your Spotify app, or the Client ID is wrong. Use the Copy button — don\'t type the URI by hand.',
       },
     ],
   },
   {
     id: 'calendar',
     title: 'Connect Google Calendar',
-    summary: 'Pull your upcoming events into the right sidebar. Requires a WindoM account.',
+    summary: 'Shows upcoming events in the right sidebar. Needs a WindoM account.',
     blocks: [
       {
         type: 'steps',
         content: [
-          'Open Settings (gear icon, bottom-left) → Account tab.',
-          'Register or sign in to your WindoM account. You only need an email and password.',
-          'Once signed in, you\'ll see a "Connected Services" section with a Google Calendar card.',
-          'Click "Connect" on the Google Calendar card.',
-          'A Google authorization window opens — choose your Google account and click Allow.',
-          'Your upcoming events will now appear in the right sidebar automatically.',
+          'Sign in or create a WindoM account (Settings → Account tab).',
+          'In the Account tab, click "Connect" on the Google Calendar card.',
+          'Authorize in the Google popup — read-only access only.',
+          'Your events appear in the right sidebar, grouped by day.',
         ],
       },
       {
         type: 'tip',
-        content:
-          'Events are pulled for the next 7 days by default. You can change the look-ahead window (7, 14, or 30 days) in Settings → Calendar.',
+        content: 'Change the look-ahead window (7 / 14 / 30 days) in Settings → Calendar.',
       },
     ],
   },
   {
     id: 'focus',
-    title: 'Use the Focus Timer',
-    summary: 'Set an intention for your session — the tab dims everything else while you work.',
+    title: 'Focus Timer',
+    summary: 'Set an intention — the tab dims while you work.',
     blocks: [
       {
         type: 'steps',
         content: [
-          'Click the focus area in the center of your tab (or the text that says "What\'s your focus today?").',
+          'Click the focus input in the center of your tab.',
           'Type what you\'re working on and press Enter.',
-          'The timer starts and the background dims — only your focus text stays visible.',
-          'Click the timer or press Escape to exit focus mode.',
+          'Click anywhere or press Escape to exit focus mode.',
         ],
       },
       {
         type: 'tip',
-        content:
-          'You can set preset focus goals in Settings → Focus to quickly pick from your most common tasks.',
+        content: 'Save common tasks as presets in Settings → Focus.',
       },
     ],
   },
   {
     id: 'background',
     title: 'Change Your Background',
-    summary: 'Choose a curated Unsplash photo collection or upload your own image.',
+    summary: 'Rotating Unsplash photos or upload your own image.',
     blocks: [
       {
         type: 'steps',
         content: [
-          'Open Settings (gear icon, bottom-left) → Background tab.',
-          'Choose "Unsplash" for automatic rotating photos. You can paste a Collection ID to curate the style.',
-          'Or choose "Local" and upload any image from your device. It\'s stored privately on your device only.',
-          'The background updates on every new tab by default.',
+          'Open Settings → Background tab.',
+          'Choose Unsplash for curated rotating photos, or Local to upload your own.',
+          'For Unsplash: paste a Collection ID from the URL of any unsplash.com/collections page to curate the style.',
+        ],
+      },
+    ],
+  },
+  {
+    id: 'weather',
+    title: 'Weather Widget',
+    summary: 'Live temperature in the top bar. Needs a free OpenWeatherMap key.',
+    blocks: [
+      {
+        type: 'steps',
+        content: [
+          'Create a free account at openweathermap.org and copy your API key.',
+          'Open Settings → Weather tab. Paste the key and set your city name.',
+          'Choose °C or °F and save.',
         ],
       },
       {
         type: 'note',
-        content:
-          'To use Unsplash with a custom collection, find a collection on unsplash.com, copy its ID from the URL, and paste it into the Collection ID field.',
+        content: 'New OpenWeatherMap keys can take up to 2 hours to activate.',
       },
     ],
   },
   {
     id: 'account',
     title: 'Create a WindoM Account',
-    summary: 'Optional — needed only for Google Calendar sync and Spotify. Everything else works without one.',
+    summary: 'Optional — only needed for Spotify and Google Calendar.',
     blocks: [
-      {
-        type: 'note',
-        content:
-          'Your account stores your settings in the cloud so they sync across devices. Clock, weather, background, todos, and quick links all work without an account.',
-      },
       {
         type: 'steps',
         content: [
           'Open Settings → Account tab.',
-          'Enter your email and a password (minimum 8 characters) and click "Create account".',
-          'Check your inbox for a verification email and click the link.',
-          'You\'re signed in — your settings now sync to the cloud.',
-        ],
-      },
-      {
-        type: 'tip',
-        content:
-          'You can also sign in with Google if you prefer not to manage a password.',
-      },
-    ],
-  },
-  {
-    id: 'weather',
-    title: 'Set Up the Weather Widget',
-    summary: 'Show live temperature and conditions in the top bar. Requires a free OpenWeatherMap key.',
-    blocks: [
-      {
-        type: 'steps',
-        content: [
-          'Go to openweathermap.org, create a free account, and copy your API key.',
-          'Open Settings → Weather tab.',
-          'Paste your API key and set your city name (e.g. "Tel Aviv" or "New York").',
-          'Choose °C or °F and click Save. The widget appears in the top bar.',
-        ],
-      },
-      {
-        type: 'note',
-        content:
-          'Free OpenWeatherMap accounts have a generous limit (1,000 calls/day) — more than enough for personal use.',
-      },
-    ],
-  },
-  {
-    id: 'links',
-    title: 'Quick Links & Dock Bar',
-    summary: 'Pin your most-used sites to the dock at the top of every tab.',
-    blocks: [
-      {
-        type: 'steps',
-        content: [
-          'Open Settings → Links tab.',
-          'Click "Add link", enter the URL and a display name.',
-          'Drag to reorder. Click the × to remove a link.',
-          'Links appear as icons in the dock bar across the top of your tab.',
-        ],
-      },
-    ],
-  },
-  {
-    id: 'clock',
-    title: 'Customize the Clock',
-    summary: 'Change the time format, size, color, and whether the date is shown.',
-    blocks: [
-      {
-        type: 'steps',
-        content: [
-          'Open Settings → Clock tab.',
-          'Toggle between 12-hour and 24-hour format.',
-          'Adjust the font size and pick a color using the color picker.',
-          'Enable or disable the date display and choose your preferred date format.',
+          'Enter your email and a password (min 8 characters), then click "Create account".',
+          'Verify your email via the link sent to your inbox.',
         ],
       },
     ],
@@ -203,13 +143,10 @@ function renderBlock(block: GuideBlock, idx: number): React.ReactElement {
   if (block.type === 'steps' && Array.isArray(block.content)) {
     return (
       <ol className="guide-block-steps" key={idx}>
-        {block.content.map((step, i) => (
-          <li key={i}>{step}</li>
-        ))}
+        {block.content.map((step, i) => <li key={i}>{step}</li>)}
       </ol>
     );
   }
-
   if (block.type === 'note') {
     return (
       <div className="guide-block-note" key={idx}>
@@ -218,35 +155,19 @@ function renderBlock(block: GuideBlock, idx: number): React.ReactElement {
       </div>
     );
   }
-
-  if (block.type === 'tip') {
-    return (
-      <div className="guide-block-tip" key={idx}>
-        <span className="guide-block-label">Tip</span>
-        <p>{block.content as string}</p>
-      </div>
-    );
-  }
-
   return (
-    <pre className="guide-block-code" key={idx}>
-      <code>{block.content as string}</code>
-    </pre>
+    <div className="guide-block-tip" key={idx}>
+      <span className="guide-block-label">Tip</span>
+      <p>{block.content as string}</p>
+    </div>
   );
 }
 
-// ── Collapsible section ───────────────────────────────────────────────────────
-
 function GuideSectionItem({ section, defaultOpen = false }: { section: GuideSection; defaultOpen?: boolean }): React.ReactElement {
   const [open, setOpen] = useState(defaultOpen);
-
   return (
     <div className={`guide-section${open ? ' open' : ''}`}>
-      <button
-        className="guide-section-header"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-      >
+      <button className="guide-section-header" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
         <div className="guide-section-meta">
           <span className="guide-section-title">{section.title}</span>
           <span className="guide-section-summary">{section.summary}</span>
@@ -255,7 +176,6 @@ function GuideSectionItem({ section, defaultOpen = false }: { section: GuideSect
           {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </span>
       </button>
-
       {open && (
         <div className="guide-section-body">
           {section.blocks.map((block, i) => renderBlock(block, i))}
@@ -273,6 +193,10 @@ export function GuidePanel(): React.ReactElement {
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
 
+  function openFullGuide(): void {
+    window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
+  }
+
   function openSettings(): void {
     document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.TOGGLE));
     close();
@@ -288,14 +212,13 @@ export function GuidePanel(): React.ReactElement {
         <>
           <div className="guide-backdrop" onClick={close} />
           <div className="guide-panel" role="dialog" aria-modal="true" aria-label="WindoM Guide">
+
             <div className="guide-panel-header">
               <div>
                 <div className="guide-panel-title">Help &amp; Guide</div>
                 <div className="guide-panel-subtitle">
                   Settings are in the{' '}
-                  <button className="guide-inline-link" onClick={openSettings}>
-                    gear icon
-                  </button>
+                  <button className="guide-inline-link" onClick={openSettings}>gear icon</button>
                   , bottom-left.
                 </div>
               </div>
@@ -304,15 +227,24 @@ export function GuidePanel(): React.ReactElement {
               </button>
             </div>
 
+            {/* Primary CTA — full guide on website */}
+            <button className="guide-full-link" onClick={openFullGuide}>
+              <div className="guide-full-link-text">
+                <span className="guide-full-link-title">Full guide with photos</span>
+                <span className="guide-full-link-sub">windom.app/guide — opens in a new tab</span>
+              </div>
+              <ExternalLink size={15} className="guide-full-link-icon" />
+            </button>
+
+            {/* Fallback — condensed in-app reference */}
+            <div className="guide-fallback-label">Quick reference</div>
+
             <div className="guide-panel-body">
               {SECTIONS.map((section, i) => (
-                <GuideSectionItem
-                  key={section.id}
-                  section={section}
-                  defaultOpen={i === 0}
-                />
+                <GuideSectionItem key={section.id} section={section} defaultOpen={i === 0} />
               ))}
             </div>
+
           </div>
         </>
       )}

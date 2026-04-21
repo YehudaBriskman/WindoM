@@ -3875,6 +3875,54 @@ body.focus-exiting .sidebar-container {
   color: rgba(255, 255, 255, 0.85);
 }
 
+/* ── Full guide CTA ── */
+.guide-full-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 12px 0;
+  padding: 11px 14px;
+  border-radius: 10px;
+  background: rgba(123, 158, 245, 0.1);
+  border: 1px solid rgba(123, 158, 245, 0.22);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+}
+.guide-full-link:hover {
+  background: rgba(123, 158, 245, 0.17);
+  border-color: rgba(123, 158, 245, 0.38);
+}
+.guide-full-link-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.guide-full-link-title {
+  font-size: 0.855rem;
+  font-weight: 600;
+  color: rgba(123, 158, 245, 0.95);
+}
+.guide-full-link-sub {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.38);
+}
+.guide-full-link-icon {
+  color: rgba(123, 158, 245, 0.7);
+  flex-shrink: 0;
+}
+
+/* ── Fallback divider ── */
+.guide-fallback-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.22);
+  padding: 10px 18px 4px;
+}
+
 /* ── Scrollable body ── */
 .guide-panel-body {
   overflow-y: auto;
