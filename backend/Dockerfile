@@ -22,7 +22,9 @@ RUN npm ci --omit=dev --ignore-scripts
 COPY --from=builder /app/dist ./dist
 COPY drizzle ./drizzle
 COPY entrypoint.sh ./entrypoint.sh
-RUN chmod +x entrypoint.sh
+RUN chmod +x entrypoint.sh && chown -R node:node /app
+
+USER node
 
 EXPOSE 8080
 
