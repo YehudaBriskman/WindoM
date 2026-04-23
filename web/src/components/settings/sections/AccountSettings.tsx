@@ -181,14 +181,14 @@ function ProfileSection() {
       <label className="settings-label">Profile</label>
 
       {/* Display name */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
+      <div className="settings-row-with-btn">
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
           className="settings-input"
-          style={{ fontFamily: 'inherit', fontSize: '14px', flex: 1 }}
+          style={{ flex: 1 }}
           onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
         />
         <button
@@ -208,7 +208,7 @@ function ProfileSection() {
 
       {/* Change password (only for password accounts) */}
       {user?.hasPassword && (
-        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="settings-section-mt" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <label className="settings-hint" style={{ marginBottom: '2px' }}>Change password</label>
           <input
             type="password"
@@ -217,7 +217,6 @@ function ProfileSection() {
             onChange={(e) => { setCurrentPw(e.target.value); setPwError(''); }}
             autoComplete="current-password"
             className="settings-input"
-            style={{ fontFamily: 'inherit', fontSize: '14px' }}
           />
           <input
             type="password"
@@ -226,7 +225,6 @@ function ProfileSection() {
             onChange={(e) => { setNewPw(e.target.value); setPwError(''); }}
             autoComplete="new-password"
             className="settings-input"
-            style={{ fontFamily: 'inherit', fontSize: '14px' }}
           />
           <input
             type="password"
@@ -235,7 +233,6 @@ function ProfileSection() {
             onChange={(e) => { setConfirmPw(e.target.value); setPwError(''); }}
             autoComplete="new-password"
             className="settings-input"
-            style={{ fontFamily: 'inherit', fontSize: '14px' }}
           />
           {pwError && <p className="auth-field-error">{pwError}</p>}
           {pwMsg && <p className="auth-field-success">{pwMsg}</p>}

@@ -109,7 +109,7 @@ export function BackgroundSettings() {
             <small className="settings-hint">Leave empty for random nature photos</small>
           </div>
 
-          <section style={{ marginTop: 24 }}>
+          <section className="settings-section-mt-lg">
             <h3 className="settings-section-heading">Unsplash Photos</h3>
             {unsplashLiked.length > 0 && (
               <div className="settings-group">
@@ -139,7 +139,7 @@ export function BackgroundSettings() {
             {uploading && <p className="settings-hint">Uploading…</p>}
           </div>
 
-          <section style={{ marginTop: 24, marginBottom: 28 }}>
+          <section className="settings-section-mt-lg" style={{ marginBottom: 28 }}>
             <h3 className="settings-section-heading">Built-in</h3>
             <div className="settings-group">
               <PhotoGrid photos={BUNDLED_PHOTOS} onLike={() => {}} onSelect={setFromPhoto} />

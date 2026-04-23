@@ -139,7 +139,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           <li>In your app settings, add this Redirect URI:</li>
         </ol>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+        <div className="settings-row-with-btn" style={{ marginBottom: '16px' }}>
           <input
             type="text"
             readOnly
@@ -169,7 +169,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           onChange={(e) => { setClientIdInput(e.target.value); setError(''); }}
           className="settings-input"
           style={{ marginBottom: '8px', fontFamily: 'monospace', fontSize: '13px' }}
-          onKeyDown={(e) => e.key === 'Enter' && handleSaveAndConnect()}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveAndConnect(); }}
         />
         {error && <p className="auth-field-error" style={{ marginBottom: '8px' }}>{error}</p>}
         <button
