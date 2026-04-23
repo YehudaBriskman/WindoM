@@ -23,7 +23,7 @@ jobs:
           POSTGRES_PASSWORD: windom
           POSTGRES_DB: windom_test
         ports:
-          - 5433:5432  # Match .env.test which setup.ts loads with override:true
+          - 5433:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 5s
@@ -63,8 +63,8 @@ jobs:
         run: npm test
         env:
           # Minimal env required by config.ts Zod schema
-          DATABASE_URL: postgresql://windom:windom@localhost:5432/windom
-          DATABASE_URL_TEST: postgresql://windom:windom@localhost:5432/windom_test
+          DATABASE_URL: postgresql://windom:windom@localhost:5433/windom_test
+          DATABASE_URL_TEST: postgresql://windom:windom@localhost:5433/windom_test
           JWT_ACCESS_SECRET: ci-access-secret-at-least-32-chars-long
           REFRESH_TOKEN_SECRET: ci-refresh-secret-at-least-32-chars
           TOKEN_ENC_KEY_BASE64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=

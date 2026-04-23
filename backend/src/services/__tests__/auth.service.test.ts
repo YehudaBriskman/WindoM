@@ -56,7 +56,7 @@ describe('register', () => {
 
     const result = await register('a@b.com', 'password123', 'Alice', { ip: '1.1.1.1', userAgent: '' });
 
-    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token' } });
+    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token', emailSent: true } });
   });
 });
 
