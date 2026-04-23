@@ -369,6 +369,12 @@ export function SearchOverlay() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        inputRef.current?.focus();
+        return;
+      }
+
       if (e.key === 'Escape') {
         if (dropdownOpen) { setDropdownOpen(false); setActiveIdx(-1); }
         else setOpen(false);
@@ -415,7 +421,7 @@ export function SearchOverlay() {
         if (e.target === e.currentTarget) setOpen(false);
       }}
     >
-      <div className="search-overlay-box">
+      <div className="search-overlay-box" role="dialog" aria-label="Search" onKeyDown={handleKeyDown}>
         <div className={`search-overlay-input-row${showDropdown ? ' dropdown-open' : ''}${isCommandMode ? ' command-mode' : ''}`}>
           <span className="search-bar-icon">
             {isCommandMode
