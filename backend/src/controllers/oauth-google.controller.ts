@@ -4,6 +4,7 @@ import { config } from '../config.js';
 import { GOOGLE_AUTH_URL, CALENDAR_SCOPES } from '../types/constants.js';
 import * as oauthService from '../services/oauth.service.js';
 import { isAllowedRedirectUri } from '../lib/request.js';
+import { replyOAuthExchangeError } from '../lib/oauth-exchange.js';
 
 const exchangeSchema = z.object({
   code: z.string(),
@@ -28,12 +29,10 @@ async function handleGoogleOAuthExchange(
   );
 
   if (!exchangeResult.ok) {
-    const status = exchangeResult.error === 'USERINFO_FAILED' ? 500 : 400;
-    const messages: Record<string, string> = {
+    replyOAuthExchangeError(reply, exchangeResult, {
       TOKEN_EXCHANGE_FAILED: 'Failed to link Google Calendar. Please try again.',
       USERINFO_FAILED: 'Could not retrieve your Google profile. Please try again.',
-    };
-    void reply.status(status).send({ error: exchangeResult.error, message: messages[exchangeResult.error] ?? exchangeResult.error });
+    });
     return;
   }
 
