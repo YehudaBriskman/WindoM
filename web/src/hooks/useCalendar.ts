@@ -26,7 +26,8 @@ export function useCalendar() {
     fetchTimerRef.current = setTimeout(() => {
       apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`)
         .then((data) => setEvents(data.events))
-        .catch(() => {
+        .catch((err) => {
+          console.warn('[calendar] Fetch failed, using cached:', err);
           syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
         });
     }, 500);
