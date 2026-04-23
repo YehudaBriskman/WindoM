@@ -4,12 +4,10 @@
 /dist
 /node_modules
 node_modules
-PUBLISH_CHECKLIST.md
 .env
 .env.*
+!.env.example
 /drizzle
-CREDENTIALS.md
-CWS_PRIVACY_JUSTIFICATIONS.md
 extension.zip
 web/dist/
 backend/dist/
