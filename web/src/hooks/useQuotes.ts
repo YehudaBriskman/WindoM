@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { syncStorage } from '../lib/chrome-storage';
 import { hashCode } from '../utils/hash';
+import { QUOTE_FADE_DURATION_MS } from '../lib/timing-constants';
 import type { Quote, DailyQuoteCache } from '../types/quotes';
 
 const FALLBACK_QUOTES: Quote[] = [
@@ -69,7 +70,7 @@ export function useQuotes() {
     setTimeout(() => {
       setQuote(nextQuote);
       setFading(false);
-    }, 300);
+    }, QUOTE_FADE_DURATION_MS);
   }, [settings.widgets.quoteSource, fetchAPIQuote, loadLocalQuotes, getDailyQuote]);
 
   const refresh = useCallback(async () => {

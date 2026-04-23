@@ -53,6 +53,7 @@ export function LinksSettings() {
                 type="button"
                 onClick={() => removeLink(i)}
                 className="link-remove-btn"
+                aria-label="Remove link"
               >
                 &times;
               </button>

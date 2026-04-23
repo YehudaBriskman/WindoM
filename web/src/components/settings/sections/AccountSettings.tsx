@@ -4,6 +4,7 @@ import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
 import { apiPost, apiPatch, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
+import { NAME_SAVE_MSG_DURATION_MS, PW_SAVE_MSG_DURATION_MS } from '../../../lib/timing-constants';
 
 // ── Signed-out view ────────────────────────────────────────────────────────
 
@@ -136,6 +137,7 @@ function ProfileSection() {
   const [pwError, setPwError] = useState('');
 
   async function handleNameSave() {
+    if (nameSaving) return;
     const trimmed = name.trim();
     if (!trimmed || trimmed === user?.name) return;
     if (trimmed.length > 100) { setNameMsg('Name must be 100 characters or less'); return; }
@@ -147,7 +149,7 @@ function ProfileSection() {
       await updateSetting('general', { userName: updated.name });
       setName(updated.name);
       setNameMsg('Saved');
-      setTimeout(() => setNameMsg(''), 2000);
+      setTimeout(() => setNameMsg(''), NAME_SAVE_MSG_DURATION_MS);
     } catch (err) {
       setNameMsg(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -156,6 +158,7 @@ function ProfileSection() {
   }
 
   async function handlePasswordSave() {
+    if (pwSaving) return;
     setPwError('');
     setPwMsg('');
     if (newPw.length < 8) { setPwError('New password must be at least 8 characters'); return; }
@@ -165,7 +168,7 @@ function ProfileSection() {
       await apiPatch('/me', { currentPassword: currentPw, newPassword: newPw });
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
       setPwMsg('Password updated');
-      setTimeout(() => setPwMsg(''), 3000);
+      setTimeout(() => setPwMsg(''), PW_SAVE_MSG_DURATION_MS);
     } catch (err) {
       setPwError(err instanceof Error ? err.message : 'Failed to update password');
     } finally {
@@ -178,14 +181,14 @@ function ProfileSection() {
       <label className="settings-label">Profile</label>
 
       {/* Display name */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '4px' }}>
+      <div className="settings-row-with-btn">
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Your name"
           className="settings-input"
-          style={{ fontFamily: 'inherit', fontSize: '14px', flex: 1 }}
+          style={{ flex: 1 }}
           onKeyDown={(e) => e.key === 'Enter' && handleNameSave()}
         />
         <button
@@ -205,7 +208,7 @@ function ProfileSection() {
 
       {/* Change password (only for password accounts) */}
       {user?.hasPassword && (
-        <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className="settings-section-mt" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <label className="settings-hint" style={{ marginBottom: '2px' }}>Change password</label>
           <input
             type="password"
@@ -214,7 +217,6 @@ function ProfileSection() {
             onChange={(e) => { setCurrentPw(e.target.value); setPwError(''); }}
             autoComplete="current-password"
             className="settings-input"
-            style={{ fontFamily: 'inherit', fontSize: '14px' }}
           />
           <input
             type="password"
@@ -223,7 +225,6 @@ function ProfileSection() {
             onChange={(e) => { setNewPw(e.target.value); setPwError(''); }}
             autoComplete="new-password"
             className="settings-input"
-            style={{ fontFamily: 'inherit', fontSize: '14px' }}
           />
           <input
             type="password"
@@ -232,7 +233,6 @@ function ProfileSection() {
             onChange={(e) => { setConfirmPw(e.target.value); setPwError(''); }}
             autoComplete="new-password"
             className="settings-input"
-            style={{ fontFamily: 'inherit', fontSize: '14px' }}
           />
           {pwError && <p className="auth-field-error">{pwError}</p>}
           {pwMsg && <p className="auth-field-success">{pwMsg}</p>}

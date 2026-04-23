@@ -93,15 +93,17 @@ export function SettingsPanel() {
             </div>
           </div>
 
-          <span
+          <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               close();
             }}
             className="settings-close"
+            aria-label="Close settings"
           >
             <X size={18} />
-          </span>
+          </button>
         </div>
       </div>
     </>

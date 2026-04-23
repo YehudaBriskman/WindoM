@@ -144,7 +144,7 @@ export function DockBar() {
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleSubmit}
           >
-            <button type="button" className="dock-form-close" onClick={handleClose}>
+            <button type="button" className="dock-form-close" onClick={handleClose} aria-label="Close">
               <X size={16} />
             </button>
             <input

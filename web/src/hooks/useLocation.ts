@@ -35,7 +35,8 @@ async function getLocationFromIp(): Promise<LocationCoords | null> {
       return { lat: data.latitude, lon: data.longitude };
     }
     return null;
-  } catch {
+  } catch (err) {
+    console.warn('[location] IP fallback failed:', err);
     return null;
   }
 }
@@ -47,7 +48,9 @@ export function useLocation() {
       const coords = await getCoordinates();
       await ls.set('lastKnownLocation', { ...coords, timestamp: Date.now() });
       return coords;
-    } catch { /* fall through */ }
+    } catch (err) {
+      console.warn('[location] Geolocation failed, falling through:', err);
+    }
 
     // 2. Fallback to cached coords (within 24h)
     const cached = await ls.get<CachedLocation | null>('lastKnownLocation', null);

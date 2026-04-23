@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiGet, apiFetch } from '../lib/api';
 import { useSettings } from '../contexts/SettingsContext';
+import { SPOTIFY_TICKER_INTERVAL_MS, SPOTIFY_CONTROL_REFETCH_DELAY_MS } from '../lib/timing-constants';
 
 export interface SpotifyTrack {
   name: string;
@@ -37,14 +38,14 @@ export function useSpotify() {
     if (!playing || duration <= 0) return;
     tickRef.current = setInterval(() => {
       setState((prev) => {
-        const next = Math.min(prev.progressMs + 1000, duration);
+        const next = Math.min(prev.progressMs + SPOTIFY_TICKER_INTERVAL_MS, duration);
         if (next >= duration && tickRef.current) {
           clearInterval(tickRef.current);
           tickRef.current = null;
         }
         return { ...prev, progressMs: next };
       });
-    }, 1000);
+    }, SPOTIFY_TICKER_INTERVAL_MS);
   }, []);
 
   const fetchNowPlaying = useCallback(async () => {
@@ -121,7 +122,7 @@ export function useSpotify() {
     }
 
     // Re-fetch after short delay to confirm actual Spotify state
-    setTimeout(() => { void fetchNowPlaying(); }, 400);
+    setTimeout(() => { void fetchNowPlaying(); }, SPOTIFY_CONTROL_REFETCH_DELAY_MS);
   }, [fetchNowPlaying, stopTicker]);
 
   return { ...state, spotifyConnected, error, control };

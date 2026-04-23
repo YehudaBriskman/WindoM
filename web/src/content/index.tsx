@@ -38,6 +38,7 @@ dirObserver.observe(document.documentElement, { attributes: true, attributeFilte
 if (document.body) {
   dirObserver.observe(document.body, { attributes: true, attributeFilter: ['dir'] });
 }
+window.addEventListener('pagehide', () => dirObserver.disconnect());
 
 shadow.appendChild(container);
 

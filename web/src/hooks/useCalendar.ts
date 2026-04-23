@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
 import { apiGet } from '../lib/api';
 import { useSettings } from '../contexts/SettingsContext';
+import { CALENDAR_FETCH_DEBOUNCE_MS } from '../lib/timing-constants';
 import type { CalendarEvent } from '../types/calendar';
 
 export function useCalendar() {
@@ -26,10 +27,11 @@ export function useCalendar() {
     fetchTimerRef.current = setTimeout(() => {
       apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`)
         .then((data) => setEvents(data.events))
-        .catch(() => {
+        .catch((err) => {
+          console.warn('[calendar] Fetch failed, using cached:', err);
           syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
         });
-    }, 500);
+    }, CALENDAR_FETCH_DEBOUNCE_MS);
 
     return () => {
       if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);

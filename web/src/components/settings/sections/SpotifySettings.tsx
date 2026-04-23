@@ -4,6 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { apiPost, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
 import { generateCodeVerifier, generateCodeChallenge } from '../../../lib/pkce';
+import { COPY_CONFIRM_DURATION_MS } from '../../../lib/timing-constants';
 
 const CLIENT_ID_KEY = 'windom_spotify_client_id';
 
@@ -84,10 +85,11 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
   async function handleCopy() {
     await navigator.clipboard.writeText(redirectUri);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), COPY_CONFIRM_DURATION_MS);
   }
 
   async function handleSaveAndConnect() {
+    if (busy) return;
     const trimmed = clientIdInput.trim();
     if (!trimmed) return;
     setBusy(true);
@@ -137,7 +139,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           <li>In your app settings, add this Redirect URI:</li>
         </ol>
 
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
+        <div className="settings-row-with-btn" style={{ marginBottom: '16px' }}>
           <input
             type="text"
             readOnly
@@ -167,7 +169,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           onChange={(e) => { setClientIdInput(e.target.value); setError(''); }}
           className="settings-input"
           style={{ marginBottom: '8px', fontFamily: 'monospace', fontSize: '13px' }}
-          onKeyDown={(e) => e.key === 'Enter' && handleSaveAndConnect()}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveAndConnect(); }}
         />
         {error && <p className="auth-field-error" style={{ marginBottom: '8px' }}>{error}</p>}
         <button
@@ -197,6 +199,7 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
   const [error, setError] = useState('');
 
   async function handleConnect() {
+    if (busy) return;
     setBusy(true);
     setError('');
     try {
@@ -262,6 +265,7 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
   const [error, setError] = useState('');
 
   async function handleDisconnect() {
+    if (busy) return;
     setBusy(true);
     setError('');
     try {

@@ -174,8 +174,8 @@ export function useWeather() {
       intervalRef.current = setInterval(async () => {
         try {
           await fetchWeather(runId);
-        } catch {
-          // silently ignore periodic refresh errors
+        } catch (err) {
+          console.warn('[weather] Periodic refresh failed:', err);
         }
       }, CACHE_EXPIRY);
     })();

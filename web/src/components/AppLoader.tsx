@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useBackgroundContext } from '../contexts/BackgroundContext';
 import { DEFAULT_GRADIENT } from '../lib/background-constants';
+import { LOADER_FADE_DURATION_MS } from '../lib/timing-constants';
 
 export function AppLoader() {
   const { backgroundReady } = useBackgroundContext();
@@ -9,7 +10,7 @@ export function AppLoader() {
   useEffect(() => {
     if (!backgroundReady) return;
     // Wait for the CSS fade-out to finish before unmounting
-    const id = setTimeout(() => setHidden(true), 600);
+    const id = setTimeout(() => setHidden(true), LOADER_FADE_DURATION_MS);
     return () => clearTimeout(id);
   }, [backgroundReady]);
 

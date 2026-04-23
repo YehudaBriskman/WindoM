@@ -1,6 +1,10 @@
 /** Background service worker - manages tab state and broadcasts to content scripts */
 
+let suspended = false;
+chrome.runtime.onSuspend.addListener(() => { suspended = true; });
+
 async function broadcastTabsChanged() {
+  if (suspended) return;
   const tabs = await chrome.tabs.query({});
   await chrome.storage.local.set({ _windom_tabs: tabs });
 
