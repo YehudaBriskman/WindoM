@@ -18,12 +18,14 @@ export function TodoItem({ todo, onToggle, onRemove }: TodoItemProps) {
       <span className={`todo-item-text ${todo.completed ? 'completed' : ''}`}>
         {todo.text}
       </span>
-      <span
+      <button
+        type="button"
         onClick={() => onRemove(todo.id)}
         className="todo-item-remove"
+        aria-label="Remove todo"
       >
         <X size={14} />
-      </span>
+      </button>
     </div>
   );
 }

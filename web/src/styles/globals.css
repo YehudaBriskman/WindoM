@@ -1671,9 +1671,15 @@ input[type="file"]::file-selector-button:hover {
   opacity: 0.6;
 }
 .todo-item-remove {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.3s;
+  display: flex;
+  align-items: center;
 }
 .todo-item-remove:hover {
   opacity: 1;
@@ -1924,6 +1930,9 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  background: none;
+  border: none;
+  color: inherit;
   cursor: pointer;
   opacity: 0.7;
   transition: all 0.25s ease;
