@@ -215,12 +215,12 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   }, [settings.background.source, loadUnsplash, loadLocal]);
 
   useEffect(() => {
-    if (settings.background.source === 'local') {
-      loadLocal();
-    } else {
-      loadUnsplash();
-    }
-  }, [settings.background.source, loadUnsplash, loadLocal]);
+    if (settings.background.source === 'local') loadLocal();
+  }, [settings.background.source, loadLocal]);
+
+  useEffect(() => {
+    if (settings.background.source !== 'local') loadUnsplash();
+  }, [settings.background.source, loadUnsplash]);
 
   return (
     <BackgroundContext.Provider value={{
