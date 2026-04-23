@@ -136,6 +136,7 @@ function ProfileSection() {
   const [pwError, setPwError] = useState('');
 
   async function handleNameSave() {
+    if (nameSaving) return;
     const trimmed = name.trim();
     if (!trimmed || trimmed === user?.name) return;
     if (trimmed.length > 100) { setNameMsg('Name must be 100 characters or less'); return; }
@@ -156,6 +157,7 @@ function ProfileSection() {
   }
 
   async function handlePasswordSave() {
+    if (pwSaving) return;
     setPwError('');
     setPwMsg('');
     if (newPw.length < 8) { setPwError('New password must be at least 8 characters'); return; }

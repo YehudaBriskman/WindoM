@@ -88,6 +88,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
   }
 
   async function handleSaveAndConnect() {
+    if (busy) return;
     const trimmed = clientIdInput.trim();
     if (!trimmed) return;
     setBusy(true);
@@ -197,6 +198,7 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
   const [error, setError] = useState('');
 
   async function handleConnect() {
+    if (busy) return;
     setBusy(true);
     setError('');
     try {
@@ -262,6 +264,7 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
   const [error, setError] = useState('');
 
   async function handleDisconnect() {
+    if (busy) return;
     setBusy(true);
     setError('');
     try {
