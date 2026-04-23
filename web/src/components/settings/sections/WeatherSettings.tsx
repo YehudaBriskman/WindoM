@@ -13,6 +13,7 @@ export function WeatherSettings() {
   const [query, setQuery] = useState(settings.weather.location);
   const [results, setResults] = useState<GeoResult[]>([]);
   const [open, setOpen] = useState(false);
+  const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -22,6 +23,7 @@ export function WeatherSettings() {
       setOpen(false);
       return;
     }
+    setSearching(true);
     try {
       const res = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&count=6&language=en&format=json`
@@ -31,6 +33,8 @@ export function WeatherSettings() {
       setOpen(true);
     } catch {
       setResults([]);
+    } finally {
+      setSearching(false);
     }
   }, []);
 
@@ -86,6 +90,7 @@ export function WeatherSettings() {
           className="settings-input glass-input"
           autoComplete="off"
         />
+        {searching && <p className="settings-hint">Searching…</p>}
         {open && results.length > 0 && (
           <div className="city-dropdown">
             {results.map((r) => (

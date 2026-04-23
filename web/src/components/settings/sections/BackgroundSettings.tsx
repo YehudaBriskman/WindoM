@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Upload } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { useBackgroundContext } from '../../../contexts/BackgroundContext';
@@ -12,6 +13,7 @@ export function BackgroundSettings() {
   const { settings, update } = useSettings();
   const { addLocalPhoto, setFromPhoto, setUploadedBackground, photoHistory } = useBackgroundContext();
   const { unsplashHistory, localHistory, liked, toggleLike, deleteLocalPhoto } = photoHistory;
+  const [uploading, setUploading] = useState(false);
 
   const unsplashLiked = liked.filter((p) => p.source === 'unsplash' || !p.source);
   const localLiked = liked.filter((p) => p.source === 'local');
@@ -29,6 +31,7 @@ export function BackgroundSettings() {
       showSettingsMessage(`Image too large. Maximum size is ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB`, 'error');
       return;
     }
+    setUploading(true);
     const reader = new FileReader();
     reader.onload = async (ev) => {
       const dataUrl = ev.target?.result as string;
@@ -49,13 +52,14 @@ export function BackgroundSettings() {
           const thumbDataUrl = canvas.toDataURL('image/jpeg', 0.75);
           addLocalPhoto(dataUrl, thumbDataUrl, file.name);
         }
+        setUploading(false);
       };
       img.src = dataUrl;
 
       await update('background', { source: 'local' });
       showSettingsMessage('Background image uploaded successfully', 'success');
     };
-    reader.onerror = () => showSettingsMessage('Error reading image file', 'error');
+    reader.onerror = () => { setUploading(false); showSettingsMessage('Error reading image file', 'error'); };
     reader.readAsDataURL(file);
   };
 
@@ -127,11 +131,12 @@ export function BackgroundSettings() {
           <div className="settings-group">
             <div className="upload-row">
               <span className="settings-label" style={{ margin: 0 }}>Upload local background</span>
-              <label className="upload-circle-btn" title="Choose image">
+              <label className={`upload-circle-btn${uploading ? ' uploading' : ''}`} title={uploading ? 'Uploading…' : 'Choose image'}>
                 <Upload size={15} />
-                <input type="file" accept="image/*" onChange={handleUpload} style={{ display: 'none' }} />
+                <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
               </label>
             </div>
+            {uploading && <p className="settings-hint">Uploading…</p>}
           </div>
 
           <section style={{ marginTop: 24, marginBottom: 28 }}>
