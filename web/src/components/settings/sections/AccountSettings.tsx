@@ -4,6 +4,7 @@ import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
 import { apiPost, apiPatch, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
+import { NAME_SAVE_MSG_DURATION_MS, PW_SAVE_MSG_DURATION_MS } from '../../../lib/timing-constants';
 
 // ── Signed-out view ────────────────────────────────────────────────────────
 
@@ -148,7 +149,7 @@ function ProfileSection() {
       await updateSetting('general', { userName: updated.name });
       setName(updated.name);
       setNameMsg('Saved');
-      setTimeout(() => setNameMsg(''), 2000);
+      setTimeout(() => setNameMsg(''), NAME_SAVE_MSG_DURATION_MS);
     } catch (err) {
       setNameMsg(err instanceof Error ? err.message : 'Failed to save');
     } finally {
@@ -167,7 +168,7 @@ function ProfileSection() {
       await apiPatch('/me', { currentPassword: currentPw, newPassword: newPw });
       setCurrentPw(''); setNewPw(''); setConfirmPw('');
       setPwMsg('Password updated');
-      setTimeout(() => setPwMsg(''), 3000);
+      setTimeout(() => setPwMsg(''), PW_SAVE_MSG_DURATION_MS);
     } catch (err) {
       setPwError(err instanceof Error ? err.message : 'Failed to update password');
     } finally {

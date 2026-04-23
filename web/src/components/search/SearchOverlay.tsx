@@ -2,6 +2,12 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Search, Globe, Clock, LayoutGrid, ChevronDown, Terminal, Plus, X, RotateCcw, Copy, Pin, ExternalLink, type LucideIcon } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import type { GeneralSettings } from '../../types/settings';
+import {
+  OVERLAY_OPEN_FOCUS_DELAY_MS,
+  OVERLAY_CLOSE_RESET_DELAY_MS,
+  SUGGESTIONS_DEBOUNCE_MS,
+  SEARCH_API_TIMEOUT_MS,
+} from '../../lib/timing-constants';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -192,7 +198,7 @@ async function getSearchSuggestions(q: string): Promise<Suggestion[]> {
   try {
     const res = await fetch(
       `https://duckduckgo.com/ac/?q=${encodeURIComponent(q)}&type=list`,
-      { signal: AbortSignal.timeout(2000) },
+      { signal: AbortSignal.timeout(SEARCH_API_TIMEOUT_MS) },
     );
     const data = await res.json() as unknown;
 
@@ -284,7 +290,7 @@ export function SearchOverlay() {
   // Auto-focus when opened; delay state reset so exit animation plays fully
   useEffect(() => {
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 30);
+      setTimeout(() => inputRef.current?.focus(), OVERLAY_OPEN_FOCUS_DELAY_MS);
     } else {
       const timer = setTimeout(() => {
         setValue('');
@@ -292,7 +298,7 @@ export function SearchOverlay() {
         setActiveIdx(-1);
         setDropdownOpen(false);
         setEnginePickerOpen(false);
-      }, 300);
+      }, OVERLAY_CLOSE_RESET_DELAY_MS);
       return () => clearTimeout(timer);
     }
   }, [open]);
@@ -314,7 +320,7 @@ export function SearchOverlay() {
       ]);
       setSuggestions([...tabs, ...history, ...searches]);
       setActiveIdx(-1);
-    }, 180);
+    }, SUGGESTIONS_DEBOUNCE_MS);
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };

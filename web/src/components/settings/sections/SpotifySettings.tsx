@@ -4,6 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { apiPost, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
 import { generateCodeVerifier, generateCodeChallenge } from '../../../lib/pkce';
+import { COPY_CONFIRM_DURATION_MS } from '../../../lib/timing-constants';
 
 const CLIENT_ID_KEY = 'windom_spotify_client_id';
 
@@ -84,7 +85,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
   async function handleCopy() {
     await navigator.clipboard.writeText(redirectUri);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), COPY_CONFIRM_DURATION_MS);
   }
 
   async function handleSaveAndConnect() {
