@@ -36,6 +36,12 @@ import { defaultSettings } from '../../types/settings';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// @types/chrome types chrome.storage.sync.get as returning void (callback API).
+// Our stub returns a Promise, so cast to access vi mock methods without TS errors.
+function mockSyncGet(value: Record<string, unknown>) {
+  (chrome.storage.sync.get as unknown as ReturnType<typeof vi.fn>).mockResolvedValue(value);
+}
+
 function wrapper({ children }: { children: ReactNode }) {
   return <SettingsProvider>{children}</SettingsProvider>;
 }
@@ -49,7 +55,7 @@ async function mountAndWait() {
 
 beforeEach(() => {
   // chrome.storage.sync.get(null) — called directly in the mount effect
-  vi.mocked(chrome.storage.sync.get).mockResolvedValue({});
+  mockSyncGet({});
   // Restore wrapper defaults (clearAllMocks resets call history but not implementations)
   vi.mocked(syncStorage.get).mockImplementation((_k, def) => Promise.resolve(def));
   vi.mocked(syncStorage.getMultiple).mockImplementation((keys) => Promise.resolve({ ...keys }));
@@ -102,7 +108,7 @@ describe('load on mount', () => {
 
 describe('legacy migration', () => {
   it('migrates v1 flat settings to v2 sectioned shape', async () => {
-    vi.mocked(chrome.storage.sync.get).mockResolvedValue({
+    mockSyncGet({
       clockSize: 140,
       timeFormat: '24h',
       userName: 'Bob',
@@ -121,10 +127,7 @@ describe('legacy migration', () => {
   });
 
   it('clears sync storage and rewrites in sectioned shape during migration', async () => {
-    vi.mocked(chrome.storage.sync.get).mockResolvedValue({
-      timeFormat: '24h',
-      clockSize: 120,
-    });
+    mockSyncGet({ timeFormat: '24h', clockSize: 120 });
 
     await mountAndWait();
 
@@ -133,11 +136,7 @@ describe('legacy migration', () => {
   });
 
   it('stores the migrated focus section to localStore only', async () => {
-    vi.mocked(chrome.storage.sync.get).mockResolvedValue({
-      timeFormat: '24h',
-      mainFocus: 'Finish tests',
-      focusCompleted: false,
-    });
+    mockSyncGet({ timeFormat: '24h', mainFocus: 'Finish tests', focusCompleted: false });
 
     await mountAndWait();
 
@@ -206,8 +205,8 @@ describe('updateMultiple', () => {
 
     await act(async () => {
       await result.current.updateMultiple({
-        general: { userName: 'Eve' },
-        weather: { unit: 'C' },
+        general: { ...defaultSettings.general, userName: 'Eve' },
+        weather: { ...defaultSettings.weather, unit: 'C' as const },
       });
     });
 
