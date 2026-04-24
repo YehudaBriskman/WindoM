@@ -4,6 +4,7 @@ import fastifyFormbody from '@fastify/formbody';
 import fastifyHelmet from '@fastify/helmet';
 import { config } from './config.js';
 import { registerCors } from './plugins/cors.js';
+import { registerSwagger } from './plugins/swagger.js';
 import { registerRateLimit } from './plugins/rate-limit.js';
 import { healthRoutes } from './routes/health.js';
 import { authRoutes } from './routes/auth.js';
@@ -83,6 +84,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
     crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow extension to fetch the API
   });
 
+  await registerSwagger(app, !config.isProd);
   await registerCors(app);
   if (!skipRateLimit) await registerRateLimit(app);
 
