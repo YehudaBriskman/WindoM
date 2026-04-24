@@ -56,7 +56,7 @@ export function FinanceSettings() {
       <div className="settings-group">
         <label className="settings-label">Stocks</label>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via Yahoo Finance — no API key required.
+          Free data via Yahoo Finance — no API key required. Shows in sidebar.
         </p>
 
         {finance.showStocks ? (
@@ -99,7 +99,7 @@ export function FinanceSettings() {
       <div className="settings-group">
         <label className="settings-label">Crypto</label>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via CoinGecko — no API key required.
+          Free data via CoinGecko — no API key required. Shown on the main screen.
         </p>
         <div className="finance-crypto-grid">
           {POPULAR_CRYPTO.map((coin) => {

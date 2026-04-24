@@ -4549,3 +4549,48 @@ body.focus-exiting .sidebar-container {
   flex-shrink: 0;
   white-space: nowrap;
 }
+
+/* ── Crypto strip (center screen) ── */
+.crypto-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
+  margin: 8px 0;
+}
+.crypto-strip-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  backdrop-filter: blur(6px);
+}
+.crypto-strip-symbol {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.9);
+}
+.crypto-strip-price {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+.crypto-strip-change {
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.crypto-strip-change.positive { color: #4ade80; }
+.crypto-strip-change.negative { color: #f87171; }
+
+/* ── App hub label ── */
+.app-hub-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  margin-top: 4px;
+}

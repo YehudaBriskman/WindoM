@@ -263,6 +263,7 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
   const { settings, update } = useSettings();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const showTopTracks = settings.integrations.spotify.showTopTracks;
 
   async function handleDisconnect() {
     if (busy) return;
@@ -305,6 +306,21 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
       <p className="settings-hint" style={{ marginTop: '8px', opacity: 0.6 }}>
         App: <code style={{ fontSize: '12px' }}>{clientId.slice(0, 8)}…</code>
       </p>
+
+      <div className="settings-group" style={{ marginTop: '16px' }}>
+        <label className="settings-label">Sidebar</label>
+        <label className="visibility-row" style={{ cursor: 'pointer' }}>
+          <span className="visibility-row-label">Show top tracks in sidebar</span>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={showTopTracks}
+              onChange={(e) => void update('integrations', { spotify: { ...settings.integrations.spotify, showTopTracks: e.target.checked } })}
+            />
+            <span className="toggle-track"><span className="toggle-knob" /></span>
+          </label>
+        </label>
+      </div>
     </div>
   );
 }

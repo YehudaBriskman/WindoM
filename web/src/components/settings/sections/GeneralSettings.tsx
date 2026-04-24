@@ -1,4 +1,4 @@
-import { Cloud, Quote, Link2, Target, User, PanelRight, PanelLeft, Clock } from 'lucide-react';
+import { Cloud, Quote, Link2, Target, User, PanelRight, PanelLeft } from 'lucide-react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -40,12 +40,6 @@ export function GeneralSettings({ onReset }: Props) {
       Icon: User,
       checked: settings.general.showGreeting,
       onChange: (v) => { void update('general', { showGreeting: v }); },
-    },
-    {
-      label: 'Browsing History',
-      Icon: Clock,
-      checked: settings.general.showHistory,
-      onChange: (v) => { void update('general', { showHistory: v }); },
     },
   ];
 

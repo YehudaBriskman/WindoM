@@ -14,6 +14,7 @@ export interface GeneralSettings {
   sidebarSide: 'left' | 'right';
   showGreeting: boolean;
   showHistory: boolean;
+  showTodo: boolean;
 }
 
 export interface ClockSettings {
@@ -65,6 +66,7 @@ export interface CalendarIntegration {
 export interface SpotifyIntegration {
   /** Derived from OAuth state - excluded from backend sync. */
   connected: boolean;
+  showTopTracks: boolean;
 }
 
 export interface FinanceIntegration {
@@ -145,6 +147,7 @@ export const defaultSettings: Settings = {
     sidebarSide: 'right',
     showGreeting: true,
     showHistory: false,
+    showTodo: true,
   },
   clock: {
     timeFormat: '12h',
@@ -185,7 +188,7 @@ export const defaultSettings: Settings = {
   },
   integrations: {
     calendar: { days: 7, connected: false },
-    spotify: { connected: false },
+    spotify: { connected: false, showTopTracks: false },
     finance: {
       watchlistTickers: [],
       cryptoWatchlist: [],
