@@ -4,6 +4,8 @@ import { useSidebar } from "../../hooks/useSidebar";
 import { TodoSection } from "../sidebar/TodoSection";
 import { CalendarSection } from "../sidebar/CalendarSection";
 import { SpotifyTopTracks } from "../spotify/SpotifyTopTracks";
+import { HistorySection } from "../sidebar/HistorySection";
+import { FinanceWidget } from "../finance/FinanceWidget";
 
 export function RightSidebar() {
   const { isOpen, toggle, close } = useSidebar();
@@ -43,6 +45,8 @@ export function RightSidebar() {
           <X size={18} />
         </div>
         <div className="sidebar-content">
+          <HistorySection />
+          <FinanceWidget />
           <TodoSection />
           <CalendarSection />
           <SpotifyTopTracks />

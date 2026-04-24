@@ -13,6 +13,7 @@ export interface GeneralSettings {
   searchEngine: 'google' | 'bing' | 'duckduckgo' | 'brave';
   sidebarSide: 'left' | 'right';
   showGreeting: boolean;
+  showHistory: boolean;
 }
 
 export interface ClockSettings {
@@ -72,6 +73,7 @@ export interface FinanceIntegration {
   cryptoWatchlist: string[];
   showStocks: boolean;
   showCrypto: boolean;
+  connected: boolean;
 }
 
 export interface IntegrationsSettings {
@@ -143,6 +145,7 @@ export const defaultSettings: Settings = {
     searchEngine: 'google',
     sidebarSide: 'right',
     showGreeting: true,
+    showHistory: false,
   },
   clock: {
     timeFormat: '12h',
@@ -190,6 +193,7 @@ export const defaultSettings: Settings = {
       cryptoWatchlist: [],
       showStocks: false,
       showCrypto: false,
+      connected: false,
     },
   },
 };

@@ -4415,3 +4415,137 @@ body.focus-exiting .sidebar-container {
   margin: 0;
 }
 
+
+/* ── Finance widget ── */
+.finance-tabs {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.finance-tab {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+.finance-tab.active,
+.finance-tab:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+}
+.finance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.finance-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+.finance-symbol {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  width: 52px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.finance-price {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+  text-align: right;
+}
+.finance-change {
+  font-size: 0.68rem;
+  font-weight: 600;
+  width: 56px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.finance-change.positive { color: #4ade80; }
+.finance-change.negative { color: #f87171; }
+.finance-loading {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 6px 0 0;
+}
+
+/* ── Finance crypto pill grid ── */
+.finance-crypto-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.finance-crypto-pill {
+  cursor: pointer;
+}
+.finance-crypto-label {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.finance-crypto-label.checked {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+}
+.finance-crypto-label:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── History section ── */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.history-favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.history-title {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.72);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-time {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
