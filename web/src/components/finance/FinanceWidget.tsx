@@ -20,9 +20,9 @@ function ChangeLabel({ pct }: { pct: number }) {
 export function FinanceWidget() {
   const { settings } = useSettings();
   const { finance } = settings.integrations;
-  const { stocks, loading } = useFinance();
+  const { stocks, loading, error } = useFinance();
 
-  if (!finance.showStocks || !finance.connected) return null;
+  if (!finance.showStocks || finance.watchlistTickers.length === 0) return null;
 
   return (
     <div className="sidebar-section">
@@ -33,6 +33,10 @@ export function FinanceWidget() {
 
       {loading && stocks.length === 0 && (
         <p className="finance-loading">Loading…</p>
+      )}
+
+      {!loading && error && stocks.length === 0 && (
+        <p className="finance-loading" style={{ color: 'rgba(248,113,113,0.8)' }}>Unable to load prices</p>
       )}
 
       {stocks.length > 0 && (

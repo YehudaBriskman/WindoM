@@ -39,10 +39,12 @@ interface YahooQuote {
 }
 
 async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
-  const symbols = tickers.map((t) => encodeURIComponent(t)).join(',');
-  const res = await fetch(
-    `https://query1.finance.yahoo.com/v8/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent`
-  );
+  const symbols = tickers.join(',');
+  // Try query1 first, fall back to query2 if it fails
+  let res = await fetch(`https://query1.finance.yahoo.com/v8/finance/quote?symbols=${encodeURIComponent(symbols)}`);
+  if (!res.ok) {
+    res = await fetch(`https://query2.finance.yahoo.com/v8/finance/quote?symbols=${encodeURIComponent(symbols)}`);
+  }
   if (!res.ok) throw new Error(`Yahoo Finance ${res.status}`);
   const data = await res.json() as { quoteResponse?: { result?: YahooQuote[] } };
   return (data.quoteResponse?.result ?? [])
@@ -81,7 +83,9 @@ export function useFinance() {
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const enabled = finance.connected && (finance.showStocks || finance.showCrypto);
+  const enabled =
+    (finance.showStocks && finance.watchlistTickers.length > 0) ||
+    (finance.showCrypto && finance.cryptoWatchlist.length > 0);
 
   const fetchAll = useCallback(async (force = false) => {
     if (!enabled) return;

@@ -46,7 +46,7 @@ export function RightSidebar() {
         </div>
         <div className="sidebar-content">
           {settings.general.showHistory && <HistorySection />}
-          {settings.integrations.finance.showStocks && <FinanceWidget />}
+          <FinanceWidget />
           {settings.general.showTodo && <TodoSection />}
           <CalendarSection />
           {settings.integrations.spotify.connected && settings.integrations.spotify.showTopTracks && <SpotifyTopTracks />}

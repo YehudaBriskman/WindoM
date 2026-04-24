@@ -115,7 +115,6 @@ export function AppHub({ onOpenApp }: AppHubProps) {
                 {app.icon}
                 <span className={`app-hub-dot${isConnected ? ' connected' : ''}`} aria-hidden="true" />
               </div>
-              <span className="app-hub-label">{app.label}</span>
             </button>
           );
         })}

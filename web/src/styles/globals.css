@@ -4584,13 +4584,3 @@ body.focus-exiting .sidebar-container {
 }
 .crypto-strip-change.positive { color: #4ade80; }
 .crypto-strip-change.negative { color: #f87171; }
-
-/* ── App hub label ── */
-.app-hub-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.5);
-  text-align: center;
-  margin-top: 4px;
-}
