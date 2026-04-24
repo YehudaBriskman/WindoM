@@ -12,6 +12,7 @@ import { QuotesSettings } from "./sections/QuotesSettings";
 import { LinksSettings } from "./sections/LinksSettings";
 import { AppHub, type AppId } from "./sections/AppHub";
 import { AppCenterPanel } from "./sections/AppCenterPanel";
+import { TemplatesGallery } from "./sections/TemplatesGallery";
 import { AccountSettings } from "./sections/AccountSettings";
 
 export function SettingsPanel() {
@@ -92,6 +93,7 @@ export function SettingsPanel() {
               {activeTab === "apps" && (
                 <AppHub onOpenApp={setOpenAppId} />
               )}
+              {activeTab === "templates" && <TemplatesGallery />}
               {activeTab === "account" && <AccountSettings />}
             </div>
           </div>
