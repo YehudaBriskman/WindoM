@@ -3094,13 +3094,10 @@ body.focus-exiting .sidebar-container {
   gap: 12px;
 }
 .app-hub-card {
-  position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 18px 8px 16px;
+  padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
@@ -3120,28 +3117,30 @@ body.focus-exiting .sidebar-container {
   transform: translateY(0);
 }
 .app-hub-icon {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.85);
 }
-/* Connection status dot — bottom-right of card */
+/* Connection status dot — bottom-right corner of icon */
 .app-hub-dot {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 7px;
-  height: 7px;
+  bottom: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(0, 0, 0, 0.3);
 }
 .app-hub-dot.connected {
   background: #4ade80;
-  box-shadow: 0 0 6px rgba(74, 222, 128, 0.6);
+  box-shadow: 0 0 5px rgba(74, 222, 128, 0.7);
+  border-color: rgba(0, 0, 0, 0.25);
 }
 
 /* ============================================================

@@ -66,8 +66,10 @@ export function AppHub({ onOpenApp }: AppHubProps) {
               onClick={() => onOpenApp(app.id)}
               aria-label={`${app.label} — ${isConnected ? 'connected' : 'not connected'}`}
             >
-              <div className="app-hub-icon">{app.icon}</div>
-              <span className={`app-hub-dot${isConnected ? ' connected' : ''}`} aria-hidden="true" />
+              <div className="app-hub-icon">
+                {app.icon}
+                <span className={`app-hub-dot${isConnected ? ' connected' : ''}`} aria-hidden="true" />
+              </div>
             </button>
           );
         })}
