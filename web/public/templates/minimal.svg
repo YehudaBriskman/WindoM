@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0c29"/>
+      <stop offset="100%" stop-color="#302b63"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#g)" rx="12"/>
+  <!-- Subtle noise texture -->
+  <rect width="300" height="200" fill="rgba(255,255,255,0.02)" rx="12"/>
+  <!-- Accent glow -->
+  <ellipse cx="150" cy="100" rx="60" ry="40" fill="#6366f1" opacity="0.08"/>
+  <!-- Large minimal clock -->
+  <text x="150" y="118" font-family="system-ui,sans-serif" font-size="52" font-weight="200" fill="rgba(255,255,255,0.92)" text-anchor="middle" dominant-baseline="middle" letter-spacing="-2">12:00</text>
+  <!-- No widgets indicator -->
+  <text x="150" y="158" font-family="system-ui,sans-serif" font-size="10" fill="rgba(255,255,255,0.2)" text-anchor="middle" letter-spacing="3">MINIMAL</text>
+</svg>

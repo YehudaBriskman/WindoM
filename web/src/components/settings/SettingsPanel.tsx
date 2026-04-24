@@ -10,14 +10,16 @@ import { BackgroundSettings } from "./sections/BackgroundSettings";
 import { WeatherSettings } from "./sections/WeatherSettings";
 import { QuotesSettings } from "./sections/QuotesSettings";
 import { LinksSettings } from "./sections/LinksSettings";
-import { CalendarSettings } from "./sections/CalendarSettings";
-import { SpotifySettings } from "./sections/SpotifySettings";
+import { AppHub, type AppId } from "./sections/AppHub";
+import { AppCenterPanel } from "./sections/AppCenterPanel";
+import { TemplatesGallery } from "./sections/TemplatesGallery";
 import { AccountSettings } from "./sections/AccountSettings";
 
 export function SettingsPanel() {
   const { reset } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
+  const [openAppId, setOpenAppId] = useState<AppId | null>(null);
 
   useEffect(() => {
     const toggleHandler = () => {
@@ -42,6 +44,7 @@ export function SettingsPanel() {
   }, []);
 
   const close = useCallback(() => setIsOpen(false), []);
+  const closeApp = useCallback(() => setOpenAppId(null), []);
 
   const handleReset = useCallback(async () => {
     if (
@@ -87,8 +90,10 @@ export function SettingsPanel() {
               {activeTab === "weather" && <WeatherSettings />}
               {activeTab === "quotes" && <QuotesSettings />}
               {activeTab === "links" && <LinksSettings />}
-              {activeTab === "calendar" && <CalendarSettings />}
-              {activeTab === "spotify" && <SpotifySettings />}
+              {activeTab === "apps" && (
+                <AppHub onOpenApp={setOpenAppId} />
+              )}
+              {activeTab === "templates" && <TemplatesGallery />}
               {activeTab === "account" && <AccountSettings />}
             </div>
           </div>
@@ -106,6 +111,11 @@ export function SettingsPanel() {
           </button>
         </div>
       </div>
+
+      {/* App center panel — centered overlay above settings */}
+      {openAppId && (
+        <AppCenterPanel appId={openAppId} onClose={closeApp} />
+      )}
     </>
   );
 }

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1c1008"/>
+      <stop offset="100%" stop-color="#2d1f00"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#g)" rx="12"/>
+  <ellipse cx="150" cy="110" rx="100" ry="60" fill="#f59e0b" opacity="0.06"/>
+  <!-- Small clock -->
+  <text x="150" y="38" font-family="system-ui,sans-serif" font-size="20" font-weight="200" fill="rgba(255,255,255,0.55)" text-anchor="middle">12:00</text>
+  <!-- Quote panel -->
+  <rect x="28" y="52" width="244" height="96" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+  <!-- Opening quote -->
+  <text x="44" y="84" font-family="Georgia,serif" font-size="32" fill="rgba(245,158,11,0.35)">"</text>
+  <!-- Quote lines -->
+  <rect x="54" y="75" width="174" height="7" rx="3.5" fill="rgba(255,255,255,0.22)"/>
+  <rect x="54" y="89" width="152" height="7" rx="3.5" fill="rgba(255,255,255,0.22)"/>
+  <rect x="54" y="103" width="110" height="7" rx="3.5" fill="rgba(255,255,255,0.18)"/>
+  <!-- Author -->
+  <rect x="168" y="118" width="88" height="5" rx="2.5" fill="rgba(245,158,11,0.3)"/>
+  <!-- Closing quote -->
+  <text x="247" y="135" font-family="Georgia,serif" font-size="20" fill="rgba(245,158,11,0.2)">"</text>
+  <text x="150" y="168" font-family="system-ui,sans-serif" font-size="9" fill="rgba(245,158,11,0.4)" text-anchor="middle" letter-spacing="2">INSPIRATION</text>
+</svg>

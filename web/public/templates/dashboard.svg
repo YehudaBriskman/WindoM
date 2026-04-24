@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#071a0f"/>
+      <stop offset="100%" stop-color="#0d2818"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#g)" rx="12"/>
+  <ellipse cx="150" cy="90" rx="120" ry="70" fill="#4ade80" opacity="0.04"/>
+  <!-- Clock -->
+  <text x="150" y="48" font-family="system-ui,sans-serif" font-size="26" font-weight="400" fill="rgba(255,255,255,0.9)" text-anchor="middle">12:00</text>
+  <text x="150" y="62" font-family="system-ui,sans-serif" font-size="8" fill="rgba(74,222,128,0.5)" text-anchor="middle" letter-spacing="1">THU APR 24</text>
+  <!-- Weather -->
+  <rect x="124" y="70" width="52" height="14" rx="7" fill="rgba(74,222,128,0.12)" stroke="rgba(74,222,128,0.25)" stroke-width="0.6"/>
+  <text x="150" y="80" font-family="system-ui,sans-serif" font-size="8" fill="rgba(74,222,128,0.85)" text-anchor="middle">☀ 72°F</text>
+  <!-- Links row -->
+  <rect x="42" y="95" width="28" height="15" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <rect x="78" y="95" width="28" height="15" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <rect x="114" y="95" width="28" height="15" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <rect x="150" y="95" width="28" height="15" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <rect x="186" y="95" width="28" height="15" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <rect x="222" y="95" width="28" height="15" rx="5" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/>
+  <!-- Focus bar -->
+  <rect x="50" y="122" width="200" height="16" rx="7" fill="rgba(255,255,255,0.05)" stroke="rgba(74,222,128,0.2)" stroke-width="0.7"/>
+  <text x="150" y="133" font-family="system-ui,sans-serif" font-size="7.5" fill="rgba(255,255,255,0.2)" text-anchor="middle">What's your main focus today?</text>
+  <!-- Quote strip -->
+  <rect x="50" y="150" width="200" height="22" rx="7" fill="rgba(255,255,255,0.04)" stroke="rgba(74,222,128,0.12)" stroke-width="0.6"/>
+  <rect x="62" y="158" width="130" height="5" rx="2.5" fill="rgba(255,255,255,0.15)"/>
+  <rect x="62" y="167" width="90" height="4" rx="2" fill="rgba(74,222,128,0.2)"/>
+  <text x="150" y="190" font-family="system-ui,sans-serif" font-size="9" fill="rgba(74,222,128,0.4)" text-anchor="middle" letter-spacing="2">DASHBOARD</text>
+</svg>

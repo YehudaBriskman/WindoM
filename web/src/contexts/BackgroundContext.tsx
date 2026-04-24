@@ -27,6 +27,7 @@ interface BackgroundContextValue {
   photographer: { name: string; url: string } | null;
   currentPhotoId: string | null;
   currentPhotoSource: 'unsplash' | 'local' | 'bundled' | null;
+  unsplashError: string | null;
   refresh: () => Promise<void>;
   setFromPhoto: (photo: PhotoRecord) => Promise<void>;
   setFromLocalPhoto: (id: string) => Promise<void>;
@@ -44,6 +45,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   const [photographer, setPhotographer] = useState<{ name: string; url: string } | null>(null);
   const [currentPhotoId, setCurrentPhotoId] = useState<string | null>(null);
   const [currentPhotoSource, setCurrentPhotoSource] = useState<'unsplash' | 'local' | 'bundled' | null>(null);
+  const [unsplashError, setUnsplashError] = useState<string | null>(null);
   const photoHistory = usePhotoHistory();
 
   // Per-user storage key: isolates each account's local background on this device.
@@ -124,6 +126,8 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   }, [bgImageKey, applyBackground]);
 
   const loadUnsplash = useCallback(async () => {
+    setUnsplashError(null);
+
     const cached = await ls.get<UnsplashCache | null>('unsplashCache', null);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       applyBackground(cached.imageUrl);
@@ -137,18 +141,34 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       applyBackground(DEFAULT_GRADIENT);
       setPhotographer(null);
       setCurrentPhotoSource(null);
+      setUnsplashError('no-key');
       return;
     }
 
     try {
-      const res = await fetch(`${UNSPLASH_API_URL}?orientation=landscape&query=nature`, {
+      const params = new URLSearchParams({ orientation: 'landscape' });
+      if (settings.background.unsplashCollectionId?.trim()) {
+        params.set('collections', settings.background.unsplashCollectionId.trim());
+      } else {
+        params.set('query', 'nature');
+      }
+
+      const res = await fetch(`${UNSPLASH_API_URL}?${params.toString()}`, {
         headers: { Authorization: `Client-ID ${settings.background.unsplashApiKey}` },
       });
-      if (!res.ok) throw new Error(`Unsplash API error: ${res.status}`);
-      const data = await res.json();
+
+      if (res.status === 401) throw new Error('Invalid API key — check your Unsplash Access Key.');
+      if (res.status === 403) throw new Error('Unsplash rate limit reached. Try again later.');
+      if (!res.ok) throw new Error(`Unsplash API error ${res.status}`);
+
+      const data = await res.json() as {
+        id: string;
+        urls: { regular: string; small: string };
+        user: { name: string; links: { html: string } };
+      };
 
       const imageData: UnsplashCache = {
-        imageUrl: data.urls.full,
+        imageUrl: data.urls.regular,
         thumbUrl: data.urls.small,
         photographer: data.user.name,
         photographerUrl: data.user.links.html,
@@ -170,13 +190,15 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
         photographerUrl: imageData.photographerUrl,
       });
     } catch (error) {
-      console.error('Error loading Unsplash image:', error);
+      const msg = error instanceof Error ? error.message : 'Failed to load Unsplash photo';
+      console.warn('[BackgroundContext] Unsplash error:', msg);
       applyBackground(DEFAULT_GRADIENT);
       setPhotographer(null);
       setCurrentPhotoSource(null);
+      setUnsplashError(msg);
     }
   // addPhoto is a stable useCallback - safe dep; do NOT add photoHistory here
-  }, [settings.background.unsplashApiKey, applyBackground, addPhoto]);
+  }, [settings.background.unsplashApiKey, settings.background.unsplashCollectionId, applyBackground, addPhoto]);
 
   const loadLocal = useCallback(async () => {
     let localImage = await ls.get<string | null>(bgImageKey, null);
@@ -228,6 +250,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       photographer,
       currentPhotoId,
       currentPhotoSource,
+      unsplashError,
       refresh,
       setFromPhoto,
       setFromLocalPhoto,

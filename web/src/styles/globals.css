@@ -449,33 +449,89 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Weather Widget
    ============================================================ */
+/* ── Outer pill — starts as a circle, grows on hover ───────── */
 .weather-widget {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 16px;
-  border-radius: 18px;
-  height: 46px;
+  height: 52px;
+  border-radius: 26px;
+  overflow: hidden;
+  padding: 0;
+  gap: 0;
+  transition:
+    border-radius 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.weather-widget--open {
+  border-radius: 16px;
+}
+
+/* ── Circle core — always visible ─────────────────────────── */
+.weather-circle {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.weather-widget .weather-temp {
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 1;
+}
+.weather-widget .weather-unit {
+  position: absolute;
+  top: 9px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+}
+
+/* ── Expandable detail — hidden until hover ───────────────── */
+.weather-expand {
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    max-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.18s ease;
+}
+.weather-widget--open .weather-expand {
+  max-width: 200px;
+  opacity: 1;
+  pointer-events: auto;
+}
+.weather-expand-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px 0 4px;
+  white-space: nowrap;
 }
 .weather-widget .weather-icon {
   flex-shrink: 0;
+  opacity: 0.85;
 }
-.weather-widget .weather-temp {
-  font-size: 20px;
-  font-weight: 400;
+.weather-detail {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 1px;
 }
 .weather-widget .weather-city {
   font-size: 12px;
+  font-weight: 500;
   opacity: 0.9;
 }
-.weather-error {
-  opacity: 0.7;
+.weather-widget .weather-condition {
+  font-size: 10px;
+  opacity: 0.55;
 }
-.weather-placeholder {
-  opacity: 0.7;
-}
+.weather-error { opacity: 0.6; }
+.weather-placeholder { opacity: 0.6; }
 
 /* City autocomplete dropdown */
 .city-dropdown {
@@ -2352,16 +2408,23 @@ input[type="checkbox"]:focus-visible {
 .photographer-credit {
   position: fixed;
   bottom: 10px;
-  right: 50%;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  padding: 8px 12px;
-  border-radius: 10px;
+  left: 62px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
   z-index: 50;
   transition: opacity 0.3s;
+  pointer-events: auto;
 }
 .photographer-credit a {
-  color: white;
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+}
+.photographer-credit a:hover {
+  color: rgba(255, 255, 255, 1);
   text-decoration: underline;
 }
 .photo-credit-like-btn {
@@ -3016,6 +3079,229 @@ body.focus-exiting .sidebar-container {
 }
 .auth-required-link:hover {
   color: white;
+}
+
+/* ============================================================
+   App Hub
+   ============================================================ */
+.app-hub {
+  display: flex;
+  flex-direction: column;
+}
+.app-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.app-hub-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
+  color: inherit;
+  font-family: inherit;
+  aspect-ratio: 1;
+}
+.app-hub-card:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px);
+}
+.app-hub-card:active {
+  transform: translateY(0);
+}
+.app-hub-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.85);
+}
+/* Connection status dot — bottom-right corner of icon */
+.app-hub-dot {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(0, 0, 0, 0.3);
+}
+.app-hub-dot.connected {
+  background: #4ade80;
+  box-shadow: 0 0 5px rgba(74, 222, 128, 0.7);
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================================
+   App Center Panel
+   ============================================================ */
+.app-center-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1100;
+}
+.app-center-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1101;
+  width: min(460px, calc(100vw - 32px));
+  max-height: min(600px, calc(100vh - 40px));
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  overflow: hidden;
+  outline: none;
+}
+.app-center-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.app-center-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.app-center-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.app-center-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+.app-center-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  padding: 0;
+}
+.app-center-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+.app-center-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* ============================================================
+   Templates Gallery
+   ============================================================ */
+.templates-gallery {
+  display: flex;
+  flex-direction: column;
+}
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.template-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.15s ease;
+}
+.template-card:hover {
+  border-color: color-mix(in srgb, var(--template-accent, #fff) 40%, transparent);
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+.template-thumbnail {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.template-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.template-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px 4px;
+  flex: 1;
+}
+.template-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+.template-desc {
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}
+.template-apply-btn {
+  margin: 8px 10px 10px;
+  padding: 7px 0;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--template-accent, #fff) 30%, transparent);
+  background: color-mix(in srgb, var(--template-accent, #fff) 10%, transparent);
+  color: color-mix(in srgb, var(--template-accent, #fff) 85%, white);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.template-apply-btn:hover {
+  background: color-mix(in srgb, var(--template-accent, #fff) 20%, transparent);
+  border-color: color-mix(in srgb, var(--template-accent, #fff) 50%, transparent);
+}
+.template-applied-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: #4ade80;
+  color: #052e16;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 /* ============================================================
