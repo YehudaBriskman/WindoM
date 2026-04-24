@@ -68,7 +68,6 @@ export interface SpotifyIntegration {
 }
 
 export interface FinanceIntegration {
-  finnhubApiKey: string;
   watchlistTickers: string[];
   cryptoWatchlist: string[];
   showStocks: boolean;
@@ -188,7 +187,6 @@ export const defaultSettings: Settings = {
     calendar: { days: 7, connected: false },
     spotify: { connected: false },
     finance: {
-      finnhubApiKey: '',
       watchlistTickers: [],
       cryptoWatchlist: [],
       showStocks: false,

@@ -1,6 +1,6 @@
 import { useSettings } from '../../../contexts/SettingsContext';
 
-export type AppId = 'calendar' | 'spotify';
+export type AppId = 'calendar' | 'spotify' | 'finance';
 
 interface AppDef {
   id: AppId;
@@ -28,6 +28,15 @@ function SpotifyIcon() {
   );
 }
 
+function FinanceIcon() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+
 const APP_DEFS: AppDef[] = [
   {
     id: 'calendar',
@@ -40,6 +49,12 @@ const APP_DEFS: AppDef[] = [
     label: 'Spotify',
     icon: <SpotifyIcon />,
     connected: (s) => s.integrations.spotify.connected,
+  },
+  {
+    id: 'finance',
+    label: 'Finance',
+    icon: <FinanceIcon />,
+    connected: (s) => s.integrations.finance.connected,
   },
 ];
 

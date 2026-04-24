@@ -12,70 +12,38 @@ const POPULAR_CRYPTO = [
   { id: 'chainlink', label: 'Chainlink (LINK)' },
 ];
 
-async function validateFinnhubKey(apiKey: string): Promise<boolean> {
-  try {
-    const res = await fetch(
-      `https://finnhub.io/api/v1/quote?symbol=AAPL&token=${apiKey}`
-    );
-    if (!res.ok) return false;
-    const data = await res.json() as { c?: number };
-    return typeof data.c === 'number' && data.c > 0;
-  } catch {
-    return false;
-  }
-}
-
 export function FinanceSettings() {
   const { settings, update } = useSettings();
   const { finance } = settings.integrations;
 
-  const [keyInput, setKeyInput] = useState(finance.finnhubApiKey);
   const [tickersInput, setTickersInput] = useState(finance.watchlistTickers.join(', '));
-  const [validating, setValidating] = useState(false);
-  const [keyError, setKeyError] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const connected = finance.connected;
+  const [tickerError, setTickerError] = useState('');
 
   function toggleCrypto(id: string) {
     const list = finance.cryptoWatchlist.includes(id)
       ? finance.cryptoWatchlist.filter((c) => c !== id)
       : [...finance.cryptoWatchlist, id];
+    const showCrypto = list.length > 0;
     void update('integrations', {
-      finance: { ...finance, cryptoWatchlist: list, connected: list.length > 0 || finance.showStocks },
+      finance: { ...finance, cryptoWatchlist: list, showCrypto, connected: showCrypto || finance.showStocks },
     });
   }
 
-  async function handleSaveStocks() {
-    const key = keyInput.trim();
+  function handleSaveStocks() {
     const tickers = tickersInput.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean);
-    if (!key) { setKeyError('API key is required'); return; }
-    if (tickers.length === 0) { setKeyError('Add at least one ticker'); return; }
-
-    setValidating(true);
-    setKeyError('');
-    const valid = await validateFinnhubKey(key);
-    setValidating(false);
-
-    if (!valid) { setKeyError('Invalid API key — check your Finnhub Access Token'); return; }
-
-    setSaving(true);
-    await update('integrations', {
-      finance: {
-        ...finance,
-        finnhubApiKey: key,
-        watchlistTickers: tickers,
-        showStocks: true,
-        connected: true,
-      },
+    if (tickers.length === 0) { setTickerError('Add at least one ticker symbol'); return; }
+    setTickerError('');
+    void update('integrations', {
+      finance: { ...finance, watchlistTickers: tickers, showStocks: true, connected: true },
     });
-    setSaving(false);
   }
 
   function handleDisableStocks() {
+    setTickersInput('');
     void update('integrations', {
       finance: {
         ...finance,
+        watchlistTickers: [],
         showStocks: false,
         connected: finance.showCrypto && finance.cryptoWatchlist.length > 0,
       },
@@ -84,21 +52,17 @@ export function FinanceSettings() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* ── Stocks section ── */}
+      {/* ── Stocks ── */}
       <div className="settings-group">
-        <label className="settings-label">Stocks — Finnhub</label>
+        <label className="settings-label">Stocks</label>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Get a free API key at{' '}
-          <a href="https://finnhub.io" target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.8)' }}>
-            finnhub.io
-          </a>
-          .
+          Free data via Yahoo Finance — no API key required.
         </p>
 
         {finance.showStocks ? (
           <div className="integration-card">
             <div className="integration-info">
-              <div className="integration-name">Finnhub</div>
+              <div className="integration-name">Stocks</div>
               <div className="integration-status connected">
                 {finance.watchlistTickers.join(', ')}
               </div>
@@ -111,37 +75,32 @@ export function FinanceSettings() {
           <>
             <input
               type="text"
-              placeholder="Finnhub Access Token"
-              value={keyInput}
-              onChange={(e) => { setKeyInput(e.target.value); setKeyError(''); }}
-              className="settings-input"
-              style={{ marginBottom: '8px', fontFamily: 'monospace', fontSize: '12px' }}
-            />
-            <input
-              type="text"
-              placeholder="Tickers, e.g. AAPL, TSLA, NVDA"
+              placeholder="e.g. AAPL, TSLA, NVDA, MSFT"
               value={tickersInput}
-              onChange={(e) => setTickersInput(e.target.value)}
+              onChange={(e) => { setTickersInput(e.target.value); setTickerError(''); }}
               className="settings-input"
               style={{ marginBottom: '8px' }}
             />
-            {keyError && <p className="auth-field-error" style={{ marginBottom: '8px' }}>{keyError}</p>}
+            {tickerError && <p className="auth-field-error" style={{ marginBottom: '8px' }}>{tickerError}</p>}
             <button
               type="button"
               className="integration-connect-btn"
-              disabled={validating || saving || !keyInput.trim()}
+              disabled={!tickersInput.trim()}
               onClick={handleSaveStocks}
               style={{ width: '100%' }}
             >
-              {validating ? 'Validating…' : saving ? 'Saving…' : 'Connect Stocks'}
+              Enable Stocks
             </button>
           </>
         )}
       </div>
 
-      {/* ── Crypto section ── */}
+      {/* ── Crypto ── */}
       <div className="settings-group">
-        <label className="settings-label">Crypto — CoinGecko (free, no key)</label>
+        <label className="settings-label">Crypto</label>
+        <p className="settings-hint" style={{ marginBottom: '10px' }}>
+          Free data via CoinGecko — no API key required.
+        </p>
         <div className="finance-crypto-grid">
           {POPULAR_CRYPTO.map((coin) => {
             const checked = finance.cryptoWatchlist.includes(coin.id);
@@ -162,38 +121,14 @@ export function FinanceSettings() {
         </div>
         {finance.cryptoWatchlist.length > 0 && (
           <p className="settings-hint" style={{ marginTop: '8px' }}>
-            {finance.cryptoWatchlist.length} coin{finance.cryptoWatchlist.length !== 1 ? 's' : ''} selected.
+            {finance.cryptoWatchlist.length} coin{finance.cryptoWatchlist.length !== 1 ? 's' : ''} selected — widget enabled automatically.
           </p>
-        )}
-        {finance.cryptoWatchlist.length > 0 && !finance.showCrypto && (
-          <button
-            type="button"
-            className="integration-connect-btn"
-            style={{ width: '100%', marginTop: '8px' }}
-            onClick={() => update('integrations', { finance: { ...finance, showCrypto: true, connected: true } })}
-          >
-            Enable Crypto Widget
-          </button>
-        )}
-        {finance.showCrypto && (
-          <button
-            type="button"
-            className="integration-disconnect-btn"
-            style={{ marginTop: '8px' }}
-            onClick={() => update('integrations', {
-              finance: { ...finance, showCrypto: false, connected: finance.showStocks },
-            })}
-          >
-            Disable Crypto
-          </button>
         )}
       </div>
 
-      {connected && (
-        <p className="settings-hint" style={{ opacity: 0.5 }}>
-          Prices update every 60 seconds while the tab is open.
-        </p>
-      )}
+      <p className="settings-hint" style={{ opacity: 0.5 }}>
+        Prices update every 5 minutes while the tab is open.
+      </p>
     </div>
   );
 }

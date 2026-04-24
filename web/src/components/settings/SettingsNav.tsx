@@ -1,4 +1,4 @@
-const TABS = ['general', 'clock', 'background', 'weather', 'quotes', 'links', 'finance', 'apps', 'templates', 'account'] as const;
+const TABS = ['general', 'clock', 'background', 'weather', 'quotes', 'links', 'apps', 'templates', 'account'] as const;
 export type SettingsTab = typeof TABS[number];
 
 const LABELS: Record<SettingsTab, string> = {
@@ -8,7 +8,6 @@ const LABELS: Record<SettingsTab, string> = {
   weather: 'Weather',
   quotes: 'Quotes',
   links: 'Links',
-  finance: 'Finance',
   apps: 'Apps',
   templates: 'Templates',
   account: 'Account',

@@ -14,7 +14,6 @@ import { AppHub, type AppId } from "./sections/AppHub";
 import { AppCenterPanel } from "./sections/AppCenterPanel";
 import { TemplatesGallery } from "./sections/TemplatesGallery";
 import { AccountSettings } from "./sections/AccountSettings";
-import { FinanceSettings } from "./sections/FinanceSettings";
 
 export function SettingsPanel() {
   const { reset } = useSettings();
@@ -91,7 +90,6 @@ export function SettingsPanel() {
               {activeTab === "weather" && <WeatherSettings />}
               {activeTab === "quotes" && <QuotesSettings />}
               {activeTab === "links" && <LinksSettings />}
-              {activeTab === "finance" && <FinanceSettings />}
               {activeTab === "apps" && (
                 <AppHub onOpenApp={setOpenAppId} />
               )}

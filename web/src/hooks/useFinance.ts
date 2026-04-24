@@ -22,8 +22,8 @@ interface FinanceCache {
 }
 
 const CACHE_KEY = 'windom_finance_cache';
-const TTL = 60_000; // 1 minute
-const POLL_MS = 60_000;
+const TTL = 300_000; // 5 minutes
+const POLL_MS = 300_000;
 
 const CRYPTO_NAMES: Record<string, string> = {
   bitcoin: 'BTC', ethereum: 'ETH', solana: 'SOL', cardano: 'ADA',
@@ -31,20 +31,28 @@ const CRYPTO_NAMES: Record<string, string> = {
   'avalanche-2': 'AVAX', 'matic-network': 'MATIC',
 };
 
-async function fetchStocks(tickers: string[], apiKey: string): Promise<StockQuote[]> {
-  const results = await Promise.allSettled(
-    tickers.map(async (symbol) => {
-      const res = await fetch(
-        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${apiKey}`
-      );
-      if (!res.ok) throw new Error(`Finnhub ${res.status}`);
-      const data = await res.json() as { c: number; d: number; dp: number };
-      return { symbol: symbol.toUpperCase(), price: data.c, change: data.d, changePercent: data.dp };
-    })
+interface YahooQuote {
+  symbol: string;
+  regularMarketPrice?: number;
+  regularMarketChange?: number;
+  regularMarketChangePercent?: number;
+}
+
+async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
+  const symbols = tickers.map((t) => encodeURIComponent(t)).join(',');
+  const res = await fetch(
+    `https://query1.finance.yahoo.com/v8/finance/quote?symbols=${symbols}&fields=regularMarketPrice,regularMarketChange,regularMarketChangePercent`
   );
-  return results
-    .filter((r): r is PromiseFulfilledResult<StockQuote> => r.status === 'fulfilled' && r.value.price > 0)
-    .map((r) => r.value);
+  if (!res.ok) throw new Error(`Yahoo Finance ${res.status}`);
+  const data = await res.json() as { quoteResponse?: { result?: YahooQuote[] } };
+  return (data.quoteResponse?.result ?? [])
+    .filter((q): q is YahooQuote & { regularMarketPrice: number } => typeof q.regularMarketPrice === 'number' && q.regularMarketPrice > 0)
+    .map((q) => ({
+      symbol: q.symbol.toUpperCase(),
+      price: q.regularMarketPrice,
+      change: q.regularMarketChange ?? 0,
+      changePercent: q.regularMarketChangePercent ?? 0,
+    }));
 }
 
 async function fetchCrypto(ids: string[]): Promise<CryptoQuote[]> {
@@ -92,8 +100,8 @@ export function useFinance() {
     setError(null);
     try {
       const [newStocks, newCrypto] = await Promise.all([
-        finance.showStocks && finance.finnhubApiKey && finance.watchlistTickers.length > 0
-          ? fetchStocks(finance.watchlistTickers, finance.finnhubApiKey)
+        finance.showStocks && finance.watchlistTickers.length > 0
+          ? fetchStocks(finance.watchlistTickers)
           : Promise.resolve([]),
         finance.showCrypto && finance.cryptoWatchlist.length > 0
           ? fetchCrypto(finance.cryptoWatchlist)
@@ -108,8 +116,7 @@ export function useFinance() {
     } finally {
       setLoading(false);
     }
-  }, [enabled, finance.showStocks, finance.showCrypto, finance.finnhubApiKey,
-      finance.watchlistTickers, finance.cryptoWatchlist]);
+  }, [enabled, finance.showStocks, finance.showCrypto, finance.watchlistTickers, finance.cryptoWatchlist]);
 
   useEffect(() => {
     if (!enabled) { setStocks([]); setCrypto([]); return; }

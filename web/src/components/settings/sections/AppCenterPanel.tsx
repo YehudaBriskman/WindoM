@@ -3,10 +3,12 @@ import { X } from 'lucide-react';
 import type { AppId } from './AppHub';
 import { CalendarSettings } from './CalendarSettings';
 import { SpotifySettings } from './SpotifySettings';
+import { FinanceSettings } from './FinanceSettings';
 
 const APP_LABELS: Record<AppId, string> = {
   calendar: 'Calendar',
   spotify: 'Spotify',
+  finance: 'Finance',
 };
 
 function CalendarIcon() {
@@ -28,9 +30,19 @@ function SpotifyIcon() {
   );
 }
 
+function FinanceIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+
 const APP_ICONS: Record<AppId, React.ReactNode> = {
   calendar: <CalendarIcon />,
   spotify: <SpotifyIcon />,
+  finance: <FinanceIcon />,
 };
 
 interface AppCenterPanelProps {
@@ -78,6 +90,7 @@ export function AppCenterPanel({ appId, onClose }: AppCenterPanelProps) {
         <div className="app-center-body">
           {appId === 'calendar' && <CalendarSettings />}
           {appId === 'spotify' && <SpotifySettings />}
+          {appId === 'finance' && <FinanceSettings />}
         </div>
       </div>
     </>
