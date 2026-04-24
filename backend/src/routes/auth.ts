@@ -21,8 +21,13 @@ export function authRoutes(app: FastifyInstance): void {
       },
       response: {
         200: {
-          allOf: [{ $ref: 'AuthTokens#' }],
-          properties: { emailSent: { type: 'boolean' } },
+          type: 'object',
+          required: ['accessToken', 'refreshToken'],
+          properties: {
+            accessToken: { type: 'string' },
+            refreshToken: { type: 'string' },
+            emailSent: { type: 'boolean' },
+          },
         },
         400: errorResponse,
         409: errorResponse,

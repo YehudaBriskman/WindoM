@@ -3,6 +3,37 @@ import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 
 export async function registerSwagger(app: FastifyInstance, isDev: boolean): Promise<void> {
+  // Register shared schemas in Fastify's schema store so route serializers can resolve $ref.
+  app.addSchema({
+    $id: 'Error',
+    type: 'object',
+    properties: {
+      statusCode: { type: 'integer' },
+      error: { type: 'string' },
+      message: { type: 'string' },
+    },
+  });
+  app.addSchema({
+    $id: 'AuthTokens',
+    type: 'object',
+    required: ['accessToken', 'refreshToken'],
+    properties: {
+      accessToken: { type: 'string' },
+      refreshToken: { type: 'string' },
+    },
+  });
+  app.addSchema({
+    $id: 'User',
+    type: 'object',
+    properties: {
+      id: { type: 'string', format: 'uuid' },
+      email: { type: 'string', format: 'email' },
+      name: { type: 'string' },
+      emailVerified: { type: 'boolean' },
+      createdAt: { type: 'string', format: 'date-time' },
+    },
+  });
+
   await app.register(swagger, {
     openapi: {
       openapi: '3.0.3',
