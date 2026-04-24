@@ -30,6 +30,7 @@ export async function registerSwagger(app: FastifyInstance, isDev: boolean): Pro
       email: { type: 'string', format: 'email' },
       name: { type: 'string' },
       emailVerified: { type: 'boolean' },
+      hasPassword: { type: 'boolean' },
       createdAt: { type: 'string', format: 'date-time' },
     },
   });
