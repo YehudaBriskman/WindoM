@@ -6,7 +6,6 @@ import { TodoSection } from "../sidebar/TodoSection";
 import { CalendarSection } from "../sidebar/CalendarSection";
 import { SpotifyTopTracks } from "../spotify/SpotifyTopTracks";
 import { HistorySection } from "../sidebar/HistorySection";
-import { FinanceWidget } from "../finance/FinanceWidget";
 
 export function RightSidebar() {
   const { isOpen, toggle, close } = useSidebar();
@@ -46,7 +45,6 @@ export function RightSidebar() {
         </div>
         <div className="sidebar-content">
           {settings.general.showHistory && <HistorySection />}
-          <FinanceWidget />
           {settings.general.showTodo && <TodoSection />}
           <CalendarSection />
           {settings.integrations.spotify.connected && settings.integrations.spotify.showTopTracks && <SpotifyTopTracks />}

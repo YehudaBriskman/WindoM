@@ -4550,15 +4550,16 @@ body.focus-exiting .sidebar-container {
   white-space: nowrap;
 }
 
-/* ── Crypto strip (center screen) ── */
-.crypto-strip {
+/* ── Finance strip (center screen — stocks + crypto) ── */
+.finance-strip {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px 16px;
+  align-items: center;
+  gap: 6px 12px;
   margin: 8px 0;
 }
-.crypto-strip-item {
+.finance-strip-item {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -4568,19 +4569,111 @@ body.focus-exiting .sidebar-container {
   padding: 4px 12px;
   backdrop-filter: blur(6px);
 }
-.crypto-strip-symbol {
+.finance-strip-symbol {
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   color: rgba(255, 255, 255, 0.9);
 }
-.crypto-strip-price {
+.finance-strip-price {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.7);
 }
-.crypto-strip-change {
+.finance-strip-change {
   font-size: 0.68rem;
   font-weight: 600;
 }
-.crypto-strip-change.positive { color: #4ade80; }
-.crypto-strip-change.negative { color: #f87171; }
+.finance-strip-change.positive { color: #4ade80; }
+.finance-strip-change.negative { color: #f87171; }
+.finance-strip-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 1px;
+}
+
+/* ── Stock autocomplete ── */
+.stock-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 3px 8px 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+}
+.stock-pill-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.stock-pill-remove:hover { color: rgba(255, 255, 255, 0.85); }
+.stock-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: rgba(20, 20, 30, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.stock-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  font-family: inherit;
+}
+.stock-dropdown-item:last-child { border-bottom: none; }
+.stock-dropdown-item:hover,
+.stock-dropdown-item.selected {
+  background: rgba(255, 255, 255, 0.08);
+}
+.stock-dropdown-symbol {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+  width: 54px;
+  flex-shrink: 0;
+}
+.stock-dropdown-name {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stock-dropdown-check {
+  font-size: 0.72rem;
+  color: #4ade80;
+  flex-shrink: 0;
+}

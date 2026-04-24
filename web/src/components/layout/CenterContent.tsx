@@ -2,7 +2,7 @@ import { Clock } from '../clock/Clock';
 import { Greeting } from '../clock/Greeting';
 import { FocusInput } from '../focus/FocusInput';
 import { FocusPresets } from '../focus/FocusPresets';
-import { CryptoWidget } from '../finance/CryptoWidget';
+import { FinanceStrip } from '../finance/FinanceStrip';
 
 export function CenterContent() {
   return (
@@ -11,7 +11,7 @@ export function CenterContent() {
         <Clock />
         <Greeting />
       </div>
-      <CryptoWidget />
+      <FinanceStrip />
       <FocusInput />
       <FocusPresets />
     </div>

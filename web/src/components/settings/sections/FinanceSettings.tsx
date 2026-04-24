@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useSettings } from '../../../contexts/SettingsContext';
+import { StockSearch } from './StockSearch';
 
 const POPULAR_CRYPTO = [
   { id: 'bitcoin', label: 'Bitcoin (BTC)' },
@@ -16,8 +16,16 @@ export function FinanceSettings() {
   const { settings, update } = useSettings();
   const { finance } = settings.integrations;
 
-  const [tickersInput, setTickersInput] = useState(finance.watchlistTickers.join(', '));
-  const [tickerError, setTickerError] = useState('');
+  function handleTickersChange(tickers: string[]) {
+    void update('integrations', {
+      finance: {
+        ...finance,
+        watchlistTickers: tickers,
+        showStocks: tickers.length > 0,
+        connected: tickers.length > 0 || finance.showCrypto,
+      },
+    });
+  }
 
   function toggleCrypto(id: string) {
     const list = finance.cryptoWatchlist.includes(id)
@@ -25,27 +33,11 @@ export function FinanceSettings() {
       : [...finance.cryptoWatchlist, id];
     const showCrypto = list.length > 0;
     void update('integrations', {
-      finance: { ...finance, cryptoWatchlist: list, showCrypto, connected: showCrypto || finance.showStocks },
-    });
-  }
-
-  function handleSaveStocks() {
-    const tickers = tickersInput.split(',').map((t) => t.trim().toUpperCase()).filter(Boolean);
-    if (tickers.length === 0) { setTickerError('Add at least one ticker symbol'); return; }
-    setTickerError('');
-    void update('integrations', {
-      finance: { ...finance, watchlistTickers: tickers, showStocks: true, connected: true },
-    });
-  }
-
-  function handleDisableStocks() {
-    setTickersInput('');
-    void update('integrations', {
       finance: {
         ...finance,
-        watchlistTickers: [],
-        showStocks: false,
-        connected: finance.showCrypto && finance.cryptoWatchlist.length > 0,
+        cryptoWatchlist: list,
+        showCrypto,
+        connected: showCrypto || finance.showStocks,
       },
     });
   }
@@ -56,50 +48,16 @@ export function FinanceSettings() {
       <div className="settings-group">
         <label className="settings-label">Stocks</label>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via Yahoo Finance — no API key required. Shows in sidebar.
+          Free data via Yahoo Finance — shows on main screen. Search by name or ticker symbol.
         </p>
-
-        {finance.showStocks ? (
-          <div className="integration-card">
-            <div className="integration-info">
-              <div className="integration-name">Stocks</div>
-              <div className="integration-status connected">
-                {finance.watchlistTickers.join(', ')}
-              </div>
-            </div>
-            <button type="button" className="integration-disconnect-btn" onClick={handleDisableStocks}>
-              Disable
-            </button>
-          </div>
-        ) : (
-          <>
-            <input
-              type="text"
-              placeholder="e.g. AAPL, TSLA, NVDA, MSFT"
-              value={tickersInput}
-              onChange={(e) => { setTickersInput(e.target.value); setTickerError(''); }}
-              className="settings-input"
-              style={{ marginBottom: '8px' }}
-            />
-            {tickerError && <p className="auth-field-error" style={{ marginBottom: '8px' }}>{tickerError}</p>}
-            <button
-              type="button"
-              className="integration-connect-btn"
-              disabled={!tickersInput.trim()}
-              onClick={handleSaveStocks}
-              style={{ width: '100%' }}
-            >
-              Enable Stocks
-            </button>
-          </>
-        )}
+        <StockSearch selected={finance.watchlistTickers} onChange={handleTickersChange} />
       </div>
 
       {/* ── Crypto ── */}
       <div className="settings-group">
         <label className="settings-label">Crypto</label>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via CoinGecko — no API key required. Shown on the main screen.
+          Free data via CoinGecko — shows on main screen.
         </p>
         <div className="finance-crypto-grid">
           {POPULAR_CRYPTO.map((coin) => {
@@ -119,11 +77,6 @@ export function FinanceSettings() {
             );
           })}
         </div>
-        {finance.cryptoWatchlist.length > 0 && (
-          <p className="settings-hint" style={{ marginTop: '8px' }}>
-            {finance.cryptoWatchlist.length} coin{finance.cryptoWatchlist.length !== 1 ? 's' : ''} selected — widget enabled automatically.
-          </p>
-        )}
       </div>
 
       <p className="settings-hint" style={{ opacity: 0.5 }}>
