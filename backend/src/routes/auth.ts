@@ -9,16 +9,7 @@ export function authRoutes(app: FastifyInstance): void {
     config: { rateLimit: { max: 5, timeWindow: '15 minutes' } },
     schema: {
       tags: ['Auth'],
-      summary: 'Register a new account',
-      body: {
-        type: 'object',
-        required: ['email', 'password', 'name'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string', minLength: 8 },
-          name: { type: 'string', minLength: 1, maxLength: 100 },
-        },
-      },
+      summary: 'Register a new account — requires email, password (≥8 chars), name',
       response: {
         200: {
           type: 'object',
@@ -41,14 +32,6 @@ export function authRoutes(app: FastifyInstance): void {
     schema: {
       tags: ['Auth'],
       summary: 'Log in with email and password',
-      body: {
-        type: 'object',
-        required: ['email', 'password'],
-        properties: {
-          email: { type: 'string', format: 'email' },
-          password: { type: 'string' },
-        },
-      },
       response: {
         200: tokenResponse,
         400: errorResponse,
@@ -63,13 +46,7 @@ export function authRoutes(app: FastifyInstance): void {
     schema: {
       tags: ['Auth'],
       summary: 'Rotate refresh token and get new access token',
-      description: 'Accepts the refresh token from the HttpOnly cookie or from `refreshToken` in the request body. Returns a new access token and rotates the refresh token.',
-      body: {
-        type: 'object',
-        properties: {
-          refreshToken: { type: 'string', description: 'Fallback if the HttpOnly cookie is not sent' },
-        },
-      },
+      description: 'Reads the refresh token from the HttpOnly windom_refresh cookie. Optionally accepts { refreshToken } in the body as a fallback.',
       response: {
         200: tokenResponse,
         401: errorResponse,

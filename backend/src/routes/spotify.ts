@@ -66,15 +66,8 @@ export function spotifyRoutes(app: FastifyInstance): void {
     preHandler: authenticate,
     schema: {
       tags: ['Spotify'],
-      summary: 'Get user top tracks',
+      summary: 'Get user top tracks — ?limit (1-50) &time_range (short|medium|long_term)',
       security,
-      querystring: {
-        type: 'object',
-        properties: {
-          limit: { type: 'integer', minimum: 1, maximum: 50, default: 10 },
-          time_range: { type: 'string', enum: ['short_term', 'medium_term', 'long_term'], default: 'medium_term' },
-        },
-      },
       response: {
         200: {
           type: 'array',

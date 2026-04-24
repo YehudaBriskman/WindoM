@@ -10,16 +10,25 @@ export function integrationsRoutes(app: FastifyInstance): void {
     preHandler: authenticate,
     schema: {
       tags: ['Integrations'],
-      summary: 'List linked OAuth integrations',
+      summary: 'Get integration status for google and spotify',
       security,
       response: {
         200: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              provider: { type: 'string', enum: ['google', 'spotify'] },
-              connectedAt: { type: 'string', format: 'date-time' },
+          type: 'object',
+          properties: {
+            google: {
+              type: 'object',
+              properties: {
+                connected: { type: 'boolean' },
+                scopes: { type: 'array', items: { type: 'string' } },
+              },
+            },
+            spotify: {
+              type: 'object',
+              properties: {
+                connected: { type: 'boolean' },
+                scopes: { type: 'array', items: { type: 'string' } },
+              },
             },
           },
         },
@@ -32,18 +41,12 @@ export function integrationsRoutes(app: FastifyInstance): void {
     preHandler: authenticate,
     schema: {
       tags: ['Integrations'],
-      summary: 'Unlink an OAuth integration',
+      summary: 'Unlink an OAuth integration — :provider is google or spotify',
       security,
-      params: {
-        type: 'object',
-        properties: {
-          provider: { type: 'string', enum: ['google', 'spotify'] },
-        },
-      },
       response: {
         200: { type: 'object', properties: { success: { type: 'boolean' } } },
+        400: errorResponse,
         401: errorResponse,
-        404: errorResponse,
       },
     },
   }, deleteIntegrationController);

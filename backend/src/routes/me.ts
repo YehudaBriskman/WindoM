@@ -24,14 +24,8 @@ export function meRoutes(app: FastifyInstance): void {
     config: { rateLimit: { max: 10, timeWindow: '15 minutes' } },
     schema: {
       tags: ['Me'],
-      summary: 'Update user name',
+      summary: 'Update user name — accepts { name?: string }',
       security,
-      body: {
-        type: 'object',
-        properties: {
-          name: { type: 'string', minLength: 1, maxLength: 100 },
-        },
-      },
       response: {
         200: { $ref: 'User#' },
         400: errorResponse,

@@ -12,14 +12,6 @@ export function calendarRoutes(app: FastifyInstance): void {
       tags: ['Calendar'],
       summary: 'List upcoming Google Calendar events',
       security,
-      querystring: {
-        type: 'object',
-        properties: {
-          days: { type: 'integer', minimum: 1, maximum: 30, default: 7, description: 'Number of days ahead to fetch' },
-          limit: { type: 'integer', minimum: 1, maximum: 200, default: 50 },
-          offset: { type: 'integer', minimum: 0, default: 0 },
-        },
-      },
       response: {
         200: {
           type: 'object',
