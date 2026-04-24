@@ -74,6 +74,31 @@ jobs:
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      - name: Sync secrets to Fly.io
+        working-directory: backend
+        run: |
+          flyctl secrets set \
+            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            JWT_ACCESS_SECRET="${{ secrets.JWT_ACCESS_SECRET }}" \
+            REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
+            TOKEN_ENC_KEY_BASE64="${{ secrets.TOKEN_ENC_KEY_BASE64 }}" \
+            GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            GOOGLE_REDIRECT_URI="${{ secrets.GOOGLE_REDIRECT_URI }}" \
+            SPOTIFY_CLIENT_ID="${{ secrets.SPOTIFY_CLIENT_ID }}" \
+            SPOTIFY_CLIENT_SECRET="${{ secrets.SPOTIFY_CLIENT_SECRET }}" \
+            SPOTIFY_REDIRECT_URI="${{ secrets.SPOTIFY_REDIRECT_URI }}" \
+            CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}" \
+            SMTP_HOST="${{ secrets.SMTP_HOST }}" \
+            SMTP_PORT="${{ secrets.SMTP_PORT }}" \
+            SMTP_USER="${{ secrets.SMTP_USER }}" \
+            SMTP_PASS="${{ secrets.SMTP_PASS }}" \
+            SMTP_FROM="${{ secrets.SMTP_FROM }}" \
+            CHROME_EXTENSION_ID="${{ secrets.CHROME_EXTENSION_ID }}" \
+            --stage
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
       - name: Deploy to Fly.io
         working-directory: backend
         run: flyctl deploy --remote-only
