@@ -17,7 +17,7 @@
     "https://nominatim.openstreetmap.org/*",
     "https://ipapi.co/*",
     "https://api.quotable.io/*",
-    "https://www.google.com/*",
+    "https://www.google.com/s2/favicons*",
     "https://duckduckgo.com/*",
     "https://api.windom.app/*"
   ],
