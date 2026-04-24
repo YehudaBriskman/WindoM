@@ -53,7 +53,7 @@ export function AppHub({ onOpenApp }: AppHubProps) {
   return (
     <div className="app-hub">
       <p className="settings-hint" style={{ marginBottom: '16px' }}>
-        Connect and manage your integrations. Click an app to configure it.
+        Click an app to configure it.
       </p>
       <div className="app-hub-grid">
         {APP_DEFS.map((app) => {
@@ -67,10 +67,7 @@ export function AppHub({ onOpenApp }: AppHubProps) {
               aria-label={`${app.label} — ${isConnected ? 'connected' : 'not connected'}`}
             >
               <div className="app-hub-icon">{app.icon}</div>
-              <span className="app-hub-label">{app.label}</span>
-              <span className={`app-hub-badge${isConnected ? ' connected' : ''}`}>
-                {isConnected ? 'Connected' : 'Not connected'}
-              </span>
+              <span className={`app-hub-dot${isConnected ? ' connected' : ''}`} aria-hidden="true" />
             </button>
           );
         })}

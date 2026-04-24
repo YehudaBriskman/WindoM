@@ -4,7 +4,7 @@ import { TEMPLATES, type SettingsTemplate } from '../../../lib/templates';
 
 function TemplateCard({ template, onApply }: { template: SettingsTemplate; onApply: () => void }) {
   return (
-    <div className="template-card">
+    <div className="template-card" style={{ '--template-accent': template.accent } as React.CSSProperties}>
       <div className="template-thumbnail">
         <img src={template.thumbnail} alt={template.name} draggable={false} />
       </div>
@@ -25,7 +25,7 @@ export function TemplatesGallery() {
 
   function handleApply(template: SettingsTemplate) {
     const sectionNames = Object.keys(template.settings).join(', ');
-    if (!confirm(`Apply the "${template.name}" template? This will overwrite your settings for: ${sectionNames}.`)) return;
+    if (!confirm(`Apply "${template.name}"? This overwrites your settings for: ${sectionNames}.`)) return;
 
     void updateMultiple(template.settings as Parameters<typeof updateMultiple>[0]);
     setApplied(template.id);
@@ -35,7 +35,7 @@ export function TemplatesGallery() {
   return (
     <div className="templates-gallery">
       <p className="settings-hint" style={{ marginBottom: '16px' }}>
-        Start with a preset layout. Applying a template only overwrites the sections it defines — your other settings are untouched.
+        Preset layouts — only overwrites the sections shown. Your links, API keys, and other settings stay.
       </p>
       <div className="templates-grid">
         {TEMPLATES.map((t) => (

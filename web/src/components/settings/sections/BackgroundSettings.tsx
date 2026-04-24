@@ -11,7 +11,7 @@ const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export function BackgroundSettings() {
   const { settings, update } = useSettings();
-  const { addLocalPhoto, setFromPhoto, setUploadedBackground, photoHistory } = useBackgroundContext();
+  const { addLocalPhoto, setFromPhoto, setUploadedBackground, photoHistory, unsplashError } = useBackgroundContext();
   const { unsplashHistory, localHistory, liked, toggleLike, deleteLocalPhoto } = photoHistory;
   const [uploading, setUploading] = useState(false);
 
@@ -81,20 +81,31 @@ export function BackgroundSettings() {
       {/* Unsplash settings */}
       {isUnsplash && (
         <>
+          {unsplashError === 'no-key' && (
+            <div className="auth-required-notice" style={{ marginBottom: '8px' }}>
+              <p>Enter your Unsplash Access Key below to load photos. Without a key a gradient is shown.</p>
+            </div>
+          )}
+          {unsplashError && unsplashError !== 'no-key' && (
+            <div className="auth-required-notice" style={{ marginBottom: '8px', borderColor: 'rgba(248,113,113,0.4)' }}>
+              <p style={{ color: 'rgba(248,113,113,0.9)' }}>{unsplashError}</p>
+            </div>
+          )}
           <div className="settings-group">
-            <label className="settings-label">Unsplash API Key (optional):</label>
+            <label className="settings-label">Unsplash Access Key:</label>
             <input
               type="text"
               defaultValue={settings.background.unsplashApiKey}
-              placeholder="Your API key"
+              placeholder="Paste your Access Key here"
               onChange={(e) => update('background', { unsplashApiKey: e.target.value })}
               className="settings-input glass-input"
             />
             <small className="settings-hint">
-              Get your key at{' '}
+              Get a free key at{' '}
               <a href="https://unsplash.com/developers" target="_blank" rel="noopener noreferrer">
                 unsplash.com/developers
               </a>
+              {' '}→ create an app → copy the Access Key.
             </small>
           </div>
           <div className="settings-group">

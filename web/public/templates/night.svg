@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#05020f"/>
+      <stop offset="100%" stop-color="#120a2a"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" fill="url(#g)" rx="12"/>
+  <!-- Stars -->
+  <circle cx="48" cy="28" r="1.2" fill="rgba(167,139,250,0.6)"/>
+  <circle cx="92" cy="18" r="0.8" fill="rgba(255,255,255,0.4)"/>
+  <circle cx="180" cy="22" r="1" fill="rgba(167,139,250,0.5)"/>
+  <circle cx="240" cy="14" r="1.4" fill="rgba(255,255,255,0.35)"/>
+  <circle cx="265" cy="35" r="0.9" fill="rgba(167,139,250,0.45)"/>
+  <circle cx="28" cy="55" r="0.7" fill="rgba(255,255,255,0.3)"/>
+  <circle cx="272" cy="70" r="1.1" fill="rgba(167,139,250,0.4)"/>
+  <!-- Accent glow -->
+  <ellipse cx="150" cy="105" rx="70" ry="45" fill="#a78bfa" opacity="0.07"/>
+  <!-- Outline clock: stroke-only text -->
+  <text x="150" y="118" font-family="system-ui,sans-serif" font-size="54" font-weight="100" fill="none" stroke="#a78bfa" stroke-width="1.2" text-anchor="middle" dominant-baseline="middle" letter-spacing="-2" opacity="0.85">12:00</text>
+  <!-- Focus bar -->
+  <rect x="80" y="148" width="140" height="16" rx="7" fill="rgba(167,139,250,0.08)" stroke="rgba(167,139,250,0.25)" stroke-width="0.7"/>
+  <text x="150" y="159" font-family="system-ui,sans-serif" font-size="7.5" fill="rgba(167,139,250,0.4)" text-anchor="middle">Today's intention…</text>
+  <text x="150" y="184" font-family="system-ui,sans-serif" font-size="9" fill="rgba(167,139,250,0.35)" text-anchor="middle" letter-spacing="2">NIGHT OWL</text>
+</svg>

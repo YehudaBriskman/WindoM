@@ -11,11 +11,16 @@ export function WeatherWidget() {
 
   if (!settings.weather.show) return null;
 
-  if (state.status === 'placeholder') {
+  const unit = settings.weather.unit ?? 'F';
+
+  if (state.status === 'placeholder' || state.status === 'error') {
     return (
       <div className="weather-widget glass-dock text-shadow-sm">
-        <Thermometer size={28} className="weather-icon" />
-        <span className="weather-city">{state.message}</span>
+        <div className="weather-circle">
+          {state.status === 'error'
+            ? <AlertTriangle size={18} style={{ opacity: 0.6 }} />
+            : <Thermometer size={18} style={{ opacity: 0.5 }} />}
+        </div>
       </div>
     );
   }
@@ -23,16 +28,9 @@ export function WeatherWidget() {
   if (state.status === 'loading') {
     return (
       <div className="weather-widget glass-dock text-shadow-sm">
-        <Thermometer size={28} className="weather-icon" />
-        <span className="weather-temp">...</span>
-      </div>
-    );
-  }
-
-  if (state.status === 'error') {
-    return (
-      <div className="weather-widget glass-dock text-shadow-sm weather-error">
-        <AlertTriangle size={28} className="weather-icon" />
+        <div className="weather-circle">
+          <span className="weather-temp">…</span>
+        </div>
       </div>
     );
   }
@@ -44,12 +42,17 @@ export function WeatherWidget() {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <WeatherIcon iconCode={state.data.iconCode} condition={state.data.condition} isDay={state.data.isDay} size={28} className="weather-icon" />
-      <span className="weather-temp">{state.displayTemp}&deg;</span>
+      <div className="weather-circle">
+        <span className="weather-temp">{state.displayTemp}</span>
+        <span className="weather-unit">{unit}</span>
+      </div>
       <div className="weather-expand">
         <div className="weather-expand-inner">
-          <span className="weather-city">{state.data.city}</span>
-          <span className="weather-condition">{state.data.condition}</span>
+          <WeatherIcon iconCode={state.data.iconCode} condition={state.data.condition} isDay={state.data.isDay} size={22} className="weather-icon" />
+          <div className="weather-detail">
+            <span className="weather-city">{state.data.city}</span>
+            <span className="weather-condition">{state.data.condition}</span>
+          </div>
         </div>
       </div>
     </div>
