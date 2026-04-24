@@ -15,7 +15,7 @@ export function PhotographerCredit() {
   const isLiked = currentPhoto?.liked ?? false;
 
   return (
-    <div className="photographer-credit glass-credit text-shadow-credit">
+    <div className="photographer-credit text-shadow-credit">
       <button
         className={`photo-credit-like-btn ${isLiked ? "liked" : ""}`}
         onClick={() => currentPhotoId && toggleLike(currentPhotoId)}
