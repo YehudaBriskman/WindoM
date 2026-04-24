@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useWeather } from '../../hooks/useWeather';
 import { useSettings } from '../../contexts/SettingsContext';
 import { WeatherIcon } from './WeatherIcon';
@@ -6,6 +7,7 @@ import { Thermometer, AlertTriangle } from 'lucide-react';
 export function WeatherWidget() {
   const { settings } = useSettings();
   const state = useWeather();
+  const [hovered, setHovered] = useState(false);
 
   if (!settings.weather.show) return null;
 
@@ -23,7 +25,6 @@ export function WeatherWidget() {
       <div className="weather-widget glass-dock text-shadow-sm">
         <Thermometer size={28} className="weather-icon" />
         <span className="weather-temp">...</span>
-        <span className="weather-city">Loading...</span>
       </div>
     );
   }
@@ -32,17 +33,25 @@ export function WeatherWidget() {
     return (
       <div className="weather-widget glass-dock text-shadow-sm weather-error">
         <AlertTriangle size={28} className="weather-icon" />
-        <span className="weather-city">Error</span>
       </div>
     );
   }
 
   // status === 'ready'
   return (
-    <div className="weather-widget glass-dock text-shadow-sm">
+    <div
+      className={`weather-widget glass-dock text-shadow-sm${hovered ? ' weather-widget--open' : ''}`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       <WeatherIcon iconCode={state.data.iconCode} condition={state.data.condition} isDay={state.data.isDay} size={28} className="weather-icon" />
       <span className="weather-temp">{state.displayTemp}&deg;</span>
-      <span className="weather-city">{state.data.city}</span>
+      <div className="weather-expand">
+        <div className="weather-expand-inner">
+          <span className="weather-city">{state.data.city}</span>
+          <span className="weather-condition">{state.data.condition}</span>
+        </div>
+      </div>
     </div>
   );
 }

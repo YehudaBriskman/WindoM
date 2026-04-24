@@ -454,8 +454,15 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   gap: 10px;
   padding: 8px 16px;
-  border-radius: 18px;
+  border-radius: 23px;
   height: 46px;
+  overflow: hidden;
+  transition:
+    width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-radius 0.35s ease;
+}
+.weather-widget--open {
+  border-radius: 16px;
 }
 .weather-widget .weather-icon {
   flex-shrink: 0;
@@ -465,10 +472,40 @@ input[type="file"]::file-selector-button:hover {
   font-weight: 400;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+}
+
+/* Expandable detail panel — hidden until hover */
+.weather-expand {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  max-width: 0;
+  transition: opacity 0.18s ease, max-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.weather-widget--open .weather-expand {
+  opacity: 1;
+  pointer-events: auto;
+  max-width: 160px;
+}
+.weather-expand-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  padding-left: 2px;
+  white-space: nowrap;
 }
 .weather-widget .weather-city {
   font-size: 12px;
+  font-weight: 500;
   opacity: 0.9;
+}
+.weather-widget .weather-condition {
+  font-size: 11px;
+  opacity: 0.65;
 }
 .weather-error {
   opacity: 0.7;
