@@ -39,8 +39,9 @@ interface YahooQuote {
 }
 
 async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
-  // Do NOT encodeURIComponent the whole string — commas must stay as commas
-  const symbols = tickers.join(',');
+  // Encode each ticker individually (handles ^ in index symbols like ^GSPC)
+  // but join with a literal comma so Yahoo Finance sees multiple symbols
+  const symbols = tickers.map(encodeURIComponent).join(',');
   let res = await fetch(`https://query1.finance.yahoo.com/v8/finance/quote?symbols=${symbols}`);
   if (!res.ok) {
     res = await fetch(`https://query2.finance.yahoo.com/v8/finance/quote?symbols=${symbols}`);
