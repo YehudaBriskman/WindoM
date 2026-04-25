@@ -31,7 +31,7 @@ const CRYPTO_NAMES: Record<string, string> = {
   'avalanche-2': 'AVAX', 'matic-network': 'MATIC',
 };
 
-// ── Yahoo Finance (primary) ───────────────────────────────────────────────────
+// ── Yahoo Finance v7 (primary — no crumb required) ────────────────────────────
 
 interface YahooQuote {
   symbol: string;
@@ -40,39 +40,16 @@ interface YahooQuote {
   regularMarketChangePercent?: number;
 }
 
-let yahooCrumb: string | null = null;
-
-async function getYahooCrumb(): Promise<string | null> {
-  if (yahooCrumb) return yahooCrumb;
-  try {
-    const res = await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', {
-      credentials: 'include',
-    });
-    if (res.ok) {
-      const text = await res.text();
-      if (text && text !== 'null' && !text.includes('<html')) {
-        yahooCrumb = text.trim();
-        return yahooCrumb;
-      }
-    }
-  } catch { /* ignore */ }
-  return null;
-}
-
-async function fetchStocksYahoo(tickers: string[]): Promise<StockQuote[]> {
+async function fetchStocksYahooV7(tickers: string[]): Promise<StockQuote[]> {
   const symbols = tickers.map(encodeURIComponent).join(',');
-  const crumb = await getYahooCrumb();
-  const crumbParam = crumb ? `&crumb=${encodeURIComponent(crumb)}` : '';
-
   const res = await fetch(
-    `https://query1.finance.yahoo.com/v8/finance/quote?symbols=${symbols}${crumbParam}`,
-    { credentials: 'include' }
+    `https://query1.finance.yahoo.com/v7/finance/quote?lang=en-US&region=US&corsDomain=finance.yahoo.com&symbols=${symbols}`
   );
-  if (!res.ok) throw new Error(`Yahoo ${res.status}`);
+  if (!res.ok) throw new Error(`Yahoo v7 ${res.status}`);
 
   const data = await res.json() as { quoteResponse?: { result?: YahooQuote[] } };
   const results = data.quoteResponse?.result ?? [];
-  if (results.length === 0) throw new Error('Yahoo returned empty results');
+  if (results.length === 0) throw new Error('Yahoo v7 empty');
 
   return results
     .filter((q): q is YahooQuote & { regularMarketPrice: number } =>
@@ -85,52 +62,49 @@ async function fetchStocksYahoo(tickers: string[]): Promise<StockQuote[]> {
     }));
 }
 
-// ── Stooq (fallback) ──────────────────────────────────────────────────────────
+// ── Yahoo Finance chart per symbol (fallback — no crumb required) ─────────────
 
-const YAHOO_TO_STOOQ: Record<string, string> = {
-  '^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq',
-  '^NDX':  '^ndq', '^RUT': '^rut', '^VIX':  '^vix',
-  '^FTSE': '^ftx', '^N225': '^nkx',
-};
-
-function toStooqSymbol(ticker: string): string {
-  const upper = ticker.toUpperCase();
-  if (YAHOO_TO_STOOQ[upper]) return YAHOO_TO_STOOQ[upper];
-  if (upper.startsWith('^')) return upper.toLowerCase();
-  return upper.toLowerCase().replace(/-/g, '.') + '.us';
+interface YahooChartMeta {
+  symbol?: string;
+  regularMarketPrice?: number;
+  chartPreviousClose?: number;
+  regularMarketChangePercent?: number;
 }
 
-async function fetchStocksStooq(tickers: string[]): Promise<StockQuote[]> {
-  const stooqSymbols = tickers.map(toStooqSymbol);
-  const reverseMap: Record<string, string> = {};
-  tickers.forEach((t, i) => { reverseMap[stooqSymbols[i].toUpperCase()] = t.toUpperCase(); });
-
-  const res = await fetch(`https://stooq.com/q/l/?s=${stooqSymbols.join(',')}&f=sd2cp&h&e=csv`);
-  if (!res.ok) throw new Error(`Stooq ${res.status}`);
-
-  const lines = (await res.text()).trim().split('\n');
-  const results: StockQuote[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const [rawSym, , priceStr, pctStr] = lines[i].trim().split(',');
-    const price = parseFloat(priceStr);
-    const changePercent = parseFloat(pctStr);
-    if (!isFinite(price) || price <= 0 || !isFinite(changePercent)) continue;
-    const symbol = reverseMap[rawSym.trim().toUpperCase()] ?? rawSym.replace(/\.US$/i, '').toUpperCase();
-    results.push({ symbol, price, change: price * (changePercent / 100), changePercent });
+async function fetchOneChart(ticker: string): Promise<StockQuote | null> {
+  try {
+    const res = await fetch(
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}?interval=1d&range=2d`
+    );
+    if (!res.ok) return null;
+    const data = await res.json() as { chart?: { result?: Array<{ meta: YahooChartMeta }> } };
+    const meta = data.chart?.result?.[0]?.meta;
+    if (!meta?.regularMarketPrice) return null;
+    const price = meta.regularMarketPrice;
+    const prev  = meta.chartPreviousClose ?? price;
+    const change = price - prev;
+    const changePercent = meta.regularMarketChangePercent ?? (prev > 0 ? (change / prev) * 100 : 0);
+    return { symbol: ticker.toUpperCase(), price, change, changePercent };
+  } catch {
+    return null;
   }
-  return results;
+}
+
+async function fetchStocksChart(tickers: string[]): Promise<StockQuote[]> {
+  const results = await Promise.all(tickers.map(fetchOneChart));
+  return results.filter((q): q is StockQuote => q !== null);
 }
 
 // ── Unified fetch with fallback ───────────────────────────────────────────────
 
 async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
   try {
-    const results = await fetchStocksYahoo(tickers);
+    const results = await fetchStocksYahooV7(tickers);
     if (results.length > 0) return results;
     throw new Error('empty');
   } catch {
-    // Yahoo Finance unavailable or returned no data — try Stooq
-    return fetchStocksStooq(tickers);
+    // v7 unavailable or empty — fall back to per-symbol chart API
+    return fetchStocksChart(tickers);
   }
 }
 
@@ -162,6 +136,8 @@ export function useFinance() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevTickersKey = useRef<string>('');
+  const prevCryptoKey  = useRef<string>('');
 
   const tickersKey = finance.watchlistTickers.join(',');
   const cryptoKey  = finance.cryptoWatchlist.join(',');
@@ -210,10 +186,15 @@ export function useFinance() {
 
   useEffect(() => {
     if (!enabled) { setStocks([]); setCrypto([]); return; }
-    void fetchAll();
+    // Force a live fetch whenever the watchlist changes so newly added items appear immediately
+    const watchlistChanged = tickersKey !== prevTickersKey.current || cryptoKey !== prevCryptoKey.current;
+    prevTickersKey.current = tickersKey;
+    prevCryptoKey.current  = cryptoKey;
+    void fetchAll(watchlistChanged);
+    if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => { void fetchAll(true); }, POLL_MS);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [enabled, fetchAll]);
+  }, [enabled, fetchAll, tickersKey, cryptoKey]);
 
   return { stocks, crypto, loading, error };
 }
