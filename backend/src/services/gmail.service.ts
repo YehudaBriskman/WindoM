@@ -7,7 +7,7 @@ import { GOOGLE_TOKEN_URL, GMAIL_API, GMAIL_MAX_MESSAGES } from '../types/consta
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
 
-export type GmailError = OAuthError | 'NOT_CONNECTED' | 'INSUFFICIENT_SCOPES';
+export type GmailError = OAuthError | 'NOT_CONNECTED' | 'INSUFFICIENT_SCOPES' | 'GMAIL_API_FORBIDDEN';
 
 export interface GmailMessage {
   id: string;
@@ -87,8 +87,13 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
 
   if (!labelRes.ok || !listRes.ok) {
     const failedRes = !labelRes.ok ? labelRes : listRes;
-    if (failedRes.status === 401 || failedRes.status === 403) {
+    if (failedRes.status === 401) {
       return { ok: false, error: 'TOKEN_REFRESH_REVOKED' };
+    }
+    if (failedRes.status === 403) {
+      // 403 from Gmail API means either missing gmail scope on the token or the
+      // Gmail API is not enabled in the Google Cloud project — not a token refresh issue.
+      return { ok: false, error: 'GMAIL_API_FORBIDDEN' };
     }
     return { ok: false, error: 'TOKEN_REFRESH_NETWORK_ERROR' };
   }
