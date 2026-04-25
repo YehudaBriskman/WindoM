@@ -1,6 +1,6 @@
 import { useSettings } from '../../../contexts/SettingsContext';
 
-export type AppId = 'calendar' | 'spotify' | 'finance' | 'todo' | 'history';
+export type AppId = 'calendar' | 'spotify' | 'finance' | 'gmail' | 'todo' | 'history';
 
 interface AppDef {
   id: AppId;
@@ -46,6 +46,15 @@ function TodoIcon() {
   );
 }
 
+function GmailAppIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" strokeWidth="1.5"/>
+      <polyline points="22,6 12,13 2,6" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function HistoryIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -73,6 +82,12 @@ const APP_DEFS: AppDef[] = [
     label: 'Finance',
     icon: <FinanceIcon />,
     connected: (s) => s.integrations.finance.connected,
+  },
+  {
+    id: 'gmail',
+    label: 'Gmail',
+    icon: <GmailAppIcon />,
+    connected: (s) => s.integrations.gmail.connected,
   },
   {
     id: 'todo',

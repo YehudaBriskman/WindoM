@@ -27,3 +27,6 @@ export const LOADER_FADE_DURATION_MS = 600;
 
 // Calendar fetch debounce
 export const CALENDAR_FETCH_DEBOUNCE_MS = 500;
+
+// Gmail poll interval (45s matches server-side cache TTL)
+export const GMAIL_POLL_INTERVAL_MS = 45_000;

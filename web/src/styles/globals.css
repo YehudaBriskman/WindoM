@@ -4715,3 +4715,98 @@ body.focus-exiting .sidebar-container {
   color: #4ade80;
   flex-shrink: 0;
 }
+
+/* ── Gmail Widget ──────────────────────────────────────────────────────────── */
+
+.gmail-widget {
+  padding: 12px 0 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 8px;
+}
+.gmail-widget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+.gmail-widget-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+}
+.gmail-unread-badge {
+  background: #EA4335;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1.4;
+}
+.gmail-widget-empty {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  text-align: center;
+  padding: 8px 0 12px;
+}
+.gmail-widget-error {
+  font-size: 0.72rem;
+  color: rgba(248, 113, 113, 0.8);
+  padding: 4px 2px 8px;
+}
+.gmail-message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.gmail-message-row {
+  padding: 7px 6px;
+  border-radius: 6px;
+  cursor: default;
+  transition: background 0.15s;
+}
+.gmail-message-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.gmail-message-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.gmail-message-from {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.gmail-message-date {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+.gmail-message-subject {
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+.gmail-message-snippet {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.38);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

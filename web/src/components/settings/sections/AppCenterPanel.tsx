@@ -6,11 +6,13 @@ import { SpotifySettings } from './SpotifySettings';
 import { FinanceSettings } from './FinanceSettings';
 import { TodoAppSettings } from './TodoAppSettings';
 import { HistoryAppSettings } from './HistoryAppSettings';
+import { GmailSettings } from './GmailSettings';
 
 const APP_LABELS: Record<AppId, string> = {
   calendar: 'Calendar',
   spotify: 'Spotify',
   finance: 'Finance',
+  gmail: 'Gmail',
   todo: 'Tasks',
   history: 'History',
 };
@@ -52,6 +54,15 @@ function TodoIcon() {
   );
 }
 
+function GmailPanelIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" strokeWidth="1.5"/>
+      <polyline points="22,6 12,13 2,6" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function HistoryIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -65,6 +76,7 @@ const APP_ICONS: Record<AppId, React.ReactNode> = {
   calendar: <CalendarIcon />,
   spotify: <SpotifyIcon />,
   finance: <FinanceIcon />,
+  gmail: <GmailPanelIcon />,
   todo: <TodoIcon />,
   history: <HistoryIcon />,
 };
@@ -115,6 +127,7 @@ export function AppCenterPanel({ appId, onClose }: AppCenterPanelProps) {
           {appId === 'calendar' && <CalendarSettings />}
           {appId === 'spotify' && <SpotifySettings />}
           {appId === 'finance' && <FinanceSettings />}
+          {appId === 'gmail' && <GmailSettings />}
           {appId === 'todo' && <TodoAppSettings />}
           {appId === 'history' && <HistoryAppSettings />}
         </div>
