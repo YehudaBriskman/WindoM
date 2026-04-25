@@ -93,34 +93,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      # ── Step 2: Sync secrets ──────────────────────────────────────────────────
-      # Staged so they land atomically with the new image - no restart until deploy.
-      - name: Sync secrets to Fly.io
-        working-directory: backend
-        run: |
-          flyctl secrets set \
-            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            JWT_ACCESS_SECRET="${{ secrets.JWT_ACCESS_SECRET }}" \
-            REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
-            TOKEN_ENC_KEY_BASE64="${{ secrets.TOKEN_ENC_KEY_BASE64 }}" \
-            GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
-            GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
-            GOOGLE_REDIRECT_URI="${{ secrets.GOOGLE_REDIRECT_URI }}" \
-            SPOTIFY_CLIENT_ID="${{ secrets.SPOTIFY_CLIENT_ID }}" \
-            SPOTIFY_CLIENT_SECRET="${{ secrets.SPOTIFY_CLIENT_SECRET }}" \
-            SPOTIFY_REDIRECT_URI="${{ secrets.SPOTIFY_REDIRECT_URI }}" \
-            CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}" \
-            SMTP_HOST="${{ secrets.SMTP_HOST }}" \
-            SMTP_PORT="${{ secrets.SMTP_PORT }}" \
-            SMTP_USER="${{ secrets.SMTP_USER }}" \
-            SMTP_PASS="${{ secrets.SMTP_PASS }}" \
-            SMTP_FROM="${{ secrets.SMTP_FROM }}" \
-            CHROME_EXTENSION_ID="${{ secrets.CHROME_EXTENSION_ID }}" \
-            --stage
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-      # ── Step 3: Deploy ────────────────────────────────────────────────────────
+      # ── Step 2: Deploy ────────────────────────────────────────────────────────
       # entrypoint.sh inside the image runs "node dist/db/migrate.js" before the
       # server starts. Fly's rolling deploy keeps the old machine alive until the
       # new one passes the /health check - so if migration or startup fails, the
@@ -131,7 +104,7 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      # ── Step 4: Post-deploy health check ─────────────────────────────────────
+      # ── Step 3: Post-deploy health check ─────────────────────────────────────
       # Confirms the new version is actually serving traffic.
       # Retries for up to 60 s to give Fly's traffic switch time to settle.
       - name: Verify production health endpoint
@@ -149,7 +122,7 @@ jobs:
           echo "Health check failed after 60s. Run: flyctl rollback -a windom-api"
           exit 1
 
-      # ── Step 5: Post-deploy summary ───────────────────────────────────────────
+      # ── Step 4: Post-deploy summary ───────────────────────────────────────────
       - name: Deployment summary
         if: success()
         run: |
