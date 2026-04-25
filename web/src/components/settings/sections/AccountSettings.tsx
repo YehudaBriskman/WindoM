@@ -3,7 +3,6 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
 import { apiPost, apiPatch, apiFetch } from '../../../lib/api';
-import { mapOAuthError } from '../../../lib/oauth-errors';
 import { NAME_SAVE_MSG_DURATION_MS, PW_SAVE_MSG_DURATION_MS } from '../../../lib/timing-constants';
 
 // ── Signed-out view ────────────────────────────────────────────────────────
@@ -22,64 +21,6 @@ function SignedOutView() {
 }
 
 // ── Integration card ───────────────────────────────────────────────────────
-
-interface IntegrationCardProps {
-  provider: 'google' | 'spotify';
-  name: string;
-  connected: boolean;
-  onConnect: () => Promise<void>;
-  onDisconnect: () => Promise<void>;
-  icon: React.ReactNode;
-}
-
-function IntegrationCard({ name, connected, onConnect, onDisconnect, icon, provider }: IntegrationCardProps) {
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handle(fn: () => Promise<void>) {
-    setBusy(true);
-    setError('');
-    try {
-      await fn();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed');
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <div>
-      <div className="integration-card">
-        <div className={`integration-icon ${provider}`}>{icon}</div>
-        <div className="integration-info">
-          <div className="integration-name">{name}</div>
-          <div className={`integration-status ${connected ? 'connected' : ''}`}>
-            {connected ? 'Connected' : 'Not connected'}
-          </div>
-        </div>
-        {connected ? (
-          <button
-            className="integration-disconnect-btn"
-            disabled={busy}
-            onClick={() => handle(onDisconnect)}
-          >
-            {busy ? '…' : 'Disconnect'}
-          </button>
-        ) : (
-          <button
-            className="integration-connect-btn"
-            disabled={busy}
-            onClick={() => handle(onConnect)}
-          >
-            {busy ? '…' : 'Connect'}
-          </button>
-        )}
-      </div>
-      {error && <p className="integration-error">{error}</p>}
-    </div>
-  );
-}
 
 // ── Signed-in view ─────────────────────────────────────────────────────────
 
@@ -252,7 +193,6 @@ function ProfileSection() {
 function SignedInView() {
   const { user, logout } = useAuth();
   const { settings, update } = useSettings();
-  const calendarConnected = settings.integrations.calendar.connected;
   const [signingOut, setSigningOut] = useState(false);
 
   // Danger zone state
@@ -264,33 +204,6 @@ function SignedInView() {
   const initials = user?.name
     ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
     : (user?.email?.[0] ?? '?').toUpperCase();
-
-  async function connectGoogle() {
-    try {
-      const redirectUri = chrome.identity.getRedirectURL();
-      const { authUrl } = await apiPost<{ authUrl: string }>(`/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`);
-      const redirectUrl = await launchWebAuth(authUrl);
-      const params = new URL(redirectUrl).searchParams;
-      if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
-      const code = params.get('code');
-      const state = params.get('state');
-      if (!code || !state) throw new Error('No auth code returned');
-      const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
-      if (status !== 'linked') throw new Error('Linking failed');
-      await update('integrations', { calendar: { ...settings.integrations.calendar, connected: true } });
-    } catch (err) {
-      throw new Error(mapIntegrationError(err));
-    }
-  }
-
-  async function disconnectGoogle() {
-    const res = await apiFetch('/integrations/google', { method: 'DELETE' });
-    if (!res.ok) {
-      console.error('[integrations] Failed to disconnect Google:', res.status);
-      throw new Error('Failed to disconnect Google Calendar');
-    }
-    await update('integrations', { calendar: { ...settings.integrations.calendar, connected: false } });
-  }
 
   async function handleSignOut() {
     setSigningOut(true);
@@ -336,19 +249,6 @@ function SignedInView() {
 
       {/* Profile */}
       <ProfileSection />
-
-      {/* Connected services */}
-      <div className="settings-group">
-        <label className="settings-label">Connected Services</label>
-        <IntegrationCard
-          provider="google"
-          name="Google Calendar"
-          connected={calendarConnected}
-          onConnect={connectGoogle}
-          onDisconnect={disconnectGoogle}
-          icon={<GoogleCalendarIcon />}
-        />
-      </div>
 
       {/* Sign out */}
       <button
@@ -432,55 +332,4 @@ export function AccountSettings() {
   return user ? <SignedInView /> : <SignedOutView />;
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-/** Map integration connection errors to user-friendly messages. */
-function mapIntegrationError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  if (/already.linked|account already linked/i.test(msg)) {
-    return 'This account is already linked to a different user.';
-  }
-  if (/network|fetch|connection|failed to fetch/i.test(msg)) {
-    return 'Connection failed. Check your internet and try again.';
-  }
-  // Route access_denied through mapOAuthError to get a friendly message
-  if (msg === 'access_denied' || msg.includes('access_denied')) {
-    return mapOAuthError(msg);
-  }
-  // Pass through user-friendly messages already set (e.g. from launchWebAuth / mapOAuthError)
-  if (msg && msg !== 'Failed') return msg;
-  return 'Something went wrong. Please try again.';
-}
-
-/** Launch an OAuth popup with a 2-minute timeout and friendly error messages. */
-function launchWebAuth(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      settled = true;
-      reject(new Error('Sign-in timed out. Please try again.'));
-    }, 120_000);
-
-    chrome.identity.launchWebAuthFlow({ url, interactive: true }, (redirectUrl) => {
-      clearTimeout(timer);
-      if (settled) return;
-      if (chrome.runtime.lastError || !redirectUrl) {
-        reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
-      } else {
-        resolve(redirectUrl);
-      }
-    });
-  });
-}
-
-function GoogleCalendarIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="4" width="18" height="17" rx="2" stroke="#4285F4" strokeWidth="1.5"/>
-      <path d="M3 9h18" stroke="#4285F4" strokeWidth="1.5"/>
-      <path d="M8 2v4M16 2v4" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
-      <rect x="7" y="13" width="4" height="3" rx="0.5" fill="#4285F4" opacity="0.7"/>
-    </svg>
-  );
-}
 
