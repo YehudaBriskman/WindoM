@@ -86,8 +86,7 @@ jobs:
         run: |
           echo "Creating Fly Postgres backup for app: ${{ secrets.FLY_POSTGRES_APP }}"
           flyctl postgres backup create \
-            --app "${{ secrets.FLY_POSTGRES_APP }}" \
-            --confirm
+            --app "${{ secrets.FLY_POSTGRES_APP }}"
           echo "Backup created successfully at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
           echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           echo "timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
