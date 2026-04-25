@@ -9,9 +9,9 @@
 
 **Your Space, Your Flow · Made to Fit You**
 
-A Chrome extension that turns every new tab into a personal productivity dashboard -
-clock, weather, todos, calendar, Spotify, quick links, focus timer, and more.
-All the essentials in one new tab, built with a clean glassmorphism design.
+A Chrome extension that turns every new tab into a personal productivity dashboard —
+clock, weather, todos, Google Calendar, Gmail inbox, Spotify, live stock & crypto prices,
+quick links, focus timer, and more. All the essentials in one new tab, built with a clean glassmorphism design.
 
 <br />
 
@@ -25,7 +25,7 @@ All the essentials in one new tab, built with a clean glassmorphism design.
 [![Contributors](https://img.shields.io/github/contributors/YehudaBriskman/WindoM?style=for-the-badge&color=f97316&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/YehudaBriskman/WindoM?style=for-the-badge&color=06b6d4&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/network/members)
 <!-- Meta -->
-[![Version](https://img.shields.io/badge/version-1.3.5-7b9ef5?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.0-7b9ef5?style=for-the-badge)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-22c55e?style=for-the-badge)](CONTRIBUTING.md)
 [![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=for-the-badge&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
@@ -49,11 +49,11 @@ All the essentials in one new tab, built with a clean glassmorphism design.
 
 ---
 
-WindoM redefines the new tab experience. Instead of an empty page, every new tab opens to a thoughtfully designed personal dashboard that gives you everything you need to start your day with clarity and intention.
+WindoM redefines the new tab experience. Instead of an empty page, every new tab opens to a thoughtfully designed personal productivity dashboard that gives you everything you need to start your day with clarity and intention.
 
-Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks - smooth, minimal, and always out of the way when you need it to be.
+Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks — smooth, minimal, and always out of the way when you need it to be.
 
-At a glance, you see the time, the weather outside, your upcoming calendar events, what is playing on Spotify, and your tasks for the day. Everything you actually care about, nothing you do not.
+At a glance you see the time, the weather, your upcoming calendar events, unread Gmail, what's playing on Spotify, live stock and crypto prices, and your tasks for the day. Everything you actually care about, nothing you don't.
 
 ---
 
@@ -108,16 +108,19 @@ A clean new tab dashboard built for focus, customization, and your daily flow.
 |---|---|---|
 | ⏰ | Clock & Greeting | Personalized, adapts to the time of day |
 | 🌤️ | Weather | Real-time via OpenWeatherMap |
-| 🖼️ | Backgrounds | Unsplash rotation or your own images |
-| 📅 | Google Calendar | Optional sync for upcoming events |
-| 🎵 | Spotify | Now-playing widget |
-| ✅ | Todos | Local task list, persisted in the browser |
+| 🖼️ | Backgrounds | Unsplash rotation or your own uploaded image |
+| 📅 | Google Calendar | Upcoming events synced to the sidebar |
+| ✉️ | Gmail Inbox | Unread count + 5 recent messages in the sidebar, refreshes every 45s |
+| 🎵 | Spotify | Now-playing widget + playback controls + top tracks |
+| 📈 | Finance Dashboard | Live stocks & crypto — Yahoo Finance + CoinGecko, no API key needed |
+| ✅ | Todos | Local task list, always in the sidebar |
+| 🕰️ | Tab History | Recent browsing history in the sidebar |
 | ⏱️ | Focus Mode | Distraction-free countdown timer |
 | 🔗 | Quick Links & Dock | Pinned shortcuts on every tab |
 | 💬 | Daily Quotes | A new one every day |
-| 🔍 | Search Bar | Google or DuckDuckGo |
-| 🔒 | Auth System | Optional account - Google Sign-in, JWT + refresh |
-| ⚙️ | Settings | Every detail is configurable per widget |
+| 🔍 | Search Bar | Google, Bing, DuckDuckGo, or Brave |
+| 🔒 | Auth System | Optional account — Google Sign-in or email, JWT + refresh token rotation |
+| ⚙️ | Apps Hub | Unified settings panel — one card per integration |
 
 ---
 
@@ -204,13 +207,13 @@ Ways to contribute:
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
-Current version: **1.3.5**
+Current version: **1.4.0**
 
 ---
 
 ## Privacy
 
-WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar and Spotify features. Read the full [Privacy Policy](https://yehudabriskman.github.io/WindoM/privacy.html).
+WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar, Gmail, and Spotify features. Finance data is fetched directly from public APIs with no account required. Read the full [Privacy Policy](https://yehudabriskman.github.io/WindoM/privacy.html).
 
 ---
 
