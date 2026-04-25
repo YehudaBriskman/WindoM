@@ -1,12 +1,15 @@
 import { useRef, useEffect } from "react";
 import { LayoutList, X } from "lucide-react";
 import { useSidebar } from "../../hooks/useSidebar";
+import { useSettings } from "../../contexts/SettingsContext";
 import { TodoSection } from "../sidebar/TodoSection";
 import { CalendarSection } from "../sidebar/CalendarSection";
 import { SpotifyTopTracks } from "../spotify/SpotifyTopTracks";
+import { HistorySection } from "../sidebar/HistorySection";
 
 export function RightSidebar() {
   const { isOpen, toggle, close } = useSidebar();
+  const { settings } = useSettings();
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,12 +32,10 @@ export function RightSidebar() {
       className={`sidebar-container glass-panel ${isOpen ? "open" : ""}`}
       onClick={!isOpen ? (e) => { e.stopPropagation(); toggle(); } : undefined}
     >
-      {/* Collapsed: icon */}
       <div className="sidebar-btn-icon">
         <LayoutList size={20} />
       </div>
 
-      {/* Expanded: sidebar content */}
       <div className="sidebar-panel-content">
         <div
           onClick={(e) => { e.stopPropagation(); close(); }}
@@ -43,9 +44,10 @@ export function RightSidebar() {
           <X size={18} />
         </div>
         <div className="sidebar-content">
-          <TodoSection />
+          {settings.general.showHistory && <HistorySection />}
+          {settings.general.showTodo && <TodoSection />}
           <CalendarSection />
-          <SpotifyTopTracks />
+          {settings.integrations.spotify.connected && settings.integrations.spotify.showTopTracks && <SpotifyTopTracks />}
         </div>
       </div>
     </div>

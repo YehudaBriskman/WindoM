@@ -13,6 +13,8 @@ export interface GeneralSettings {
   searchEngine: 'google' | 'bing' | 'duckduckgo' | 'brave';
   sidebarSide: 'left' | 'right';
   showGreeting: boolean;
+  showHistory: boolean;
+  showTodo: boolean;
 }
 
 export interface ClockSettings {
@@ -64,14 +66,15 @@ export interface CalendarIntegration {
 export interface SpotifyIntegration {
   /** Derived from OAuth state - excluded from backend sync. */
   connected: boolean;
+  showTopTracks: boolean;
 }
 
 export interface FinanceIntegration {
-  finnhubApiKey: string;
   watchlistTickers: string[];
   cryptoWatchlist: string[];
   showStocks: boolean;
   showCrypto: boolean;
+  connected: boolean;
 }
 
 export interface IntegrationsSettings {
@@ -143,6 +146,8 @@ export const defaultSettings: Settings = {
     searchEngine: 'google',
     sidebarSide: 'right',
     showGreeting: true,
+    showHistory: false,
+    showTodo: true,
   },
   clock: {
     timeFormat: '12h',
@@ -183,13 +188,13 @@ export const defaultSettings: Settings = {
   },
   integrations: {
     calendar: { days: 7, connected: false },
-    spotify: { connected: false },
+    spotify: { connected: false, showTopTracks: false },
     finance: {
-      finnhubApiKey: '',
       watchlistTickers: [],
       cryptoWatchlist: [],
       showStocks: false,
       showCrypto: false,
+      connected: false,
     },
   },
 };

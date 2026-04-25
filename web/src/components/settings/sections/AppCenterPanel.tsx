@@ -3,10 +3,16 @@ import { X } from 'lucide-react';
 import type { AppId } from './AppHub';
 import { CalendarSettings } from './CalendarSettings';
 import { SpotifySettings } from './SpotifySettings';
+import { FinanceSettings } from './FinanceSettings';
+import { TodoAppSettings } from './TodoAppSettings';
+import { HistoryAppSettings } from './HistoryAppSettings';
 
 const APP_LABELS: Record<AppId, string> = {
   calendar: 'Calendar',
   spotify: 'Spotify',
+  finance: 'Finance',
+  todo: 'Tasks',
+  history: 'History',
 };
 
 function CalendarIcon() {
@@ -28,9 +34,39 @@ function SpotifyIcon() {
   );
 }
 
+function FinanceIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+
+function TodoIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 11 12 14 22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="12 8 12 12 14 14" />
+      <path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5" />
+    </svg>
+  );
+}
+
 const APP_ICONS: Record<AppId, React.ReactNode> = {
   calendar: <CalendarIcon />,
   spotify: <SpotifyIcon />,
+  finance: <FinanceIcon />,
+  todo: <TodoIcon />,
+  history: <HistoryIcon />,
 };
 
 interface AppCenterPanelProps {
@@ -78,6 +114,9 @@ export function AppCenterPanel({ appId, onClose }: AppCenterPanelProps) {
         <div className="app-center-body">
           {appId === 'calendar' && <CalendarSettings />}
           {appId === 'spotify' && <SpotifySettings />}
+          {appId === 'finance' && <FinanceSettings />}
+          {appId === 'todo' && <TodoAppSettings />}
+          {appId === 'history' && <HistoryAppSettings />}
         </div>
       </div>
     </>

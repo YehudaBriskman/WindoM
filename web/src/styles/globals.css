@@ -4415,3 +4415,303 @@ body.focus-exiting .sidebar-container {
   margin: 0;
 }
 
+
+/* ── Finance widget ── */
+.finance-tabs {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.finance-tab {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  text-transform: uppercase;
+  transition: color 0.15s, border-color 0.15s;
+}
+.finance-tab.active,
+.finance-tab:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+}
+.finance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+.finance-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+.finance-symbol {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  width: 52px;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.finance-price {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+  text-align: right;
+}
+.finance-change {
+  font-size: 0.68rem;
+  font-weight: 600;
+  width: 56px;
+  text-align: right;
+  flex-shrink: 0;
+}
+.finance-change.positive { color: #4ade80; }
+.finance-change.negative { color: #f87171; }
+.finance-loading {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 6px 0 0;
+}
+
+/* ── Finance crypto pill grid ── */
+.finance-crypto-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.finance-crypto-pill {
+  cursor: pointer;
+}
+.finance-crypto-label {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.finance-crypto-label.checked {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.9);
+}
+.finance-crypto-label:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── History section ── */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 6px;
+}
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.12s;
+}
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.history-favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.history-title {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.72);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.history-time {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ── Finance dashboards (center screen) ── */
+.finance-dashboards {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: flex-start;
+  margin: 10px auto;
+  max-width: 520px;
+  width: 100%;
+}
+.finance-dashboard {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.finance-dashboard-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+}
+.finance-dashboard-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.finance-dashboard-scroll {
+  overflow-y: auto;
+  max-height: 172px;
+  scrollbar-width: none;
+}
+.finance-dashboard-scroll::-webkit-scrollbar { display: none; }
+.finance-dashboard-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  transition: background 0.12s;
+}
+.finance-dashboard-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.finance-dashboard-sym {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.9);
+}
+.finance-dashboard-price {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: right;
+}
+.finance-dashboard-change {
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-align: right;
+  min-width: 52px;
+}
+.finance-dashboard-change.positive { color: #4ade80; }
+.finance-dashboard-change.negative { color: #f87171; }
+.finance-dashboard-empty {
+  padding: 10px 12px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+}
+
+/* ── Stock autocomplete ── */
+.stock-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stock-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 3px 8px 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.88);
+}
+.stock-pill-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 0;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.stock-pill-remove:hover { color: rgba(255, 255, 255, 0.85); }
+.stock-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: rgba(20, 20, 30, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  backdrop-filter: blur(16px);
+  overflow: hidden;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.stock-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  font-family: inherit;
+}
+.stock-dropdown-item:last-child { border-bottom: none; }
+.stock-dropdown-item:hover,
+.stock-dropdown-item.selected,
+.stock-dropdown-item.active {
+  background: rgba(255, 255, 255, 0.08);
+}
+.stock-dropdown-symbol {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.9);
+  width: 54px;
+  flex-shrink: 0;
+}
+.stock-dropdown-name {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stock-dropdown-check {
+  font-size: 0.72rem;
+  color: #4ade80;
+  flex-shrink: 0;
+}

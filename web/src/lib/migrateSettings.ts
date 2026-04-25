@@ -39,6 +39,8 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
       searchEngine: isValidSearchEngine(l.searchEngine) ? l.searchEngine : d.general.searchEngine,
       sidebarSide:  isValidSidebarSide(l.tabSidebarSide) ? l.tabSidebarSide : d.general.sidebarSide,
       showGreeting: typeof l.showGreeting === 'boolean' ? l.showGreeting : d.general.showGreeting,
+      showHistory:  d.general.showHistory,
+      showTodo:     d.general.showTodo,
     },
     clock: {
       timeFormat:  isValidTimeFormat(l.timeFormat)   ? l.timeFormat   : d.clock.timeFormat,
@@ -80,6 +82,7 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
       },
       spotify: {
         connected: typeof l.spotifyConnected === 'boolean' ? l.spotifyConnected : false,
+        showTopTracks: d.integrations.spotify.showTopTracks,
       },
       finance: { ...d.integrations.finance },
     },

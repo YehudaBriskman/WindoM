@@ -19,7 +19,10 @@
     "https://api.quotable.io/*",
     "https://www.google.com/s2/favicons*",
     "https://duckduckgo.com/*",
-    "https://api.windom.app/*"
+    "https://api.windom.app/*",
+    "https://query1.finance.yahoo.com/*",
+    "https://query2.finance.yahoo.com/*",
+    "https://api.coingecko.com/*"
   ],
   "background": {
     "service_worker": "src/background/index.ts",

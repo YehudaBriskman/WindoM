@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
-import { apiGet } from '../lib/api';
+import { apiGet, getAccessToken } from '../lib/api';
 import { useSettings } from '../contexts/SettingsContext';
 import { CALENDAR_FETCH_DEBOUNCE_MS } from '../lib/timing-constants';
 import type { CalendarEvent } from '../types/calendar';
@@ -13,18 +13,22 @@ export function useCalendar() {
 
   const fetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load events - from backend if connected, otherwise from local storage.
+  // Load events - from backend if connected (or if a token exists, to recover
+  // from a reset connected flag), otherwise from local storage.
   // calendarDays changes are debounced 500ms so rapid setting adjustments
   // don't fire multiple API calls.
   useEffect(() => {
     if (fetchTimerRef.current) clearTimeout(fetchTimerRef.current);
 
-    if (!calendarConnected) {
-      syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
-      return;
-    }
+    fetchTimerRef.current = setTimeout(async () => {
+      // Try API if explicitly connected, or if signed in (catches cases where
+      // calendarConnected got reset by backend sync while token is still valid).
+      const token = calendarConnected ? 'skip-check' : await getAccessToken();
+      if (!token) {
+        syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
+        return;
+      }
 
-    fetchTimerRef.current = setTimeout(() => {
       apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`)
         .then((data) => setEvents(data.events))
         .catch((err) => {
