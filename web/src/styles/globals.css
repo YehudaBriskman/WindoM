@@ -4653,7 +4653,8 @@ body.focus-exiting .sidebar-container {
 }
 .stock-dropdown-item:last-child { border-bottom: none; }
 .stock-dropdown-item:hover,
-.stock-dropdown-item.selected {
+.stock-dropdown-item.selected,
+.stock-dropdown-item.active {
   background: rgba(255, 255, 255, 0.08);
 }
 .stock-dropdown-symbol {

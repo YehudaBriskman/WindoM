@@ -10,16 +10,42 @@ function fmt(price: number): string {
 export function FinanceStrip() {
   const { settings } = useSettings();
   const { finance } = settings.integrations;
-  const { stocks, crypto } = useFinance();
+  const { stocks, crypto, loading, error } = useFinance();
 
-  const showStocks = finance.showStocks && stocks.length > 0;
-  const showCrypto = finance.showCrypto && crypto.length > 0;
+  const wantsStocks = finance.showStocks && finance.watchlistTickers.length > 0;
+  const wantsCrypto = finance.showCrypto && finance.cryptoWatchlist.length > 0;
 
-  if (!showStocks && !showCrypto) return null;
+  if (!wantsStocks && !wantsCrypto) return null;
+
+  // Show loading pill while first fetch is in progress
+  if (loading && stocks.length === 0 && crypto.length === 0) {
+    return (
+      <div className="finance-strip">
+        <div className="finance-strip-item" style={{ opacity: 0.5 }}>
+          <span className="finance-strip-symbol" style={{ letterSpacing: 0 }}>Loading prices…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error && stocks.length === 0 && crypto.length === 0) {
+    return (
+      <div className="finance-strip">
+        <div className="finance-strip-item" style={{ opacity: 0.5 }}>
+          <span className="finance-strip-symbol" style={{ letterSpacing: 0, color: '#f87171' }}>Unable to load prices</span>
+        </div>
+      </div>
+    );
+  }
+
+  const hasStocks = wantsStocks && stocks.length > 0;
+  const hasCrypto = wantsCrypto && crypto.length > 0;
+
+  if (!hasStocks && !hasCrypto) return null;
 
   return (
     <div className="finance-strip">
-      {showStocks && stocks.map((s) => {
+      {hasStocks && stocks.map((s) => {
         const positive = s.changePercent >= 0;
         return (
           <div key={s.symbol} className="finance-strip-item">
@@ -32,9 +58,9 @@ export function FinanceStrip() {
         );
       })}
 
-      {showStocks && showCrypto && <div className="finance-strip-divider" />}
+      {hasStocks && hasCrypto && <div className="finance-strip-divider" />}
 
-      {showCrypto && crypto.map((c) => {
+      {hasCrypto && crypto.map((c) => {
         const positive = c.change24h >= 0;
         return (
           <div key={c.id} className="finance-strip-item">
