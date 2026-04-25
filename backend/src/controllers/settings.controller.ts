@@ -57,6 +57,10 @@ const settingsSectionSchema = z.object({
     spotify: z.object({
       connected: z.boolean(),
     }).partial().optional(),
+    gmail: z.object({
+      connected: z.boolean(),
+      show: z.boolean(),
+    }).partial().optional(),
   }).partial().optional(),
 
   _updatedAt: z.number().optional(),

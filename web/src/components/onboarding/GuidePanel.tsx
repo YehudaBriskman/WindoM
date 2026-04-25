@@ -56,14 +56,58 @@ const SECTIONS: GuideSection[] = [
         type: 'steps',
         content: [
           'Sign in or create a WindoM account (Settings → Account tab).',
-          'In the Account tab, click "Connect" on the Google Calendar card.',
-          'Authorize in the Google popup — read-only access only.',
+          'Open Settings → Apps hub → Calendar.',
+          'Click "Connect" and authorize in the Google popup — read-only access only.',
           'Your events appear in the right sidebar, grouped by day.',
         ],
       },
       {
         type: 'tip',
-        content: 'Change the look-ahead window (7 / 14 / 30 days) in Settings → Calendar.',
+        content: 'Change the look-ahead window (7 / 14 / 30 days) in Settings → Apps hub → Calendar.',
+      },
+    ],
+  },
+  {
+    id: 'gmail',
+    title: 'Connect Gmail',
+    summary: 'Shows unread count and recent messages in the sidebar. Needs a WindoM account.',
+    blocks: [
+      {
+        type: 'steps',
+        content: [
+          'Sign in or create a WindoM account (Settings → Account tab).',
+          'Open Settings → Apps hub → Gmail.',
+          'Click "Connect" and authorize in the Google popup — grants gmail.readonly and calendar.readonly together.',
+          'Your unread count badge and up to 5 recent messages appear in the right sidebar.',
+        ],
+      },
+      {
+        type: 'note',
+        content: 'Gmail access requires the Gmail API to be enabled in your Google Cloud project. If you see an "API access denied" error, go to console.cloud.google.com → APIs & Services → Library → search "Gmail API" → Enable.',
+      },
+      {
+        type: 'tip',
+        content: 'Toggle the Gmail widget on or off in Settings → Apps hub → Gmail → "Show Gmail in sidebar".',
+      },
+    ],
+  },
+  {
+    id: 'finance',
+    title: 'Finance Dashboard',
+    summary: 'Live stock and crypto prices on your dashboard — no API key needed.',
+    blocks: [
+      {
+        type: 'steps',
+        content: [
+          'Open Settings → Apps hub → Finance.',
+          'Search and add stock tickers (e.g. AAPL, TSLA, SPY) using the search bar.',
+          'Add crypto coins from the grid (Bitcoin, Ethereum, Solana, and more).',
+          'Two scrollable cards appear on your dashboard — one for stocks, one for crypto.',
+        ],
+      },
+      {
+        type: 'tip',
+        content: 'Use the show/hide toggle at the top of each card to collapse stocks or crypto independently.',
       },
     ],
   },

@@ -77,10 +77,18 @@ export interface FinanceIntegration {
   connected: boolean;
 }
 
+export interface GmailIntegration {
+  /** Derived from OAuth state - excluded from backend sync. */
+  connected: boolean;
+  /** Whether to show the Gmail widget in the sidebar. */
+  show: boolean;
+}
+
 export interface IntegrationsSettings {
   calendar: CalendarIntegration;
   spotify: SpotifyIntegration;
   finance: FinanceIntegration;
+  gmail: GmailIntegration;
 }
 
 // ─── Top-level Settings ───────────────────────────────────────────────────────
@@ -196,6 +204,7 @@ export const defaultSettings: Settings = {
       showCrypto: false,
       connected: false,
     },
+    gmail: { connected: false, show: true },
   },
 };
 

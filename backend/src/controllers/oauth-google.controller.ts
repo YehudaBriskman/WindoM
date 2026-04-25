@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config.js';
-import { GOOGLE_AUTH_URL, CALENDAR_SCOPES } from '../types/constants.js';
+import { GOOGLE_AUTH_URL, CALENDAR_SCOPES, GMAIL_SCOPES } from '../types/constants.js';
 import * as oauthService from '../services/oauth.service.js';
 import { isAllowedRedirectUri } from '../lib/request.js';
 import { replyOAuthExchangeError } from '../lib/oauth-exchange.js';
@@ -49,11 +49,14 @@ async function handleGoogleOAuthExchange(
 }
 
 export async function startGoogleOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const { redirectUri, codeChallenge, codeChallengeMethod } = req.query as {
+  const { redirectUri, codeChallenge, codeChallengeMethod, features } = req.query as {
     redirectUri?: string;
     codeChallenge?: string;
     codeChallengeMethod?: string;
+    features?: string;
   };
+  // Use expanded scopes when Gmail access is requested so the token covers both services
+  const scopeSet = features?.includes('gmail') ? GMAIL_SCOPES : CALENDAR_SCOPES;
   const effectiveUri = redirectUri ?? config.GOOGLE_OAUTH_REDIRECT_URI ?? '';
 
   if (!effectiveUri) {
@@ -72,7 +75,7 @@ export async function startGoogleOAuthController(req: FastifyRequest, reply: Fas
     client_id: config.GOOGLE_CLIENT_ID ?? '',
     redirect_uri: effectiveUri,
     response_type: 'code',
-    scope: CALENDAR_SCOPES,
+    scope: scopeSet,
     state,
     access_type: 'offline',
     prompt: 'consent',

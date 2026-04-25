@@ -85,6 +85,7 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
         showTopTracks: d.integrations.spotify.showTopTracks,
       },
       finance: { ...d.integrations.finance },
+      gmail: { ...d.integrations.gmail },
     },
   };
 }
