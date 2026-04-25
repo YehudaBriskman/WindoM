@@ -109,9 +109,9 @@ jobs:
       # Retries for up to 60 s to give Fly's traffic switch time to settle.
       - name: Verify production health endpoint
         run: |
-          echo "Verifying https://api.windom.app/health ..."
+          echo "Verifying https://windom-api.fly.dev/health ..."
           for i in 1 2 3 4 5 6; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.windom.app/health)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://windom-api.fly.dev/health)
             if [ "$STATUS" = "200" ]; then
               echo "Health check passed (attempt $i) - deployment successful."
               exit 0
@@ -129,7 +129,7 @@ jobs:
           echo "===== Deployment complete ====="
           echo "Tag:           ${{ github.ref_name }}"
           echo "Backup at:     ${{ steps.backup.outputs.timestamp }}"
-          echo "Health:        https://api.windom.app/health"
+          echo "Health:        https://windom-api.fly.dev/health"
           echo ""
           echo "To roll back code only:  flyctl rollback -a windom-api"
           echo "To roll back database:   see Windom/runbooks/deploy-rollback.md"
