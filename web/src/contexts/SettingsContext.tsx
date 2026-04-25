@@ -177,7 +177,43 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         await localStore.set('windom_focus', migratedFocus);
       } else {
         const stored = await syncStorage.getMultiple(defaultSettings as unknown as Record<string, unknown>);
-        local = stored as unknown as Settings;
+        // Deep-merge each section (2 levels) with defaults so new fields added after the user's
+        // last save are not lost when a stored section object replaces the default entirely.
+        local = { ...(stored as unknown as Settings) };
+        for (const key of Object.keys(defaultSettings) as (keyof Settings)[]) {
+          const storedVal = (stored as Record<string, unknown>)[key as string];
+          const defaultVal = defaultSettings[key];
+          if (
+            storedVal !== undefined &&
+            storedVal !== null &&
+            typeof storedVal === 'object' &&
+            !Array.isArray(storedVal) &&
+            defaultVal !== null &&
+            typeof defaultVal === 'object' &&
+            !Array.isArray(defaultVal)
+          ) {
+            const defaultMap = defaultVal as unknown as Record<string, unknown>;
+            const storedMap  = storedVal  as unknown as Record<string, unknown>;
+            const sectionMerged: Record<string, unknown> = { ...defaultMap, ...storedMap };
+            // Second pass: merge any nested objects within the section (e.g. integrations.spotify)
+            for (const subKey of Object.keys(defaultMap)) {
+              const subDefault = defaultMap[subKey];
+              const subStored  = storedMap[subKey];
+              if (
+                subStored !== undefined &&
+                subStored !== null &&
+                typeof subStored === 'object' &&
+                !Array.isArray(subStored) &&
+                subDefault !== null &&
+                typeof subDefault === 'object' &&
+                !Array.isArray(subDefault)
+              ) {
+                sectionMerged[subKey] = { ...(subDefault as object), ...(subStored as object) };
+              }
+            }
+            (local as unknown as Record<string, unknown>)[key as string] = sectionMerged;
+          }
+        }
         // Focus is device-local — load from chrome.storage.local, not sync
         const focusData = await localStore.get<Settings['focus']>('windom_focus', defaultSettings.focus);
         local = { ...local, focus: focusData };
