@@ -42,22 +42,66 @@ export function FinanceSettings() {
     });
   }
 
+  function toggleShowStocks() {
+    void update('integrations', {
+      finance: { ...finance, showStocks: !finance.showStocks },
+    });
+  }
+
+  function toggleShowCrypto() {
+    void update('integrations', {
+      finance: { ...finance, showCrypto: !finance.showCrypto },
+    });
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* ── Stocks ── */}
       <div className="settings-group">
-        <label className="settings-label">Stocks</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <label className="settings-label" style={{ margin: 0 }}>Stocks</label>
+          {finance.watchlistTickers.length > 0 && (
+            <label className="settings-toggle-label" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                className="settings-toggle"
+                checked={finance.showStocks}
+                onChange={toggleShowStocks}
+              />
+              <span className="settings-toggle-track" />
+              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', marginLeft: '8px' }}>
+                Show
+              </span>
+            </label>
+          )}
+        </div>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via Yahoo Finance — shows on main screen. Search by name or ticker symbol.
+          Free data via Yahoo Finance. Search by name or ticker symbol.
         </p>
         <StockSearch selected={finance.watchlistTickers} onChange={handleTickersChange} />
       </div>
 
       {/* ── Crypto ── */}
       <div className="settings-group">
-        <label className="settings-label">Crypto</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <label className="settings-label" style={{ margin: 0 }}>Crypto</label>
+          {finance.cryptoWatchlist.length > 0 && (
+            <label className="settings-toggle-label" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                className="settings-toggle"
+                checked={finance.showCrypto}
+                onChange={toggleShowCrypto}
+              />
+              <span className="settings-toggle-track" />
+              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', marginLeft: '8px' }}>
+                Show
+              </span>
+            </label>
+          )}
+        </div>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via CoinGecko — shows on main screen.
+          Free data via CoinGecko.
         </p>
         <div className="finance-crypto-grid">
           {POPULAR_CRYPTO.map((coin) => {

@@ -4550,46 +4550,83 @@ body.focus-exiting .sidebar-container {
   white-space: nowrap;
 }
 
-/* ── Finance strip (center screen — stocks + crypto) ── */
-.finance-strip {
+/* ── Finance dashboards (center screen) ── */
+.finance-dashboards {
   display: flex;
-  flex-wrap: wrap;
+  gap: 10px;
   justify-content: center;
-  align-items: center;
-  gap: 6px 12px;
-  margin: 8px 0;
+  align-items: flex-start;
+  margin: 10px auto;
+  max-width: 520px;
+  width: 100%;
 }
-.finance-strip-item {
+.finance-dashboard {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 14px;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
+}
+.finance-dashboard-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-shrink: 0;
+}
+.finance-dashboard-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+.finance-dashboard-scroll {
+  overflow-y: auto;
+  max-height: 172px;
+  scrollbar-width: none;
+}
+.finance-dashboard-scroll::-webkit-scrollbar { display: none; }
+.finance-dashboard-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 4px 12px;
-  backdrop-filter: blur(6px);
+  padding: 5px 12px;
+  transition: background 0.12s;
 }
-.finance-strip-symbol {
-  font-size: 0.72rem;
+.finance-dashboard-row:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.finance-dashboard-sym {
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   color: rgba(255, 255, 255, 0.9);
 }
-.finance-strip-price {
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.7);
-}
-.finance-strip-change {
+.finance-dashboard-price {
   font-size: 0.68rem;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: right;
 }
-.finance-strip-change.positive { color: #4ade80; }
-.finance-strip-change.negative { color: #f87171; }
-.finance-strip-divider {
-  width: 1px;
-  height: 16px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 1px;
+.finance-dashboard-change {
+  font-size: 0.64rem;
+  font-weight: 600;
+  text-align: right;
+  min-width: 52px;
+}
+.finance-dashboard-change.positive { color: #4ade80; }
+.finance-dashboard-change.negative { color: #f87171; }
+.finance-dashboard-empty {
+  padding: 10px 12px;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
 }
 
 /* ── Stock autocomplete ── */
