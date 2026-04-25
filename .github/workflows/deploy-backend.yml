@@ -83,7 +83,6 @@ jobs:
       # Requires FLY_POSTGRES_APP secret (the name of your Fly Postgres app, e.g. "windom-db").
       - name: Create pre-deploy database backup
         id: backup
-        continue-on-error: true
         run: |
           echo "Creating Fly Postgres backup for app: ${{ secrets.FLY_POSTGRES_APP }}"
           flyctl postgres backup create \
