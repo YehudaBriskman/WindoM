@@ -41,7 +41,7 @@ export function integrationsRoutes(app: FastifyInstance): void {
     preHandler: authenticate,
     schema: {
       tags: ['Integrations'],
-      summary: 'Unlink an OAuth integration — :provider is google or spotify',
+      summary: 'Unlink an OAuth integration - :provider is google or spotify',
       security,
       response: {
         200: { type: 'object', properties: { success: { type: 'boolean' } } },

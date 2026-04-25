@@ -9,7 +9,7 @@ export function authRoutes(app: FastifyInstance): void {
     config: { rateLimit: { max: 5, timeWindow: '15 minutes' } },
     schema: {
       tags: ['Auth'],
-      summary: 'Register a new account — requires email, password (≥8 chars), name',
+      summary: 'Register a new account - requires email, password (≥8 chars), name',
       response: {
         200: {
           type: 'object',

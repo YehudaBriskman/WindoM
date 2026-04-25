@@ -37,7 +37,7 @@ export const refreshSessions = pgTable(
     rotatedFromId: uuid('rotated_from_id'),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     userAgent: text('user_agent').notNull().default(''),
-    /** SHA-256 hex of the client IP — stored hashed for anomaly detection, never as plaintext. */
+    /** SHA-256 hex of the client IP - stored hashed for anomaly detection, never as plaintext. */
     ip: text('ip').notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     renewalCount: integer('renewal_count').notNull().default(0),

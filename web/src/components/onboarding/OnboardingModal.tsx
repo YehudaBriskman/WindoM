@@ -15,7 +15,7 @@ const STEPS: Step[] = [
   {
     icon: <Sparkles size={36} />,
     title: 'Welcome to WindoM',
-    description: 'Your personal new tab — a calm, focused space for everything you need throughout the day.',
+    description: 'Your personal new tab - a calm, focused space for everything you need throughout the day.',
   },
   {
     icon: <Image size={36} />,
@@ -30,7 +30,7 @@ const STEPS: Step[] = [
   {
     icon: <Music size={36} />,
     title: 'Connect Spotify',
-    description: 'WindoM uses your own free Spotify Developer app — no shared limits. Create one at developer.spotify.com, add your redirect URI from Settings → Spotify, paste your Client ID, and hit connect. Full steps are in the ? guide.',
+    description: 'WindoM uses your own free Spotify Developer app - no shared limits. Create one at developer.spotify.com, add your redirect URI from Settings → Spotify, paste your Client ID, and hit connect. Full steps are in the ? guide.',
   },
   {
     icon: <Calendar size={36} />,

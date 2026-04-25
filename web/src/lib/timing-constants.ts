@@ -1,4 +1,4 @@
-/** Centralised timing constants — no magic numbers scattered across the codebase. */
+/** Centralised timing constants - no magic numbers scattered across the codebase. */
 
 // SearchOverlay
 export const OVERLAY_OPEN_FOCUS_DELAY_MS = 30;

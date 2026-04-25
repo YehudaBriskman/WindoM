@@ -35,7 +35,7 @@ export function TemplatesGallery() {
   return (
     <div className="templates-gallery">
       <p className="settings-hint" style={{ marginBottom: '16px' }}>
-        Preset layouts — only overwrites the sections shown. Your links, API keys, and other settings stay.
+        Preset layouts - only overwrites the sections shown. Your links, API keys, and other settings stay.
       </p>
       <div className="templates-grid">
         {TEMPLATES.map((t) => (

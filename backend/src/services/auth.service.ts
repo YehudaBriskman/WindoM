@@ -90,7 +90,7 @@ export async function refresh(
 
   logger.warn({ sessionId: session.id, renewal: session.renewalCount + 1 }, 'refresh: rotating session');
 
-  // Revoke old session and fetch user in parallel — both are independent at this point.
+  // Revoke old session and fetch user in parallel - both are independent at this point.
   const [[user]] = await Promise.all([
     db.select({ id: users.id, email: users.email, name: users.name, emailVerified: users.emailVerified })
       .from(users).where(eq(users.id, session.userId)).limit(1),

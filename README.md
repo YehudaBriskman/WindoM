@@ -9,7 +9,7 @@
 
 **Your Space, Your Flow · Made to Fit You**
 
-A Chrome extension that turns every new tab into a personal productivity dashboard —
+A Chrome extension that turns every new tab into a personal productivity dashboard -
 clock, weather, todos, Google Calendar, Gmail inbox, Spotify, live stock & crypto prices,
 quick links, focus timer, and more. All the essentials in one new tab, built with a clean glassmorphism design.
 
@@ -51,7 +51,7 @@ quick links, focus timer, and more. All the essentials in one new tab, built wit
 
 WindoM redefines the new tab experience. Instead of an empty page, every new tab opens to a thoughtfully designed personal productivity dashboard that gives you everything you need to start your day with clarity and intention.
 
-Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks — smooth, minimal, and always out of the way when you need it to be.
+Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks - smooth, minimal, and always out of the way when you need it to be.
 
 At a glance you see the time, the weather, your upcoming calendar events, unread Gmail, what's playing on Spotify, live stock and crypto prices, and your tasks for the day. Everything you actually care about, nothing you don't.
 
@@ -112,15 +112,15 @@ A clean new tab dashboard built for focus, customization, and your daily flow.
 | 📅 | Google Calendar | Upcoming events synced to the sidebar |
 | ✉️ | Gmail Inbox | Unread count + 5 recent messages in the sidebar, refreshes every 45s |
 | 🎵 | Spotify | Now-playing widget + playback controls + top tracks |
-| 📈 | Finance Dashboard | Live stocks & crypto — Yahoo Finance + CoinGecko, no API key needed |
+| 📈 | Finance Dashboard | Live stocks & crypto - Yahoo Finance + CoinGecko, no API key needed |
 | ✅ | Todos | Local task list, always in the sidebar |
 | 🕰️ | Tab History | Recent browsing history in the sidebar |
 | ⏱️ | Focus Mode | Distraction-free countdown timer |
 | 🔗 | Quick Links & Dock | Pinned shortcuts on every tab |
 | 💬 | Daily Quotes | A new one every day |
 | 🔍 | Search Bar | Google, Bing, DuckDuckGo, or Brave |
-| 🔒 | Auth System | Optional account — Google Sign-in or email, JWT + refresh token rotation |
-| ⚙️ | Apps Hub | Unified settings panel — one card per integration |
+| 🔒 | Auth System | Optional account - Google Sign-in or email, JWT + refresh token rotation |
+| ⚙️ | Apps Hub | Unified settings panel - one card per integration |
 
 ---
 

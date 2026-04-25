@@ -31,7 +31,7 @@ const CRYPTO_NAMES: Record<string, string> = {
   'avalanche-2': 'AVAX', 'matic-network': 'MATIC',
 };
 
-// ── Yahoo Finance v7 (primary — no crumb required) ────────────────────────────
+// ── Yahoo Finance v7 (primary - no crumb required) ────────────────────────────
 
 interface YahooQuote {
   symbol: string;
@@ -62,7 +62,7 @@ async function fetchStocksYahooV7(tickers: string[]): Promise<StockQuote[]> {
     }));
 }
 
-// ── Yahoo Finance chart per symbol (fallback — no crumb required) ─────────────
+// ── Yahoo Finance chart per symbol (fallback - no crumb required) ─────────────
 
 interface YahooChartMeta {
   symbol?: string;
@@ -103,7 +103,7 @@ async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
     if (results.length > 0) return results;
     throw new Error('empty');
   } catch {
-    // v7 unavailable or empty — fall back to per-symbol chart API
+    // v7 unavailable or empty - fall back to per-symbol chart API
     return fetchStocksChart(tickers);
   }
 }

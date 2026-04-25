@@ -54,7 +54,7 @@ async function mountAndWait() {
 }
 
 beforeEach(() => {
-  // chrome.storage.sync.get(null) — called directly in the mount effect
+  // chrome.storage.sync.get(null) - called directly in the mount effect
   mockSyncGet({});
   // Restore wrapper defaults (clearAllMocks resets call history but not implementations)
   vi.mocked(syncStorage.get).mockImplementation((_k, def) => Promise.resolve(def));
@@ -176,7 +176,7 @@ describe('update', () => {
     );
   });
 
-  it('writes focus section to localStore only — never to sync storage', async () => {
+  it('writes focus section to localStore only - never to sync storage', async () => {
     const { result } = await mountAndWait();
     vi.mocked(syncStorage.setMultiple).mockClear();
 

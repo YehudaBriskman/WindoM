@@ -27,7 +27,7 @@ export function useOnboarding(): UseOnboardingReturn {
         return;
       }
 
-      // First time this key exists — detect new vs existing user by whether
+      // First time this key exists - detect new vs existing user by whether
       // they already have synced settings from a previous session.
       const syncData = await chrome.storage.sync.get(null);
       const isExistingUser = Object.keys(syncData).length > 0;

@@ -214,7 +214,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
             (local as unknown as Record<string, unknown>)[key as string] = sectionMerged;
           }
         }
-        // Focus is device-local — load from chrome.storage.local, not sync
+        // Focus is device-local - load from chrome.storage.local, not sync
         const focusData = await localStore.get<Settings['focus']>('windom_focus', defaultSettings.focus);
         local = { ...local, focus: focusData };
       }
@@ -291,7 +291,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(
     async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => {
-      // Focus is device-local — store in chrome.storage.local only, never sync or backend
+      // Focus is device-local - store in chrome.storage.local only, never sync or backend
       if (section === 'focus') {
         const next = { ...(settingsRef.current.focus as object), ...(patch as object) } as Settings['focus'];
         setSettings(prev => ({ ...prev, focus: next }));
@@ -384,7 +384,7 @@ export function useSettings() {
 
 /**
  * Subscribe to a single settings section. Only re-renders when that section's
- * object reference changes — unrelated section updates are invisible to this hook.
+ * object reference changes - unrelated section updates are invisible to this hook.
  * Use instead of `useSettings().settings[section]` in performance-sensitive components.
  */
 export function useSettingsSection<S extends keyof Settings>(section: S): Settings[S] {

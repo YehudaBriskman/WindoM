@@ -125,7 +125,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
     const statusCode = error.statusCode ?? 500;
     app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
     const isClientError = statusCode >= 400 && statusCode < 500;
-    // In production, never send internal error details to clients — log-only.
+    // In production, never send internal error details to clients - log-only.
     void reply.status(statusCode).send({
       statusCode,
       error: isClientError ? error.name : 'Internal Server Error',

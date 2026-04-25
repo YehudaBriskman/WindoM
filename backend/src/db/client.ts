@@ -9,7 +9,7 @@ const { Pool } = pg;
 // 10 connections in production: Fly.io shared-1x machines have ~25 Postgres connection slots.
 // Keeping max at 10 leaves headroom for migrations, drizzle-kit, and pgAdmin.
 // connectionTimeoutMillis: requests that cannot acquire a connection within 5 s
-// will throw — the global error handler converts these to 503 responses.
+// will throw - the global error handler converts these to 503 responses.
 export const pool = new Pool({
   connectionString: config.DATABASE_URL,
   max: config.isProd ? 10 : 5,

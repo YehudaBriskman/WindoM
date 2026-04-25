@@ -157,7 +157,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
         headers: { Authorization: `Client-ID ${settings.background.unsplashApiKey}` },
       });
 
-      if (res.status === 401) throw new Error('Invalid API key — check your Unsplash Access Key.');
+      if (res.status === 401) throw new Error('Invalid API key - check your Unsplash Access Key.');
       if (res.status === 403) throw new Error('Unsplash rate limit reached. Try again later.');
       if (!res.ok) throw new Error(`Unsplash API error ${res.status}`);
 

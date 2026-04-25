@@ -25,7 +25,7 @@ const refreshResponseSchema = z.object({
   expires_in: z.number(),
 });
 
-// Deduplicates concurrent refresh calls for the same account — the second caller
+// Deduplicates concurrent refresh calls for the same account - the second caller
 // awaits the first refresh rather than triggering a parallel token rotation race.
 const inflight = new Map<string, Promise<Result<string, RefreshError>>>();
 
@@ -35,8 +35,8 @@ const inflight = new Map<string, Promise<Result<string, RefreshError>>>();
  * expires within TOKEN_REFRESH_BUFFER_MS. Updates the DB on refresh.
  *
  * Error codes:
- * - TOKEN_REFRESH_REVOKED: provider returned 401/403 — user must re-authorize
- * - TOKEN_REFRESH_NETWORK_ERROR: network/5xx failure — transient, safe to retry
+ * - TOKEN_REFRESH_REVOKED: provider returned 401/403 - user must re-authorize
+ * - TOKEN_REFRESH_NETWORK_ERROR: network/5xx failure - transient, safe to retry
  * - TOKEN_REFRESH_FAILED: malformed provider response or missing refresh token
  */
 async function doRefresh(
@@ -71,8 +71,8 @@ async function doRefresh(
   }
 
   if (!res.ok) {
-    // 401/403 means the refresh token is revoked or expired — user must re-authorize.
-    // 5xx or other codes are transient provider errors — safe to retry later.
+    // 401/403 means the refresh token is revoked or expired - user must re-authorize.
+    // 5xx or other codes are transient provider errors - safe to retry later.
     return {
       ok: false,
       error: res.status === 401 || res.status === 403 ? 'TOKEN_REFRESH_REVOKED' : 'TOKEN_REFRESH_NETWORK_ERROR',

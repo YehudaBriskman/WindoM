@@ -79,7 +79,7 @@ jobs:
 
       # ── Step 1: Pre-deploy database backup ───────────────────────────────────
       # Creates a Fly.io managed Postgres backup before ANY schema changes run.
-      # The deploy is ABORTED if this fails — no backup means no safe rollback.
+      # The deploy is ABORTED if this fails - no backup means no safe rollback.
       # Requires FLY_POSTGRES_APP secret (the name of your Fly Postgres app, e.g. "windom-db").
       - name: Create pre-deploy database backup
         id: backup
@@ -95,7 +95,7 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       # ── Step 2: Sync secrets ──────────────────────────────────────────────────
-      # Staged so they land atomically with the new image — no restart until deploy.
+      # Staged so they land atomically with the new image - no restart until deploy.
       - name: Sync secrets to Fly.io
         working-directory: backend
         run: |
@@ -124,7 +124,7 @@ jobs:
       # ── Step 3: Deploy ────────────────────────────────────────────────────────
       # entrypoint.sh inside the image runs "node dist/db/migrate.js" before the
       # server starts. Fly's rolling deploy keeps the old machine alive until the
-      # new one passes the /health check — so if migration or startup fails, the
+      # new one passes the /health check - so if migration or startup fails, the
       # old machine continues serving traffic automatically.
       - name: Deploy to Fly.io
         working-directory: backend
@@ -141,7 +141,7 @@ jobs:
           for i in 1 2 3 4 5 6; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.windom.app/health)
             if [ "$STATUS" = "200" ]; then
-              echo "Health check passed (attempt $i) — deployment successful."
+              echo "Health check passed (attempt $i) - deployment successful."
               exit 0
             fi
             echo "Attempt $i: got HTTP $STATUS, retrying in 10s..."

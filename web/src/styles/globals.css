@@ -449,7 +449,7 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Weather Widget
    ============================================================ */
-/* ── Outer pill — starts as a circle, grows on hover ───────── */
+/* ── Outer pill - starts as a circle, grows on hover ───────── */
 .weather-widget {
   display: flex;
   align-items: center;
@@ -465,7 +465,7 @@ input[type="file"]::file-selector-button:hover {
   border-radius: 16px;
 }
 
-/* ── Circle core — always visible ─────────────────────────── */
+/* ── Circle core - always visible ─────────────────────────── */
 .weather-circle {
   position: relative;
   width: 52px;
@@ -490,7 +490,7 @@ input[type="file"]::file-selector-button:hover {
   letter-spacing: 0.02em;
 }
 
-/* ── Expandable detail — hidden until hover ───────────────── */
+/* ── Expandable detail - hidden until hover ───────────────── */
 .weather-expand {
   max-width: 0;
   overflow: hidden;
@@ -3126,7 +3126,7 @@ body.focus-exiting .sidebar-container {
   border-radius: 14px;
   color: rgba(255, 255, 255, 0.85);
 }
-/* Connection status dot — bottom-right corner of icon */
+/* Connection status dot - bottom-right corner of icon */
 .app-hub-dot {
   position: absolute;
   bottom: 4px;

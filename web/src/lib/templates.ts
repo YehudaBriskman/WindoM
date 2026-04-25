@@ -17,7 +17,7 @@ export const TEMPLATES: SettingsTemplate[] = [
   {
     id: 'minimal',
     name: 'Minimal',
-    description: 'Clean slate — just the clock.',
+    description: 'Clean slate - just the clock.',
     thumbnail: '/templates/minimal.svg',
     accent: '#6366f1',
     settings: {
@@ -29,7 +29,7 @@ export const TEMPLATES: SettingsTemplate[] = [
   {
     id: 'productivity',
     name: 'Productivity',
-    description: 'Date, links, focus bar — all business.',
+    description: 'Date, links, focus bar - all business.',
     thumbnail: '/templates/productivity.svg',
     accent: '#22d3ee',
     settings: {

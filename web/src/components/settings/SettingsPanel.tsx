@@ -112,7 +112,7 @@ export function SettingsPanel() {
         </div>
       </div>
 
-      {/* App center panel — centered overlay above settings */}
+      {/* App center panel - centered overlay above settings */}
       {openAppId && (
         <AppCenterPanel appId={openAppId} onClose={closeApp} />
       )}

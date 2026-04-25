@@ -124,7 +124,7 @@ export function AppHub({ onOpenApp }: AppHubProps) {
               type="button"
               className="app-hub-card"
               onClick={() => onOpenApp(app.id)}
-              aria-label={`${app.label} — ${isConnected ? 'enabled' : 'not enabled'}`}
+              aria-label={`${app.label} - ${isConnected ? 'enabled' : 'not enabled'}`}
             >
               <div className="app-hub-icon">
                 {app.icon}

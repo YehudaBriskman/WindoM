@@ -39,7 +39,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 - PKCE params wired into Spotify OAuth controller
 - Spotify token refresh routed by provider client ID
 - Wheel scroll control on multi-row dock bar
-- **Weather switched to Open-Meteo — no API key required**
+- **Weather switched to Open-Meteo - no API key required**
 - PKCE support added to Google OAuth flows
 - Comprehensive end-to-end journey tests (10 groups, 50 assertions)
 - Trigger backend deploy on version tag push
@@ -97,7 +97,7 @@ Versions follow [Semantic Versioning](https://semver.org/).
 ## [1.1.0] - 2026-04-04
 
 ### Added
-- Backend settings sync — extension preferences persisted to user account
+- Backend settings sync - extension preferences persisted to user account
 - Rolling session window with renewal cap
 - Automated Docker migrations on container startup
 - Spotify dock widget placed beside the quick-links bar

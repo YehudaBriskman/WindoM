@@ -90,7 +90,7 @@ export function CalendarSettings() {
     }
   }
 
-  // Not signed in — prompt to log in first
+  // Not signed in - prompt to log in first
   if (!user) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -154,7 +154,7 @@ export function CalendarSettings() {
         {error && <p className="integration-error">{error}</p>}
       </div>
 
-      {/* Look-ahead window — only meaningful when connected */}
+      {/* Look-ahead window - only meaningful when connected */}
       {calendar.connected && (
         <div className="settings-row">
           <label className="settings-label">Look-ahead window</label>

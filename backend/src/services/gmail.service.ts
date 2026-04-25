@@ -92,7 +92,7 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
     }
     if (failedRes.status === 403) {
       // 403 from Gmail API means either missing gmail scope on the token or the
-      // Gmail API is not enabled in the Google Cloud project — not a token refresh issue.
+      // Gmail API is not enabled in the Google Cloud project - not a token refresh issue.
       return { ok: false, error: 'GMAIL_API_FORBIDDEN' };
     }
     return { ok: false, error: 'TOKEN_REFRESH_NETWORK_ERROR' };

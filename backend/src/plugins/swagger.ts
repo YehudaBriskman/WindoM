@@ -40,7 +40,7 @@ export async function registerSwagger(app: FastifyInstance, isDev: boolean): Pro
       openapi: '3.0.3',
       info: {
         title: 'WindoM API',
-        description: 'REST API for the WindoM Chrome extension — auth, calendar, Spotify, and settings.',
+        description: 'REST API for the WindoM Chrome extension - auth, calendar, Spotify, and settings.',
         version: '1.3.5',
       },
       servers: [
@@ -86,8 +86,8 @@ export async function registerSwagger(app: FastifyInstance, isDev: boolean): Pro
       },
       tags: [
         { name: 'Auth', description: 'Registration, login, token refresh, logout' },
-        { name: 'Auth — Email', description: 'Email verification and password reset flows' },
-        { name: 'Auth — Google', description: 'Google Sign-In OAuth flow' },
+        { name: 'Auth - Email', description: 'Email verification and password reset flows' },
+        { name: 'Auth - Google', description: 'Google Sign-In OAuth flow' },
         { name: 'Me', description: 'Authenticated user profile management' },
         { name: 'Settings', description: 'Extension settings sync' },
         { name: 'Integrations', description: 'OAuth integration management (Google Calendar, Spotify)' },

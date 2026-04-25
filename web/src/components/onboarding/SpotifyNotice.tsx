@@ -18,7 +18,7 @@ export function SpotifyNotice({ onDismiss }: Props): React.ReactElement {
       </div>
       <div className="spotify-notice-content">
         <span className="spotify-notice-title">Spotify is now available</span>
-        <span className="spotify-notice-sub">Takes 2 min — needs a free Spotify Developer app. See the ? guide for steps.</span>
+        <span className="spotify-notice-sub">Takes 2 min - needs a free Spotify Developer app. See the ? guide for steps.</span>
       </div>
       <button className="spotify-notice-connect" onClick={openAccount}>
         Connect

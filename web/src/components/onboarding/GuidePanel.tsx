@@ -24,7 +24,7 @@ const SECTIONS: GuideSection[] = [
   {
     id: 'spotify',
     title: 'Connect Spotify',
-    summary: 'Needs a free Spotify Developer app (BYOA) — takes ~2 min.',
+    summary: 'Needs a free Spotify Developer app (BYOA) - takes ~2 min.',
     blocks: [
       {
         type: 'note',
@@ -38,12 +38,12 @@ const SECTIONS: GuideSection[] = [
           'Back in the Spotify Dashboard → your app → Settings → Redirect URIs → paste it → Add → Save.',
           'Copy the Client ID from your Spotify app dashboard.',
           'Paste it into WindoM Settings → Spotify tab and click "Save & Connect".',
-          'Authorize in the Spotify popup. Done — now-playing appears in your dock.',
+          'Authorize in the Spotify popup. Done - now-playing appears in your dock.',
         ],
       },
       {
         type: 'tip',
-        content: 'Getting "Invalid Client"? The Redirect URI wasn\'t saved in your Spotify app, or the Client ID is wrong. Use the Copy button — don\'t type the URI by hand.',
+        content: 'Getting "Invalid Client"? The Redirect URI wasn\'t saved in your Spotify app, or the Client ID is wrong. Use the Copy button - don\'t type the URI by hand.',
       },
     ],
   },
@@ -57,7 +57,7 @@ const SECTIONS: GuideSection[] = [
         content: [
           'Sign in or create a WindoM account (Settings → Account tab).',
           'Open Settings → Apps hub → Calendar.',
-          'Click "Connect" and authorize in the Google popup — read-only access only.',
+          'Click "Connect" and authorize in the Google popup - read-only access only.',
           'Your events appear in the right sidebar, grouped by day.',
         ],
       },
@@ -77,7 +77,7 @@ const SECTIONS: GuideSection[] = [
         content: [
           'Sign in or create a WindoM account (Settings → Account tab).',
           'Open Settings → Apps hub → Gmail.',
-          'Click "Connect" and authorize in the Google popup — grants gmail.readonly and calendar.readonly together.',
+          'Click "Connect" and authorize in the Google popup - grants gmail.readonly and calendar.readonly together.',
           'Your unread count badge and up to 5 recent messages appear in the right sidebar.',
         ],
       },
@@ -94,7 +94,7 @@ const SECTIONS: GuideSection[] = [
   {
     id: 'finance',
     title: 'Finance Dashboard',
-    summary: 'Live stock and crypto prices on your dashboard — no API key needed.',
+    summary: 'Live stock and crypto prices on your dashboard - no API key needed.',
     blocks: [
       {
         type: 'steps',
@@ -102,7 +102,7 @@ const SECTIONS: GuideSection[] = [
           'Open Settings → Apps hub → Finance.',
           'Search and add stock tickers (e.g. AAPL, TSLA, SPY) using the search bar.',
           'Add crypto coins from the grid (Bitcoin, Ethereum, Solana, and more).',
-          'Two scrollable cards appear on your dashboard — one for stocks, one for crypto.',
+          'Two scrollable cards appear on your dashboard - one for stocks, one for crypto.',
         ],
       },
       {
@@ -114,7 +114,7 @@ const SECTIONS: GuideSection[] = [
   {
     id: 'focus',
     title: 'Focus Timer',
-    summary: 'Set an intention — the tab dims while you work.',
+    summary: 'Set an intention - the tab dims while you work.',
     blocks: [
       {
         type: 'steps',
@@ -167,7 +167,7 @@ const SECTIONS: GuideSection[] = [
   {
     id: 'account',
     title: 'Create a WindoM Account',
-    summary: 'Optional — only needed for Spotify and Google Calendar.',
+    summary: 'Optional - only needed for Spotify and Google Calendar.',
     blocks: [
       {
         type: 'steps',
@@ -271,16 +271,16 @@ export function GuidePanel(): React.ReactElement {
               </button>
             </div>
 
-            {/* Primary CTA — full guide on website */}
+            {/* Primary CTA - full guide on website */}
             <button className="guide-full-link" onClick={openFullGuide}>
               <div className="guide-full-link-text">
                 <span className="guide-full-link-title">Full guide with photos</span>
-                <span className="guide-full-link-sub">windom.app/guide — opens in a new tab</span>
+                <span className="guide-full-link-sub">windom.app/guide - opens in a new tab</span>
               </div>
               <ExternalLink size={15} className="guide-full-link-icon" />
             </button>
 
-            {/* Fallback — condensed in-app reference */}
+            {/* Fallback - condensed in-app reference */}
             <div className="guide-fallback-label">Quick reference</div>
 
             <div className="guide-panel-body">
