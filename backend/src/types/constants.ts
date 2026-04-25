@@ -57,6 +57,16 @@ export const CALENDAR_SCOPES = [
   'profile',
 ].join(' ');
 
+export const GMAIL_SCOPES = [
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/calendar.readonly',
+  'openid',
+  'email',
+  'profile',
+].join(' ');
+
+export const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1/users/me';
+
 // ── Business limits ───────────────────────────────────────────────────────
 
 export const MAX_CALENDAR_DAYS = 30;
@@ -64,3 +74,4 @@ export const DEFAULT_CALENDAR_DAYS = 7;
 export const MAX_CALENDAR_RESULTS = 50;
 export const MAX_TOP_TRACKS = 50;
 export const DEFAULT_TOP_TRACKS = 10;
+export const GMAIL_MAX_MESSAGES = 5;
