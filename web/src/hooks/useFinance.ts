@@ -31,6 +31,8 @@ const CRYPTO_NAMES: Record<string, string> = {
   'avalanche-2': 'AVAX', 'matic-network': 'MATIC',
 };
 
+// ── Yahoo Finance (primary) ───────────────────────────────────────────────────
+
 interface YahooQuote {
   symbol: string;
   regularMarketPrice?: number;
@@ -38,17 +40,41 @@ interface YahooQuote {
   regularMarketChangePercent?: number;
 }
 
-async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
-  // Encode each ticker individually (handles ^ in index symbols like ^GSPC)
-  // but join with a literal comma so Yahoo Finance sees multiple symbols
+let yahooCrumb: string | null = null;
+
+async function getYahooCrumb(): Promise<string | null> {
+  if (yahooCrumb) return yahooCrumb;
+  try {
+    const res = await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', {
+      credentials: 'include',
+    });
+    if (res.ok) {
+      const text = await res.text();
+      if (text && text !== 'null' && !text.includes('<html')) {
+        yahooCrumb = text.trim();
+        return yahooCrumb;
+      }
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
+async function fetchStocksYahoo(tickers: string[]): Promise<StockQuote[]> {
   const symbols = tickers.map(encodeURIComponent).join(',');
-  let res = await fetch(`https://query1.finance.yahoo.com/v8/finance/quote?symbols=${symbols}`);
-  if (!res.ok) {
-    res = await fetch(`https://query2.finance.yahoo.com/v8/finance/quote?symbols=${symbols}`);
-  }
-  if (!res.ok) throw new Error(`Yahoo Finance ${res.status}`);
+  const crumb = await getYahooCrumb();
+  const crumbParam = crumb ? `&crumb=${encodeURIComponent(crumb)}` : '';
+
+  const res = await fetch(
+    `https://query1.finance.yahoo.com/v8/finance/quote?symbols=${symbols}${crumbParam}`,
+    { credentials: 'include' }
+  );
+  if (!res.ok) throw new Error(`Yahoo ${res.status}`);
+
   const data = await res.json() as { quoteResponse?: { result?: YahooQuote[] } };
-  return (data.quoteResponse?.result ?? [])
+  const results = data.quoteResponse?.result ?? [];
+  if (results.length === 0) throw new Error('Yahoo returned empty results');
+
+  return results
     .filter((q): q is YahooQuote & { regularMarketPrice: number } =>
       typeof q.regularMarketPrice === 'number' && q.regularMarketPrice > 0)
     .map((q) => ({
@@ -58,6 +84,57 @@ async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
       changePercent: q.regularMarketChangePercent ?? 0,
     }));
 }
+
+// ── Stooq (fallback) ──────────────────────────────────────────────────────────
+
+const YAHOO_TO_STOOQ: Record<string, string> = {
+  '^GSPC': '^spx', '^DJI': '^dji', '^IXIC': '^ndq',
+  '^NDX':  '^ndq', '^RUT': '^rut', '^VIX':  '^vix',
+  '^FTSE': '^ftx', '^N225': '^nkx',
+};
+
+function toStooqSymbol(ticker: string): string {
+  const upper = ticker.toUpperCase();
+  if (YAHOO_TO_STOOQ[upper]) return YAHOO_TO_STOOQ[upper];
+  if (upper.startsWith('^')) return upper.toLowerCase();
+  return upper.toLowerCase().replace(/-/g, '.') + '.us';
+}
+
+async function fetchStocksStooq(tickers: string[]): Promise<StockQuote[]> {
+  const stooqSymbols = tickers.map(toStooqSymbol);
+  const reverseMap: Record<string, string> = {};
+  tickers.forEach((t, i) => { reverseMap[stooqSymbols[i].toUpperCase()] = t.toUpperCase(); });
+
+  const res = await fetch(`https://stooq.com/q/l/?s=${stooqSymbols.join(',')}&f=sd2cp&h&e=csv`);
+  if (!res.ok) throw new Error(`Stooq ${res.status}`);
+
+  const lines = (await res.text()).trim().split('\n');
+  const results: StockQuote[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const [rawSym, , priceStr, pctStr] = lines[i].trim().split(',');
+    const price = parseFloat(priceStr);
+    const changePercent = parseFloat(pctStr);
+    if (!isFinite(price) || price <= 0 || !isFinite(changePercent)) continue;
+    const symbol = reverseMap[rawSym.trim().toUpperCase()] ?? rawSym.replace(/\.US$/i, '').toUpperCase();
+    results.push({ symbol, price, change: price * (changePercent / 100), changePercent });
+  }
+  return results;
+}
+
+// ── Unified fetch with fallback ───────────────────────────────────────────────
+
+async function fetchStocks(tickers: string[]): Promise<StockQuote[]> {
+  try {
+    const results = await fetchStocksYahoo(tickers);
+    if (results.length > 0) return results;
+    throw new Error('empty');
+  } catch {
+    // Yahoo Finance unavailable or returned no data — try Stooq
+    return fetchStocksStooq(tickers);
+  }
+}
+
+// ── CoinGecko (crypto) ────────────────────────────────────────────────────────
 
 async function fetchCrypto(ids: string[]): Promise<CryptoQuote[]> {
   const res = await fetch(
@@ -75,6 +152,8 @@ async function fetchCrypto(ids: string[]): Promise<CryptoQuote[]> {
     }));
 }
 
+// ── Hook ──────────────────────────────────────────────────────────────────────
+
 export function useFinance() {
   const { settings } = useSettings();
   const { finance } = settings.integrations;
@@ -84,22 +163,23 @@ export function useFinance() {
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Stringify arrays so useCallback deps use value equality, not reference equality
   const tickersKey = finance.watchlistTickers.join(',');
-  const cryptoKey = finance.cryptoWatchlist.join(',');
+  const cryptoKey  = finance.cryptoWatchlist.join(',');
 
   const enabled =
     (finance.showStocks && finance.watchlistTickers.length > 0) ||
-    (finance.showCrypto && finance.cryptoWatchlist.length > 0);
+    (finance.showCrypto  && finance.cryptoWatchlist.length  > 0);
 
   const fetchAll = useCallback(async (force = false) => {
     if (!enabled) return;
 
-    const tickers = tickersKey.split(',').filter(Boolean);
+    const tickers   = tickersKey.split(',').filter(Boolean);
     const cryptoIds = cryptoKey.split(',').filter(Boolean);
 
     const cached = await new Promise<FinanceCache | null>((resolve) => {
-      chrome.storage.local.get(CACHE_KEY, (r) => resolve((r[CACHE_KEY] as FinanceCache | undefined) ?? null));
+      chrome.storage.local.get(CACHE_KEY, (r) =>
+        resolve((r[CACHE_KEY] as FinanceCache | undefined) ?? null)
+      );
     });
 
     if (!force && cached && Date.now() - cached.timestamp < TTL) {
@@ -112,12 +192,14 @@ export function useFinance() {
     setError(null);
     try {
       const [newStocks, newCrypto] = await Promise.all([
-        finance.showStocks && tickers.length > 0 ? fetchStocks(tickers) : Promise.resolve([]),
+        finance.showStocks && tickers.length   > 0 ? fetchStocks(tickers)   : Promise.resolve([]),
         finance.showCrypto && cryptoIds.length > 0 ? fetchCrypto(cryptoIds) : Promise.resolve([]),
       ]);
       setStocks(newStocks);
       setCrypto(newCrypto);
-      chrome.storage.local.set({ [CACHE_KEY]: { stocks: newStocks, crypto: newCrypto, timestamp: Date.now() } });
+      chrome.storage.local.set({
+        [CACHE_KEY]: { stocks: newStocks, crypto: newCrypto, timestamp: Date.now() },
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Fetch failed');
     } finally {
