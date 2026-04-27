@@ -50,6 +50,13 @@
       "when": 1776600001000,
       "tag": "0006_hash_session_ip_useragent",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1777315637392,
+      "tag": "0007_simple_purifiers",
+      "breakpoints": true
     }
   ]
 }

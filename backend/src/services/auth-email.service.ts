@@ -1,5 +1,7 @@
-import { randomBytes } from 'crypto';
+import { randomBytes, createHash } from 'crypto';
 import { eq, and, isNull, gt } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
+import { BCRYPT_ROUNDS } from '../types/constants.js';
 import { db } from '../db/client.js';
 import { users, emailTokens } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
@@ -12,6 +14,10 @@ import {
 
 type TokenType = 'verify_email' | 'password_reset';
 
+function sha256hex(s: string): string {
+  return createHash('sha256').update(s).digest('hex');
+}
+
 async function createToken(userId: string, type: TokenType, ttlMs: number): Promise<string> {
   // Delete any prior unused token of the same type for this user
   await db
@@ -19,9 +25,14 @@ async function createToken(userId: string, type: TokenType, ttlMs: number): Prom
     .where(and(eq(emailTokens.userId, userId), eq(emailTokens.type, type), isNull(emailTokens.usedAt)));
 
   const token = randomBytes(32).toString('hex');
+  const tokenLookup = sha256hex(token);
+  const tokenHash = await bcrypt.hash(token, BCRYPT_ROUNDS);
+
   await db.insert(emailTokens).values({
     userId,
-    token,
+    token: tokenHash,   // store bcrypt hash, not plaintext
+    tokenHash,
+    tokenLookup,
     type,
     expiresAt: new Date(Date.now() + ttlMs),
   });
@@ -29,12 +40,13 @@ async function createToken(userId: string, type: TokenType, ttlMs: number): Prom
 }
 
 async function consumeToken(token: string, type: TokenType): Promise<string | null> {
+  const lookup = sha256hex(token);
   const [row] = await db
     .select()
     .from(emailTokens)
     .where(
       and(
-        eq(emailTokens.token, token),
+        eq(emailTokens.tokenLookup, lookup),
         eq(emailTokens.type, type),
         isNull(emailTokens.usedAt),
         gt(emailTokens.expiresAt, new Date()),
@@ -42,6 +54,8 @@ async function consumeToken(token: string, type: TokenType): Promise<string | nu
     )
     .limit(1);
   if (!row) return null;
+  // Verify via bcrypt (row.tokenHash is set for new rows; old rows with null fail here)
+  if (!row.tokenHash || !(await bcrypt.compare(token, row.tokenHash))) return null;
   await db.update(emailTokens).set({ usedAt: new Date() }).where(eq(emailTokens.id, row.id));
   return row.userId;
 }
