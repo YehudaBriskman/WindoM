@@ -124,7 +124,7 @@ function lastSentVerifyToken(): string {
   const calls = vi.mocked(sendVerificationEmail).mock.calls;
   const last = calls.at(-1);
   if (!last) throw new Error('sendVerificationEmail was not called');
-  return last[2] as string;
+  return last[2];
 }
 
 /** Return the plaintext token from the last sendPasswordResetEmail mock call. */
@@ -132,7 +132,7 @@ function lastSentResetToken(): string {
   const calls = vi.mocked(sendPasswordResetEmail).mock.calls;
   const last = calls.at(-1);
   if (!last) throw new Error('sendPasswordResetEmail was not called');
-  return last[2] as string;
+  return last[2];
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -313,7 +313,7 @@ describe('Journey 2 - email verification', () => {
   it('resend returns 400 if email already verified', async () => {
     await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const emailToken = await waitForEmailToken(user.id, 'verify_email');
+    await waitForEmailToken(user.id, 'verify_email');
 
     // Verify first
     await app.inject({ method: 'GET', url: `/auth/verify-email?token=${lastSentVerifyToken()}` });
