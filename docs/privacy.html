@@ -38,8 +38,6 @@
       overflow-x: hidden;
     }
 
-    /* body::before removed - ambient glow comes from .scroll-bg */
-
     .wrap {
       max-width: 780px;
       margin: 0 auto;
@@ -141,6 +139,31 @@
       font-family: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
       border: 1px solid rgba(255,255,255,0.08);
     }
+
+    /* ── TABLE ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 0.93rem;
+    }
+    th {
+      text-align: left;
+      color: var(--text);
+      font-weight: 600;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    td {
+      color: var(--muted);
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
 
     /* ── FOOTER ── */
     footer {
@@ -282,76 +305,203 @@
     </a>
     <div class="header-badge">Legal</div>
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: March 19, 2026</p>
+    <p class="updated">Last updated: April 27, 2026</p>
   </header>
 
   <p>
     WindoM is a Chrome extension that replaces your new tab page with a personal productivity dashboard.
-    This policy explains what data we collect, how we use it, and what stays on your device.
+    This policy explains exactly what data we collect, what stays entirely on your device, and how we use it.
+    We do not advertise, track, or sell data.
   </p>
 
-  <h2>What data stays on your device</h2>
-  <p>The following is stored only in your browser using <code>chrome.storage</code> and never sent to any server:</p>
+  <h2>What stays on your device</h2>
+  <p>
+    The following is stored only in your browser using <code>chrome.storage</code> and is <strong>never sent to any server</strong>:
+  </p>
   <ul>
     <li>Dashboard settings and preferences</li>
     <li>Todo items and quick links</li>
-    <li>Cached weather data and background images</li>
-    <li>Your display name and local customizations</li>
+    <li>Custom background images you upload</li>
+    <li>Cached background images from Unsplash (photo history)</li>
+    <li>Cached weather data</li>
+    <li>Your last-known location coordinates (used for weather only)</li>
+    <li>Finance watchlist — the stock tickers and crypto coins you add</li>
+    <li>Tab history displayed in the sidebar (read from your local browser, never transmitted)</li>
+    <li>Onboarding and dismissal state</li>
   </ul>
 
   <h2>Account (optional)</h2>
   <p>
     Creating an account is entirely optional. The dashboard works fully without signing in.
-    If you choose to create an account, we store your email address and a hashed password on our servers,
-    solely for the purpose of authentication.
+    If you choose to create an account, we store the following on our servers:
+  </p>
+  <ul>
+    <li>Your email address and a bcrypt-hashed password</li>
+    <li>Your display name</li>
+    <li>Your dashboard settings — synced so preferences are consistent across your devices</li>
+    <li>Active session records (used to manage login sessions and detect unauthorized access)</li>
+  </ul>
+  <p>
+    You can delete your account and all associated server-side data at any time from
+    <strong>Settings → Account → Delete account</strong>. All data is deleted permanently and immediately.
   </p>
 
-  <h2>Google Calendar integration (optional)</h2>
+  <h2>Google Calendar &amp; Gmail integration (optional)</h2>
   <p>
-    If you connect Google Calendar, WindoM requests read-only access to your calendar events.
-    Your Google OAuth token is stored encrypted on our servers and is used only to fetch your
-    upcoming events on your behalf. We do not read, store, or share your calendar content beyond
-    displaying it to you on the dashboard.
+    If you connect your Google account, WindoM requests the following read-only scopes in a single OAuth consent:
+    <code>calendar.readonly</code>, <code>gmail.readonly</code>, <code>openid</code>, <code>email</code>, <code>profile</code>.
+    You can connect Calendar alone (which uses only <code>calendar.readonly</code>) or both Calendar and Gmail together.
+  </p>
+  <p>
+    Your Google OAuth access token is stored <strong>encrypted at rest</strong> on our servers using AES-256-GCM and is used only to make API requests on your behalf. We never share it with third parties.
+  </p>
+  <ul>
+    <li><strong>Calendar:</strong> We fetch your upcoming events (title, time, calendar name) and display them on your dashboard. We do not read event descriptions, attendees, or any calendar outside of the visible list.</li>
+    <li><strong>Gmail:</strong> We fetch your unread inbox count and, for up to 5 recent unread messages, the following header-level metadata only: sender name and address, subject line, snippet (first ~100 characters), and received date. <strong>We do not read, store, or transmit full email body content.</strong> Fetched data is cached server-side for 45 seconds and then discarded.</li>
+  </ul>
+  <p>
+    Disconnecting Google from <strong>Settings → Apps</strong> immediately revokes our stored token and deletes all cached data.
   </p>
 
   <h2>Spotify integration (optional)</h2>
   <p>
-    If you connect Spotify, WindoM requests access to your currently playing track.
-    Your Spotify OAuth token is stored encrypted on our servers and is used only to fetch
-    now-playing information. We do not access your library, playlists, or listening history.
+    WindoM uses a <strong>Bring Your Own App (BYOA)</strong> model for Spotify. You register a free Spotify Developer app and provide its Client ID in WindoM's settings. This means your music data flows between your browser and your own registered Spotify app — WindoM does not operate a shared Spotify client.
+  </p>
+  <p>
+    Your Spotify OAuth token is stored encrypted on our servers and is used only to fetch your currently-playing track (artist, title, album art, playback state). We do not access your library, playlists, listening history, or follower data.
+    Disconnecting Spotify immediately deletes the stored token.
   </p>
 
-  <h2>Third-party APIs</h2>
-  <p>WindoM makes requests to the following external services on your behalf:</p>
+  <h2>Browser permissions</h2>
+  <p>WindoM requests the following Chrome permissions and uses them as described:</p>
+  <table>
+    <thead>
+      <tr><th>Permission</th><th>Why it is used</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>storage</code> / <code>unlimitedStorage</code></td>
+        <td>Save your settings, todos, links, cached images, and finance watchlist in your browser. <code>unlimitedStorage</code> is required only for locally uploaded background images.</td>
+      </tr>
+      <tr>
+        <td><code>tabs</code></td>
+        <td>Open, close, and pin tabs from the tab sidebar. Tab titles and URLs are used only locally to populate the sidebar and are never sent anywhere.</td>
+      </tr>
+      <tr>
+        <td><code>history</code></td>
+        <td>Read your recent browsing history to display recent sites in the tab sidebar and provide search suggestions. Only the last 7 days are read, deduplicated by hostname, limited to 10 entries. This data never leaves your device.</td>
+      </tr>
+      <tr>
+        <td><code>identity</code></td>
+        <td>Launch the Spotify PKCE OAuth flow via <code>chrome.identity.launchWebAuthFlow</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Third-party APIs called directly by the extension</h2>
+  <p>
+    The following services are contacted directly from your browser. WindoM's servers are not involved in these requests, and we do not share personal data with these services.
+  </p>
+  <table>
+    <thead>
+      <tr><th>Service</th><th>What is sent</th><th>Purpose</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Unsplash</strong> (<code>api.unsplash.com</code>)</td>
+        <td>Search query / category</td>
+        <td>Fetch background images for the dashboard</td>
+      </tr>
+      <tr>
+        <td><strong>Open-Meteo</strong> (<code>api.open-meteo.com</code>)</td>
+        <td>Latitude &amp; longitude</td>
+        <td>Fetch current weather data. No API key, no account.</td>
+      </tr>
+      <tr>
+        <td><strong>Open-Meteo Geocoding</strong> (<code>geocoding-api.open-meteo.com</code>)</td>
+        <td>City name search string</td>
+        <td>Resolve a typed city name to coordinates for weather</td>
+      </tr>
+      <tr>
+        <td><strong>Nominatim / OpenStreetMap</strong> (<code>nominatim.openstreetmap.org</code>)</td>
+        <td>Latitude &amp; longitude</td>
+        <td>Reverse-geocode coordinates to a human-readable city name</td>
+      </tr>
+      <tr>
+        <td><strong>ipapi.co</strong></td>
+        <td>Your IP address (implicit)</td>
+        <td>IP-based location fallback — only used if browser geolocation is denied or unavailable</td>
+      </tr>
+      <tr>
+        <td><strong>Quotable</strong> (<code>api.quotable.io</code>)</td>
+        <td>Nothing</td>
+        <td>Fetch an inspirational quote. No personal data involved.</td>
+      </tr>
+      <tr>
+        <td><strong>Yahoo Finance</strong> (<code>query1/query2.finance.yahoo.com</code>)</td>
+        <td>Stock ticker symbols you added</td>
+        <td>Fetch real-time stock prices for the Finance widget</td>
+      </tr>
+      <tr>
+        <td><strong>CoinGecko</strong> (<code>api.coingecko.com</code>)</td>
+        <td>Crypto coin IDs you added</td>
+        <td>Fetch real-time cryptocurrency prices</td>
+      </tr>
+      <tr>
+        <td><strong>Google Favicons</strong> (<code>google.com/s2/favicons</code>)</td>
+        <td>Domain name</td>
+        <td>Fetch favicon icons for quick links</td>
+      </tr>
+      <tr>
+        <td><strong>DuckDuckGo</strong> (<code>duckduckgo.com</code>)</td>
+        <td>Domain name</td>
+        <td>Fallback favicon source for quick links</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    Each of these services has its own privacy policy. We recommend reviewing them if you have concerns about a specific service.
+  </p>
+
+  <h2>Data we do not collect</h2>
   <ul>
-    <li><strong>Unsplash</strong> - to fetch background images</li>
-    <li><strong>OpenWeatherMap</strong> - to fetch weather for your location</li>
-    <li><strong>Quotable</strong> - to fetch a daily quote</li>
+    <li>We do not use analytics, tracking pixels, or third-party advertising SDKs</li>
+    <li>We do not read the content of pages you visit</li>
+    <li>We do not collect keystrokes or form input from other websites</li>
+    <li>We do not share or sell any data to third parties</li>
+    <li>We do not retain Gmail message content — only header metadata cached for 45 seconds</li>
   </ul>
-  <p>These services have their own privacy policies. WindoM does not share any personal data with them.</p>
 
   <h2>Data sharing</h2>
   <p>
-    We do not sell, rent, or share your personal data with any third party for marketing or advertising purposes.
-    We do not use your data for any purpose other than providing the features of WindoM.
-  </p>
-
-  <h2>Data deletion</h2>
-  <p>
-    You can delete your account and all associated server-side data at any time from the Account tab
-    in the extension settings. Local browser data can be cleared by removing the extension.
+    We do not sell, rent, or share your personal data with any third party for marketing, advertising, or any other commercial purpose.
+    Data is used solely to provide the features you have explicitly enabled in WindoM.
   </p>
 
   <h2>Security</h2>
   <p>
     All communication between the extension and our servers uses HTTPS.
-    OAuth tokens are encrypted at rest using AES-GCM encryption.
-    Authentication uses short-lived JWT access tokens and rotating refresh tokens stored as HttpOnly cookies.
+    OAuth tokens (Google, Spotify) are encrypted at rest using AES-256-GCM with a server-side key.
+    Passwords are hashed with bcrypt (cost factor 12).
+    Authentication uses short-lived JWT access tokens (15-minute TTL) and rotating refresh tokens stored as <code>HttpOnly; Secure; SameSite=None</code> cookies.
+    Refresh token reuse is detected and triggers automatic session revocation.
+  </p>
+
+  <h2>Children's privacy</h2>
+  <p>
+    WindoM is not directed at children under the age of 13. We do not knowingly collect personal information from children.
+    If you believe a child has provided us with personal data, please contact us and we will delete it promptly.
+  </p>
+
+  <h2>Changes to this policy</h2>
+  <p>
+    We may update this policy as features change. When we do, we will update the "Last updated" date at the top of this page.
+    Continued use of WindoM after a policy update constitutes acceptance of the new policy.
   </p>
 
   <h2>Contact</h2>
   <p>
-    If you have any questions about this policy, reach out directly at
+    If you have any questions about this policy or want to request data deletion, reach out at
     <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a>.
   </p>
 
@@ -362,7 +512,8 @@
     <a href="/">Home</a>
     <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb">Chrome Web Store</a>
     <a href="https://github.com/YehudaBriskman/WindoM">GitHub</a>
-    <a href="local-setup.html">Local Setup</a>
+    <a href="guide.html">Guide</a>
+    <a href="terms.html">Terms of Use</a>
     <a href="mailto:yehudabriskman@windom.app">Contact</a>
   </div>
   <p>MIT License &copy; 2026 Yehuda Briskman &nbsp;&middot;&nbsp; <a href="mailto:yehudabriskman@windom.app" style="color:inherit;text-decoration:none;">yehudabriskman@windom.app</a></p>
