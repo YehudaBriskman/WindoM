@@ -14,6 +14,7 @@ jobs:
   ci-backend:
     name: Backend - lint / typecheck / test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -74,6 +75,7 @@ jobs:
   ci-web:
     name: Web - lint / typecheck / build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     defaults:
       run:
