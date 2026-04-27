@@ -3097,7 +3097,6 @@ body.focus-exiting .sidebar-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
@@ -3770,7 +3769,7 @@ body.focus-exiting .sidebar-container {
     flex-direction: column;
   }
   .settings-inner {
-    width: 100vw;
+    width: 97vw;
     flex-direction: column;
   }
   .settings-nav {
@@ -3780,6 +3779,7 @@ body.focus-exiting .sidebar-container {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding: 10px 0;
     overflow-x: auto;
+    
   }
   .link-table-row {
     grid-template-columns: 1fr;
