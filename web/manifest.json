@@ -22,7 +22,8 @@
     "https://api.windom.app/*",
     "https://query1.finance.yahoo.com/*",
     "https://query2.finance.yahoo.com/*",
-    "https://api.coingecko.com/*"
+    "https://api.coingecko.com/*",
+    "https://api.github.com/*"
   ],
   "background": {
     "service_worker": "src/background/index.ts",

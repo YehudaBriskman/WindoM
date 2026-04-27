@@ -86,6 +86,7 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
       },
       finance: { ...d.integrations.finance },
       gmail: { ...d.integrations.gmail },
+      github: { ...d.integrations.github },
     },
   };
 }
