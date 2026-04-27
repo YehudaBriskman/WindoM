@@ -84,11 +84,19 @@ export interface GmailIntegration {
   show: boolean;
 }
 
+export interface GitHubIntegration {
+  /** Derived from PAT existence - excluded from backend sync. */
+  connected: boolean;
+  /** Whether to show the GitHub widget in the sidebar. */
+  show: boolean;
+}
+
 export interface IntegrationsSettings {
   calendar: CalendarIntegration;
   spotify: SpotifyIntegration;
   finance: FinanceIntegration;
   gmail: GmailIntegration;
+  github: GitHubIntegration;
 }
 
 // ─── Top-level Settings ───────────────────────────────────────────────────────
@@ -205,6 +213,7 @@ export const defaultSettings: Settings = {
       connected: false,
     },
     gmail: { connected: false, show: true },
+    github: { connected: false, show: true },
   },
 };
 

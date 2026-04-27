@@ -30,3 +30,6 @@ export const CALENDAR_FETCH_DEBOUNCE_MS = 500;
 
 // Gmail poll interval (45s matches server-side cache TTL)
 export const GMAIL_POLL_INTERVAL_MS = 45_000;
+
+// GitHub poll interval (60s matches server-side cache TTL)
+export const GITHUB_POLL_INTERVAL_MS = 60_000;
