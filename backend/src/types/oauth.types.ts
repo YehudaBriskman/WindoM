@@ -1,4 +1,4 @@
-export type OAuthProvider = 'google' | 'spotify';
+export type OAuthProvider = 'google' | 'spotify' | 'github';
 
 export type OAuthPurpose = 'login' | 'link';
 
