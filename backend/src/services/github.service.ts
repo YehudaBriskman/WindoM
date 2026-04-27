@@ -1,7 +1,7 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { oauthAccounts } from '../db/schema.js';
-import { encrypt, decrypt } from '../lib/crypto.js';
+import { encryptToken, decryptToken } from '../lib/crypto.js';
 import { GITHUB_API } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 
@@ -52,7 +52,7 @@ export async function storePat(userId: string, rawPat: string): Promise<Result<{
   const userData = (await userRes.json()) as GitHubUser;
   const username = userData.login;
 
-  const accessTokenEnc = await encrypt(rawPat);
+  const accessTokenEnc = await encryptToken(rawPat);
 
   // Upsert: delete existing then insert (avoids unique constraint issues)
   await db
@@ -83,7 +83,7 @@ export async function getGithubSummary(userId: string): Promise<Result<GitHubSum
 
   if (!account) return { ok: false, error: 'NOT_CONNECTED' };
 
-  const rawPat = await decrypt(account.accessTokenEnc);
+  const rawPat = await decryptToken(account.accessTokenEnc);
 
   const headers = {
     Authorization: `token ${rawPat}`,
