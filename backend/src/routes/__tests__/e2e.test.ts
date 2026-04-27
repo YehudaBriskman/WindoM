@@ -30,6 +30,7 @@ import {
   userSettings,
 } from '../../db/schema.js';
 import { encryptToken } from '../../lib/crypto.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../../lib/email.js';
 
 // Mock email transport so tests don't need a live SMTP server
 vi.mock('../../lib/email.js', () => ({
@@ -44,6 +45,7 @@ const app = await buildTestApp();
 
 beforeEach(async () => {
   await truncateAll();
+  vi.clearAllMocks();
 });
 
 afterAll(async () => {
@@ -115,6 +117,22 @@ async function waitForEmailToken(
 async function getUserByEmail(email: string) {
   const rows = await db.select().from(users).where(eq(users.email, email));
   return rows[0] ?? null;
+}
+
+/** Return the plaintext token from the last sendVerificationEmail mock call. */
+function lastSentVerifyToken(): string {
+  const calls = vi.mocked(sendVerificationEmail).mock.calls;
+  const last = calls.at(-1);
+  if (!last) throw new Error('sendVerificationEmail was not called');
+  return last[2];
+}
+
+/** Return the plaintext token from the last sendPasswordResetEmail mock call. */
+function lastSentResetToken(): string {
+  const calls = vi.mocked(sendPasswordResetEmail).mock.calls;
+  const last = calls.at(-1);
+  if (!last) throw new Error('sendPasswordResetEmail was not called');
+  return last[2];
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -223,7 +241,7 @@ describe('Journey 2 - email verification', () => {
     // Click the verification link
     const verifyRes = await app.inject({
       method: 'GET',
-      url: `/auth/verify-email?token=${emailToken!.token}`,
+      url: `/auth/verify-email?token=${lastSentVerifyToken()}`,
     });
     expect(verifyRes.statusCode).toBe(200);
     expect(verifyRes.headers['content-type']).toContain('text/html');
@@ -252,7 +270,7 @@ describe('Journey 2 - email verification', () => {
       .where(eq(emailTokens.id, emailToken!.id));
 
     const res = await app.inject({
-      method: 'GET', url: `/auth/verify-email?token=${emailToken!.token}`,
+      method: 'GET', url: `/auth/verify-email?token=${lastSentVerifyToken()}`,
     });
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain('invalid');
@@ -261,12 +279,13 @@ describe('Journey 2 - email verification', () => {
   it('already-used token is rejected', async () => {
     await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const emailToken = await waitForEmailToken(user.id, 'verify_email');
+    await waitForEmailToken(user.id, 'verify_email');
+    const verifyToken = lastSentVerifyToken();
 
     // Use it once
-    await app.inject({ method: 'GET', url: `/auth/verify-email?token=${emailToken!.token}` });
+    await app.inject({ method: 'GET', url: `/auth/verify-email?token=${verifyToken}` });
     // Use it again
-    const res = await app.inject({ method: 'GET', url: `/auth/verify-email?token=${emailToken!.token}` });
+    const res = await app.inject({ method: 'GET', url: `/auth/verify-email?token=${verifyToken}` });
     expect(res.body).toContain('invalid');
   });
 
@@ -294,10 +313,10 @@ describe('Journey 2 - email verification', () => {
   it('resend returns 400 if email already verified', async () => {
     await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
-    const emailToken = await waitForEmailToken(user.id, 'verify_email');
+    await waitForEmailToken(user.id, 'verify_email');
 
     // Verify first
-    await app.inject({ method: 'GET', url: `/auth/verify-email?token=${emailToken!.token}` });
+    await app.inject({ method: 'GET', url: `/auth/verify-email?token=${lastSentVerifyToken()}` });
 
     // Re-login to get a token with emailVerified=true
     const newToken = (await login()).json<{ accessToken: string }>().accessToken;
@@ -334,7 +353,7 @@ describe('Journey 3 - password reset', () => {
 
     // GET reset page renders HTML form
     const pageRes = await app.inject({
-      method: 'GET', url: `/auth/reset-password?token=${resetToken!.token}`,
+      method: 'GET', url: `/auth/reset-password?token=${lastSentResetToken()}`,
     });
     expect(pageRes.statusCode).toBe(200);
     expect(pageRes.headers['content-type']).toContain('text/html');
@@ -345,7 +364,7 @@ describe('Journey 3 - password reset', () => {
     const resetRes = await app.inject({
       method: 'POST', url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: `token=${resetToken!.token}&newPassword=${newPassword}`,
+      payload: `token=${lastSentResetToken()}&newPassword=${newPassword}`,
     });
     expect(resetRes.statusCode).toBe(200);
     expect(resetRes.body).toContain('updated');
@@ -379,19 +398,20 @@ describe('Journey 3 - password reset', () => {
     await register();
     const user = await getUserByEmail('user@e2e.test');
     await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'user@e2e.test' } });
-    const resetToken = await getLatestEmailToken(user.id, 'password_reset');
+    await getLatestEmailToken(user.id, 'password_reset');
+    const resetTokenValue = lastSentResetToken();
 
     await app.inject({
       method: 'POST', url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: `token=${resetToken!.token}&newPassword=FirstReset123!`,
+      payload: `token=${resetTokenValue}&newPassword=FirstReset123!`,
     });
 
     // Replay
     const replayRes = await app.inject({
       method: 'POST', url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: `token=${resetToken!.token}&newPassword=HackAttempt999!`,
+      payload: `token=${resetTokenValue}&newPassword=HackAttempt999!`,
     });
     expect(replayRes.body).toContain('invalid');
 
@@ -405,6 +425,7 @@ describe('Journey 3 - password reset', () => {
     const user = await getUserByEmail('user@e2e.test');
     await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'user@e2e.test' } });
     const resetToken = await getLatestEmailToken(user.id, 'password_reset');
+    const resetTokenValue = lastSentResetToken();
 
     await db.update(emailTokens)
       .set({ expiresAt: new Date(Date.now() - 1000) })
@@ -413,7 +434,7 @@ describe('Journey 3 - password reset', () => {
     const res = await app.inject({
       method: 'POST', url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: `token=${resetToken!.token}&newPassword=ShouldNotWork1!`,
+      payload: `token=${resetTokenValue}&newPassword=ShouldNotWork1!`,
     });
     expect(res.body).toContain('invalid');
   });
@@ -426,11 +447,11 @@ describe('Journey 3 - password reset', () => {
     const user = await getUserByEmail('user@e2e.test');
 
     await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'user@e2e.test' } });
-    const resetToken = await getLatestEmailToken(user.id, 'password_reset');
+    await getLatestEmailToken(user.id, 'password_reset');
     await app.inject({
       method: 'POST', url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      payload: `token=${resetToken!.token}&newPassword=AfterReset123!`,
+      payload: `token=${lastSentResetToken()}&newPassword=AfterReset123!`,
     });
 
     // Both old sessions should now be invalid

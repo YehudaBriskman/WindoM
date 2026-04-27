@@ -1,8 +1,11 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import * as integrationsService from '../services/integrations.service.js';
+import { savePatController as saveGithubPatController } from './github.controller.js';
 
-const providerSchema = z.enum(['google', 'spotify']);
+export { saveGithubPatController };
+
+const providerSchema = z.enum(['google', 'spotify', 'github']);
 
 export async function getIntegrationsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const status = await integrationsService.getIntegrations(req.user.sub);

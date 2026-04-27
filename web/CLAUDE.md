@@ -85,3 +85,9 @@ web/                               (repo root for the extension)
 ## Publishing
 
 The `.github/workflows/publish-chrome.yml` workflow auto-publishes to Chrome Web Store when a git tag matching `v*` is pushed. Required secrets: `CHROME_EXTENSION_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`.
+
+## Content Script Match Scope (Issue #203 — Resolved as By Design)
+
+The content script declared in `manifest.json` uses `"matches": ["http://*/*", "https://*/*"]`. This is the minimum required scope and cannot be narrowed without breaking the core feature.
+
+The content script renders a full-page shadow DOM overlay (the tab sidebar) that must be present on every web page the user visits. There is no URL pattern more restrictive than `<all_urls>` that would preserve this behavior. Issue #203 is resolved as "by design" — the broad match is a functional requirement, not an oversight.

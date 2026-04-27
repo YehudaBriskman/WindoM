@@ -75,3 +75,5 @@ export const MAX_CALENDAR_RESULTS = 50;
 export const MAX_TOP_TRACKS = 50;
 export const DEFAULT_TOP_TRACKS = 10;
 export const GMAIL_MAX_MESSAGES = 5;
+
+export const GITHUB_API = 'https://api.github.com';

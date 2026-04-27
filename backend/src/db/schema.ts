@@ -94,17 +94,27 @@ export const oauthStates = pgTable('oauth_states', {
 
 // ── Email Tokens (verification + password reset) ───────────────────────────
 
-export const emailTokens = pgTable('email_tokens', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
-  token: text('token').notNull().unique(),
-  type: text('type').notNull(), // 'verify_email' | 'password_reset'
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
-  usedAt: timestamp('used_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const emailTokens = pgTable(
+  'email_tokens',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(),
+    /** bcrypt hash of raw token — for constant-time verification. */
+    tokenHash: text('token_hash'),
+    /** SHA-256 hex of raw token — for O(1) lookup (deterministic). */
+    tokenLookup: text('token_lookup'),
+    type: text('type').notNull(), // 'verify_email' | 'password_reset'
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('email_tokens_lookup_idx').on(table.tokenLookup),
+  ],
+);
 
 // ── User Settings ──────────────────────────────────────────────────────────
 

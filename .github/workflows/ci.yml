@@ -14,6 +14,7 @@ jobs:
   ci-backend:
     name: Backend - lint / typecheck / test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -65,15 +66,16 @@ jobs:
           # Minimal env required by config.ts Zod schema
           DATABASE_URL: postgresql://windom:windom@localhost:5433/windom_test
           DATABASE_URL_TEST: postgresql://windom:windom@localhost:5433/windom_test
-          JWT_ACCESS_SECRET: ci-access-secret-at-least-32-chars-long
-          REFRESH_TOKEN_SECRET: ci-refresh-secret-at-least-32-chars
-          TOKEN_ENC_KEY_BASE64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          JWT_ACCESS_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+          REFRESH_TOKEN_SECRET: ${{ secrets.TEST_REFRESH_SECRET }}
+          TOKEN_ENC_KEY_BASE64: ${{ secrets.TEST_ENC_KEY_BASE64 }}
           NODE_ENV: test
 
   # ── Web extension ─────────────────────────────────────────────────────────
   ci-web:
     name: Web - lint / typecheck / build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     defaults:
       run:

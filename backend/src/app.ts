@@ -18,6 +18,7 @@ import { calendarRoutes } from './routes/calendar.js';
 import { spotifyRoutes } from './routes/spotify.js';
 import { settingsRoutes } from './routes/settings.js';
 import { gmailRoutes } from './routes/gmail.js';
+import { githubRoutes } from './routes/github.js';
 
 export interface BuildAppOptions extends FastifyServerOptions {
   /** Skip rate limiting - set to true in tests to prevent limit accumulation across test runs. */
@@ -103,6 +104,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
   await app.register(spotifyRoutes, { prefix: '/spotify' });
   await app.register(settingsRoutes);
   await app.register(gmailRoutes, { prefix: '/gmail' });
+  await app.register(githubRoutes, { prefix: '/github' });
 
   // ── Global error handler ───────────────────────────────────────────────────
 

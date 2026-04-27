@@ -6,6 +6,7 @@ import { apiGet } from '../lib/api';
 interface IntegrationsResponse {
   google: { connected: boolean; scopes: string[] };
   spotify: { connected: boolean };
+  github: { connected: boolean };
 }
 
 /**
@@ -28,6 +29,7 @@ export function useIntegrationSync() {
           calendar: { ...settings.integrations.calendar, connected: false },
           spotify: { ...settings.integrations.spotify, connected: false },
           gmail: { ...settings.integrations.gmail, connected: false },
+          github: { ...settings.integrations.github, connected: false },
         },
       });
       return;
@@ -36,7 +38,7 @@ export function useIntegrationSync() {
     let cancelled = false;
 
     apiGet<IntegrationsResponse>('/integrations')
-      .then(({ google, spotify }) => {
+      .then(({ google, spotify, github }) => {
         if (cancelled) return;
         const hasGmailScope = google.scopes.some((s) => s.includes('gmail'));
         void updateMultiple({
@@ -45,6 +47,7 @@ export function useIntegrationSync() {
             calendar: { ...settings.integrations.calendar, connected: google.connected },
             spotify: { ...settings.integrations.spotify, connected: spotify.connected },
             gmail: { ...settings.integrations.gmail, connected: google.connected && hasGmailScope },
+            github: { ...settings.integrations.github, connected: github.connected },
           },
         });
       })

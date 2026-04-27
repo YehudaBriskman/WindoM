@@ -40,8 +40,19 @@ type CmdMessage =
   | { type: 'WINDOM_CMD_PIN_TAB' }
   | { type: 'WINDOM_CMD_OPEN_URL'; url: string };
 
+const VALID_CMD_TYPES = new Set<string>([
+  'WINDOM_CMD_NEW_TAB',
+  'WINDOM_CMD_CLOSE_TAB',
+  'WINDOM_CMD_DUPLICATE_TAB',
+  'WINDOM_CMD_PIN_TAB',
+  'WINDOM_CMD_OPEN_URL',
+]);
+
 chrome.runtime.onMessage.addListener(
   (message: CmdMessage, sender, sendResponse) => {
+    if (sender.id !== chrome.runtime.id) return;
+    if (!VALID_CMD_TYPES.has(message.type)) return;
+
     const tabId = sender.tab?.id;
 
     const handle = async () => {

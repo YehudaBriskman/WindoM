@@ -7,6 +7,7 @@ import { CalendarSection } from "../sidebar/CalendarSection";
 import { SpotifyTopTracks } from "../spotify/SpotifyTopTracks";
 import { HistorySection } from "../sidebar/HistorySection";
 import { GmailWidget } from "../gmail/GmailWidget";
+import { GitHubWidget } from "../github/GitHubWidget";
 
 export function RightSidebar() {
   const { isOpen, toggle, close } = useSidebar();
@@ -50,6 +51,7 @@ export function RightSidebar() {
           <CalendarSection />
           {settings.integrations.spotify.connected && settings.integrations.spotify.showTopTracks && <SpotifyTopTracks />}
           <GmailWidget />
+          <GitHubWidget />
         </div>
       </div>
     </div>

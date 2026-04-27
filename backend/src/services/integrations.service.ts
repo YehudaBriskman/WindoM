@@ -4,10 +4,12 @@ import { oauthAccounts } from '../db/schema.js';
 import type { OAuthProvider } from '../types/oauth.types.js';
 import { invalidateCalendarCache } from './calendar.service.js';
 import { invalidateNowPlayingCache } from './spotify.service.js';
+import { invalidateGithubCache } from './github.service.js';
 
 export interface IntegrationsStatus {
   google: { connected: boolean; scopes: string[] };
   spotify: { connected: boolean; scopes: string[] };
+  github: { connected: boolean };
 }
 
 export async function getIntegrations(userId: string): Promise<IntegrationsStatus> {
@@ -18,10 +20,12 @@ export async function getIntegrations(userId: string): Promise<IntegrationsStatu
 
   const google = accounts.find((a) => a.provider === 'google');
   const spotify = accounts.find((a) => a.provider === 'spotify');
+  const github = accounts.find((a) => a.provider === 'github');
 
   return {
     google: { connected: !!google, scopes: google?.scopes ?? [] },
     spotify: { connected: !!spotify, scopes: spotify?.scopes ?? [] },
+    github: { connected: !!github },
   };
 }
 
@@ -34,5 +38,7 @@ export async function unlinkProvider(userId: string, provider: OAuthProvider): P
     invalidateCalendarCache(userId);
   } else if (provider === 'spotify') {
     invalidateNowPlayingCache(userId);
+  } else if (provider === 'github') {
+    invalidateGithubCache(userId);
   }
 }
