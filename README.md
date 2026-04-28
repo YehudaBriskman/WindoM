@@ -59,11 +59,11 @@ At a glance you see the time, the weather, your upcoming calendar events, unread
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=TauricResearch%2FTradingAgents&type=date&logscale=&legend=bottom-right">
+<a href="https://www.star-history.com/?repos=YehudaBriskman%2FWindoM&type=timeline&logscale=&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=TauricResearch/TradingAgents&type=date&theme=dark&legend=bottom-right" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=TauricResearch/TradingAgents&type=date&legend=bottom-right" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=TauricResearch/TradingAgents&type=date&legend=bottom-right" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=YehudaBriskman/WindoM&type=timeline&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=YehudaBriskman/WindoM&type=timeline&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=YehudaBriskman/WindoM&type=timeline&legend=top-left" />
  </picture>
 </a>
 
