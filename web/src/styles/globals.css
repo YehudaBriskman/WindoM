@@ -196,7 +196,8 @@ select option {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.glass-select-option:hover {
+.glass-select-option:hover,
+.glass-select-option.keyboard-active {
   background: rgba(255, 255, 255, 0.1);
   color: white;
 }
@@ -205,6 +206,10 @@ select option {
   background: rgba(255, 255, 255, 0.14);
   color: white;
   font-weight: 500;
+}
+
+.glass-select-option.active.keyboard-active {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 input[type="file"]::file-selector-button {
