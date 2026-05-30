@@ -909,6 +909,11 @@ input[type="file"]::file-selector-button:hover {
 }
 
 .focus-display {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  width: 100%;
   font-size: 28px;
   text-align: center;
   cursor: pointer;
@@ -1569,6 +1574,13 @@ input[type="file"]::file-selector-button:hover {
    Quotes
    ============================================================ */
 .quote-container {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
   padding: 24px;
   border-radius: 16px;
   opacity: 0.9;

@@ -6,10 +6,12 @@ export function QuoteDisplay() {
   if (!enabled) return null;
 
   return (
-    <div
+    <button
+      type="button"
       className="quote-container"
       onClick={refresh}
       title="Click for new quote"
+      aria-label="Show a new quote"
     >
       <p
         className="quote-text text-shadow-sm"
@@ -23,6 +25,6 @@ export function QuoteDisplay() {
       >
         {quote ? `\u2014 ${quote.author}` : ''}
       </p>
-    </div>
+    </button>
   );
 }

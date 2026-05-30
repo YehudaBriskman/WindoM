@@ -16,7 +16,21 @@ export function PhotoGrid({ photos, onLike, onSelect, onDelete }: PhotoGridProps
   return (
     <div className="photo-grid">
       {photos.map((photo) => (
-        <div key={photo.id} className="photo-thumb" onClick={() => onSelect(photo)}>
+        <div
+          key={photo.id}
+          className="photo-thumb"
+          onClick={() => onSelect(photo)}
+          onKeyDown={(e) => {
+            if (e.currentTarget !== e.target) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onSelect(photo);
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label={`Select photo by ${photo.photographer}`}
+        >
           <img src={photo.thumbUrl} alt={`Photo by ${photo.photographer}`} loading="lazy" />
           <div className="photo-thumb-overlay">
             <span className="photo-thumb-credit">{photo.photographer}</span>
