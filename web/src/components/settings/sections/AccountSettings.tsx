@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { LoginScreen } from '../../auth/LoginScreen';
+import { ActiveSessions } from './ActiveSessions';
 import { apiPost, apiPatch, apiFetch } from '../../../lib/api';
 import { NAME_SAVE_MSG_DURATION_MS, PW_SAVE_MSG_DURATION_MS } from '../../../lib/timing-constants';
 
@@ -249,6 +250,7 @@ function SignedInView() {
 
       {/* Profile */}
       <ProfileSection />
+      <ActiveSessions key={user?.id} />
 
       {/* Sign out */}
       <button
