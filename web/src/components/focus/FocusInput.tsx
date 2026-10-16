@@ -69,7 +69,8 @@ export function FocusInput() {
   // Has text: show as clickable display (click toggles completion, double-click to edit)
   return (
     <div className="focus-container">
-      <div
+      <button
+        type="button"
         onClick={toggleCompleted}
         onDoubleClick={startEditing}
         className="focus-display"
@@ -78,9 +79,10 @@ export function FocusInput() {
           opacity: completed ? 0.6 : 1,
         }}
         title="Click to toggle completion, double-click to edit"
+        aria-pressed={completed}
       >
         {text}
-      </div>
+      </button>
     </div>
   );
 }

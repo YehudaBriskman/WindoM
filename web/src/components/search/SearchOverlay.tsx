@@ -447,8 +447,9 @@ export function SearchOverlay() {
             <button
               className="search-engine-pill"
               onClick={() => setEnginePickerOpen(p => !p)}
-              tabIndex={-1}
               type="button"
+              aria-expanded={enginePickerOpen}
+              aria-label="Choose search engine"
             >
               {ENGINE_LABELS[settings.general.searchEngine] ?? 'Google'}
               <ChevronDown size={11} strokeWidth={2} />
