@@ -10,7 +10,7 @@ const LEGACY_REFRESH_TOKEN_KEY = 'windom_refresh_token';
 // ── JWT expiry helper ───────────────────────────────────────────────────────
 
 /** Decode the JWT payload (no signature verification) to read the exp claim. */
-function parseJwtExpMs(token: string): number | null {
+export function parseJwtExpMs(token: string): number | null {
   try {
     const part = token.split('.')[1];
     if (!part) return null;
@@ -23,7 +23,7 @@ function parseJwtExpMs(token: string): number | null {
 }
 
 /** Returns true if the token is expired or will expire within the given buffer. */
-function isTokenExpired(token: string, bufferMs = 30_000): boolean {
+export function isTokenExpired(token: string, bufferMs = 30_000): boolean {
   const expMs = parseJwtExpMs(token);
   if (!expMs) return true; // can't parse → treat as expired
   return Date.now() > expMs - bufferMs;
@@ -63,7 +63,7 @@ export async function purgeLegacyRefreshToken(): Promise<void> {
 // ── Refresh ─────────────────────────────────────────────────────────────────
 
 const REFRESH_LOCK_KEY = 'windom_refresh_lock';
-const REFRESH_LOCK_TTL_MS = 10_000; // 10s max - prevents stale locks
+export const REFRESH_LOCK_TTL_MS = 45_000; // tolerate slow provider/network responses across tabs
 
 let refreshPromise: Promise<string | null> | null = null;
 
