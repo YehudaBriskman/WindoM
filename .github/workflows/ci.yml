@@ -49,6 +49,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Repository secrets are intentionally unavailable to workflows triggered
+      # from forks. Generate isolated, non-production values so contributor PRs
+      # can run the complete backend suite without access to any real secret.
+      - name: Generate ephemeral test secrets
+        shell: bash
+        run: |
+          echo "JWT_ACCESS_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "TOKEN_ENC_KEY_BASE64=$(openssl rand -base64 32 | tr -d '\n')" >> "$GITHUB_ENV"
+
       - name: Lint
         run: npm run lint
 
@@ -66,9 +76,6 @@ jobs:
           # Minimal env required by config.ts Zod schema
           DATABASE_URL: postgresql://windom:windom@localhost:5433/windom_test
           DATABASE_URL_TEST: postgresql://windom:windom@localhost:5433/windom_test
-          JWT_ACCESS_SECRET: ${{ secrets.TEST_JWT_SECRET }}
-          REFRESH_TOKEN_SECRET: ${{ secrets.TEST_REFRESH_SECRET }}
-          TOKEN_ENC_KEY_BASE64: ${{ secrets.TEST_ENC_KEY_BASE64 }}
           NODE_ENV: test
 
   # ── Web extension ─────────────────────────────────────────────────────────
