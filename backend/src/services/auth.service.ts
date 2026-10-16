@@ -6,10 +6,8 @@ import { signAccessToken } from '../lib/jwt.js';
 import {
   createSession,
   findSessionByToken,
-  hasChildSession,
-  isRenewalCapReached,
   revokeSession,
-  revokeAllUserSessions,
+  rotateSessionAtomically,
 } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
@@ -75,39 +73,37 @@ export async function refresh(
     return { ok: false, error: 'SESSION_NOT_FOUND' };
   }
 
-  if (isRenewalCapReached(session.renewalCount)) {
-    logger.warn({ sessionId: session.id, renewalCount: session.renewalCount }, 'refresh: SESSION_LIMIT_REACHED');
-    await revokeSession(session.id);
-    return { ok: false, error: 'SESSION_LIMIT_REACHED' };
-  }
-
-  // Token reuse: if a child session already exists, the old cookie was replayed
-  if (await hasChildSession(session.id)) {
-    logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
-    await revokeAllUserSessions(session.userId);
-    return { ok: false, error: 'TOKEN_REUSE_DETECTED' };
-  }
-
-  logger.warn({ sessionId: session.id, renewal: session.renewalCount + 1 }, 'refresh: rotating session');
-
-  // Revoke old session and fetch user in parallel - both are independent at this point.
-  const [[user]] = await Promise.all([
-    db.select({ id: users.id, email: users.email, name: users.name, emailVerified: users.emailVerified })
-      .from(users).where(eq(users.id, session.userId)).limit(1),
-    revokeSession(session.id),
-  ]);
+  const [user] = await db
+    .select({ id: users.id, email: users.email, name: users.name, emailVerified: users.emailVerified })
+    .from(users)
+    .where(eq(users.id, session.userId))
+    .limit(1);
 
   if (!user) {
     logger.error({ userId: session.userId }, 'refresh: USER_NOT_FOUND');
     return { ok: false, error: 'USER_NOT_FOUND' };
   }
 
-  const [accessToken, rawRefreshToken] = await Promise.all([
-    signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified }),
-    createSession(user.id, meta, session.id, session.renewalCount + 1),
-  ]);
+  logger.warn({ sessionId: session.id, renewal: session.renewalCount + 1 }, 'refresh: rotating session');
+  const rotation = await rotateSessionAtomically(
+    session.id,
+    session.userId,
+    meta,
+    session.renewalCount + 1,
+  );
+
+  if (!rotation.ok) {
+    if (rotation.error === 'TOKEN_REUSE_DETECTED') {
+      logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
+    } else {
+      logger.warn({ sessionId: session.id }, `refresh: ${rotation.error}`);
+    }
+    return rotation;
+  }
+
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
   logger.warn({ userId: user.id }, 'refresh: new session created');
-  return { ok: true, data: { accessToken, rawRefreshToken } };
+  return { ok: true, data: { accessToken, rawRefreshToken: rotation.rawRefreshToken } };
 }
 
 /** Revoke the session matching the given raw token (best-effort - no error if not found). */

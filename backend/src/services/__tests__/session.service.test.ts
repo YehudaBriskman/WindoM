@@ -6,6 +6,7 @@ vi.mock('../../db/client.js', () => ({
     insert: vi.fn().mockReturnValue({ values: vi.fn().mockResolvedValue(undefined) }),
     select: vi.fn(),
     update: vi.fn().mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) }),
+    transaction: vi.fn(),
   },
 }));
 
@@ -22,6 +23,7 @@ import {
   isRenewalCapReached,
   revokeSession,
   revokeAllUserSessions,
+  rotateSessionAtomically,
 } from '../session.service.js';
 import { MAX_RENEWALS } from '../../types/constants.js';
 
@@ -29,6 +31,7 @@ const mockDb = db as unknown as {
   insert: ReturnType<typeof vi.fn>;
   select: ReturnType<typeof vi.fn>;
   update: ReturnType<typeof vi.fn>;
+  transaction: ReturnType<typeof vi.fn>;
 };
 
 beforeEach(() => vi.clearAllMocks());
@@ -141,5 +144,114 @@ describe('findSessionByToken', () => {
     const { findSessionByToken } = await import('../session.service.js');
     const result = await findSessionByToken('rawtoken');
     expect(result).toEqual(session);
+  });
+});
+
+describe('rotateSessionAtomically', () => {
+  function transactionWith(
+    lockedSession: Record<string, unknown> | undefined,
+    child: Record<string, unknown> | undefined = undefined,
+  ) {
+    const lockedLimit = vi.fn().mockResolvedValue(lockedSession ? [lockedSession] : []);
+    const childLimit = vi.fn().mockResolvedValue(child ? [child] : []);
+    const select = vi
+      .fn()
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({
+            for: vi.fn().mockReturnValue({ limit: lockedLimit }),
+          }),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ limit: childLimit }),
+        }),
+      });
+    const updateWhere = vi.fn().mockResolvedValue(undefined);
+    const update = vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({ where: updateWhere }),
+    });
+    const values = vi.fn().mockResolvedValue(undefined);
+    const insert = vi.fn().mockReturnValue({ values });
+    const tx = { select, update, insert };
+    mockDb.transaction.mockImplementationOnce(
+      ((callback: (client: typeof tx) => unknown): unknown => callback(tx)) as never,
+    );
+    return { tx, updateWhere, values };
+  }
+
+  const activeSession = {
+    id: 'session-1',
+    userId: 'user-1',
+    revokedAt: null,
+    expiresAt: new Date(Date.now() + 60_000),
+    renewalCount: 2,
+  };
+
+  it('revokes the old row and inserts its replacement in one transaction', async () => {
+    const { tx, values } = transactionWith(activeSession);
+
+    const result = await rotateSessionAtomically(
+      'session-1',
+      'user-1',
+      { ip: '1.2.3.4', userAgent: 'test-agent' },
+      3,
+    );
+
+    expect(result.ok).toBe(true);
+    expect(mockDb.transaction).toHaveBeenCalledOnce();
+    expect(tx.update).toHaveBeenCalledOnce();
+    expect(tx.insert).toHaveBeenCalledOnce();
+    expect(values).toHaveBeenCalledWith(expect.objectContaining({
+      userId: 'user-1',
+      rotatedFromId: 'session-1',
+      renewalCount: 3,
+    }));
+  });
+
+  it('rejects a session that was revoked while waiting for the row lock', async () => {
+    const { tx } = transactionWith({ ...activeSession, revokedAt: new Date() });
+
+    const result = await rotateSessionAtomically(
+      'session-1',
+      'user-1',
+      { ip: '1.2.3.4', userAgent: 'test-agent' },
+      3,
+    );
+
+    expect(result).toEqual({ ok: false, error: 'SESSION_NOT_FOUND' });
+    expect(tx.update).not.toHaveBeenCalled();
+    expect(tx.insert).not.toHaveBeenCalled();
+  });
+
+  it('revokes the session without inserting when the renewal cap is reached', async () => {
+    const { tx } = transactionWith({ ...activeSession, renewalCount: MAX_RENEWALS });
+
+    const result = await rotateSessionAtomically(
+      'session-1',
+      'user-1',
+      { ip: '1.2.3.4', userAgent: 'test-agent' },
+      MAX_RENEWALS + 1,
+    );
+
+    expect(result).toEqual({ ok: false, error: 'SESSION_LIMIT_REACHED' });
+    expect(tx.update).toHaveBeenCalledOnce();
+    expect(tx.insert).not.toHaveBeenCalled();
+  });
+
+  it('revokes the token family when a rotated child already exists', async () => {
+    const { tx } = transactionWith(activeSession, { id: 'child-session' });
+
+    const result = await rotateSessionAtomically(
+      'session-1',
+      'user-1',
+      { ip: '1.2.3.4', userAgent: 'test-agent' },
+      3,
+    );
+
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
+    expect(tx.update).toHaveBeenCalledOnce();
+    expect(tx.insert).not.toHaveBeenCalled();
   });
 });
