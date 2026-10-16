@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
       # Repository secrets are intentionally unavailable to workflows triggered
       # from forks. Generate isolated, non-production values so contributor PRs
       # can run the complete backend suite without access to any real secret.
@@ -101,6 +104,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
 
       - name: Lint
         run: npm run lint
