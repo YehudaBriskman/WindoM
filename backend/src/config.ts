@@ -20,7 +20,14 @@ export const envSchema = z.object({
   SPOTIFY_CLIENT_SECRET: z.string().optional(),
   SPOTIFY_REDIRECT_URI: z.string().url().optional(),
   CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
-  EXTENSION_REDIRECT_BASE: z.string().url().optional(),
+  EXTENSION_REDIRECT_BASE: z.string().url().refine((value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && url.hostname.endsWith('.chromiumapp.org');
+    } catch {
+      return false;
+    }
+  }, 'EXTENSION_REDIRECT_BASE must be an HTTPS chromiumapp.org URL').optional(),
   SMTP_USER: z.string().email().optional(),
   SMTP_PASS: z.string().optional(),
   FROM_EMAIL: z.string().email().default('noreply@windom.app'),
