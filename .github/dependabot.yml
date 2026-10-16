@@ -18,6 +18,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
+      react-major:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+        update-types: [major]
+      eslint-major:
+        patterns: ['eslint', '@eslint/js', 'typescript-eslint']
+        update-types: [major]
       web-compatible:
         patterns: ['*']
         update-types: [minor, patch]
