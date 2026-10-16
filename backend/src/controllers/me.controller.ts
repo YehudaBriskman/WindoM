@@ -3,6 +3,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { COOKIE_NAME } from '../types/constants.js';
 import { verifyPassword } from '../lib/password.js';
 import * as meService from '../services/me.service.js';
+import { listActiveSessions, revokeOwnedSession } from '../services/session.service.js';
 
 const updateMeSchema = z
   .object({
@@ -84,5 +85,28 @@ export async function deleteAccountController(req: FastifyRequest, reply: Fastif
 
   await meService.deleteAccount(req.user.sub);
   reply.clearCookie(COOKIE_NAME, { path: '/auth' });
+  void reply.status(204).send();
+}
+
+export async function listSessionsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const sessions = await listActiveSessions(req.user.sub);
+  reply.header('Cache-Control', 'no-store');
+  void reply.send({ sessions });
+}
+
+const sessionParamsSchema = z.object({ id: z.string().uuid() });
+
+export async function revokeSessionController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const parsed = sessionParamsSchema.safeParse(req.params);
+  if (!parsed.success) {
+    void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Invalid session ID' });
+    return;
+  }
+
+  const revoked = await revokeOwnedSession(req.user.sub, parsed.data.id);
+  if (!revoked) {
+    void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Active session not found' });
+    return;
+  }
   void reply.status(204).send();
 }
