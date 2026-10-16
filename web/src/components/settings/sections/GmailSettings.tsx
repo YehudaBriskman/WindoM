@@ -4,6 +4,7 @@ import { useSettings } from '../../../contexts/SettingsContext';
 import { apiPost, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
 import { SETTINGS_EVENT } from '../../../lib/settings-events';
+import { clearOAuthState, rememberOAuthState, validateAndConsumeOAuthState } from '../../../lib/oauth-state';
 
 function GmailIcon() {
   return (
@@ -58,14 +59,20 @@ export function GmailSettings() {
       const { authUrl } = await apiPost<{ authUrl: string }>(
         `/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}&features=gmail`
       );
-      const redirectUrl = await launchWebAuth(authUrl);
-      const params = new URL(redirectUrl).searchParams;
-      if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
-      const code = params.get('code');
-      const state = params.get('state');
-      if (!code || !state) throw new Error('No auth code returned');
-      const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
-      if (status !== 'linked') throw new Error('Linking failed');
+      rememberOAuthState(authUrl, 'google');
+      try {
+        const redirectUrl = await launchWebAuth(authUrl);
+        const params = new URL(redirectUrl).searchParams;
+        if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
+        const code = params.get('code');
+        const state = params.get('state');
+        if (!code) throw new Error('No auth code returned');
+        validateAndConsumeOAuthState(state, 'google');
+        const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
+        if (status !== 'linked') throw new Error('Linking failed');
+      } finally {
+        clearOAuthState('google');
+      }
       // Mark both gmail and calendar as connected since we granted combined scopes
       await update('integrations', {
         gmail: { ...gmail, connected: true },

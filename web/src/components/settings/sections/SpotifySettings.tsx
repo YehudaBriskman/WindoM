@@ -5,6 +5,7 @@ import { apiPost, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
 import { generateCodeVerifier, generateCodeChallenge } from '../../../lib/pkce';
 import { COPY_CONFIRM_DURATION_MS } from '../../../lib/timing-constants';
+import { clearOAuthState, rememberOAuthState, validateAndConsumeOAuthState } from '../../../lib/oauth-state';
 
 const CLIENT_ID_KEY = 'windom_spotify_client_id';
 
@@ -32,22 +33,28 @@ async function runPkceFlow(clientId: string): Promise<void> {
     redirectUri,
   });
 
-  const redirectUrl = await launchWebAuth(authUrl);
-  const params = new URL(redirectUrl).searchParams;
-  const error = params.get('error');
-  if (error) throw new Error(mapOAuthError(error));
+  rememberOAuthState(authUrl, 'spotify');
+  try {
+    const redirectUrl = await launchWebAuth(authUrl);
+    const params = new URL(redirectUrl).searchParams;
+    const error = params.get('error');
+    if (error) throw new Error(mapOAuthError(error));
 
-  const code = params.get('code');
-  const state = params.get('state');
-  if (!code || !state) throw new Error('No auth code returned');
+    const code = params.get('code');
+    const state = params.get('state');
+    if (!code) throw new Error('No auth code returned');
+    validateAndConsumeOAuthState(state, 'spotify');
 
-  const { status } = await apiPost<{ status: string }>('/oauth/spotify/exchange', {
-    code,
-    state,
-    redirectUri,
-    codeVerifier,
-  });
-  if (status !== 'linked') throw new Error('Linking failed');
+    const { status } = await apiPost<{ status: string }>('/oauth/spotify/exchange', {
+      code,
+      state,
+      redirectUri,
+      codeVerifier,
+    });
+    if (status !== 'linked') throw new Error('Linking failed');
+  } finally {
+    clearOAuthState('spotify');
+  }
 }
 
 function launchWebAuth(url: string): Promise<string> {

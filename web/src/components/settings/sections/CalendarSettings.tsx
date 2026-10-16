@@ -5,6 +5,7 @@ import { apiPost, apiFetch } from '../../../lib/api';
 import { mapOAuthError } from '../../../lib/oauth-errors';
 import { GlassSelect } from '../../ui/GlassSelect';
 import { SETTINGS_EVENT } from '../../../lib/settings-events';
+import { clearOAuthState, rememberOAuthState, validateAndConsumeOAuthState } from '../../../lib/oauth-state';
 
 function GoogleCalendarIcon() {
   return (
@@ -60,14 +61,20 @@ export function CalendarSettings() {
       const { authUrl } = await apiPost<{ authUrl: string }>(
         `/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`
       );
-      const redirectUrl = await launchWebAuth(authUrl);
-      const params = new URL(redirectUrl).searchParams;
-      if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
-      const code = params.get('code');
-      const state = params.get('state');
-      if (!code || !state) throw new Error('No auth code returned');
-      const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
-      if (status !== 'linked') throw new Error('Linking failed');
+      rememberOAuthState(authUrl, 'google');
+      try {
+        const redirectUrl = await launchWebAuth(authUrl);
+        const params = new URL(redirectUrl).searchParams;
+        if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
+        const code = params.get('code');
+        const state = params.get('state');
+        if (!code) throw new Error('No auth code returned');
+        validateAndConsumeOAuthState(state, 'google');
+        const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
+        if (status !== 'linked') throw new Error('Linking failed');
+      } finally {
+        clearOAuthState('google');
+      }
       await update('integrations', { calendar: { ...calendar, connected: true } });
     } catch (err) {
       setError(mapIntegrationError(err));
