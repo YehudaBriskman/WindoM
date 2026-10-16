@@ -79,6 +79,21 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      # Build the same Dockerfile Fly deploys and block releases containing
+      # known high- or critical-severity OS/package vulnerabilities. Run this
+      # before the database backup so a rejected image has no side effects.
+      - name: Build backend image for vulnerability scan
+        run: docker build --tag windom-api:${{ github.sha }} backend
+
+      # Pinned to the immutable commit behind signed release v0.36.0.
+      - name: Scan backend image for vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: windom-api:${{ github.sha }}
+          format: table
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+
       # ── Step 1: Pre-deploy database backup ───────────────────────────────────
       # Creates a Fly.io managed Postgres backup before ANY schema changes run.
       # The deploy is ABORTED if this fails - no backup means no safe rollback.
