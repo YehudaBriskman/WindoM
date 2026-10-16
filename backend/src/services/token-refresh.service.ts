@@ -22,8 +22,8 @@ export interface TokenRefreshConfig {
 }
 
 const refreshResponseSchema = z.object({
-  access_token: z.string(),
-  expires_in: z.number(),
+  access_token: z.string().min(1),
+  expires_in: z.number().positive(),
 });
 
 // Deduplicates concurrent refresh calls for the same account - the second caller
