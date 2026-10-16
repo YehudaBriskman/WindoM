@@ -25,13 +25,13 @@
   },
   "dependencies": {
     "@fastify/cookie": "^10.0.1",
-    "@fastify/cors": "^10.0.1",
+    "@fastify/cors": "^11.3.1",
     "@fastify/formbody": "^9.0.1",
     "@fastify/helmet": "^13.1.2",
     "@fastify/rate-limit": "^10.2.1",
     "@fastify/swagger": "^9.9.2",
     "@fastify/swagger-ui": "^6.1.2",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.7",
@@ -43,7 +43,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^26.6.5",
     "@types/nodemailer": "^8.0.2",
     "@types/pg": "^8.23.1",

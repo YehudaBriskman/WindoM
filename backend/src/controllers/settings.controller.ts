@@ -99,7 +99,7 @@ export async function putSettingsController(req: FastifyRequest, reply: FastifyR
     if (value !== undefined) {
       merged[section] = {
         ...(typeof existing[section] === 'object' && existing[section] !== null
-          ? (existing[section] as Record<string, unknown>)
+          ? existing[section]
           : {}),
         ...(value as Record<string, unknown>),
       };
