@@ -28,7 +28,7 @@
     "@types/chrome": "^0.0.287",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -37,7 +37,7 @@
     "prettier": "^3.8.3",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.58.2",
-    "vite": "^5.4.11",
-    "vitest": "^3.2.4"
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   }
 }
