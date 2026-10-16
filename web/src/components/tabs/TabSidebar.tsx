@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
+import { isOwnExtensionSender, isTabSnapshotList, parseTabsChanged, type TabSnapshot } from '../../lib/runtime-messages';
 
 interface TabEntry {
   id: number;
@@ -21,7 +22,7 @@ export function TabSidebar() {
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const side = settings.general.sidebarSide;
 
-  const normalizeTabs = useCallback((chromeTabs: chrome.tabs.Tab[]) => {
+  const normalizeTabs = useCallback((chromeTabs: TabSnapshot[]) => {
     return chromeTabs
       .filter(t => !t.url?.startsWith('chrome://') && !t.url?.startsWith('chrome-extension://'))
       .map(t => ({
@@ -66,21 +67,28 @@ export function TabSidebar() {
   // Content script mode: read from storage and listen for messages from background
   useEffect(() => {
     if (!isContentScript || !hasChromeApi) return;
+    let active = true;
+    let receivedUpdate = false;
 
     // Initial load from storage snapshot set by background worker
     chrome.storage.local.get('_windom_tabs').then((result) => {
-      const stored = result['_windom_tabs'] as chrome.tabs.Tab[] | undefined;
-      if (stored) setTabs(normalizeTabs(stored));
+      const stored: unknown = result['_windom_tabs'];
+      if (active && !receivedUpdate && isTabSnapshotList(stored)) setTabs(normalizeTabs(stored));
     }).catch(() => {});
 
     // Live updates via message from background service worker
-    const onMessage = (message: { type: string; tabs?: chrome.tabs.Tab[] }) => {
-      if (message.type === 'WINDOM_TABS_CHANGED' && message.tabs) {
-        setTabs(normalizeTabs(message.tabs));
-      }
+    const onMessage = (message: unknown, sender: chrome.runtime.MessageSender) => {
+      if (!isOwnExtensionSender(sender)) return;
+      const updated = parseTabsChanged(message);
+      if (!updated) return;
+      receivedUpdate = true;
+      setTabs(normalizeTabs(updated));
     };
     chrome.runtime.onMessage.addListener(onMessage);
-    return () => chrome.runtime.onMessage.removeListener(onMessage);
+    return () => {
+      active = false;
+      chrome.runtime.onMessage.removeListener(onMessage);
+    };
   }, [normalizeTabs]);
 
   const showSidebar = () => {
