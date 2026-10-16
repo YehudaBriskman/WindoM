@@ -101,14 +101,15 @@ jobs:
       - name: Create pre-deploy database backup
         id: backup
         run: |
-          echo "Creating Fly Postgres backup for app: ${{ secrets.FLY_POSTGRES_APP }}"
+          echo "Creating pre-deploy database backup"
           flyctl postgres backup create \
-            --app "${{ secrets.FLY_POSTGRES_APP }}"
+            --app "$FLY_POSTGRES_APP"
           echo "Backup created successfully at $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
           echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           echo "timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_POSTGRES_APP: ${{ secrets.FLY_POSTGRES_APP }}
 
       # ── Step 2: Deploy ────────────────────────────────────────────────────────
       # entrypoint.sh inside the image runs "node dist/db/migrate.js" before the

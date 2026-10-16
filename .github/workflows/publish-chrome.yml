@@ -14,6 +14,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     # Use a dedicated "chrome-store" environment so you can add
     # reviewer approval rules & limit which branches/tags can deploy.
@@ -34,6 +35,15 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
+      - name: Validate required publish secrets
+        run: node ../.github/scripts/validate-publish-env.mjs
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+
       - name: Install dependencies
         run: npm ci
 
@@ -44,6 +54,14 @@ jobs:
 
       - name: Zip dist folder
         run: cd dist && zip -r ../../extension.zip . && cd ..
+
+      - name: Preserve release package
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension-${{ github.sha }}
+          path: extension.zip
+          if-no-files-found: error
+          retention-days: 5
 
       - name: Upload to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0

@@ -52,6 +52,9 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
+      - name: Test release safeguards
+        run: node --test ../.github/scripts/*.test.mjs
+
       # Repository secrets are intentionally unavailable to workflows triggered
       # from forks. Generate isolated, non-production values so contributor PRs
       # can run the complete backend suite without access to any real secret.
@@ -118,6 +121,14 @@ jobs:
         run: npm run build
         env:
           VITE_BACKEND_URL: https://api.windom.app
+
+      - name: Preserve extension build
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-build-${{ github.sha }}
+          path: web/dist/
+          if-no-files-found: error
+          retention-days: 5
 
       - name: Run tests
         run: npm test
