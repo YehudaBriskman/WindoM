@@ -4,7 +4,14 @@ import * as settingsService from '../services/settings.service.js';
 
 const quickLinkSchema = z.object({
   name: z.string().max(100),
-  url: z.string().url().max(2048),
+  url: z.string().url().max(2048).refine((value) => {
+    try {
+      const protocol = new URL(value).protocol;
+      return protocol === 'http:' || protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }, { message: 'Only HTTP and HTTPS links are allowed' }),
   icon: z.string().max(2048).optional(),
 });
 
@@ -72,7 +79,14 @@ export async function getSettingsController(req: FastifyRequest, reply: FastifyR
 }
 
 export async function putSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const incoming = settingsSectionSchema.parse(req.body);
+  const parsed = settingsSectionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    void reply.status(400).send({
+      statusCode: 400, error: 'Bad Request', message: 'Invalid settings: links must use HTTP or HTTPS and fields must match the settings schema',
+    });
+    return;
+  }
+  const incoming = parsed.data;
 
   // Strip _updatedAt from stored data (sync metadata, not settings)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

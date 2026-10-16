@@ -1,8 +1,9 @@
-/** Validate a URL string */
+/** Only HTTP(S) destinations are supported for user-configurable links. */
 export function isValidUrl(url: string): boolean {
   try {
-    new URL(url);
-    return true;
+    if (url.length > 2048) return false;
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
   } catch {
     return false;
   }
@@ -10,6 +11,7 @@ export function isValidUrl(url: string): boolean {
 
 /** Get favicon URL from Google's favicon service */
 export function getFaviconUrl(url: string): string {
+  if (!isValidUrl(url)) return '';
   try {
     const { hostname } = new URL(url);
     if (!hostname.includes('.')) return '';

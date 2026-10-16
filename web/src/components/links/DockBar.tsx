@@ -3,6 +3,7 @@ import { Plus, X } from 'lucide-react';
 import { useLinks } from '../../hooks/useLinks';
 import { useSettings } from '../../contexts/SettingsContext';
 import { DockItem } from './DockItem';
+import { isValidUrl } from '../../utils/url';
 
 const ITEMS_PER_ROW = 9;
 const ROW_HEIGHT = 44;
@@ -15,6 +16,7 @@ export function DockBar() {
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
+  const [urlError, setUrlError] = useState('');
   const [activeRow, setActiveRow] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -63,19 +65,26 @@ export function DockBar() {
     const trimmedUrl = url.trim();
     const trimmedName = name.trim();
     if (!trimmedUrl) return;
+    const destination = /^[a-z][a-z0-9+.-]*:/i.test(trimmedUrl) ? trimmedUrl : `https://${trimmedUrl}`;
+    if (!isValidUrl(destination)) {
+      setUrlError('Enter a valid HTTP or HTTPS URL.');
+      return;
+    }
     addLink({
-      name: trimmedName || new URL(trimmedUrl).hostname.replace('www.', ''),
-      url: trimmedUrl.startsWith('http') ? trimmedUrl : `https://${trimmedUrl}`,
+      name: trimmedName || new URL(destination).hostname.replace(/^www\./, ''),
+      url: destination,
       icon: '',
     });
     setName('');
     setUrl('');
+    setUrlError('');
     setShowForm(false);
   };
 
   const handleClose = () => {
     setName('');
     setUrl('');
+    setUrlError('');
     setShowForm(false);
   };
 
@@ -159,9 +168,11 @@ export function DockBar() {
               className="dock-form-input glass-input"
               type="text"
               placeholder="https://..."
+              aria-invalid={!!urlError}
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
             />
+            {urlError && <p role="alert" className="auth-field-error">{urlError}</p>}
             <button type="submit" className="dock-form-submit">
               Add
             </button>

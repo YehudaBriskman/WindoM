@@ -1,4 +1,5 @@
 /** Background service worker - manages tab state and broadcasts to content scripts */
+import { isOwnExtensionSender, isTabId, parseTabCommand } from '../lib/runtime-messages';
 
 let suspended = false;
 chrome.runtime.onSuspend.addListener(() => { suspended = true; });
@@ -33,27 +34,15 @@ chrome.tabs.onCreated.addListener(() => broadcastTabsChanged());
 
 // Handle tab-management commands forwarded from content scripts.
 // Content scripts in MV3 cannot call chrome.tabs.* directly.
-type CmdMessage =
-  | { type: 'WINDOM_CMD_NEW_TAB' }
-  | { type: 'WINDOM_CMD_CLOSE_TAB' }
-  | { type: 'WINDOM_CMD_DUPLICATE_TAB' }
-  | { type: 'WINDOM_CMD_PIN_TAB' }
-  | { type: 'WINDOM_CMD_OPEN_URL'; url: string };
-
-const VALID_CMD_TYPES = new Set<string>([
-  'WINDOM_CMD_NEW_TAB',
-  'WINDOM_CMD_CLOSE_TAB',
-  'WINDOM_CMD_DUPLICATE_TAB',
-  'WINDOM_CMD_PIN_TAB',
-  'WINDOM_CMD_OPEN_URL',
-]);
-
 chrome.runtime.onMessage.addListener(
-  (message: CmdMessage, sender, sendResponse) => {
-    if (sender.id !== chrome.runtime.id) return;
-    if (!VALID_CMD_TYPES.has(message.type)) return;
+  (payload: unknown, sender, sendResponse) => {
+    if (!isOwnExtensionSender(sender)) return;
+    const message = parseTabCommand(payload);
+    if (!message) return;
 
     const tabId = sender.tab?.id;
+    if (message.type !== 'WINDOM_CMD_NEW_TAB' && message.type !== 'WINDOM_CMD_OPEN_URL'
+      && !isTabId(tabId)) return;
 
     const handle = async () => {
       switch (message.type) {
@@ -61,13 +50,13 @@ chrome.runtime.onMessage.addListener(
           await chrome.tabs.create({});
           break;
         case 'WINDOM_CMD_CLOSE_TAB':
-          if (tabId) await chrome.tabs.remove(tabId);
+          if (isTabId(tabId)) await chrome.tabs.remove(tabId);
           break;
         case 'WINDOM_CMD_DUPLICATE_TAB':
-          if (tabId) await chrome.tabs.duplicate(tabId);
+          if (isTabId(tabId)) await chrome.tabs.duplicate(tabId);
           break;
         case 'WINDOM_CMD_PIN_TAB':
-          if (tabId) {
+          if (isTabId(tabId)) {
             const tab = await chrome.tabs.get(tabId);
             await chrome.tabs.update(tabId, { pinned: !tab.pinned });
           }
