@@ -1,24 +1,11 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config.js';
-import { COOKIE_NAME, COOKIE_MAX_AGE_SECONDS, GOOGLE_AUTH_URL } from '../types/constants.js';
+import { COOKIE_NAME, GOOGLE_AUTH_URL } from '../types/constants.js';
+import { refreshCookieOptions } from '../lib/cookies.js';
 import { extractSessionMeta, isAllowedRedirectUri } from '../lib/request.js';
 import * as authService from '../services/auth.service.js';
 import * as oauthService from '../services/oauth.service.js';
-
-const cookieOpts = {
-  httpOnly: true,
-  // Always true - modern browsers exempt localhost from the Secure requirement,
-  // so local dev still works. Never send refresh tokens over plain HTTP.
-  secure: true,
-  // SameSite=None is required for cross-origin requests from the extension;
-  // in dev use Lax (localhost is same-site for the backend).
-  sameSite: config.isProd ? ('none' as const) : ('lax' as const),
-  // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
-  // allowing the logout handler to revoke the session server-side.
-  path: '/auth',
-  maxAge: COOKIE_MAX_AGE_SECONDS,
-};
 
 const exchangeSchema = z.object({
   code: z.string(),
@@ -55,7 +42,7 @@ async function handleGoogleCodeExchange(
   const { userInfo } = exchangeResult.data;
   const tokens = await authService.loginWithGoogle(userInfo.email, userInfo.name, extractSessionMeta(req));
 
-  reply.setCookie(COOKIE_NAME, tokens.rawRefreshToken, cookieOpts);
+  reply.setCookie(COOKIE_NAME, tokens.rawRefreshToken, refreshCookieOptions);
   void reply.send({ accessToken: tokens.accessToken });
 }
 

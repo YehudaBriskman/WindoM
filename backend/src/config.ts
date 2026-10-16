@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
-const envSchema = z.object({
+export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(8080),
   DATABASE_URL: z.string().url(),
@@ -20,11 +20,19 @@ const envSchema = z.object({
   SPOTIFY_CLIENT_SECRET: z.string().optional(),
   SPOTIFY_REDIRECT_URI: z.string().url().optional(),
   CORS_ALLOWED_ORIGINS: z.string().default('http://localhost:3000'),
-  EXTENSION_REDIRECT_BASE: z.string().optional(),
+  EXTENSION_REDIRECT_BASE: z.string().url().optional(),
   SMTP_USER: z.string().email().optional(),
   SMTP_PASS: z.string().optional(),
   FROM_EMAIL: z.string().email().default('noreply@windom.app'),
   APP_URL: z.string().url().default('https://windom-api.fly.dev'),
+}).superRefine((env, ctx) => {
+  if (env.NODE_ENV === 'production' && !env.EXTENSION_REDIRECT_BASE) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['EXTENSION_REDIRECT_BASE'],
+      message: 'EXTENSION_REDIRECT_BASE is required in production',
+    });
+  }
 });
 
 const parsed = envSchema.safeParse(process.env);

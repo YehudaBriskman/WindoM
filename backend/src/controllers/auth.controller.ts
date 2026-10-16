@@ -1,23 +1,9 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import { config } from '../config.js';
-import { COOKIE_NAME, COOKIE_MAX_AGE_SECONDS } from '../types/constants.js';
+import { COOKIE_NAME } from '../types/constants.js';
+import { refreshCookieOptions } from '../lib/cookies.js';
 import { extractSessionMeta } from '../lib/request.js';
 import * as authService from '../services/auth.service.js';
-
-const cookieOpts = {
-  httpOnly: true,
-  // Always true - modern browsers exempt localhost from the Secure requirement,
-  // so local dev still works. Never send refresh tokens over plain HTTP.
-  secure: true,
-  // SameSite=None is required for cross-origin requests from the extension;
-  // in dev use Lax (localhost is same-site for the backend).
-  sameSite: config.isProd ? ('none' as const) : ('lax' as const),
-  // Path is /auth (not /auth/refresh) so the cookie is also sent to /auth/logout,
-  // allowing the logout handler to revoke the session server-side.
-  path: '/auth',
-  maxAge: COOKIE_MAX_AGE_SECONDS,
-};
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -49,7 +35,7 @@ export async function registerController(req: FastifyRequest, reply: FastifyRepl
     return;
   }
 
-  reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
+  reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, refreshCookieOptions);
   void reply.send({ accessToken: result.data.accessToken, emailSent: result.data.emailSent });
 }
 
@@ -67,7 +53,7 @@ export async function loginController(req: FastifyRequest, reply: FastifyReply):
     return;
   }
 
-  reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
+  reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, refreshCookieOptions);
   void reply.send({ accessToken: result.data.accessToken });
 }
 
@@ -99,7 +85,7 @@ export async function refreshController(req: FastifyRequest, reply: FastifyReply
   }
 
   req.log.info('refresh: rotation succeeded, new session created');
-  reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
+  reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, refreshCookieOptions);
   void reply.send({ accessToken: result.data.accessToken });
 }
 

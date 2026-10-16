@@ -25,6 +25,21 @@ export interface BuildAppOptions extends FastifyServerOptions {
   skipRateLimit?: boolean;
 }
 
+export function requestLogSerializer(req: { id: string; method: string; url: string; ip: string }): {
+  id: string;
+  method: string;
+  url: string;
+  remoteAddress: string;
+} {
+  return {
+    id: req.id,
+    method: req.method,
+    url: req.url,
+    // Never log Authorization headers or cookie values.
+    remoteAddress: req.ip,
+  };
+}
+
 /**
  * Builds and fully registers the Fastify application.
  * Does NOT bind a port - call app.listen() in the entry point.
@@ -36,20 +51,14 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
     logger: {
       level: config.isProd ? 'info' : 'debug',
       serializers: {
-        req(req) {
-          return {
-            method: req.method,
-            url: req.url,
-            // Never log Authorization header or cookie values
-            remoteAddress: req.ip,
-          };
-        },
+        req: requestLogSerializer,
       },
     },
     trustProxy: config.isProd, // trust X-Forwarded-For from Fly.io proxy
     // Hard limit on incoming request body size (covers both JSON and form data).
     // 700 KB covers the largest legitimate payload (localBackground base64 image ≤ 600 KB + overhead).
     bodyLimit: 700_000,
+    requestTimeout: 30_000,
     ...overrides,
   });
 
@@ -84,6 +93,11 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
       ? { maxAge: 31_536_000, includeSubDomains: true, preload: true }
       : false,
     crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow extension to fetch the API
+  });
+
+  app.addHook('onSend', (_req, reply, _payload, done) => {
+    reply.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    done();
   });
 
   await registerSwagger(app, !config.isProd);
