@@ -31,7 +31,7 @@
     "@fastify/rate-limit": "^10.2.1",
     "@fastify/swagger": "^9.7.0",
     "@fastify/swagger-ui": "^6.1.2",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.7",
@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/bcryptjs": "^2.4.6",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^22.9.4",
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.11.10",
