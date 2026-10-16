@@ -10,8 +10,7 @@ vi.mock('../../db/client.js', () => ({
 vi.mock('../session.service.js', () => ({
   createSession: vi.fn().mockResolvedValue('raw-refresh-token'),
   findSessionByToken: vi.fn(),
-  hasChildSession: vi.fn().mockResolvedValue(false),
-  isRenewalCapReached: vi.fn().mockReturnValue(false),
+  rotateSessionAtomically: vi.fn().mockResolvedValue({ ok: true, rawRefreshToken: 'rotated-refresh-token' }),
   revokeSession: vi.fn().mockResolvedValue(undefined),
   revokeAllUserSessions: vi.fn().mockResolvedValue(undefined),
 }));
@@ -102,27 +101,24 @@ describe('refresh', () => {
 
   it('returns SESSION_LIMIT_REACHED when renewal cap exceeded', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    vi.mocked(sessionService.isRenewalCapReached).mockReturnValueOnce(true);
+    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }) }) });
+    vi.mocked(sessionService.rotateSessionAtomically).mockResolvedValueOnce({ ok: false, error: 'SESSION_LIMIT_REACHED' });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'SESSION_LIMIT_REACHED' });
-    expect(sessionService.revokeSession).toHaveBeenCalledWith('s1');
   });
 
   it('returns TOKEN_REUSE_DETECTED and revokes all sessions on reuse', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    vi.mocked(sessionService.isRenewalCapReached).mockReturnValueOnce(false);
-    vi.mocked(sessionService.hasChildSession).mockResolvedValueOnce(true);
+    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }) }) });
+    vi.mocked(sessionService.rotateSessionAtomically).mockResolvedValueOnce({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
-    expect(sessionService.revokeAllUserSessions).toHaveBeenCalledWith('u1');
   });
 
   it('returns USER_NOT_FOUND when user is gone from DB', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    vi.mocked(sessionService.isRenewalCapReached).mockReturnValueOnce(false);
-    vi.mocked(sessionService.hasChildSession).mockResolvedValueOnce(false);
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }) });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
@@ -131,14 +127,16 @@ describe('refresh', () => {
 
   it('rotates session and returns new token pair on success', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    vi.mocked(sessionService.isRenewalCapReached).mockReturnValueOnce(false);
-    vi.mocked(sessionService.hasChildSession).mockResolvedValueOnce(false);
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }) }) });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
-    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token' } });
-    expect(sessionService.revokeSession).toHaveBeenCalledWith('s1');
-    expect(sessionService.createSession).toHaveBeenCalledWith('u1', expect.anything(), 's1', 1);
+    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'rotated-refresh-token' } });
+    expect(sessionService.rotateSessionAtomically).toHaveBeenCalledWith(
+      's1',
+      'u1',
+      expect.anything(),
+      1,
+    );
   });
 });
 
