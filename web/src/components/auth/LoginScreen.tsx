@@ -31,7 +31,7 @@ function validateFields(mode: 'login' | 'register', name: string, email: string,
 }
 
 export function LoginScreen({ onSuccess }: Props) {
-  const { login, loginWithTokens } = useAuth();
+  const { login, loginWithToken } = useAuth();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -80,8 +80,8 @@ export function LoginScreen({ onSuccess }: Props) {
     setLoading(true);
     try {
       if (mode === 'register') {
-        const data = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/register', { email: email.trim(), password, name: name.trim() });
-        await loginWithTokens(data.accessToken, data.refreshToken);
+        const data = await apiPost<{ accessToken: string }>('/auth/register', { email: email.trim(), password, name: name.trim() });
+        await loginWithToken(data.accessToken);
         onSuccess?.();
       } else {
         await login(email.trim(), password);

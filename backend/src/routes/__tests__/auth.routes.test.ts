@@ -37,9 +37,10 @@ describe('POST /auth/register', () => {
   it('returns 200 with accessToken on valid registration', async () => {
     const res = await register();
     expect(res.statusCode).toBe(200);
-    const body = res.json<{ accessToken: string }>();
+    const body = res.json<{ accessToken: string; refreshToken?: string }>();
     expect(typeof body.accessToken).toBe('string');
     expect(body.accessToken.length).toBeGreaterThan(10);
+    expect(body.refreshToken).toBeUndefined();
   });
 
   it('sets the windom_refresh HttpOnly cookie', async () => {
@@ -74,8 +75,9 @@ describe('POST /auth/login', () => {
     await register();
     const res = await login();
     expect(res.statusCode).toBe(200);
-    const body = res.json<{ accessToken: string }>();
+    const body = res.json<{ accessToken: string; refreshToken?: string }>();
     expect(typeof body.accessToken).toBe('string');
+    expect(body.refreshToken).toBeUndefined();
   });
 
   it('returns 401 for wrong password', async () => {
@@ -109,8 +111,9 @@ describe('POST /auth/refresh', () => {
     });
 
     expect(res.statusCode).toBe(200);
-    const body = res.json<{ accessToken: string }>();
+    const body = res.json<{ accessToken: string; refreshToken?: string }>();
     expect(typeof body.accessToken).toBe('string');
+    expect(body.refreshToken).toBeUndefined();
   });
 
   it('returns 401 when no refresh cookie is present', async () => {

@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Google' }: Props) {
-  const { loginWithTokens } = useAuth();
+  const { loginWithToken } = useAuth();
   const [loading, setLoading] = useState(false);
 
   async function handleClick() {
@@ -55,13 +55,13 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
       if (error || !code || !state) throw new Error(error ? mapOAuthError(error) : 'No auth code returned');
 
       // Send code to backend for server-side token exchange
-      const { accessToken, refreshToken } = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/google/exchange', {
+      const { accessToken } = await apiPost<{ accessToken: string }>('/auth/google/exchange', {
         code,
         state,
         redirectUri,
       });
 
-      await loginWithTokens(accessToken, refreshToken);
+      await loginWithToken(accessToken);
       onSuccess?.();
     } catch (err) {
       onError?.(err instanceof Error ? err.message : 'Google sign-in failed');

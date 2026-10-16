@@ -16,10 +16,9 @@ export async function registerSwagger(app: FastifyInstance, isDev: boolean): Pro
   app.addSchema({
     $id: 'AuthTokens',
     type: 'object',
-    required: ['accessToken', 'refreshToken'],
+    required: ['accessToken'],
     properties: {
       accessToken: { type: 'string' },
-      refreshToken: { type: 'string' },
     },
   });
   app.addSchema({
@@ -66,10 +65,9 @@ export async function registerSwagger(app: FastifyInstance, isDev: boolean): Pro
           },
           AuthTokens: {
             type: 'object',
-            required: ['accessToken', 'refreshToken'],
+            required: ['accessToken'],
             properties: {
               accessToken: { type: 'string' },
-              refreshToken: { type: 'string' },
             },
           },
           User: {
