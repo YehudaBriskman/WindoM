@@ -154,4 +154,84 @@ describe('getValidAccessToken', () => {
 
     expect(capturedHeaders['Authorization']).toBe('Basic abc123');
   });
+
+  it('deduplicates concurrent refreshes for the same account', async () => {
+    const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
+    mockDecrypt.mockResolvedValue('refresh-token');
+    mockEncrypt.mockResolvedValue('encrypted-new-token');
+
+    let resolveFetch!: (value: { ok: boolean; json: () => Promise<object> }) => void;
+    const fetchResult = new Promise<{ ok: boolean; json: () => Promise<object> }>((resolve) => {
+      resolveFetch = resolve;
+    });
+    const mockFetch = vi.fn().mockReturnValue(fetchResult);
+    vi.stubGlobal('fetch', mockFetch);
+    mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
+
+    const first = getValidAccessToken(account, refreshConfig);
+    const second = getValidAccessToken(account, refreshConfig);
+    await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledOnce());
+
+    resolveFetch({
+      ok: true,
+      json: () => Promise.resolve({ access_token: 'shared-token', expires_in: 3600 }),
+    });
+
+    await expect(Promise.all([first, second])).resolves.toEqual([
+      { ok: true, data: 'shared-token' },
+      { ok: true, data: 'shared-token' },
+    ]);
+    expect(mockFetch).toHaveBeenCalledOnce();
+    expect(mockDb.update).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    {},
+    { expires_in: 3600 },
+    { access_token: 'token' },
+    { access_token: '', expires_in: 3600 },
+    { access_token: 'token', expires_in: 0 },
+    { access_token: 'token', expires_in: -1 },
+  ])('rejects malformed provider token response %#', async (payload) => {
+    const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
+    mockDecrypt.mockResolvedValue('refresh-token');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(payload),
+    }));
+
+    await expect(getValidAccessToken(account, refreshConfig)).resolves.toEqual({
+      ok: false,
+      error: 'TOKEN_REFRESH_FAILED',
+    });
+    expect(mockDb.update).not.toHaveBeenCalled();
+  });
+
+  it('maps a timeout during token exchange to a retryable network error', async () => {
+    const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
+    mockDecrypt.mockResolvedValue('refresh-token');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('timed out', 'TimeoutError')));
+
+    await expect(getValidAccessToken(account, refreshConfig)).resolves.toEqual({
+      ok: false,
+      error: 'TOKEN_REFRESH_NETWORK_ERROR',
+    });
+  });
+
+  it('does not deduplicate refreshes for different accounts', async () => {
+    mockDecrypt.mockResolvedValue('refresh-token');
+    mockEncrypt.mockResolvedValue('encrypted-new-token');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ access_token: 'token', expires_in: 3600 }),
+    }));
+    mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
+
+    await Promise.all([
+      getValidAccessToken(makeAccount({ id: 'account-a', tokenExpiresAt: new Date(0) }), refreshConfig),
+      getValidAccessToken(makeAccount({ id: 'account-b', tokenExpiresAt: new Date(0) }), refreshConfig),
+    ]);
+
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
 });
