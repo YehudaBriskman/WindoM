@@ -23,10 +23,11 @@ export function settingsRoutes(app: FastifyInstance): void {
     preHandler: authenticate,
     schema: {
       tags: ['Settings'],
-      summary: 'Replace synced extension settings - accepts any JSON object',
+      summary: 'Merge validated settings sections; quick links require HTTP(S) URLs',
       security,
       response: {
         200: { type: 'object', additionalProperties: true },
+        400: errorResponse,
         401: errorResponse,
       },
     },
