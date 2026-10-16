@@ -17,7 +17,7 @@ export function LinksSettings() {
       )}
       <div className="link-editor-list link-editor-table">
         {links.map((link, i) => {
-          const urlInvalid = link.url.length > 8 && !isValidUrl(link.url);
+          const urlInvalid = link.url.length > 0 && !isValidUrl(link.url);
           const faviconUrl = getFaviconUrl(link.url);
 
           return (
@@ -46,6 +46,8 @@ export function LinksSettings() {
                 type="text"
                 value={link.url}
                 placeholder="URL"
+                aria-invalid={urlInvalid}
+                title="Enter an HTTP or HTTPS URL"
                 onChange={(e) => updateLink(i, { ...link, url: e.target.value })}
                 className={`link-editor-input glass-input${urlInvalid ? ' url-invalid' : ''}`}
               />

@@ -1,17 +1,19 @@
 import { X, Link as LinkIcon } from 'lucide-react';
-import { getFaviconUrl } from '../../utils/url';
+import { getFaviconUrl, isValidUrl } from '../../utils/url';
 import type { QuickLink } from '../../types/settings';
 
 export function DockItem({ link, onRemove }: { link: QuickLink; onRemove?: () => void }) {
   const faviconUrl = getFaviconUrl(link.url);
+  const safe = isValidUrl(link.url);
 
   return (
     <div className="dock-item-wrapper">
       <a
-        href={link.url}
+        href={safe ? link.url : undefined}
+        aria-disabled={!safe || undefined}
         target="_self"
         className="dock-item"
-        title={link.name}
+        title={safe ? link.name : `${link.name}: enter an HTTP or HTTPS URL in Settings`}
       >
         <span className="dock-item-icon">
           {faviconUrl ? (
