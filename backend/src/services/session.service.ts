@@ -1,12 +1,21 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt, isNull } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { refreshSessions } from '../db/schema.js';
 import { REFRESH_WINDOW_DAYS, MAX_RENEWALS, BCRYPT_ROUNDS } from '../types/constants.js';
 import type { SessionMeta } from '../types/auth.types.js';
 
 type SessionRow = typeof refreshSessions.$inferSelect;
+
+export interface ActiveSession {
+  id: string;
+  deviceId: string;
+  createdAt: Date;
+  lastUsedAt: Date;
+  expiresAt: Date;
+  renewalCount: number;
+}
 
 /** SHA-256 of raw token - used as a fast indexed lookup key. */
 function sha256Hex(token: string): string {
@@ -88,6 +97,49 @@ export async function revokeAllUserSessions(userId: string): Promise<void> {
     .update(refreshSessions)
     .set({ revokedAt: new Date() })
     .where(eq(refreshSessions.userId, userId));
+}
+
+/** List only active sessions, exposing opaque device information rather than raw client data. */
+export async function listActiveSessions(userId: string): Promise<ActiveSession[]> {
+  const rows = await db
+    .select({
+      id: refreshSessions.id,
+      userAgent: refreshSessions.userAgent,
+      createdAt: refreshSessions.createdAt,
+      expiresAt: refreshSessions.expiresAt,
+      renewalCount: refreshSessions.renewalCount,
+    })
+    .from(refreshSessions)
+    .where(and(
+      eq(refreshSessions.userId, userId),
+      isNull(refreshSessions.revokedAt),
+      gt(refreshSessions.expiresAt, new Date()),
+    ));
+
+  return rows.map((row) => ({
+    id: row.id,
+    deviceId: row.userAgent.slice(0, 12),
+    createdAt: row.createdAt,
+    // Refresh rotation creates a new row, so the active row's creation marks last use.
+    lastUsedAt: row.createdAt,
+    expiresAt: row.expiresAt,
+    renewalCount: row.renewalCount,
+  }));
+}
+
+/** Revoke one active session only when it belongs to the authenticated user. */
+export async function revokeOwnedSession(userId: string, sessionId: string): Promise<boolean> {
+  const revoked = await db
+    .update(refreshSessions)
+    .set({ revokedAt: new Date() })
+    .where(and(
+      eq(refreshSessions.id, sessionId),
+      eq(refreshSessions.userId, userId),
+      isNull(refreshSessions.revokedAt),
+      gt(refreshSessions.expiresAt, new Date()),
+    ))
+    .returning({ id: refreshSessions.id });
+  return revoked.length > 0;
 }
 
 export type SessionRotationError =

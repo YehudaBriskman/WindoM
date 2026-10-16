@@ -118,3 +118,6 @@ jobs:
         run: npm run build
         env:
           VITE_BACKEND_URL: https://api.windom.app
+
+      - name: Run tests
+        run: npm test
