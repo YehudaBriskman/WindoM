@@ -21,9 +21,9 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
   const [phase, setPhase] = useState<FocusPhase>('idle');
   const [remaining, setRemaining] = useState('');
   const endTimeRef = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
-  const transitionRef = useRef<ReturnType<typeof setTimeout>>();
-  const transitionRef2 = useRef<ReturnType<typeof setTimeout>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const transitionRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const transitionRef2 = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const clearTimers = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
