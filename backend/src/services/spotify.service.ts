@@ -6,6 +6,7 @@ import { config } from '../config.js';
 import { SPOTIFY_TOKEN_URL, SPOTIFY_API, MAX_TOP_TRACKS, DEFAULT_TOP_TRACKS } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
+import { fetchWithTimeout } from '../lib/external-fetch.js';
 
 export type SpotifyError = OAuthError | 'NOT_CONNECTED' | 'NO_DEVICE';
 
@@ -100,13 +101,13 @@ async function getSpotifyToken(userId: string): Promise<Result<string, SpotifyEr
 async function resolveActiveDeviceId(token: string): Promise<string | null> {
   const headers = { Authorization: `Bearer ${token}` };
 
-  const playerRes = await fetch(`${SPOTIFY_API}/me/player`, { headers });
+  const playerRes = await fetchWithTimeout(`${SPOTIFY_API}/me/player`, { headers });
   if (playerRes.ok && playerRes.status !== 204) {
     const data = (await playerRes.json()) as SpotifyPlayerState;
     if (data?.device?.id) return data.device.id;
   }
 
-  const devicesRes = await fetch(`${SPOTIFY_API}/me/player/devices`, { headers });
+  const devicesRes = await fetchWithTimeout(`${SPOTIFY_API}/me/player/devices`, { headers });
   if (!devicesRes.ok) return null;
 
   const { devices } = (await devicesRes.json()) as SpotifyDevicesResponse;
@@ -125,7 +126,7 @@ export async function getNowPlaying(userId: string): Promise<Result<NowPlayingRe
   if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
   const token = tokenResult.data;
 
-  const res = await fetch(`${SPOTIFY_API}/me/player/currently-playing`, {
+  const res = await fetchWithTimeout(`${SPOTIFY_API}/me/player/currently-playing`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -176,7 +177,7 @@ export async function getTopTracks(
     : 'short_term';
 
   const params = new URLSearchParams({ limit: String(safeLimit), time_range: safeRange });
-  const res = await fetch(`${SPOTIFY_API}/me/top/tracks?${params}`, {
+  const res = await fetchWithTimeout(`${SPOTIFY_API}/me/top/tracks?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
   });
 
@@ -201,7 +202,7 @@ export async function sendPlaybackCommand(
   const sep = endpoint.includes('?') ? '&' : '?';
   const url = `${SPOTIFY_API}${endpoint}${sep}device_id=${deviceId}`;
 
-  const res = await fetch(url, { method, headers: { Authorization: `Bearer ${token}` } });
+  const res = await fetchWithTimeout(url, { method, headers: { Authorization: `Bearer ${token}` } });
 
   if (res.status === 204 || res.status === 200) return { ok: true, data: undefined };
   if (res.status === 403) return { ok: false, error: 'FORBIDDEN' };

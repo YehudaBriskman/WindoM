@@ -13,6 +13,7 @@ import {
 } from '../types/constants.js';
 import type { OAuthProvider, OAuthPurpose, OAuthStateRecord, OAuthTokenSet, OAuthError } from '../types/oauth.types.js';
 import type { Result } from '../types/auth.types.js';
+import { fetchWithTimeout } from '../lib/external-fetch.js';
 
 // ── State management ──────────────────────────────────────────────────────
 
@@ -169,7 +170,7 @@ export async function exchangeGoogleCode(
     };
     if (codeVerifier) bodyParams['code_verifier'] = codeVerifier;
 
-    tokenRes = await fetch(GOOGLE_TOKEN_URL, {
+    tokenRes = await fetchWithTimeout(GOOGLE_TOKEN_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams(bodyParams),
@@ -186,7 +187,7 @@ export async function exchangeGoogleCode(
 
   let userInfo: GoogleUserInfo;
   try {
-    const infoRes = await fetch(GOOGLE_USERINFO_URL, { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+    const infoRes = await fetchWithTimeout(GOOGLE_USERINFO_URL, { headers: { Authorization: `Bearer ${tokens.access_token}` } });
     const userInfoParsed = googleUserInfoSchema.safeParse(await infoRes.json());
     if (!userInfoParsed.success) return { ok: false, error: 'USERINFO_FAILED' };
     userInfo = userInfoParsed.data;
@@ -236,7 +237,7 @@ export async function exchangeSpotifyCode(
       bodyParams['code_verifier'] = codeVerifier;
     }
 
-    tokenRes = await fetch(SPOTIFY_TOKEN_URL, {
+    tokenRes = await fetchWithTimeout(SPOTIFY_TOKEN_URL, {
       method: 'POST',
       headers,
       body: new URLSearchParams(bodyParams),
@@ -253,7 +254,7 @@ export async function exchangeSpotifyCode(
 
   let providerUserId: string;
   try {
-    const meRes = await fetch('https://api.spotify.com/v1/me', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+    const meRes = await fetchWithTimeout('https://api.spotify.com/v1/me', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
     const meParsed = spotifyMeSchema.safeParse(await meRes.json());
     if (!meParsed.success) return { ok: false, error: 'USERINFO_FAILED' };
     providerUserId = meParsed.data.id;

@@ -12,6 +12,7 @@ import {
 } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
+import { fetchWithTimeout } from '../lib/external-fetch.js';
 
 export type CalendarError = OAuthError | 'NOT_CONNECTED';
 
@@ -98,7 +99,7 @@ export async function getCalendarEvents(
   const timeMax = new Date(Date.now() + dayCount * 24 * 60 * 60 * 1000).toISOString();
 
   // Fetch all calendars; fall back to primary if the list call fails
-  const calListRes = await fetch(`${CALENDAR_API}/users/me/calendarList?maxResults=${MAX_CALENDAR_RESULTS}`, {
+  const calListRes = await fetchWithTimeout(`${CALENDAR_API}/users/me/calendarList?maxResults=${MAX_CALENDAR_RESULTS}`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
@@ -121,7 +122,7 @@ export async function getCalendarEvents(
   // Fan-out: fetch events from all calendars with max 5 concurrent requests
   const results = await batchRequests(
     calendarIds.map(({ id, color }) => () =>
-      fetch(`${CALENDAR_API}/calendars/${encodeURIComponent(id)}/events?${params}`, {
+      fetchWithTimeout(`${CALENDAR_API}/calendars/${encodeURIComponent(id)}/events?${params}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       }).then(async (r) => {
         if (!r.ok) return { items: [] as GoogleCalendarEvent[], color, calendarId: id };

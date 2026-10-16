@@ -6,6 +6,7 @@ import { decryptToken, encryptToken } from '../lib/crypto.js';
 import { TOKEN_REFRESH_BUFFER_MS } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
+import { fetchWithTimeout } from '../lib/external-fetch.js';
 
 type OAuthAccountRow = typeof oauthAccounts.$inferSelect;
 type RefreshError = Extract<OAuthError, 'TOKEN_REFRESH_FAILED' | 'TOKEN_REFRESH_REVOKED' | 'TOKEN_REFRESH_NETWORK_ERROR'>;
@@ -56,7 +57,7 @@ async function doRefresh(
 
   let res: Response;
   try {
-    res = await fetch(refreshConfig.tokenUrl, {
+    res = await fetchWithTimeout(refreshConfig.tokenUrl, {
       method: 'POST',
       headers,
       body: new URLSearchParams({
