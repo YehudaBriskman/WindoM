@@ -70,14 +70,21 @@ export function spotifyRoutes(app: FastifyInstance): void {
       security,
       response: {
         200: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              name: { type: 'string' },
-              artist: { type: 'string' },
-              albumImageUrl: { type: 'string' },
+          type: 'object',
+          properties: {
+            tracks: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string' },
+                  artist: { type: 'string' },
+                  album: { type: 'string' },
+                  albumArt: { type: ['string', 'null'] },
+                  durationMs: { type: 'integer' },
+                  url: { type: 'string' },
+                },
+              },
             },
           },
         },
