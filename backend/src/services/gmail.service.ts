@@ -6,6 +6,7 @@ import { config } from '../config.js';
 import { GOOGLE_TOKEN_URL, GMAIL_API, GMAIL_MAX_MESSAGES } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
+import { fetchWithTimeout } from '../lib/external-fetch.js';
 
 export type GmailError = OAuthError | 'NOT_CONNECTED' | 'INSUFFICIENT_SCOPES' | 'GMAIL_API_FORBIDDEN';
 
@@ -81,8 +82,8 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
 
   // Fetch inbox unread count and top unread messages in parallel
   const [labelRes, listRes] = await Promise.all([
-    fetch(`${GMAIL_API}/labels/INBOX`, { headers }),
-    fetch(`${GMAIL_API}/messages?q=is%3Aunread&maxResults=${GMAIL_MAX_MESSAGES}`, { headers }),
+    fetchWithTimeout(`${GMAIL_API}/labels/INBOX`, { headers }),
+    fetchWithTimeout(`${GMAIL_API}/messages?q=is%3Aunread&maxResults=${GMAIL_MAX_MESSAGES}`, { headers }),
   ]);
 
   if (!labelRes.ok || !listRes.ok) {
@@ -109,7 +110,7 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
   // Fetch each message's metadata in parallel
   const messageResults = await Promise.allSettled(
     messageIds.map(({ id }) =>
-      fetch(
+      fetchWithTimeout(
         `${GMAIL_API}/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
         { headers }
       ).then((r) => r.json() as Promise<GmailMessageResponse>)

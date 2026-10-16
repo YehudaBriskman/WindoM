@@ -4,6 +4,7 @@ import { oauthAccounts } from '../db/schema.js';
 import { encryptToken, decryptToken } from '../lib/crypto.js';
 import { GITHUB_API } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
+import { fetchWithTimeout } from '../lib/external-fetch.js';
 
 export type GitHubError = 'NOT_CONNECTED' | 'INVALID_PAT' | 'GITHUB_API_ERROR';
 
@@ -35,7 +36,7 @@ export function clearGithubCacheForTest(): void {
 
 export async function storePat(userId: string, rawPat: string): Promise<Result<{ username: string }, GitHubError>> {
   // Verify PAT and get GitHub username
-  const userRes = await fetch(`${GITHUB_API}/user`, {
+  const userRes = await fetchWithTimeout(`${GITHUB_API}/user`, {
     headers: {
       Authorization: `token ${rawPat}`,
       Accept: 'application/vnd.github+json',
@@ -91,9 +92,9 @@ export async function getGithubSummary(userId: string): Promise<Result<GitHubSum
   };
 
   const [notifRes, reviewRes, issueRes] = await Promise.all([
-    fetch(`${GITHUB_API}/notifications?all=false&per_page=50`, { headers }),
-    fetch(`${GITHUB_API}/search/issues?q=type:pr+review-requested:@me+state:open&per_page=1`, { headers }),
-    fetch(`${GITHUB_API}/search/issues?q=assignee:@me+state:open+type:issue&per_page=1`, { headers }),
+    fetchWithTimeout(`${GITHUB_API}/notifications?all=false&per_page=50`, { headers }),
+    fetchWithTimeout(`${GITHUB_API}/search/issues?q=type:pr+review-requested:@me+state:open&per_page=1`, { headers }),
+    fetchWithTimeout(`${GITHUB_API}/search/issues?q=assignee:@me+state:open+type:issue&per_page=1`, { headers }),
   ]);
 
   if (!notifRes.ok || !reviewRes.ok || !issueRes.ok) {
