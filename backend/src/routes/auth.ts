@@ -13,10 +13,9 @@ export function authRoutes(app: FastifyInstance): void {
       response: {
         200: {
           type: 'object',
-          required: ['accessToken', 'refreshToken'],
+          required: ['accessToken'],
           properties: {
             accessToken: { type: 'string' },
-            refreshToken: { type: 'string' },
             emailSent: { type: 'boolean' },
           },
         },

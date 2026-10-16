@@ -6,8 +6,7 @@ vi.mock('../../lib/api', () => ({
   getAccessToken: vi.fn().mockResolvedValue(null),
   setAccessToken: vi.fn().mockResolvedValue(undefined),
   clearAccessToken: vi.fn().mockResolvedValue(undefined),
-  setRefreshToken: vi.fn().mockResolvedValue(undefined),
-  clearRefreshToken: vi.fn().mockResolvedValue(undefined),
+  purgeLegacyRefreshToken: vi.fn().mockResolvedValue(undefined),
   refreshAccessToken: vi.fn().mockResolvedValue(null),
   setLogoutCallback: vi.fn(),
   apiGet: vi.fn(),
@@ -18,8 +17,7 @@ import {
   getAccessToken,
   setAccessToken,
   clearAccessToken,
-  setRefreshToken,
-  clearRefreshToken,
+  purgeLegacyRefreshToken,
   refreshAccessToken,
   setLogoutCallback,
   apiGet,
@@ -105,8 +103,8 @@ describe('on mount', () => {
 // ── login ─────────────────────────────────────────────────────────────────────
 
 describe('login', () => {
-  it('stores tokens, sets user, and clears session flags', async () => {
-    vi.mocked(apiPost).mockResolvedValue({ accessToken: 'at', refreshToken: 'rt' });
+  it('stores the access token, sets user, and clears session flags', async () => {
+    vi.mocked(apiPost).mockResolvedValue({ accessToken: 'at' });
     vi.mocked(apiGet).mockResolvedValue(mockUser);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
@@ -115,14 +113,13 @@ describe('login', () => {
     await act(async () => { await result.current.login('a@a.com', 'pass'); });
 
     expect(setAccessToken).toHaveBeenCalledWith('at');
-    expect(setRefreshToken).toHaveBeenCalledWith('rt');
     expect(result.current.user).toEqual(mockUser);
     expect(result.current.sessionExpired).toBe(false);
     expect(result.current.sessionLimitReached).toBe(false);
   });
 
   it('dispatches windom-auth-login event with user name', async () => {
-    vi.mocked(apiPost).mockResolvedValue({ accessToken: 'at', refreshToken: 'rt' });
+    vi.mocked(apiPost).mockResolvedValue({ accessToken: 'at' });
     vi.mocked(apiGet).mockResolvedValue(mockUser);
 
     const received: string[] = [];
@@ -138,19 +135,18 @@ describe('login', () => {
   });
 });
 
-// ── loginWithTokens ───────────────────────────────────────────────────────────
+// ── loginWithToken ───────────────────────────────────────────────────────────
 
-describe('loginWithTokens', () => {
-  it('stores provided tokens and loads user', async () => {
+describe('loginWithToken', () => {
+  it('stores the provided access token and loads user', async () => {
     vi.mocked(apiGet).mockResolvedValue(mockUser);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
 
-    await act(async () => { await result.current.loginWithTokens('at', 'rt'); });
+    await act(async () => { await result.current.loginWithToken('at'); });
 
     expect(setAccessToken).toHaveBeenCalledWith('at');
-    expect(setRefreshToken).toHaveBeenCalledWith('rt');
     expect(result.current.user).toEqual(mockUser);
   });
 });
@@ -158,7 +154,7 @@ describe('loginWithTokens', () => {
 // ── logout ────────────────────────────────────────────────────────────────────
 
 describe('logout', () => {
-  it('calls POST /auth/logout and clears user + tokens', async () => {
+  it('calls POST /auth/logout and clears user + local tokens', async () => {
     vi.mocked(getAccessToken).mockResolvedValue('stored-token');
     vi.mocked(apiGet).mockResolvedValue(mockUser);
     vi.mocked(apiPost).mockResolvedValue(undefined);
@@ -170,7 +166,7 @@ describe('logout', () => {
 
     expect(apiPost).toHaveBeenCalledWith('/auth/logout');
     expect(clearAccessToken).toHaveBeenCalled();
-    expect(clearRefreshToken).toHaveBeenCalled();
+    expect(purgeLegacyRefreshToken).toHaveBeenCalled();
     expect(result.current.user).toBeNull();
     expect(result.current.accessToken).toBeNull();
   });

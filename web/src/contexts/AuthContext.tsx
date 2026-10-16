@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, setRefreshToken, clearRefreshToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
+import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, purgeLegacyRefreshToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
 
 const AUTH_REFRESH_TIMEOUT_MS = 5_000;
 const ME_TIMEOUT_MS = 5_000;
@@ -19,7 +19,7 @@ interface AuthState {
   sessionExpired: boolean;
   sessionLimitReached: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
+  loginWithToken: (accessToken: string) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (patch: Partial<User>) => void;
 }
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // best effort
     }
     await clearAccessToken();
-    await clearRefreshToken();
+    await purgeLegacyRefreshToken();
     setUser(null);
     setTokenState(null);
   }, []);
@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setLogoutCallback(() => {
       console.warn('[auth] Logout triggered by failed token refresh (401)');
-      clearRefreshToken();
+      void purgeLegacyRefreshToken();
       setUser(null);
       setTokenState(null);
       setSessionLimitReached(false);
@@ -86,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function init() {
       console.log('[auth:init] Starting auth init...');
       try {
+        await purgeLegacyRefreshToken();
         let token = await getAccessToken();
         if (token) {
           console.log('[auth:init] Valid stored access token found');
@@ -130,9 +131,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const data = await apiPost<{ accessToken: string; refreshToken: string }>('/auth/login', { email, password });
+    const data = await apiPost<{ accessToken: string }>('/auth/login', { email, password });
     await setAccessToken(data.accessToken);
-    await setRefreshToken(data.refreshToken);
     setTokenState(data.accessToken);
     const me = await apiGet<User>('/me');
     setUser(me);
@@ -141,9 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
   }, []);
 
-  const loginWithTokens = useCallback(async (accessToken: string, refreshToken: string) => {
+  const loginWithToken = useCallback(async (accessToken: string) => {
     await setAccessToken(accessToken);
-    await setRefreshToken(refreshToken);
     setTokenState(accessToken);
     const me = await apiGet<User>('/me');
     setUser(me);
@@ -157,7 +156,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, loginWithTokens, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, loginWithToken, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

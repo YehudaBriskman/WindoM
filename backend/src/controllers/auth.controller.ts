@@ -50,7 +50,7 @@ export async function registerController(req: FastifyRequest, reply: FastifyRepl
   }
 
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: result.data.accessToken, refreshToken: result.data.rawRefreshToken, emailSent: result.data.emailSent });
+  void reply.send({ accessToken: result.data.accessToken, emailSent: result.data.emailSent });
 }
 
 export async function loginController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -68,7 +68,7 @@ export async function loginController(req: FastifyRequest, reply: FastifyReply):
   }
 
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: result.data.accessToken, refreshToken: result.data.rawRefreshToken });
+  void reply.send({ accessToken: result.data.accessToken });
 }
 
 export async function refreshController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -100,7 +100,7 @@ export async function refreshController(req: FastifyRequest, reply: FastifyReply
 
   req.log.info('refresh: rotation succeeded, new session created');
   reply.setCookie(COOKIE_NAME, result.data.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: result.data.accessToken, refreshToken: result.data.rawRefreshToken });
+  void reply.send({ accessToken: result.data.accessToken });
 }
 
 export async function logoutController(req: FastifyRequest, reply: FastifyReply): Promise<void> {

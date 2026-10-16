@@ -56,7 +56,7 @@ async function handleGoogleCodeExchange(
   const tokens = await authService.loginWithGoogle(userInfo.email, userInfo.name, extractSessionMeta(req));
 
   reply.setCookie(COOKIE_NAME, tokens.rawRefreshToken, cookieOpts);
-  void reply.send({ accessToken: tokens.accessToken, refreshToken: tokens.rawRefreshToken });
+  void reply.send({ accessToken: tokens.accessToken });
 }
 
 export async function startGoogleAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
