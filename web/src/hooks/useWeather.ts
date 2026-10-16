@@ -56,7 +56,7 @@ export function useWeather() {
   const { settings } = useSettings();
   const { getLocation } = useLocation();
   const [state, setState] = useState<WeatherState>({ status: 'placeholder', message: 'Weather' });
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   // Each effect run gets a unique ID. fetchWeather checks this before every setState
   // so a stale in-flight request from a previous run can never overwrite fresh state.
   const runIdRef = useRef(0);

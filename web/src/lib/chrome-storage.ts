@@ -3,7 +3,7 @@
 export const syncStorage = {
   async get<T>(key: string, defaultValue: T): Promise<T> {
     try {
-      const result = await chrome.storage.sync.get([key]);
+      const result = await chrome.storage.sync.get<Record<string, T>>([key]);
       return result[key] !== undefined ? result[key] : defaultValue;
     } catch (error) {
       console.error(`Error getting storage key "${key}":`, error);
@@ -82,7 +82,7 @@ export const syncStorage = {
 export const localStore = {
   async get<T>(key: string, defaultValue: T): Promise<T> {
     try {
-      const result = await chrome.storage.local.get([key]);
+      const result = await chrome.storage.local.get<Record<string, T>>([key]);
       return result[key] !== undefined ? result[key] : defaultValue;
     } catch (error) {
       console.error(`Error getting local storage key "${key}":`, error);
