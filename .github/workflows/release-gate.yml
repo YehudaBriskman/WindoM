@@ -115,6 +115,17 @@ jobs:
         # dirty tree here means the committed lock file is not what CI resolves.
         run: git diff --exit-code -- package-lock.json
 
+      # config.ts validates its environment with Zod and calls process.exit(1) when a
+      # secret is absent, which fails every test that imports it. Generated per run
+      # rather than read from repository secrets so fork-triggered runs work too and no
+      # real secret is referenced, matching how ci.yml does it.
+      - name: Generate ephemeral test secrets
+        shell: bash
+        run: |
+          echo "JWT_ACCESS_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "TOKEN_ENC_KEY_BASE64=$(openssl rand -base64 32 | tr -d '\n')" >> "$GITHUB_ENV"
+
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
