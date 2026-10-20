@@ -1,0 +1,76 @@
+name: Backend Deploy Drift
+
+# Detects when the Fly deployment of windom-api has fallen behind `origin/main` by
+# more than a threshold. `deploy-backend.yml` triggers ONLY on a `v*` tag, so if
+# nobody tags, production rots silently - which is exactly what happened before
+# incident #307: production ran release v30 from 25 Apr 2026 while main accumulated
+# 48 commits, including every security fix from Phases 10-13, and nothing alerted on
+# the gap. See issue #304.
+#
+# This workflow does NOT auto-deploy and does NOT change the tag-triggered release
+# model. It only fails (so GitHub emails the repo owner) when drift is large, so a
+# human decides when to cut the next release tag.
+
+on:
+  schedule:
+    # Once a day is plenty: the failure mode this guards against is a silent gap of
+    # months, not same-day drift.
+    - cron: '17 6 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+env:
+  # ── Tune here ────────────────────────────────────────────────────────────────
+  # The deployed image carries no embedded git SHA (see backend/Dockerfile and
+  # backend/fly.toml - neither sets an image label or build arg for one), so no
+  # flyctl command reliably reports which commit is live. `flyctl releases --json`
+  # DOES reliably report when the current release was created, so age-in-days of the
+  # latest complete release is the primary signal below, with commits landed on
+  # origin/main since that date as a secondary, approximate one. See
+  # .github/scripts/check-deploy-drift.mjs for the full reasoning.
+  DRIFT_THRESHOLD_DAYS: '14'
+  DRIFT_THRESHOLD_COMMITS: '20'
+
+jobs:
+  check-drift:
+    name: Check backend deploy drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          # Full history, not the default shallow clone - counting commits since the
+          # deployed release's date needs the real commit log on origin/main.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Test the drift checker itself
+        run: node --test .github/scripts/check-deploy-drift.test.mjs
+
+      # Pinned to the same immutable commit deploy-backend.yml uses (release 1.6), so
+      # this check and the real deploy always resolve flyctl identically.
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # 1.6
+
+      - name: Fetch Fly release history
+        run: flyctl releases -a windom-api --json > /tmp/releases.json
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Ensure origin/main is addressable
+        # actions/checkout leaves HEAD detached at main without necessarily naming
+        # the origin/main ref the drift checker counts commits against.
+        run: git fetch origin main
+
+      - name: Evaluate drift
+        run: node .github/scripts/check-deploy-drift.mjs
+        env:
+          RELEASES_JSON_PATH: /tmp/releases.json
+          DRIFT_THRESHOLD_DAYS: ${{ env.DRIFT_THRESHOLD_DAYS }}
+          DRIFT_THRESHOLD_COMMITS: ${{ env.DRIFT_THRESHOLD_COMMITS }}
