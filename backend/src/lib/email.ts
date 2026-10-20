@@ -7,9 +7,14 @@ import { logger } from './logger.js';
 const transporter =
   config.SMTP_USER && config.SMTP_PASS
     ? nodemailer.createTransport({
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
+        host: config.SMTP_HOST,
+        port: config.SMTP_PORT,
+        // 465 is implicit TLS; 587 (and 25) negotiate STARTTLS after connecting, so
+        // `secure` must follow the port or the handshake fails against either kind of
+        // server. requireTLS keeps the STARTTLS path from silently falling back to
+        // plaintext if the server does not advertise the upgrade.
+        secure: config.SMTP_PORT === 465,
+        requireTLS: config.SMTP_PORT !== 465,
         auth: {
           user: config.SMTP_USER,
           pass: config.SMTP_PASS,
