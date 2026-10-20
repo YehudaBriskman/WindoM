@@ -123,21 +123,31 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
       # ── Step 3: Post-deploy health check ─────────────────────────────────────
-      # Confirms the new version is actually serving traffic.
-      # Retries for up to 60 s to give Fly's traffic switch time to settle.
-      - name: Verify production health endpoint
+      # Verifies READINESS, not just liveness. /health stays 200 whenever the process
+      # is alive - by design, so a degraded database cannot make Fly replace a machine
+      # - which means it is useless as a deploy gate. /health/ready returns 503 when
+      # the database is unreachable or read-only.
+      #
+      # This distinction is why incident #307 ran undetected for four months: the old
+      # check polled /health, which reported healthy the entire time Postgres was
+      # stuck read-only in archive recovery.
+      - name: Verify production readiness
         run: |
-          echo "Verifying https://windom-api.fly.dev/health ..."
+          echo "Verifying https://windom-api.fly.dev/health/ready ..."
           for i in 1 2 3 4 5 6; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://windom-api.fly.dev/health)
+            BODY=$(curl -s --max-time 10 https://windom-api.fly.dev/health/ready || true)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://windom-api.fly.dev/health/ready || true)
             if [ "$STATUS" = "200" ]; then
-              echo "Health check passed (attempt $i) - deployment successful."
+              echo "Readiness check passed (attempt $i) - deployment successful."
+              echo "$BODY"
               exit 0
             fi
             echo "Attempt $i: got HTTP $STATUS, retrying in 10s..."
+            echo "  response: $BODY"
             sleep 10
           done
-          echo "Health check failed after 60s. Run: flyctl rollback -a windom-api"
+          echo "::error::Readiness check failed after 60s - the API is up but its database"
+          echo "::error::is unreachable or read-only. Run: flyctl rollback -a windom-api"
           exit 1
 
       # ── Step 4: Post-deploy summary ───────────────────────────────────────────
