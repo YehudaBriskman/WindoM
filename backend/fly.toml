@@ -31,7 +31,16 @@ primary_region = "fra"
     path = "/health"
     timeout = "5s"
 
+# Measured on the live machine 2026-10-20: node RSS 84 MB against 207 MB usable and
+# ~120 MB available, with the apparent 150 MB of "usage" being mostly reclaimable page
+# cache. The V8 heap would have to roughly double before 256 MB became tight.
+#
+# This declared 512mb while the running machine had been 256MB since Fly recreated it
+# on 2026-10-08, so the file described infrastructure that did not exist and the next
+# ordinary deploy would have silently doubled both the RAM and its cost. Reconciling
+# downward is a no-op for production and keeps the current bill. Resizing is a one-line
+# change plus a deploy, so scale up on evidence rather than pre-emptively. See #305.
 [[vm]]
-  memory = "512mb"
+  memory = "256mb"
   cpu_kind = "shared"
   cpus = 1
