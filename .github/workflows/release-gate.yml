@@ -89,7 +89,7 @@ jobs:
         # workflow is called without the secret available.
         run: node .github/scripts/validate-backend-origin.mjs
         env:
-          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL || 'https://api.windom.app' }}
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL || 'https://windom-api.fly.dev' }}
 
   # ── Backend ────────────────────────────────────────────────────────────────
   backend:
@@ -226,7 +226,7 @@ jobs:
       - name: Build with the release backend origin
         run: npm run build
         env:
-          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL || 'https://api.windom.app' }}
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL || 'https://windom-api.fly.dev' }}
 
       - name: Manifest version agrees with the tag in the built output
         # Guards the build itself, not just the source: @crxjs rewrites the manifest at
@@ -291,7 +291,7 @@ jobs:
         # every authenticated request failed for every user. Nothing in CI noticed,
         # because nothing ever resolved the host it was shipping.
         run: |
-          URL="${{ secrets.VITE_BACKEND_URL || 'https://api.windom.app' }}"
+          URL="${{ secrets.VITE_BACKEND_URL || 'https://windom-api.fly.dev' }}"
           HOST=$(printf '%s' "$URL" | sed -E 's#^https?://##; s#[:/].*$##')
           echo "Resolving $HOST ..."
           if ! getent hosts "$HOST" > /dev/null; then

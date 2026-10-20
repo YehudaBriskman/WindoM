@@ -43,7 +43,7 @@ export async function registerSwagger(app: FastifyInstance, isDev: boolean): Pro
         version: '1.3.5',
       },
       servers: [
-        { url: 'https://api.windom.app', description: 'Production' },
+        { url: 'https://windom-api.fly.dev', description: 'Production' },
         { url: 'http://localhost:8080', description: 'Local dev' },
       ],
       components: {
