@@ -4,6 +4,14 @@ primary_region = "fra"
 [build]
   dockerfile = "Dockerfile"
 
+# Migrations run once per deploy in their own short-lived machine, before the new
+# release goes live. Keeping them out of the app's entrypoint means a read-only or
+# unreachable database fails the deploy rather than crash-looping a running app -
+# see issue #303 and incident #307.
+[deploy]
+  release_command = "node dist/db/migrate.js"
+  strategy = "rolling"
+
 [env]
   NODE_ENV = "production"
   PORT = "8080"
