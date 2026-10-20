@@ -7,6 +7,138 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.4.1] - 2026-10-20
+
+A hardening and reliability release following a production incident where a
+read-only database silently crash-looped the API for months. No new
+end-user features beyond a GitHub integration; everything else is about
+not breaking again.
+
+### Security
+- Refresh tokens moved out of response bodies into HttpOnly cookies, and
+  refresh-session rotation made transactional to close a race window
+- Email-verification and password-reset tokens are now hashed at rest
+  (bcrypt + a SHA-256 lookup index) instead of stored as plaintext
+- Hardened extension token and OAuth flows: token-expiry validation with
+  an extended refresh lock, OAuth callback state validation, quick-link
+  URLs validated against an allowlist before being persisted, and
+  `chrome.runtime.onMessage` now checks `sender.id` and the message type
+  before acting on it
+- Backend request baseline hardened across every response: a
+  Permissions-Policy header, a request timeout, SameSite/Secure cookie
+  assertions, and request correlation IDs for tracing
+- All outbound external API calls now time out instead of hanging
+  indefinitely
+- CI no longer hardcodes JWT/encryption test secrets: every run now derives
+  throwaway values of its own, so no real secret is referenced and
+  contributor forks can run the full suite. The flyctl deploy action is
+  also pinned to a commit rather than tracking `@master`
+
+### Fixed
+- A read-only Postgres database can no longer crash-loop the API:
+  migrations are decoupled from server startup and run once per deploy via
+  `release_command`; a new `/health/ready` readiness endpoint and a
+  database-aware `/health` give monitoring a real signal instead of a
+  false "healthy"
+- Calendar events response schema corrected so every event carries its
+  `date` field, fixing events showing as "No upcoming events" despite
+  valid backend data
+- Keyboard accessibility: restored keyboard navigation on `GlassSelect`,
+  and replaced clickable `<div>`s with accessible `<button>` elements
+
+### Changed
+- `npm` removed from the production runtime container image, shrinking
+  the attack surface and clearing two unreachable CVEs the image scanner
+  was blocking on
+- Large dependency upgrade sweep across both workspaces, notably
+  `lucide-react` 0.468 → 1.56 and `jose` 5 → 6
+- Declared Fly VM memory reconciled with the size of the machine actually
+  running in production
+
+### Added
+- A shared release gate that every tag-triggered workflow (backend
+  deploy, Chrome Web Store publish) must pass before anything ships,
+  runnable as a manual dry run before tagging; a scheduled job also
+  detects when the deployed backend has drifted too far from `main`
+- Trivy container-image scanning and `npm audit` gates added to CI, with
+  Dependabot configured to group related dependency upgrades
+- Active session management: `GET`/`DELETE /me/sessions` endpoints and an
+  Account settings UI to list and revoke sessions
+- GitHub integration: PAT-based connection, a settings panel, and a
+  sidebar widget showing notifications, review requests, and assigned
+  issues
+- Terms of Use page, and an updated Privacy Policy reflecting the
+  extension's current third-party integrations
+
+---
+
+## [1.4.0] - 2026-04-25
+
+### Added
+- Gmail inbox widget showing unread count and recent messages, authorized
+  through an expanded Calendar+Gmail OAuth consent
+- Finance dashboard with separate scrollable Stocks and Crypto cards
+  (Yahoo Finance + CoinGecko), ticker autocomplete search, and per-card
+  show/hide toggles
+- Apps Hub: Calendar, Spotify, Finance, Gmail, History, and Tasks
+  consolidated into icon-only cards that open a shared App Center panel
+- Settings templates gallery with 6 curated presets for first-time setup
+- First-run onboarding walkthrough, a one-time Spotify connect banner for
+  existing users, and a persistent in-app Help & Guide panel; the full
+  guide is also published at windom.app/guide with a Hebrew/English
+  toggle
+- OpenAPI docs served at `/docs` in development (Fastify Swagger)
+- Pre-deploy Postgres backup and post-deploy health check in the backend
+  deploy workflow
+
+### Changed
+- Google Calendar connect/disconnect moved from Account settings into its
+  own Apps Hub panel
+- Weather widget collapses to icon + temperature, expanding to show city
+  and condition on hover
+- Settings backend updated to the sectioned schema with deep-merge
+  upserts on save; device-local focus-timer state moved out of synced
+  storage into `chrome.storage.local`
+- Magic timeout values and repeated inline styles consolidated into named
+  constants and shared CSS utility classes
+
+### Fixed
+- Settings deep-merge on load, so schema fields added after a user's last
+  save no longer come back `undefined`
+- Finance price fetching stabilized after several Yahoo Finance/Stooq
+  reliability issues (symbol encoding, session-crumb requirement, retry
+  fallback)
+- Calendar events no longer dropped when the `calendarConnected` flag
+  drifted out of sync with a still-valid backend token
+- Missing migrations registered in the Drizzle journal, fixing a Postgres
+  type error on registration
+- Double-submit race in settings forms; spurious background reloads on
+  API-key edits; service-worker crashes on post-suspend tab events; a
+  `MutationObserver` leak on page unload
+- Accessibility: `aria-label`s added to icon-only buttons, and a focus
+  trap added to the search overlay
+
+### Security
+- Session IP address and user-agent hashed before storage instead of
+  kept as plaintext PII
+- Refresh-token bcrypt rounds reduced and the refresh path parallelized;
+  OAuth provider responses (Google, Spotify) validated with Zod instead
+  of unsafe type casts
+- `/auth/refresh` rate limit tightened, CORS restricted to a configured
+  extension ID, and generic error messages returned for 4xx responses in
+  production
+- Narrowed the `google.com` host permission in the manifest to only what
+  the extension actually uses
+
+### Performance
+- Debounced calendar refetch on settings changes; new
+  `useSettingsSection` hook limits component re-renders to the section
+  that actually changed
+- Reduced database connection pool size with exhaustion logging to catch
+  leaks before they cause 503s
+
+---
+
 ## [1.3.5] - 2026-04-19
 
 ### Added
