@@ -12,9 +12,21 @@ permissions:
   contents: read
 
 jobs:
+  # Publishing to the store is irreversible in practice - users auto-update to whatever
+  # is pushed, and the store refuses a re-upload of a version it already holds. Before
+  # this gate the workflow ran no lint, no type check, no tests, and no version check:
+  # a tag published straight to users. It now shares the backend's gate, so the
+  # extension and the API are held to the same bar and a tag either passes everything
+  # or nothing ships.
+  gate:
+    name: Release gate
+    uses: ./.github/workflows/release-gate.yml
+    secrets: inherit
+
   publish:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: gate
 
     # Use a dedicated "chrome-store" environment so you can add
     # reviewer approval rules & limit which branches/tags can deploy.

@@ -6,69 +6,22 @@ on:
       - 'v*'
 
 jobs:
-  test:
-    name: Lint & Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: windom
-          POSTGRES_PASSWORD: windom
-          POSTGRES_DB: windom_test
-        ports:
-          - 5433:5432  # Match local docker-compose port so DATABASE_URL_TEST works unchanged
-        options: >-
-          --health-cmd "pg_isready -U windom -d windom_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: backend
-        run: npm ci
-
-      - name: Lint
-        working-directory: backend
-        run: npm run lint
-
-      - name: Migrate test database
-        working-directory: backend
-        env:
-          DATABASE_URL: postgresql://windom:windom@localhost:5433/windom_test
-          JWT_ACCESS_SECRET: ${{ secrets.TEST_JWT_SECRET }}
-          REFRESH_TOKEN_SECRET: ${{ secrets.TEST_REFRESH_SECRET }}
-          TOKEN_ENC_KEY_BASE64: ${{ secrets.TEST_ENC_KEY_BASE64 }}
-          NODE_ENV: test
-        run: npx tsx src/db/migrate.ts
-
-      - name: Test
-        working-directory: backend
-        env:
-          DATABASE_URL_TEST: postgresql://windom:windom@localhost:5433/windom_test
-          JWT_ACCESS_SECRET: ${{ secrets.TEST_JWT_SECRET }}
-          REFRESH_TOKEN_SECRET: ${{ secrets.TEST_REFRESH_SECRET }}
-          TOKEN_ENC_KEY_BASE64: ${{ secrets.TEST_ENC_KEY_BASE64 }}
-          NODE_ENV: test
-        run: npm test
+  # The full pre-release gate: metadata, backend, web, container image, and
+  # infrastructure preflight. This replaced a lighter inline test job that ran neither
+  # a type check nor a dependency audit, so a tag could deploy code that did not
+  # compile. Defined once in release-gate.yml and shared with publish-chrome.yml, so
+  # the extension and the backend are held to the same bar.
+  gate:
+    name: Release gate
+    uses: ./.github/workflows/release-gate.yml
+    secrets: inherit
 
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
     # Increase timeout: backup + migration + deploy + health check can take up to 20 min
     timeout-minutes: 20
-    needs: test
+    needs: gate
 
     steps:
       - uses: actions/checkout@v7
@@ -79,20 +32,9 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      # Build the same Dockerfile Fly deploys and block releases containing
-      # known high- or critical-severity OS/package vulnerabilities. Run this
-      # before the database backup so a rejected image has no side effects.
-      - name: Build backend image for vulnerability scan
-        run: docker build --tag windom-api:${{ github.sha }} backend
-
-      # Pinned to the immutable commit behind signed release v0.36.0.
-      - name: Scan backend image for vulnerabilities
-        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-        with:
-          image-ref: windom-api:${{ github.sha }}
-          format: table
-          severity: CRITICAL,HIGH
-          exit-code: '1'
+      # The image build and its Trivy scan now live in the release gate's `container`
+      # job, which must pass before this job starts. Building here as well meant
+      # compiling the same Dockerfile twice per release for no added safety.
 
       # ── Step 1: Pre-deploy database backup ───────────────────────────────────
       # Creates a Fly.io managed Postgres backup before ANY schema changes run.
