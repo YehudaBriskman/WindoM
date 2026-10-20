@@ -29,8 +29,10 @@ not breaking again.
   assertions, and request correlation IDs for tracing
 - All outbound external API calls now time out instead of hanging
   indefinitely
-- CI no longer hardcodes JWT/encryption test secrets (moved to GitHub
-  Actions secrets) and the flyctl deploy action is pinned off `@master`
+- CI no longer hardcodes JWT/encryption test secrets: every run now derives
+  throwaway values of its own, so no real secret is referenced and
+  contributor forks can run the full suite. The flyctl deploy action is
+  also pinned to a commit rather than tracking `@master`
 
 ### Fixed
 - A read-only Postgres database can no longer crash-loop the API:
