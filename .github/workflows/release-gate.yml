@@ -23,6 +23,16 @@ on:
         description: Backend origin the extension is built against.
         required: false
 
+  # Lets the gate be dry-run against a candidate version before the tag exists.
+  # Without this the gate only ever executes during a real release, so a bug in it
+  # would first surface mid-deploy. Run this, confirm green, then tag.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Version to validate, e.g. v1.5.0. Required - the version checks compare against it.
+        required: true
+        type: string
+
 permissions:
   contents: read
 
