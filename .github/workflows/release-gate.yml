@@ -49,10 +49,34 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Full history so the tagged commit's ancestry can be tested against main.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v7
         with:
           node-version: 22
+
+      # A tag can be created on ANY commit, including one on an unmerged branch or a
+      # commit that was force-pushed away. `needs: gate` guarantees the checks passed,
+      # but says nothing about where the tagged code came from - so without this, a tag
+      # on an unreviewed branch would deploy to production and publish to the store.
+      # Releases must come from history that is on main, where branch protection and
+      # required reviews apply.
+      #
+      # Skipped for manual dry runs, which legitimately run from a feature branch.
+      - name: Tagged commit must be on main
+        if: github.ref_type == 'tag'
+        run: |
+          git fetch --no-tags --quiet origin main
+          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Tagged commit $GITHUB_SHA is on main."
+          else
+            echo "::error::Tagged commit $GITHUB_SHA is not an ancestor of origin/main."
+            echo "::error::Release tags must point at reviewed history that has been merged"
+            echo "::error::to main. Merge the work first, then tag the resulting commit."
+            exit 1
+          fi
 
       - name: Test the validators themselves
         run: node --test .github/scripts/*.test.mjs
