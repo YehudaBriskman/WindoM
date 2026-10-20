@@ -28,7 +28,16 @@ export const envSchema = z.object({
       return false;
     }
   }, 'EXTENSION_REDIRECT_BASE must be an HTTPS chromiumapp.org URL').optional(),
-  SMTP_USER: z.string().email().optional(),
+  // Host and port are configurable so the mail provider can be changed with a secret
+  // update rather than a code change - which is also what makes switching back a
+  // one-command rollback. Defaults reproduce the previous hardcoded Gmail behaviour
+  // exactly, so setting neither variable changes nothing.
+  SMTP_HOST: z.string().min(1).default('smtp.gmail.com'),
+  SMTP_PORT: z.coerce.number().int().positive().max(65535).default(465),
+  // Deliberately NOT .email(): several providers use a non-email SMTP username
+  // (Resend uses the literal "resend", Brevo uses a numeric login), and requiring an
+  // address here would reject valid credentials at config load.
+  SMTP_USER: z.string().min(1).optional(),
   SMTP_PASS: z.string().optional(),
   FROM_EMAIL: z.string().email().default('noreply@windom.app'),
   APP_URL: z.string().url().default('https://windom-api.fly.dev'),
