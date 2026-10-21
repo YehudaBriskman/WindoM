@@ -154,25 +154,46 @@
 
 .glass-pane {
   position: absolute;
-  /* Own stacking context, so the backdrop pseudo-element below can sit at
-     z-index -1 without escaping behind the wallpaper. */
+  /* Own stacking context so the backdrop pseudo-element can sit at z-index -1
+     without escaping behind the wallpaper. */
   isolation: isolate;
-  padding: 16px 20px;
+  padding: 18px 22px;
   border-radius: var(--r-lg);
-  background: rgba(14, 16, 28, 0.42);
+  background: rgba(14, 16, 28, 0.44);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 20px 56px rgba(0, 0, 0, 0.42),
+    0 24px 64px rgba(0, 0, 0, 0.46),
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   color: #fff;
   text-align: start;
-  min-width: 148px;
+  min-width: 196px;
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease),
+    border-color 0.7s var(--ease);
 }
 
-/* The blur and the refraction go on a backdrop layer behind the content, never
-   on the pane itself. Applying `filter` to the pane displaces its children too,
-   which warps the text into illegibility - this is exactly how the extension
-   does it in web/src/styles/glass.css. */
+/* The spotlight is how the narrative points at things. A lit pane comes
+   forward and sharpens; the rest stay present but recede, so the tab never
+   stops looking like a whole interface. */
+.glass-pane.is-lit {
+  opacity: 1;
+  transform: scale(1);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(123, 158, 245, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.glass-pane.is-dim {
+  opacity: 0.42;
+  transform: scale(0.95);
+}
+
+/* Blur and refraction go on a backdrop layer behind the content, never on the
+   pane itself - `filter` on the pane displaces its children and warps the text
+   into illegibility. This mirrors web/src/styles/glass.css. */
 .glass-pane::after {
   content: '';
   position: absolute;
@@ -192,60 +213,239 @@
 
 .pane-label {
   display: block;
-  font-size: 0.7rem;
-  letter-spacing: 0.13em;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.58);
+  margin-bottom: 10px;
 }
 
 .pane-figure {
   font-family: var(--display);
-  font-size: 2.1rem;
+  font-size: 2.4rem;
   font-weight: 600;
   line-height: 1;
 }
 
 .pane-figure-sm {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
 }
 
 .pane-sub {
   display: block;
-  font-size: 0.86rem;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 4px;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.74);
+  margin-top: 5px;
+}
+
+.pane-sub-quiet {
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.pane-strong {
+  font-weight: 600;
+  color: #fff;
 }
 
 .pane-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  font-size: 0.88rem;
-  line-height: 1.9;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  line-height: 2;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .pane-list .is-done {
   text-decoration: line-through;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.38);
 }
 
-/* Resting positions. Deliberately uneven, like the old corner images - a
-   symmetric arrangement reads as a diagram rather than a desktop. */
-.pane-weather {
-  top: 16%;
-  left: 11%;
+/* Markets rows */
+.pane-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 0.86rem;
+  line-height: 1.95;
 }
 
-.pane-todos {
-  top: 23%;
-  right: 9%;
+.pane-row-name {
+  color: rgba(255, 255, 255, 0.62);
+  letter-spacing: 0.04em;
 }
 
-.pane-calendar {
-  bottom: 21%;
-  right: 16%;
+.pane-row-value {
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.pane-row-delta {
+  font-variant-numeric: tabular-nums;
+  color: #f5857b;
+  min-width: 48px;
+  text-align: end;
+}
+
+.pane-row-delta.is-up {
+  color: #7bf5a9;
+}
+
+/* Spotify progress */
+.pane-bar {
+  display: block;
+  margin-top: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.pane-bar-fill {
+  display: block;
+  height: 100%;
+  width: 38%;
+  border-radius: inherit;
+  background: var(--accent-grad);
+}
+
+/* Resting positions. Deliberately uneven - a symmetric arrangement reads as a
+   diagram rather than somebody's desktop. */
+.pane-weather   { top: 15%;    left: 5%; }
+.pane-finance   { bottom: 13%; left: 6%;  min-width: 232px; }
+.pane-todos     { top: 14%;    right: 5%; }
+.pane-calendar  { top: 46%;    right: 7%; }
+.pane-gmail     { top: 40%;    left: 7%; }
+.pane-spotify   { bottom: 15%; right: 6%; min-width: 212px; }
+
+/* ── Focus mode ─────────────────────────────────────────────────────── */
+/* The one widget that is not a pane, because in the product it is not one -
+   it takes the whole screen and puts everything else away. */
+
+.stage-focus {
+  position: absolute;
+  inset: 0;
+  /* Under the front layer, over everything else: the panes go away, the
+     readout stays. */
+  z-index: 2;
+  background: rgba(6, 8, 16, 0.76);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.9s var(--ease);
+}
+
+.stage-focus.is-lit {
+  opacity: 1;
+}
+
+/* One cell, two readouts stacked. Sized by the clock, so swapping to the
+   countdown moves nothing below it. */
+.headline-swap {
+  display: grid;
+}
+
+.headline-swap > * {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.7s var(--ease);
+}
+
+.headline-focus {
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+}
+
+.stage-headline.is-focus .headline-clock {
+  opacity: 0;
+}
+
+.stage-headline.is-focus .headline-focus {
+  opacity: 1;
+}
+
+.focus-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.focus-time {
+  font-family: var(--display);
+  font-size: clamp(4rem, 12vw, 9rem);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  color: #fff;
+  line-height: 1;
+}
+
+/* ── Dock ───────────────────────────────────────────────────────────── */
+
+/* Focus mode puts the dock away too - otherwise the one state that claims to
+   clear the screen leaves five links sitting at the top of it. */
+.stage-dock.is-away {
+  opacity: 0;
+  transform: translate(-50%, -14px);
+}
+
+.stage-dock {
+  transition:
+    opacity 0.7s var(--ease),
+    transform 0.7s var(--ease);
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(14, 16, 28, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.42);
+  white-space: nowrap;
+}
+
+.dock-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 13px;
+  border-radius: var(--r-pill);
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.dock-glyph {
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+.dock-sep {
+  width: 1px;
+  height: 20px;
+  margin: 0 6px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.dock-search {
+  padding: 6px 16px 6px 13px;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.42);
 }
 
 /* ── Depth on scroll ────────────────────────────────────────────────── */
@@ -335,15 +535,11 @@
 
 @media (max-width: 820px) {
   .day-stage {
-    height: 240vh;
-  }
-
-  .glass-pane {
-    display: none;
+    height: 300vh;
   }
 
   .stage-clock {
-    font-size: clamp(3.4rem, 19vw, 6rem);
+    font-size: clamp(3rem, 16vw, 5rem);
   }
 }
 
@@ -359,5 +555,212 @@
   .stage-wallpaper,
   .stage-tint {
     transition: none;
+  }
+}
+
+/* ── The narrative ──────────────────────────────────────────────────── */
+/* This copy is the page's argument, not decoration. It is keyed on the stage
+   in React, so React remounts it and the entrance animation replays on every
+   change of hour - which is what makes the story feel like it is being told
+   rather than swapped. */
+
+.stage-story {
+  margin-top: 26px;
+  max-width: 44ch;
+}
+
+.story-headline {
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 3.2vw, 2.3rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  margin: 0 0 10px;
+  color: #fff;
+  text-shadow: 0 2px 26px rgba(0, 0, 0, 0.7);
+}
+
+.story-body {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.8);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage-story .story-headline,
+  .stage-story .story-body {
+    animation: story-in 0.75s var(--ease) both;
+  }
+
+  .stage-story .story-body {
+    animation-delay: 0.1s;
+  }
+}
+
+@keyframes story-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ── Scroll cue ─────────────────────────────────────────────────────── */
+/* The page is a pinned stage: without this nothing suggests there is anything
+   below, and a visitor can sit on the hero thinking that is the whole site. */
+
+.scroll-cue {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  pointer-events: none;
+  transition: opacity 0.5s var(--ease);
+}
+
+.scroll-cue-rail {
+  width: 1px;
+  height: 46px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent);
+  position: relative;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scroll-cue-rail::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    height: 14px;
+    background: #fff;
+    animation: cue-fall 1.9s var(--ease) infinite;
+  }
+}
+
+@keyframes cue-fall {
+  from { transform: translateY(-16px); opacity: 0; }
+  40%  { opacity: 1; }
+  to   { transform: translateY(48px); opacity: 0; }
+}
+
+/* Fades out once they have taken the hint. */
+@supports (animation-timeline: scroll()) {
+  .is-animated ~ .scroll-cue,
+  .scroll-cue {
+    animation: cue-dismiss linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0% 8%;
+  }
+
+  @keyframes cue-dismiss {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+}
+
+/* ── Page-load assembly ─────────────────────────────────────────────── */
+/* The product's premise is that a new tab is otherwise blank. So the page
+   opens close to blank and the tab builds itself: wallpaper, then dock, then
+   clock, then the widgets. It is the install moment, played once. */
+
+@media (prefers-reduced-motion: no-preference) {
+  .stage-wallpapers { animation: assemble-bg 1.5s var(--ease) both; }
+  .stage-dock       { animation: assemble-drop 0.8s var(--ease) 0.45s both; }
+  .stage-headline   { animation: assemble-up 0.9s var(--ease) 0.6s both; }
+  .stage-layer-back  .glass-pane { animation: assemble-pane 0.9s var(--ease) 0.95s both; }
+  .stage-layer-mid   .glass-pane { animation: assemble-pane 0.9s var(--ease) 1.1s both; }
+  /* Not the cue: it is owned by `cue-dismiss` on the scroll timeline, whose
+     `.is-animated ~ .scroll-cue` selector outranks anything declared here.
+     It would silently lose, and the affordance is the one thing that
+     should not wait for the tab to finish assembling anyway. */
+}
+
+@keyframes assemble-bg {
+  from { opacity: 0; transform: scale(1.12); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes assemble-drop {
+  from { opacity: 0; transform: translate(-50%, -22px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@keyframes assemble-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes assemble-pane {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); filter: blur(8px); }
+}
+
+/* ── Narrow viewports ───────────────────────────────────────────────── */
+
+@media (max-width: 1100px) {
+  .pane-finance,
+  .pane-gmail { display: none; }
+}
+
+@media (max-width: 820px) {
+  .glass-pane { display: none; }
+  .dock-item:not(:first-child):not(:nth-child(2)) { display: none; }
+  .dock-search { display: none; }
+  .stage-story { margin-top: 20px; }
+}
+
+/* ── Leaving the stage ──────────────────────────────────────────────── */
+/* The pin releases at the end of its 420vh parent and slides away, which left
+   the half-cut tab sitting behind the first heading - two blocks of type in the
+   same frame, neither winning. So the day dissolves into the page instead: the
+   tab fades out over the stretch where it is being pushed off, and the content
+   arrives on clean ground.
+
+   `view()` measures the pin itself. Because it is sticky it has no exit phase
+   until it is actually released, which is exactly the moment the fade should
+   start - no scroll offsets to keep in sync with the stage height. */
+
+@supports (animation-timeline: view()) {
+  body:not(.motion-paused) .stage-pin {
+    animation: stage-exit linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 50%;
+  }
+
+  @keyframes stage-exit {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+/* The reader should not meet the first heading while the tab is still on
+   screen, whether or not the fade above is running. */
+.section.intro {
+  padding-top: clamp(80px, 18vh, 200px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-pin {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
