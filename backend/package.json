@@ -1,6 +1,6 @@
 {
   "name": "windom-backend",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "WindoM backend API - Fastify + Drizzle + Postgres",
   "type": "module",
   "engines": {
