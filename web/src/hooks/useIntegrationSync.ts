@@ -2,11 +2,14 @@ import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { apiGet } from '../lib/api';
+import { setGmailAvailable } from '../lib/server-features';
 
 interface IntegrationsResponse {
   google: { connected: boolean; scopes: string[] };
   spotify: { connected: boolean };
   github: { connected: boolean };
+  /** Absent on servers older than the Gmail feature flag; treated as on. */
+  features?: { gmail?: boolean };
 }
 
 /**
@@ -38,9 +41,14 @@ export function useIntegrationSync() {
     let cancelled = false;
 
     apiGet<IntegrationsResponse>('/integrations')
-      .then(({ google, spotify, github }) => {
+      .then(({ google, spotify, github, features }) => {
         if (cancelled) return;
-        const hasGmailScope = google.scopes.some((s) => s.includes('gmail'));
+        // A server with Gmail off never grants the scope, so a stale `connected`
+        // flag from before it was turned off would keep the widget polling an
+        // endpoint that now refuses it.
+        const gmailOffered = features?.gmail !== false;
+        setGmailAvailable(gmailOffered);
+        const hasGmailScope = gmailOffered && google.scopes.some((s) => s.includes('gmail'));
         void updateMultiple({
           integrations: {
             ...settings.integrations,
