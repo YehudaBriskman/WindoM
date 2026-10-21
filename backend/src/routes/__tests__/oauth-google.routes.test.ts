@@ -11,6 +11,10 @@ vi.mock('../../config.js', async (importOriginal) => {
       GOOGLE_REDIRECT_URI: 'https://login-extension.chromiumapp.org',
       GOOGLE_OAUTH_REDIRECT_URI: 'https://link-extension.chromiumapp.org',
       EXTENSION_REDIRECT_BASE: 'https://link-extension.chromiumapp.org',
+      // This suite asserts the Gmail scope is requested; that only happens on a
+      // server configured to offer it. The default-off case is in
+      // gmail-disabled.test.ts.
+      GMAIL_ENABLED: true,
     },
   };
 });

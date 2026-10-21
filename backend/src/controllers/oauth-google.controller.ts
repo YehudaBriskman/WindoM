@@ -55,8 +55,13 @@ export async function startGoogleOAuthController(req: FastifyRequest, reply: Fas
     codeChallengeMethod?: string;
     features?: string;
   };
-  // Use expanded scopes when Gmail access is requested so the token covers both services
-  const scopeSet = features?.includes('gmail') ? GMAIL_SCOPES : CALENDAR_SCOPES;
+  // Use expanded scopes when Gmail access is requested so the token covers both
+  // services - but only where the server is configured to offer Gmail at all.
+  // This is the one line that decides whether a restricted scope reaches
+  // Google's consent screen, and with it whether the listing needs a CASA
+  // assessment to be publishable. See config.GMAIL_ENABLED.
+  const wantsGmail = config.GMAIL_ENABLED && !!features?.includes('gmail');
+  const scopeSet = wantsGmail ? GMAIL_SCOPES : CALENDAR_SCOPES;
   const effectiveUri = redirectUri ?? config.GOOGLE_OAUTH_REDIRECT_URI ?? '';
 
   if (!effectiveUri) {

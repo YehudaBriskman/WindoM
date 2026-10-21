@@ -1,4 +1,5 @@
 import { useSettings } from '../../../contexts/SettingsContext';
+import { useGmailAvailable } from '../../../hooks/useServerFeatures';
 
 export type AppId = 'calendar' | 'spotify' | 'finance' | 'gmail' | 'github' | 'todo' | 'history';
 
@@ -123,6 +124,11 @@ interface AppHubProps {
 
 export function AppHub({ onOpenApp }: AppHubProps) {
   const { settings } = useSettings();
+  const gmailAvailable = useGmailAvailable();
+
+  // A server with Gmail off cannot grant the scope, so the card would open a
+  // panel whose only action is one that never completes.
+  const apps = gmailAvailable ? APP_DEFS : APP_DEFS.filter((app) => app.id !== 'gmail');
 
   return (
     <div className="app-hub">
@@ -130,7 +136,7 @@ export function AppHub({ onOpenApp }: AppHubProps) {
         Click an app to configure it.
       </p>
       <div className="app-hub-grid">
-        {APP_DEFS.map((app) => {
+        {apps.map((app) => {
           const isConnected = app.connected(settings);
           return (
             <button

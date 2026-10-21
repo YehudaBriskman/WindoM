@@ -16,6 +16,17 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_REDIRECT_URI: z.string().url().optional(),
   GOOGLE_OAUTH_REDIRECT_URI: z.string().url().optional(),
+  // The Gmail widget needs https://www.googleapis.com/auth/gmail.readonly, which
+  // Google classes as a RESTRICTED scope. Publishing an app that requests it
+  // requires a third-party CASA security assessment at $500-4,500 a year,
+  // recurring - because the data passes through this server rather than staying
+  // in the browser. Off by default so the consent screen asks only for Calendar
+  // and sign-in, which verify for free.
+  //
+  // Turning this on without having completed CASA is what makes the listing
+  // unpublishable, so it is deliberately an explicit opt-in rather than a
+  // default that a deploy could inherit by accident. See issue #321.
+  GMAIL_ENABLED: z.enum(['true', 'false']).default('false').transform((v) => v === 'true'),
   SPOTIFY_CLIENT_ID: z.string().optional(),
   SPOTIFY_CLIENT_SECRET: z.string().optional(),
   SPOTIFY_REDIRECT_URI: z.string().url().optional(),

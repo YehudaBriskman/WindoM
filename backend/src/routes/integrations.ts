@@ -36,6 +36,14 @@ export function integrationsRoutes(app: FastifyInstance): void {
                 connected: { type: 'boolean' },
               },
             },
+            // Omitting this would silently strip the field: the serialiser
+            // drops anything the schema does not name.
+            features: {
+              type: 'object',
+              properties: {
+                gmail: { type: 'boolean' },
+              },
+            },
           },
         },
         401: errorResponse,

@@ -1,7 +1,20 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import * as gmailService from '../services/gmail.service.js';
+import { config } from '../config.js';
 
 export async function getGmailSummaryController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  // With the feature off no token carries the Gmail scope, so the call would
+  // fail inside the Google request and surface as "permission not granted" -
+  // advice the user cannot act on. Say what is actually true instead.
+  if (!config.GMAIL_ENABLED) {
+    void reply.status(404).send({
+      statusCode: 404,
+      error: 'Not Found',
+      message: 'The Gmail widget is turned off on this server.',
+    });
+    return;
+  }
+
   const result = await gmailService.getGmailSummary(req.user.sub);
 
   if (!result.ok) {
