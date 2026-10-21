@@ -316,7 +316,7 @@
 .pane-finance   { bottom: 13%; left: 6%;  min-width: 232px; }
 .pane-todos     { top: 14%;    right: 5%; }
 .pane-calendar  { top: 46%;    right: 7%; }
-.pane-gmail     { top: 40%;    left: 7%; }
+.pane-github    { top: 40%;    left: 7%; }
 .pane-spotify   { bottom: 15%; right: 6%; min-width: 212px; }
 
 /* ── Focus mode ─────────────────────────────────────────────────────── */
@@ -714,7 +714,7 @@
 
 @media (max-width: 1100px) {
   .pane-finance,
-  .pane-gmail { display: none; }
+  .pane-github { display: none; }
 }
 
 @media (max-width: 820px) {

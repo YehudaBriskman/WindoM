@@ -32,7 +32,7 @@ export function Terms() {
             <li>Customizable background images (Unsplash or your own uploads)</li>
             <li>Focus timer with animated overlay</li>
             <li>Tab history sidebar and search</li>
-            <li>Optional account features: settings sync across devices, Google Calendar integration, Gmail inbox preview, and Spotify now-playing display</li>
+            <li>Optional account features: settings sync across devices, Google Calendar integration, and Spotify now-playing display</li>
             <li>Finance widget with stock and cryptocurrency price tracking</li>
           </ul>
           <p>
@@ -57,7 +57,7 @@ export function Terms() {
             WindoM can optionally connect to third-party services. By enabling an integration you agree to that service's own terms and privacy policy in addition to these Terms:
           </p>
           <ul>
-            <li><strong>Google:</strong> Connecting your Google account is governed by <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Google's Terms of Service</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>. WindoM requests read-only access to Calendar events and Gmail message metadata. You can revoke access at any time via your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google account permissions</a> or from WindoM's settings.</li>
+            <li><strong>Google:</strong> Connecting your Google account is governed by <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Google's Terms of Service</a> and <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>. WindoM requests read-only access to your Calendar events, and nothing else. You can revoke access at any time via your <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">Google account permissions</a> or from WindoM's settings.</li>
             <li><strong>Spotify:</strong> The Spotify integration uses a Bring Your Own App (BYOA) model - you register a free Spotify Developer app and provide its Client ID. Use of Spotify's API is governed by <a href="https://www.spotify.com/legal/end-user-agreement/" target="_blank" rel="noopener">Spotify's Terms of Service</a> and <a href="https://developer.spotify.com/terms" target="_blank" rel="noopener">Spotify Developer Terms</a>.</li>
             <li><strong>Unsplash:</strong> Background images are served under the <a href="https://unsplash.com/license" target="_blank" rel="noopener">Unsplash License</a>.</li>
             <li><strong>Yahoo Finance / CoinGecko:</strong> Financial data is provided for informational purposes only. It is not financial advice. These services are subject to their own terms and availability.</li>

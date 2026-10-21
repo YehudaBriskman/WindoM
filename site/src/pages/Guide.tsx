@@ -224,46 +224,6 @@ export function Guide() {
             <strong>Look-ahead window</strong> -
             by default events for the next 7 days are shown. You can change this to 14 or 30 days in Settings → <strong>Calendar</strong>.
           </div>
-          <h2 id="gmail">
-            <span className="section-icon">✉️</span>
-            Connect Gmail
-          </h2>
-          <p>
-            WindoM shows your unread Gmail count and up to 5 recent messages in the right sidebar - no need to open a new tab to check email. This requires a WindoM account and a one-time Google authorization that covers both Gmail and Calendar in a single consent.
-          </p>
-          <div className="step">
-            <div className="step-num">1</div>
-            <div className="step-body">
-              <p>Make sure you have a WindoM account and are signed in (Settings → Account tab).</p>
-            </div>
-          </div>
-          <div className="step">
-            <div className="step-num">2</div>
-            <div className="step-body">
-              <p>Open Settings → <strong>Apps hub</strong> → click the <strong>Gmail</strong> card → click <strong>Connect</strong>.</p>
-            </div>
-          </div>
-          <div className="step">
-            <div className="step-num">3</div>
-            <div className="step-body">
-                <p>A Google authorization window opens. Choose your Google account and click <strong>Allow</strong>.</p>
-                <p>WindoM only requests read-only access to Gmail - it cannot send, edit, or delete anything.</p>
-            </div>
-          </div>
-          <div className="step">
-            <div className="step-num">4</div>
-            <div className="step-body">
-              <p>Done. Your unread count badge and up to 5 recent messages appear in the right sidebar. The widget refreshes every 45 seconds.</p>
-            </div>
-          </div>
-          <div className="callout tip">
-            <strong>Show / Hide</strong> -
-            use the "Show Gmail in sidebar" toggle inside Settings → Apps hub → Gmail to hide the widget without disconnecting your account.
-          </div>
-          <div className="callout">
-            <strong>Gmail API access denied?</strong><br />
-            The Gmail API must be enabled separately from the Calendar API in your Google Cloud project. Go to <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer">console.cloud.google.com</a> → APIs &amp; Services → Library → search <strong>"Gmail API"</strong> → Enable. This is a one-time step for whoever manages the WindoM backend.
-          </div>
           <h2 id="finance">
             <span className="section-icon">📈</span>
             Finance Dashboard

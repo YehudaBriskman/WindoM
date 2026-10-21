@@ -19,7 +19,6 @@ export const FEATURES: Feature[] = [
   { icon: '🌤️', title: 'Weather', detail: 'Live conditions via Open-Meteo. No API key, no account.' },
   { icon: '🖼️', title: 'Backgrounds', detail: 'Unsplash rotation, or upload your own image.' },
   { icon: '📅', title: 'Google Calendar', detail: 'Your upcoming events, synced to the sidebar.' },
-  { icon: '✉️', title: 'Gmail Inbox', detail: 'Unread count and recent messages, refreshed every 45 seconds.' },
   { icon: '🎵', title: 'Spotify', detail: 'Now playing, playback controls and your top tracks.' },
   { icon: '📈', title: 'Finance', detail: 'Stocks and crypto from Yahoo Finance and CoinGecko.' },
   { icon: '🐙', title: 'GitHub', detail: 'Open pull requests and issues across your repositories.' },

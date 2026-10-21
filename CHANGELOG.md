@@ -7,6 +7,44 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.0] - 2026-10-21
+
+The Gmail widget is removed and the site is rebuilt. The first of those is a
+licensing decision rather than a product one: reading mail required a Google
+scope that would have cost $500-4,500 a year, every year, to keep publishable.
+
+### Removed
+- **The Gmail widget.** It needed `gmail.readonly`, which Google classes as a
+  restricted scope: publishing an extension that requests it requires a
+  third-party CASA security assessment, priced per tier and recurring annually,
+  because the mail passes through our server rather than staying in the browser.
+  The consent screen now asks only for Calendar and sign-in, which verify for
+  free. Nothing was deleted - the feature is behind `GMAIL_ENABLED`, off by
+  default - so it can return if the reading is ever moved into the extension,
+  where the assessment requirement may not apply.
+
+### Changed
+- The extension stops offering Gmail when the server does not provide it,
+  rather than showing a Connect button that could never finish
+- `/integrations` reports which features the server actually offers
+- The privacy policy lists exactly the scopes requested and carries the Limited
+  Use statement the Google API Services User Data Policy requires
+
+### Added
+- windom.app is a working new tab rather than a page about one: the visitor's
+  own clock and greeting, the four bundled wallpapers crossfading through a day
+  as you scroll, and each hour foregrounding the part of the product you would
+  reach for then
+- The site's content is built from the extension's own screenshots and
+  wallpapers instead of a feature grid
+
+### Fixed
+- Focus mode on the site replaced the clock instead of drawing over it
+- The backend test suite and the Docker Compose files run on a clean checkout,
+  where before both needed a hand-made `.env` that is not in the repository
+
+---
+
 ## [1.4.1] - 2026-10-20
 
 A hardening and reliability release following a production incident where a

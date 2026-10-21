@@ -92,9 +92,9 @@ export function Stage({ cycle, animated }: StageProps) {
             <span className="pane-sub pane-sub-quiet">17:00 · 1:1</span>
           </Pane>
 
-          <Pane className={`pane-gmail${lit('gmail')}`} label="Inbox">
-            <span className="pane-figure pane-figure-sm">4 unread</span>
-            <span className="pane-sub">Fly.io · deploy succeeded</span>
+          <Pane className={`pane-github${lit('github')}`} label="Pull requests">
+            <span className="pane-figure pane-figure-sm">3 open</span>
+            <span className="pane-sub">windom · release gate</span>
           </Pane>
 
           <Pane className={`pane-spotify${lit('spotify')}`} label="Now playing">

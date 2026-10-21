@@ -46,7 +46,9 @@ export function useIntegrationSync() {
         // A server with Gmail off never grants the scope, so a stale `connected`
         // flag from before it was turned off would keep the widget polling an
         // endpoint that now refuses it.
-        const gmailOffered = features?.gmail !== false;
+        // A server predating the flag sends no `features` block at all; it is
+        // the only case where absence means "on".
+        const gmailOffered = features ? features.gmail === true : true;
         setGmailAvailable(gmailOffered);
         const hasGmailScope = gmailOffered && google.scopes.some((s) => s.includes('gmail'));
         void updateMultiple({

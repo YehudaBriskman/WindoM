@@ -14,7 +14,7 @@ import { SITE, STORE_URL, GITHUB_URL, PROJECT_PAGE } from '../lib/site';
 const FAQ = [
   {
     q: 'Do I need an account?',
-    a: 'No. The clock, backgrounds, weather, todos, quick links, quotes, search and focus mode all work with no account at all. An account is only needed for Google Calendar, Gmail and Spotify, because those have to authenticate with their own providers.',
+    a: 'No. The clock, backgrounds, weather, todos, quick links, quotes, search and focus mode all work with no account at all. An account is only needed for Google Calendar and Spotify, because those have to authenticate with their own providers.',
   },
   {
     q: 'Does it work offline?',

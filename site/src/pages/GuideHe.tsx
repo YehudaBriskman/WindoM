@@ -224,46 +224,6 @@ export function GuideHe() {
             <strong>חלון מראש</strong> -
             כברירת מחדל מוצגים אירועים ל-7 הימים הבאים. ניתן לשנות זאת ל-14 או 30 יום בהגדרות → <strong>לוח שנה</strong>.
           </div>
-          <h2 id="gmail">
-            <span className="section-icon">✉️</span>
-            חיבור Gmail
-          </h2>
-          <p>
-            WindoM מציג את מספר הדוא"ל שלא נקראו ועד 5 הודעות אחרונות בסרגל הצד הימני - אין צורך לפתוח לשונית חדשה כדי לבדוק דוא"ל. זה דורש חשבון WindoM ואישור Google חד-פעמי המכסה גם Gmail וגם Calendar באישור אחד.
-          </p>
-          <div className="step">
-            <div className="step-num">1</div>
-            <div className="step-body">
-              <p>ודא שיש לך חשבון WindoM ואתה מחובר (הגדרות → לשונית חשבון).</p>
-            </div>
-          </div>
-          <div className="step">
-            <div className="step-num">2</div>
-            <div className="step-body">
-              <p>פתח הגדרות → <strong>מרכז אפליקציות</strong> → לחץ על כרטיס <strong>Gmail</strong> → לחץ על <strong>חבר</strong>.</p>
-            </div>
-          </div>
-          <div className="step">
-            <div className="step-num">3</div>
-            <div className="step-body">
-                <p>יפתח חלון אישור של Google. בחר את חשבון Google שלך ולחץ על <strong>Allow</strong>.</p>
-                <p>WindoM מבקש גישת קריאה בלבד ל-Gmail - הוא לא יכול לשלוח, לערוך או למחוק דבר.</p>
-            </div>
-          </div>
-          <div className="step">
-            <div className="step-num">4</div>
-            <div className="step-body">
-              <p>סיימת. תג הדוא"ל שלא נקרא ועד 5 הודעות אחרונות מופיעים בסרגל הצד הימני. הווידג'ט מתרענן כל 45 שניות.</p>
-            </div>
-          </div>
-          <div className="callout tip">
-            <strong>הצג / הסתר</strong> -
-            השתמש בלחצן "הצג Gmail בסרגל הצד" בתוך הגדרות → מרכז אפליקציות → Gmail כדי להסתיר את הווידג'ט מבלי לנתק את החשבון.
-          </div>
-          <div className="callout">
-            <strong>גישה ל-Gmail API נדחתה?</strong><br />
-            יש להפעיל את Gmail API בנפרד מ-Calendar API בפרויקט Google Cloud שלך. עבור אל <a href="https://console.cloud.google.com" target="_blank" rel="noreferrer">console.cloud.google.com</a> → APIs &amp; Services → Library → חפש <strong>"Gmail API"</strong> → הפעל.
-          </div>
           <h2 id="finance">
             <span className="section-icon">📈</span>
             לוח מחוונים פיננסי
