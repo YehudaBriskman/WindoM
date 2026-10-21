@@ -1,0 +1,255 @@
+/* Page-level composition. Everything reusable lives in base.css. */
+
+/* ── Hero ───────────────────────────────────────────────────────────── */
+
+.hero {
+  padding-top: 112px;
+  text-align: center;
+}
+
+.hero .badge {
+  margin-bottom: 24px;
+}
+
+.hero .lede {
+  margin: 0 auto 32px;
+}
+
+.hero .btn-row {
+  justify-content: center;
+}
+
+.hero-compat {
+  margin-top: 20px;
+  font-size: 0.88rem;
+}
+
+.shot {
+  width: 100%;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+/* ── Feature grid ───────────────────────────────────────────────────── */
+
+.feature-grid,
+.steps,
+.pill-row,
+.updates-list {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.feature-icon {
+  font-size: 1.5rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.feature h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature-badge {
+  font-size: 0.68rem;
+  padding: 2px 9px;
+}
+
+/* ── Install steps ──────────────────────────────────────────────────── */
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* ── Trust pills ────────────────────────────────────────────────────── */
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── Updates ────────────────────────────────────────────────────────── */
+
+.updates-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.update {
+  display: block;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
+}
+
+.update:hover {
+  color: inherit;
+  background: var(--surface-strong);
+  border-color: var(--border-strong);
+}
+
+.update h3 {
+  margin: 6px 0 8px;
+}
+
+.update p {
+  margin: 0;
+}
+
+.update-date {
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* ── FAQ ────────────────────────────────────────────────────────────── */
+
+.faq {
+  margin-bottom: 12px;
+  padding: 0;
+}
+
+.faq summary {
+  padding: 18px 24px;
+  cursor: pointer;
+  font-weight: 500;
+  list-style: none;
+}
+
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq summary::after {
+  content: '+';
+  float: inline-end;
+  color: var(--muted);
+}
+
+.faq[open] summary::after {
+  content: '−';
+}
+
+.faq p {
+  padding: 0 24px 20px;
+  margin: 0;
+}
+
+/* ── Prose, for the guide and legal pages ───────────────────────────── */
+
+.prose {
+  padding-bottom: 80px;
+}
+
+.prose h2 {
+  margin-top: 48px;
+  font-size: 1.5rem;
+}
+
+.prose h3 {
+  margin-top: 28px;
+}
+
+.prose ul,
+.prose ol {
+  padding-inline-start: 22px;
+  color: var(--muted-strong);
+}
+
+.prose li {
+  margin-bottom: 8px;
+}
+
+.prose code {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px 7px;
+  font-size: 0.88em;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+.prose pre {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 18px 20px;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 0.92rem;
+}
+
+.prose th,
+.prose td {
+  text-align: start;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.prose th {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.prose td {
+  color: var(--muted-strong);
+}
+
+/* ── Language toggle ────────────────────────────────────────────────── */
+
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  margin-inline-start: auto;
+}
+
+/* Logical properties throughout mean the Hebrew route mirrors without the
+   hand-written per-rule overrides the previous guide needed. */
+.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 0;
+  margin: 0 0 32px;
+  list-style: none;
+  font-size: 0.92rem;
+}
+
+.lang-switch {
+  text-align: end;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}

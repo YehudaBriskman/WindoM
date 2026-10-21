@@ -1,0 +1,105 @@
+name: Deploy site to GitHub Pages
+
+# Replaces the "deploy from branch /docs" setting. That arrangement meant the
+# built site was the source, nothing validated it, and a broken page shipped to
+# windom.app on merge - `grep -rn "docs" .github/` previously returned nothing
+# at all.
+#
+# Requires the repository Pages source to be set to "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - '.github/workflows/deploy-site.yml'
+  # Lets the site be redeployed without a content change, for example after
+  # flipping the Pages source over.
+  workflow_dispatch:
+
+# Pages needs these; the default token is read-only.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time. `cancel-in-progress: false` so a queued deploy finishes
+# rather than leaving the site half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: site
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      # These filenames are the contract with the published extension and the
+      # store listing. guide.html is compiled into the extension itself, so
+      # losing it would need a store release to repair - and GitHub Pages has no
+      # redirects to soften that. Failing here is far cheaper.
+      - name: Verify every public URL still exists
+        run: |
+          missing=0
+          for f in index guide privacy terms local-setup he/guide; do
+            if [ -f "dist/$f.html" ]; then
+              echo "  ok       $f.html"
+            else
+              echo "::error::dist/$f.html is missing - this URL is referenced by the"
+              echo "::error::published extension or the store listing and cannot move."
+              missing=1
+            fi
+          done
+          test -f dist/CNAME || { echo "::error::dist/CNAME missing - the custom domain would be dropped."; missing=1; }
+          exit $missing
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify the live URLs the extension depends on
+        run: |
+          for path in / /guide.html /privacy.html /terms.html /local-setup.html /he/guide.html; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://windom.app$path" || echo 000)
+            printf '  %-22s %s\n' "$path" "$code"
+            if [ "$code" != "200" ]; then
+              echo "::error::https://windom.app$path returned $code after deploy."
+              exit 1
+            fi
+          done
