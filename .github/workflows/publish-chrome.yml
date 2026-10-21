@@ -6,6 +6,20 @@ on:
     tags:
       - 'v*'
 
+  # Lets an already-tagged version be re-published without inventing a new version.
+  # A publish can fail for reasons unrelated to the code - an expired store credential,
+  # a listing still under review, or a required action input that changed - and by then
+  # the backend has already deployed. Forcing a version bump to retry would redeploy a
+  # backend that is already correct and put a fictitious version in the changelog.
+  #
+  # This is not a bypass: the job still depends on the gate, which re-runs every check.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to publish, e.g. v1.4.1. Must already exist on main.
+        required: true
+        type: string
+
 # Restrict the GITHUB_TOKEN to read-only - this workflow only needs
 # to build code and call the Chrome Web Store API, never write back to the repo.
 permissions:
@@ -21,6 +35,10 @@ jobs:
   gate:
     name: Release gate
     uses: ./.github/workflows/release-gate.yml
+    with:
+      # On a dispatch run github.ref_name is the branch, which would fail the version
+      # check, so the tag being published is passed through explicitly.
+      tag: ${{ inputs.tag || github.ref_name }}
     secrets: inherit
 
   publish:
@@ -39,6 +57,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          # Builds the tagged commit rather than the branch the dispatch ran from, so
+          # what reaches the store is exactly the released code. The workflow file
+          # itself still comes from the dispatch ref, which is how a fix to this file
+          # can republish an older tag.
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v7
@@ -51,6 +75,7 @@ jobs:
         run: node ../.github/scripts/validate-publish-env.mjs
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
@@ -80,6 +105,12 @@ jobs:
         with:
           file-path: extension.zip
           extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          # Required since v7 of this action; v5 did not take it. The Dependabot bump
+          # from v5 to v7 in #287 introduced the requirement silently, and nothing
+          # caught it because this workflow only runs on a tag - so it surfaced six
+          # months later, mid-release. Found under Publisher > Settings in the Chrome
+          # Web Store Developer Dashboard.
+          publisher-id: ${{ secrets.CHROME_PUBLISHER_ID }}
           client-id: ${{ secrets.CHROME_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}

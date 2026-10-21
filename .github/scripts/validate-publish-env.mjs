@@ -1,8 +1,8 @@
 import { pathToFileURL } from 'node:url';
 
 export const requiredVariables = [
-  'CHROME_EXTENSION_ID', 'CHROME_CLIENT_ID', 'CHROME_CLIENT_SECRET',
-  'CHROME_REFRESH_TOKEN', 'VITE_BACKEND_URL',
+  'CHROME_EXTENSION_ID', 'CHROME_PUBLISHER_ID', 'CHROME_CLIENT_ID',
+  'CHROME_CLIENT_SECRET', 'CHROME_REFRESH_TOKEN', 'VITE_BACKEND_URL',
 ];
 
 /** Diagnostics contain variable names only, never their secret values. */
