@@ -1,0 +1,64 @@
+/**
+ * Design tokens for windom.app.
+ *
+ * These values were previously re-declared, identically, at the top of all five
+ * hand-written pages. Declaring them once is the whole reason the stylesheet
+ * shrank from roughly 2,400 largely duplicated lines.
+ *
+ * The palette intentionally stays the site's own rather than borrowing the
+ * personal site's: different product, different surface. What they share is the
+ * dark ground and the blue/violet accent pair, which is enough family resemblance.
+ */
+
+:root {
+  /* Ground and structure */
+  --bg: #080810;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-strong: rgba(255, 255, 255, 0.07);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+
+  /* Type */
+  --text: #e8e8f0;
+  --muted: #6b6b85;
+  --muted-strong: #9a9ab5;
+
+  /* Accent pair, used for gradient headings and primary actions */
+  --accent: #7b9ef5;
+  --accent2: #a78bfa;
+  --accent-grad: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+
+  /* Motion. One curve, three durations - enough vocabulary for a marketing site. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.18s;
+  --dur: 0.3s;
+  --dur-slow: 0.6s;
+
+  /* Layout */
+  --wrap: 1120px;
+  --wrap-prose: 760px;
+
+  color-scheme: dark;
+}
+
+/**
+ * Every animation in this stylesheet is decorative. Honour the OS setting rather
+ * than overriding it - the previous site had roughly twenty scroll-driven
+ * animations and no reduced-motion handling anywhere.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
