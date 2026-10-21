@@ -1,6 +1,8 @@
 import { Layout } from '../components/Layout';
 import { Updates } from '../components/Updates';
 import { Stage } from '../components/Stage';
+import { Beat } from '../components/Beat';
+import { Wallpapers } from '../components/Wallpapers';
 import { Ambient } from '../components/Ambient';
 import { GlassFilters } from '../components/GlassFilters';
 import { MotionToggle, useMotionPaused } from '../components/MotionToggle';
@@ -65,9 +67,9 @@ export function Home() {
             It was a <span className="gradient-text">live tab</span>, showing your time.
           </h2>
           <p className="lede reveal">
-            {SITE.name} replaces every new tab with this. {active.scene.toLowerCase()} is one of
-            four backgrounds it ships with — and the one you just scrolled past is what you get
-            the moment you install it.
+            {SITE.name} replaces every new tab with this — your clock, your weather, your day,
+            on a background that is actually worth looking at. {active.scene} is one of four it
+            ships with, and the lantern-lit house is the one waiting the moment you install it.
           </p>
           <div className="btn-row reveal">
             <a className="btn btn-primary" href={STORE_URL}>
@@ -86,27 +88,54 @@ export function Home() {
           <p className="muted hero-compat reveal">
             Works on Chrome, Arc, Brave, Edge and any Chromium-based browser.
           </p>
+
+          <Wallpapers />
         </div>
       </section>
 
-      {/* ── Features ─────────────────────────────────────────────── */}
-      <section className="section" aria-labelledby="features-heading">
+      {/* ── Two beats, each one a real screenshot ──────────────────── */}
+      <Beat
+        side="right"
+        eyebrow="One panel"
+        title={
+          <>
+            Today and <span className="gradient-text">tomorrow</span>, in the same place
+          </>
+        }
+        body="Tasks you add in a line, and the calendar you already keep, stacked in one sidebar. It opens from the tab you were going to open anyway."
+        image="/images/shot-sidebar.webp"
+        alt="The WindoM sidebar showing today's tasks above a list of upcoming calendar events"
+        caption="Tasks and Google Calendar, in the sidebar."
+      />
+
+      <Beat
+        side="left"
+        eyebrow="Yours"
+        title={
+          <>
+            Every part of it is <span className="gradient-text">optional</span>
+          </>
+        }
+        body="Clock style, font weight, date format, which widgets appear at all. Turn off everything you do not want and the tab is just a photograph and the time."
+        image="/images/shot-settings.webp"
+        alt="The WindoM settings panel open on the Clock section, showing format, style, colour, size and date options"
+        caption="Settings, open on the clock."
+      />
+
+      {/* ── Everything else ──────────────────────────────────────── */}
+      {/* The day covered what you reach for. This is the rest, stated plainly
+          and compactly rather than dressed up as fifteen identical cards. */}
+      <section className="section" aria-labelledby="rest-heading">
         <div className="wrap">
-          <span className="eyebrow reveal">Features</span>
-          <h2 id="features-heading" className="reveal">
-            Everything you need, <span className="gradient-text">nothing you don&rsquo;t</span>
+          <span className="eyebrow reveal">Also in there</span>
+          <h2 id="rest-heading" className="reveal">
+            And the <span className="gradient-text">quiet parts</span>
           </h2>
-          <ul className="feature-grid">
+          <ul className="index-list reveal">
             {FEATURES.map((f) => (
-              <li className="panel feature" key={f.title}>
-                <span className="feature-icon" aria-hidden="true">
-                  {f.icon}
-                </span>
-                <h3>
-                  {f.title}
-                  {f.badge && <span className="badge feature-badge">{f.badge}</span>}
-                </h3>
-                <p className="muted">{f.detail}</p>
+              <li key={f.title}>
+                <span className="index-name">{f.title}</span>
+                <span className="index-detail">{f.detail}</span>
               </li>
             ))}
           </ul>

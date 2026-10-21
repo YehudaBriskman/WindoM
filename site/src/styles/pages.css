@@ -48,23 +48,6 @@
   gap: 16px;
 }
 
-.feature-icon {
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 10px;
-}
-
-.feature h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.feature-badge {
-  font-size: 0.68rem;
-  padding: 2px 9px;
-}
-
 /* ── Install steps ──────────────────────────────────────────────────── */
 
 .steps {
@@ -252,4 +235,201 @@
   text-align: end;
   margin-bottom: 8px;
   font-size: 0.92rem;
+}
+
+/* ── Feature index ──────────────────────────────────────────────────── */
+/* A list, not a grid of cards. Fifteen identical bordered boxes with an emoji
+   each is the most generic shape a landing page has; the day cycle already
+   argued for the features that matter, so the rest can simply be named. */
+
+.index-list {
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.index-list li {
+  display: grid;
+  grid-template-columns: minmax(150px, 220px) 1fr;
+  gap: 8px 40px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+}
+
+.index-name {
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.index-detail {
+  color: var(--muted-strong);
+  font-size: 0.96rem;
+}
+
+@media (max-width: 700px) {
+  .index-list li {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* ── Story beats ────────────────────────────────────────────────────── */
+/* Copy on one side, a real screenshot on the other, alternating. The frame is
+   tilted in perspective rather than laid flat: it carries the stage's depth
+   down into the page, and it stops a dark screenshot on a dark page from
+   reading as a grey rectangle. */
+
+.beat-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 64px;
+  align-items: center;
+}
+
+/* The screenshot always gets the wider column, whichever side it is on -
+   ordering the copy second without swapping the track sizes handed the picture
+   the narrow one and shrank it by a third. */
+.beat-left .beat-wrap {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.beat-left .beat-copy {
+  order: 2;
+}
+
+.beat-copy h2 {
+  margin-top: 6px;
+}
+
+.beat-figure {
+  position: relative;
+  margin: 0;
+  perspective: 1400px;
+}
+
+/* The splash: an accent bloom under the frame, sized larger than it so the
+   colour reads at the edges rather than behind the picture. */
+.beat-splash {
+  position: absolute;
+  inset: -16% -12%;
+  z-index: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 35%, rgba(123, 158, 245, 0.3), transparent 62%),
+    radial-gradient(ellipse at 72% 70%, rgba(167, 139, 250, 0.26), transparent 60%);
+  filter: blur(26px);
+}
+
+.beat-frame {
+  position: relative;
+  z-index: 1;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.08) inset,
+    0 40px 90px rgba(0, 0, 0, 0.55);
+  transform: rotateY(-9deg) rotateX(3deg);
+  transform-origin: 50% 50%;
+}
+
+.beat-left .beat-frame {
+  transform: rotateY(9deg) rotateX(3deg);
+}
+
+.beat-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.beat-figure figcaption {
+  margin-top: 22px;
+  font-size: 0.86rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .beat-wrap {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .beat-left .beat-copy {
+    order: 0;
+  }
+
+  /* No room for the tilt at this width, and a rotated frame costs legibility
+     the moment the screenshot is small. */
+  .beat-frame,
+  .beat-left .beat-frame {
+    transform: none;
+  }
+}
+
+/* ── The four backgrounds, fanned ───────────────────────────────────── */
+
+.fan {
+  list-style: none;
+  display: flex;
+  gap: 18px;
+  margin: 54px 0 0;
+  padding: 0;
+  perspective: 1200px;
+}
+
+.fan-card {
+  position: relative;
+  flex: 1 1 0;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45);
+  /* Each card leans a little further than the last, so the row reads as a fan
+     rather than four tiles. `--i` comes from the index. */
+  transform: rotate(calc((var(--i) - 1.5) * 1.6deg)) translateY(calc(var(--i) * 6px));
+  transition: transform 0.5s var(--ease);
+}
+
+.fan-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  z-index: 1;
+}
+
+.fan-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+}
+
+.fan-label {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.86);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
+}
+
+@media (max-width: 700px) {
+  .fan {
+    gap: 10px;
+  }
+
+  .fan-card {
+    transform: none;
+  }
+
+  .fan-label {
+    left: 8px;
+    font-size: 0.6rem;
+  }
 }

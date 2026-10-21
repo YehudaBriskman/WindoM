@@ -47,14 +47,14 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
     animation-range: entry 10% cover 32%;
   }
 
-  /* Feature cards: the old site's scatter, rebuilt.
+  /* Guide feature cards: the old site's scatter, rebuilt.
      Cards drift in from alternating sides so the grid converges rather than
      everything sliding the same way. The original computed each card's column
      from `getBoundingClientRect()` on every resize; this cannot, because the
      grid is `auto-fit` and the column count changes with the viewport. The
      nth-child groups below are therefore a rhythm, not a column map - which is
      all the effect needs, and it costs no layout read. */
-  body:not(.motion-paused) .feature {
+  body:not(.motion-paused) .feature-card {
     animation: card-settle linear both;
     animation-timeline: view();
     animation-range: entry 0% cover 30%;
@@ -191,12 +191,128 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
 @media (prefers-reduced-motion: reduce) {
   .rise,
   .reveal,
-  .feature,
+  .feature-card,
   .orb,
   .trace,
   .stage-wallpaper {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ── Feature index ──────────────────────────────────────────────────── */
+/* The rows arrive one after another rather than as a block. A list reads top
+   to bottom, so it should also arrive that way; `view()` gives each row its own
+   timeline, which is what makes the stagger free - there is no delay chain to
+   keep in sync with the row count. */
+
+@supports (animation-timeline: view()) {
+  body:not(.motion-paused) .index-list li {
+    animation: row-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 90%;
+  }
+
+  @keyframes row-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .index-list li {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Story beats ────────────────────────────────────────────────────── */
+/* The frame arrives tilted and straightens as it is read - the same settle the
+   stage's layers do, so the depth belongs to the page rather than to one
+   section. The splash behind it blooms on the same timeline. */
+
+@supports (animation-timeline: view()) {
+  body:not(.motion-paused) .beat-frame {
+    animation: frame-settle linear both;
+    animation-timeline: view();
+    animation-range: entry 10% cover 45%;
+  }
+
+  @keyframes frame-settle {
+    from {
+      opacity: 0;
+      transform: rotateY(-16deg) rotateX(6deg) translateY(52px) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: rotateY(-9deg) rotateX(3deg);
+    }
+  }
+
+  body:not(.motion-paused) .beat-left .beat-frame {
+    animation-name: frame-settle-left;
+  }
+
+  @keyframes frame-settle-left {
+    from {
+      opacity: 0;
+      transform: rotateY(16deg) rotateX(6deg) translateY(52px) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: rotateY(9deg) rotateX(3deg);
+    }
+  }
+
+  body:not(.motion-paused) .beat-splash {
+    animation: splash-bloom linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 50%;
+  }
+
+  @keyframes splash-bloom {
+    from {
+      opacity: 0;
+      transform: scale(0.75);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The fan deals itself out, card by card. */
+  body:not(.motion-paused) .fan-card {
+    animation: fan-deal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 95%;
+  }
+
+  @keyframes fan-deal {
+    from {
+      opacity: 0;
+      transform: translateY(40px) rotate(0deg);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(calc((var(--i) - 1.5) * 1.6deg)) translateY(calc(var(--i) * 6px));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beat-frame,
+  .beat-splash,
+  .fan-card {
+    animation: none !important;
+    opacity: 1 !important;
   }
 }
