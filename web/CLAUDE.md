@@ -4,15 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**WindoM** - A Chrome extension new tab dashboard built with React 18, TypeScript, Vite 5, Tailwind CSS v4, and lucide-react icons.
+**WindoM** - A Chrome extension new tab dashboard built with React 19, TypeScript, Vite 8, Tailwind CSS v4, and lucide-react icons.
 
-Features: clock, greeting, background images (Unsplash/local), weather widget, quick links + dock bar, daily quotes, focus mode with timer, todo list, calendar events, and a full settings panel.
+Features: clock, greeting, background images (Unsplash/local), weather widget, quick links + dock bar, daily quotes, focus mode with timer, todo list, calendar events, Gmail inbox, Spotify, a finance dashboard, GitHub pull requests and issues, tab history, and a full settings panel.
 
 ## Tech Stack
 
-- **React 18** - Functional components + hooks
+- **React 19** - Functional components + hooks
 - **TypeScript** - Strict mode
-- **Vite 5** + `@crxjs/vite-plugin` - Chrome extension builds with HMR
+- **Vite 8** + `@crxjs/vite-plugin` - Chrome extension builds with HMR
 - **Tailwind CSS v4** - CSS-first config in `src/styles/globals.css` (no `tailwind.config.js`); custom `@utility` directives for glassmorphism
 - **lucide-react** - SVG icon library
 
@@ -72,7 +72,7 @@ web/                               (repo root for the extension)
 - **One hook per feature**: Each module (weather, quotes, links, etc.) has a dedicated custom hook encapsulating all logic, API calls, and caching.
 - **Glassmorphism**: Custom Tailwind v4 `@utility` directives (`glass-panel`, `glass-sidebar`, `glass-settings`, etc.) in `globals.css` provide consistent blur/transparency styling.
 - **Chrome APIs**: Typed wrappers in `src/lib/chrome-storage.ts` for async get/set/onChange on both sync and local storage.
-- **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, OpenWeatherMap, Quotable).
+- **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, Open-Meteo, Quotable, Yahoo Finance, CoinGecko, GitHub).
 
 ## Key Patterns
 
@@ -84,7 +84,7 @@ web/                               (repo root for the extension)
 
 ## Publishing
 
-The `.github/workflows/publish-chrome.yml` workflow auto-publishes to Chrome Web Store when a git tag matching `v*` is pushed. Required secrets: `CHROME_EXTENSION_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`.
+The `.github/workflows/publish-chrome.yml` workflow auto-publishes to Chrome Web Store when a git tag matching `v*` is pushed. Required secrets: `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`, and `VITE_BACKEND_URL`. The workflow also accepts a manual `workflow_dispatch` with a tag, for re-publishing an existing release.
 
 ## Content Script Match Scope (Issue #203 — Resolved as By Design)
 

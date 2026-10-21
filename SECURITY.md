@@ -20,7 +20,7 @@ The following are in scope:
 - The Chrome extension (`web/`)
 - The backend API (`backend/`)
 - Authentication and token handling
-- OAuth flows (Google, Spotify)
+- OAuth flows (Google, Spotify, GitHub)
 
 ## Out of scope
 

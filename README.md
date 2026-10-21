@@ -25,12 +25,12 @@ quick links, focus timer, and more. All the essentials in one new tab, built wit
 [![Contributors](https://img.shields.io/github/contributors/YehudaBriskman/WindoM?style=for-the-badge&color=f97316&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/graphs/contributors)
 [![Forks](https://img.shields.io/github/forks/YehudaBriskman/WindoM?style=for-the-badge&color=06b6d4&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/network/members)
 <!-- Meta -->
-[![Version](https://img.shields.io/badge/version-1.4.0-7b9ef5?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.4.1-7b9ef5?style=for-the-badge)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=for-the-badge)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-22c55e?style=for-the-badge)](CONTRIBUTING.md)
 [![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=for-the-badge&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
 <!-- Tech Stack -->
-![React](https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
@@ -119,12 +119,13 @@ A clean new tab dashboard built for focus, customization, and your daily flow.
 | | Feature | Detail |
 |---|---|---|
 | ⏰ | Clock & Greeting | Personalized, adapts to the time of day |
-| 🌤️ | Weather | Real-time via OpenWeatherMap |
+| 🌤️ | Weather | Real-time via Open-Meteo, no API key needed |
 | 🖼️ | Backgrounds | Unsplash rotation or your own uploaded image |
 | 📅 | Google Calendar | Upcoming events synced to the sidebar |
 | ✉️ | Gmail Inbox | Unread count + 5 recent messages in the sidebar, refreshes every 45s |
 | 🎵 | Spotify | Now-playing widget + playback controls + top tracks |
 | 📈 | Finance Dashboard | Live stocks & crypto - Yahoo Finance + CoinGecko, no API key needed |
+| 🐙 | GitHub | Open pull requests and issues for your repositories |
 | ✅ | Todos | Local task list, always in the sidebar |
 | 🕰️ | Tab History | Recent browsing history in the sidebar |
 | ⏱️ | Focus Mode | Distraction-free countdown timer |
@@ -144,7 +145,7 @@ A clean new tab dashboard built for focus, customization, and your daily flow.
 
 **Run locally:**
 
-See the [Local Setup Guide](https://yehudabriskman.github.io/WindoM/local-setup.html).
+See the [Local Setup Guide](https://windom.app/local-setup.html).
 
 **Browser support:**
 
@@ -163,7 +164,7 @@ See the [Local Setup Guide](https://yehudabriskman.github.io/WindoM/local-setup.
 
 | Layer | Technology |
 |---|---|
-| UI | React 18 + TypeScript |
+| UI | React 19 + TypeScript |
 | Bundler | Vite + CRXJS |
 | Styling | Tailwind CSS v4 + custom glassmorphism |
 | Extension API | Chrome Manifest V3 |
@@ -195,7 +196,7 @@ WindoM/
 │   │   └── types/      # Shared TypeScript types
 │   └── manifest.json
 ├── backend/            # Fastify API server
-├── docs/               # GitHub Pages site (privacy policy, local setup)
+├── docs/               # GitHub Pages site - landing, user guide, legal, local setup
 └── .github/workflows/  # Auto-deploy and auto-publish pipelines
 ```
 
@@ -219,13 +220,13 @@ Ways to contribute:
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
-Current version: **1.4.0**
+Current version: **1.4.1**
 
 ---
 
 ## Privacy
 
-WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar, Gmail, and Spotify features. Finance data is fetched directly from public APIs with no account required. Read the full [Privacy Policy](https://yehudabriskman.github.io/WindoM/privacy.html).
+WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar, Gmail, and Spotify features. Finance data is fetched directly from public APIs with no account required. Read the full [Privacy Policy](https://windom.app/privacy.html).
 
 ---
 
@@ -236,8 +237,8 @@ WindoM does not track you. All personal data stays in your browser. An account i
 | Website | [windom.app](https://windom.app) |
 | Chrome Web Store | [Install WindoM](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb) |
 | LinkedIn | [WindoM on LinkedIn](https://www.linkedin.com/company/windom-app/) |
-| Privacy Policy | [Privacy Policy](https://yehudabriskman.github.io/WindoM/privacy.html) |
-| Local Setup | [Local Setup Guide](https://yehudabriskman.github.io/WindoM/local-setup.html) |
+| Privacy Policy | [Privacy Policy](https://windom.app/privacy.html) |
+| Local Setup | [Local Setup Guide](https://windom.app/local-setup.html) |
 | Issues | [GitHub Issues](https://github.com/YehudaBriskman/WindoM/issues) |
 | Discussions | [GitHub Discussions](https://github.com/YehudaBriskman/WindoM/discussions) |
 
