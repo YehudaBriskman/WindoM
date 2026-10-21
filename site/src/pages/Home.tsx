@@ -65,16 +65,18 @@ export function Home() {
 
       {/* ── Screenshot ───────────────────────────────────────────── */}
       <section className="wrap">
-        <picture>
-          <source srcSet="/images/preview.webp" type="image/webp" />
-          <img
-            className="shot"
-            src="/images/preview.png"
-            width={1600}
-            height={1000}
-            alt="The WindoM new tab: clock and greeting centred, weather top left, sidebar with todos and calendar on the right."
-          />
-        </picture>
+        {/* WebP with no fallback is safe here: this is a Chromium extension's
+            landing page, and Chrome has supported WebP since 2010. It costs
+            144 KB instead of the 2.7 MB PNG it replaces. */}
+        <img
+          className="shot"
+          src="/images/preview.webp"
+          width={1600}
+          height={1000}
+          loading="lazy"
+          decoding="async"
+          alt="The WindoM new tab: clock and greeting centred, weather top left, and a sidebar holding todos and upcoming calendar events."
+        />
       </section>
 
       {/* ── Features ─────────────────────────────────────────────── */}
