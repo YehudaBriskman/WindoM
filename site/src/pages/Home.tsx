@@ -1,5 +1,11 @@
 import { Layout } from '../components/Layout';
 import { Updates } from '../components/Updates';
+import { Stage } from '../components/Stage';
+import { Ambient } from '../components/Ambient';
+import { GlassFilters } from '../components/GlassFilters';
+import { MotionToggle, useMotionPaused } from '../components/MotionToggle';
+import { useDayCycle, usePrefersReducedMotion } from '../hooks/useDayCycle';
+import { DAY } from '../lib/day';
 import { FEATURES } from '../data/features';
 import { SITE, STORE_URL, GITHUB_URL, PROJECT_PAGE } from '../lib/site';
 
@@ -31,19 +37,39 @@ const FAQ = [
 ];
 
 export function Home() {
+  const reduced = usePrefersReducedMotion();
+  const [paused, toggleMotion] = useMotionPaused();
+  // The cycle only runs when it is both allowed and wanted. Otherwise the stage
+  // holds the visitor's real time of day, which is a complete state rather than
+  // a disabled one.
+  const animated = !reduced && !paused;
+  const cycle = useDayCycle(animated);
+  const active = DAY[cycle.stage];
+
   return (
     <Layout variant="home">
-      {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="section hero">
+      <GlassFilters />
+      <Ambient />
+      <MotionToggle paused={paused} onToggle={toggleMotion} />
+
+      {/* ── The stage: a working new tab, pinned while the day passes ── */}
+      <section className="day-stage" id="day-stage">
+        <Stage cycle={cycle} animated={animated} />
+      </section>
+
+      {/* ── What the stage was ─────────────────────────────────────── */}
+      <section className="section intro">
         <div className="wrap">
-          <span className="badge">All the essentials in one new tab</span>
-          <h1>
-            {SITE.name}
-            <br />
-            <span className="gradient-text">{SITE.tagline}</span>
-          </h1>
-          <p className="lede">{SITE.description}</p>
-          <div className="btn-row">
+          <p className="eyebrow reveal">That was not a screenshot</p>
+          <h2 className="reveal">
+            It was a <span className="gradient-text">live tab</span>, showing your time.
+          </h2>
+          <p className="lede reveal">
+            {SITE.name} replaces every new tab with this. {active.scene.toLowerCase()} is one of
+            four backgrounds it ships with — and the one you just scrolled past is what you get
+            the moment you install it.
+          </p>
+          <div className="btn-row reveal">
             <a className="btn btn-primary" href={STORE_URL}>
               Add to Chrome
             </a>
@@ -57,33 +83,17 @@ export function Home() {
               GitHub
             </a>
           </div>
-          <p className="muted hero-compat">
+          <p className="muted hero-compat reveal">
             Works on Chrome, Arc, Brave, Edge and any Chromium-based browser.
           </p>
         </div>
       </section>
 
-      {/* ── Screenshot ───────────────────────────────────────────── */}
-      <section className="wrap">
-        {/* WebP with no fallback is safe here: this is a Chromium extension's
-            landing page, and Chrome has supported WebP since 2010. It costs
-            144 KB instead of the 2.7 MB PNG it replaces. */}
-        <img
-          className="shot"
-          src="/images/preview.webp"
-          width={1600}
-          height={1000}
-          loading="lazy"
-          decoding="async"
-          alt="The WindoM new tab: clock and greeting centred, weather top left, and a sidebar holding todos and upcoming calendar events."
-        />
-      </section>
-
       {/* ── Features ─────────────────────────────────────────────── */}
       <section className="section" aria-labelledby="features-heading">
         <div className="wrap">
-          <span className="eyebrow">Features</span>
-          <h2 id="features-heading">
+          <span className="eyebrow reveal">Features</span>
+          <h2 id="features-heading" className="reveal">
             Everything you need, <span className="gradient-text">nothing you don&rsquo;t</span>
           </h2>
           <ul className="feature-grid">
@@ -106,8 +116,8 @@ export function Home() {
       {/* ── Install ──────────────────────────────────────────────── */}
       <section className="section" aria-labelledby="install-heading">
         <div className="wrap">
-          <span className="eyebrow">Install</span>
-          <h2 id="install-heading">
+          <span className="eyebrow reveal">Install</span>
+          <h2 id="install-heading" className="reveal">
             Your new tab in <span className="gradient-text">seconds</span>
           </h2>
           <ol className="steps">
@@ -134,7 +144,7 @@ export function Home() {
       {/* ── Trust ────────────────────────────────────────────────── */}
       <section className="section" aria-labelledby="trust-heading">
         <div className="wrap">
-          <h2 id="trust-heading">
+          <h2 id="trust-heading" className="reveal">
             No tracking. <span className="gradient-text">Ever.</span>
           </h2>
           <p className="lede">
@@ -156,8 +166,8 @@ export function Home() {
       {/* ── FAQ ──────────────────────────────────────────────────── */}
       <section className="section" aria-labelledby="faq-heading">
         <div className="wrap wrap-prose">
-          <span className="eyebrow">FAQ</span>
-          <h2 id="faq-heading">Questions</h2>
+          <span className="eyebrow reveal">FAQ</span>
+          <h2 id="faq-heading" className="reveal">Questions</h2>
           {FAQ.map((item) => (
             <details className="panel faq" key={item.q}>
               <summary>{item.q}</summary>
@@ -170,7 +180,7 @@ export function Home() {
       {/* ── Open source ──────────────────────────────────────────── */}
       <section className="section" aria-labelledby="oss-heading">
         <div className="wrap">
-          <h2 id="oss-heading">
+          <h2 id="oss-heading" className="reveal">
             Built in the <span className="gradient-text">open</span>
           </h2>
           <p className="lede">

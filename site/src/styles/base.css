@@ -16,6 +16,9 @@ html {
 
 body {
   margin: 0;
+  /* Contains the fixed ambient layer without the sticky-breaking side effect of
+     `overflow-x: hidden`. */
+  max-width: 100%;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -47,20 +50,27 @@ a:hover {
   border-radius: 4px;
 }
 
+/* Clipped rather than pushed to left: -9999px. The old trick leaves the element
+   in the layout and widens the scrollable area, which is one of the two things
+   that gave this page a horizontal scrollbar on a phone. Note the usual remedy -
+   `overflow-x: hidden` on html or body - must not be used here: it silently
+   disables `position: sticky`, and the entire stage depends on it. */
 .skip-link {
   position: absolute;
-  left: -9999px;
   top: 0;
+  left: 0;
   z-index: 100;
   padding: 12px 20px;
   background: var(--accent);
   color: #06060c;
   font-weight: 600;
   border-radius: 0 0 var(--r-md) 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .skip-link:focus {
-  left: 0;
+  clip-path: none;
 }
 
 /* ── Layout ─────────────────────────────────────────────────────────── */
@@ -91,13 +101,14 @@ a:hover {
 h1,
 h2,
 h3 {
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: var(--display);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   margin: 0 0 16px;
 }
 
 h1 {
-  font-size: clamp(2.5rem, 6vw, 4.2rem);
+  font-size: clamp(2.8rem, 7vw, 5.4rem);
   font-weight: 700;
 }
 

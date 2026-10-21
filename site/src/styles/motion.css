@@ -1,0 +1,202 @@
+/**
+ * Motion for the content that scrolls over the stage.
+ *
+ * All of it is scroll- or view-driven CSS: no JS, no scroll listeners, nothing
+ * on the main thread. The previous site did the equivalent by writing inline
+ * styles from an un-throttled `scroll` handler across thirteen cards; the same
+ * effects below cost nothing and cannot regress the same way.
+ *
+ * Everything is inside `@supports` and gated on `body:not(.motion-paused)`, so
+ * the page is complete and correct with every one of these rules unapplied.
+ */
+
+/* ── Page-load cascade ──────────────────────────────────────────────── */
+/* Carried over from the old hero: six elements on a hand-stepped delay. It is
+   the one place scattered timing is right, because it reads as one gesture. */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+body:not(.motion-paused) .rise {
+  animation: rise 0.7s var(--ease) both;
+}
+
+body:not(.motion-paused) .rise-1 { animation-delay: 0.05s; }
+body:not(.motion-paused) .rise-2 { animation-delay: 0.15s; }
+body:not(.motion-paused) .rise-3 { animation-delay: 0.25s; }
+body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
+
+/* ── Scroll-driven reveals ──────────────────────────────────────────── */
+
+@supports (animation-timeline: view()) {
+  /* Sections arrive as the reader reaches them. `view()` measures the element
+     against the viewport, so there is no observer and no layout read. */
+  body:not(.motion-paused) .reveal {
+    animation: rise linear both;
+    animation-timeline: view();
+    /* Starts as the element enters and completes well before centre, so it is
+       settled by the time it is being read rather than still moving. */
+    animation-range: entry 10% cover 32%;
+  }
+
+  /* Feature cards: the old site's scatter, rebuilt.
+     Cards drift in from alternating sides so the grid converges rather than
+     everything sliding the same way. The original computed each card's column
+     from `getBoundingClientRect()` on every resize; this cannot, because the
+     grid is `auto-fit` and the column count changes with the viewport. The
+     nth-child groups below are therefore a rhythm, not a column map - which is
+     all the effect needs, and it costs no layout read. */
+  body:not(.motion-paused) .feature {
+    animation: card-settle linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+
+  @keyframes card-settle {
+    from {
+      opacity: 0;
+      transform: translateY(44px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The sideways drift only applies where there is room for it to happen off
+     the edge of the content column without widening the document.
+     `animation-fill-mode: both` parks every card below the fold at its `from`
+     position, so a 54px horizontal offset on the rightmost card is not a
+     transient during the animation - it is the resting state of everything not
+     yet scrolled to, and it pushes the page wider than the viewport.
+     Above 1200px the wrap's margins absorb it; below, cards rise straight up. */
+  @media (min-width: 1200px) {
+    body:not(.motion-paused) .feature-grid > :nth-child(3n + 1) {
+      animation-name: card-settle-left;
+    }
+    body:not(.motion-paused) .feature-grid > :nth-child(3n) {
+      animation-name: card-settle-right;
+    }
+  }
+
+  @keyframes card-settle-left {
+    from {
+      opacity: 0;
+      transform: translate(-54px, 44px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes card-settle-right {
+    from {
+      opacity: 0;
+      transform: translate(54px, 44px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* ── Ambient field ──────────────────────────────────────────────────── */
+/* The old site's orbs and self-drawing paths, rebuilt. The paths overshoot the
+   viewBox deliberately so neither end is ever visible in frame. */
+
+.ambient-svg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* The traces deliberately run past the viewBox on both sides so neither end
+     shows. Without an explicit clip those overhangs widen the document. */
+  overflow: hidden;
+}
+
+@supports (animation-timeline: scroll()) {
+  body:not(.motion-paused) .orb {
+    animation: orb-drift linear both;
+    animation-timeline: scroll(root block);
+  }
+
+  body:not(.motion-paused) .orb-2 {
+    animation-name: orb-drift-2;
+  }
+
+  @keyframes orb-drift {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(70px, -160px) scale(1.18); }
+  }
+
+  @keyframes orb-drift-2 {
+    from { transform: translate(0, 0) scale(1); opacity: 1; }
+    to   { transform: translate(-90px, -140px) scale(0.82); opacity: 0.45; }
+  }
+
+  body:not(.motion-paused) .trace {
+    animation: trace-draw linear both;
+    animation-timeline: scroll(root block);
+    animation-range: 0% 75%;
+  }
+
+  @keyframes trace-draw {
+    from { stroke-dashoffset: 3000; }
+    to   { stroke-dashoffset: 0; }
+  }
+}
+
+/* ── Pause control ──────────────────────────────────────────────────── */
+
+.motion-toggle {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: var(--r-pill);
+  background: rgba(12, 12, 22, 0.76);
+  border: 1px solid var(--border-strong);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.motion-toggle:hover {
+  border-color: var(--accent);
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+/* The OS setting wins outright. Nothing above survives it. */
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .reveal,
+  .feature,
+  .orb,
+  .trace,
+  .stage-wallpaper {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
