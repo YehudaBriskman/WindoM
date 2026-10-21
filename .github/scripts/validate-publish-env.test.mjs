@@ -5,7 +5,8 @@ import { test } from 'node:test';
 import { requiredVariables, validatePublishEnv } from './validate-publish-env.mjs';
 
 const validEnv = {
-  CHROME_EXTENSION_ID: 'a'.repeat(32), CHROME_CLIENT_ID: 'fake-client-id',
+  CHROME_EXTENSION_ID: 'a'.repeat(32), CHROME_PUBLISHER_ID: 'fake-publisher-id',
+  CHROME_CLIENT_ID: 'fake-client-id',
   CHROME_CLIENT_SECRET: 'DO-NOT-LOG-client-secret', CHROME_REFRESH_TOKEN: 'DO-NOT-LOG-refresh-token',
   VITE_BACKEND_URL: 'https://api.windom.app',
 };

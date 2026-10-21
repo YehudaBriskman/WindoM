@@ -51,6 +51,7 @@ jobs:
         run: node ../.github/scripts/validate-publish-env.mjs
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
@@ -80,6 +81,12 @@ jobs:
         with:
           file-path: extension.zip
           extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          # Required since v7 of this action; v5 did not take it. The Dependabot bump
+          # from v5 to v7 in #287 introduced the requirement silently, and nothing
+          # caught it because this workflow only runs on a tag - so it surfaced six
+          # months later, mid-release. Found under Publisher > Settings in the Chrome
+          # Web Store Developer Dashboard.
+          publisher-id: ${{ secrets.CHROME_PUBLISHER_ID }}
           client-id: ${{ secrets.CHROME_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
