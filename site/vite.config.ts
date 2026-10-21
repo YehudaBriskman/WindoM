@@ -11,7 +11,16 @@ import { resolve } from 'node:path';
  * Renaming any of them would need a store release to repair, and GitHub Pages offers
  * no redirect mechanism to soften it. The release gate asserts all five exist.
  */
-export const PAGES = ['index', 'guide', 'privacy', 'terms', 'local-setup'] as const;
+export const PAGES = [
+  'index',
+  'guide',
+  'privacy',
+  'terms',
+  'local-setup',
+  // Hebrew guide on its own URL. The previous site shipped both languages in
+  // every response and hid one with CSS, so Hebrew was never indexable.
+  'he/guide',
+] as const;
 
 export default defineConfig({
   plugins: [react()],

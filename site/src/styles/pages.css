@@ -247,3 +247,9 @@
   list-style: none;
   font-size: 0.92rem;
 }
+
+.lang-switch {
+  text-align: end;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}
