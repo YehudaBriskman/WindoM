@@ -3,6 +3,7 @@
   "name": "WindoM",
   "version": "1.5.0",
   "description": "A beautiful new tab page with background images, clock, weather, todos, and calendar",
+  "homepage_url": "https://windom.app",
   "permissions": [
     "storage",
     "unlimitedStorage",
