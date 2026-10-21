@@ -9,9 +9,25 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
  * listing, so they deliberately check the outgoing consent URL rather than any
  * internal flag.
  *
- * No config mock here on purpose - this suite must see the real default.
+ * The config mock supplies Google credentials, which a CI runner has no reason
+ * to hold, and spreads everything else through untouched - GMAIL_ENABLED very
+ * much included. Without the credentials the start route never reaches the
+ * code that chooses scopes, and the suite would pass for the wrong reason.
  */
 
+vi.mock('../../config.js', async (importOriginal) => {
+  const actual = await importOriginal<{ config: Record<string, unknown> }>();
+  return {
+    ...actual,
+    config: {
+      ...actual.config,
+      GOOGLE_CLIENT_ID: 'google-client',
+      GOOGLE_CLIENT_SECRET: 'google-secret',
+      GOOGLE_OAUTH_REDIRECT_URI: 'https://link-extension.chromiumapp.org',
+      EXTENSION_REDIRECT_BASE: 'https://link-extension.chromiumapp.org',
+    },
+  };
+});
 vi.mock('../../services/gmail.service.js', () => ({ getGmailSummary: vi.fn() }));
 vi.mock('../../services/oauth.service.js', () => ({
   createOAuthState: vi.fn(() => Promise.resolve('state-1')),
