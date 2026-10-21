@@ -93,13 +93,28 @@ jobs:
       - id: deployment
         uses: actions/deploy-pages@v4
 
+      # Pages reports the deploy complete before its CDN has finished serving the
+      # new files, so checking immediately reports a false failure - the first run
+      # of this step failed on a URL that was serving correctly less than a minute
+      # later. Retry rather than either trusting the deploy blindly or sleeping a
+      # fixed amount and hoping.
       - name: Verify the live URLs the extension depends on
         run: |
-          for path in / /guide.html /privacy.html /terms.html /local-setup.html /he/guide.html; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://windom.app$path" || echo 000)
+          paths="/ /guide.html /privacy.html /terms.html /local-setup.html /he/guide.html"
+          failed=0
+          for path in $paths; do
+            code=000
+            for attempt in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 20 "https://windom.app$path" || echo 000)
+              [ "$code" = "200" ] && break
+              sleep 15
+            done
             printf '  %-22s %s\n' "$path" "$code"
             if [ "$code" != "200" ]; then
-              echo "::error::https://windom.app$path returned $code after deploy."
-              exit 1
+              echo "::error::https://windom.app$path returned $code after six attempts over 90s."
+              failed=1
             fi
           done
+          # Report every bad URL rather than stopping at the first, so one run
+          # tells you everything that is wrong.
+          exit $failed
