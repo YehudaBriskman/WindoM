@@ -21,6 +21,7 @@ describe('getIntegrations', () => {
     const result = await getIntegrations('user-1');
     expect(result).toEqual({
       github: { connected: false },
+      features: { gmail: false },
       google: { connected: false, scopes: [] },
       spotify: { connected: false, scopes: [] },
     });

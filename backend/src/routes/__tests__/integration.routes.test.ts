@@ -1,5 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The Gmail paths below only exist when the server offers the feature; with the
+// flag at its default the controller refuses before reaching the service, which
+// is covered separately in gmail-disabled.test.ts.
+vi.mock('../../config.js', async (importOriginal) => {
+  const actual = await importOriginal<{ config: Record<string, unknown> }>();
+  return { ...actual, config: { ...actual.config, GMAIL_ENABLED: true } };
+});
 vi.mock('../../services/calendar.service.js', () => ({ getCalendarEvents: vi.fn() }));
 vi.mock('../../services/gmail.service.js', () => ({ getGmailSummary: vi.fn() }));
 vi.mock('../../services/spotify.service.js', () => ({

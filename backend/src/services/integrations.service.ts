@@ -5,11 +5,18 @@ import type { OAuthProvider } from '../types/oauth.types.js';
 import { invalidateCalendarCache } from './calendar.service.js';
 import { invalidateNowPlayingCache } from './spotify.service.js';
 import { invalidateGithubCache } from './github.service.js';
+import { config } from '../config.js';
 
 export interface IntegrationsStatus {
   google: { connected: boolean; scopes: string[] };
   spotify: { connected: boolean; scopes: string[] };
   github: { connected: boolean };
+  /**
+   * What this server will actually do, as opposed to what the client can draw.
+   * The client has no other way to know Gmail is off, and offering a Connect
+   * button that cannot grant the scope is worse than not offering one.
+   */
+  features: { gmail: boolean };
 }
 
 export async function getIntegrations(userId: string): Promise<IntegrationsStatus> {
@@ -26,6 +33,7 @@ export async function getIntegrations(userId: string): Promise<IntegrationsStatu
     google: { connected: !!google, scopes: google?.scopes ?? [] },
     spotify: { connected: !!spotify, scopes: spotify?.scopes ?? [] },
     github: { connected: !!github },
+    features: { gmail: config.GMAIL_ENABLED },
   };
 }
 
