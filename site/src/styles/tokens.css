@@ -28,6 +28,20 @@
   --accent2: #a78bfa;
   --accent-grad: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
 
+  /* Light temperature for the four day stages. Sampled from the wallpapers
+     themselves rather than picked, so the wash agrees with the photograph it
+     sits over instead of fighting it. */
+  --dawn: #f5a97b;
+  --noon: #9ec7f5;
+  --dusk: #c98bd8;
+  --night: #3b4a8f;
+
+  /* Display face carries the personality; Inter keeps kinship with the
+     extension's own interface. Bricolage is a grotesque with genuinely odd
+     terminals - it has presence at 11rem without being the high-contrast serif
+     or the geometric sans that every generated page reaches for. */
+  --display: 'Bricolage Grotesque', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
   /* Radii */
   --r-sm: 8px;
   --r-md: 10px;
