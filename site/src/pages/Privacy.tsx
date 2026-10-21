@@ -179,7 +179,7 @@ export function Privacy() {
             <li>We do not read the content of pages you visit</li>
             <li>We do not collect keystrokes or form input from other websites</li>
             <li>We do not share or sell any data to third parties</li>
-            <li>We do not retain Gmail message content - only header metadata cached for 45 seconds</li>
+            <li>We do not access your email - no mail scope is requested and no mail data reaches our servers</li>
           </ul>
           <h2>Data sharing</h2>
           <p>
