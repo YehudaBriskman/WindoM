@@ -11,7 +11,7 @@ export const SITE = {
   tagline: 'Your Space, Your Flow.',
   description:
     'WindoM replaces the Chrome new tab with a personal dashboard: clock, weather, ' +
-    'backgrounds, todos, calendar, Gmail, Spotify, finance and focus mode.',
+    'backgrounds, todos, calendar, Spotify, GitHub, finance and focus mode.',
 } as const;
 
 export const EXTENSION_ID = 'comcnbccalbfcegbmaemancbhgpijkpb';

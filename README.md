@@ -10,7 +10,7 @@
 **Your Space, Your Flow · Made to Fit You**
 
 A Chrome extension that turns every new tab into a personal productivity dashboard -
-clock, weather, todos, Google Calendar, Gmail inbox, Spotify, live stock & crypto prices,
+clock, weather, todos, Google Calendar, Spotify, GitHub, live stock & crypto prices,
 quick links, focus timer, and more. All the essentials in one new tab, built with a clean glassmorphism design.
 
 <br />
@@ -53,7 +53,7 @@ WindoM redefines the new tab experience. Instead of an empty page, every new tab
 
 Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks - smooth, minimal, and always out of the way when you need it to be.
 
-At a glance you see the time, the weather, your upcoming calendar events, unread Gmail, what's playing on Spotify, live stock and crypto prices, and your tasks for the day. Everything you actually care about, nothing you don't.
+At a glance you see the time, the weather, your upcoming calendar events, what's playing on Spotify, the pull requests waiting on you, live stock and crypto prices, and your tasks for the day. Everything you actually care about, nothing you don't.
 
 ---
 
@@ -122,7 +122,6 @@ A clean new tab dashboard built for focus, customization, and your daily flow.
 | 🌤️ | Weather | Real-time via Open-Meteo, no API key needed |
 | 🖼️ | Backgrounds | Unsplash rotation or your own uploaded image |
 | 📅 | Google Calendar | Upcoming events synced to the sidebar |
-| ✉️ | Gmail Inbox | Unread count + 5 recent messages in the sidebar, refreshes every 45s |
 | 🎵 | Spotify | Now-playing widget + playback controls + top tracks |
 | 📈 | Finance Dashboard | Live stocks & crypto - Yahoo Finance + CoinGecko, no API key needed |
 | 🐙 | GitHub | Open pull requests and issues for your repositories |
@@ -226,7 +225,7 @@ Current version: **1.4.1**
 
 ## Privacy
 
-WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar, Gmail, and Spotify features. Finance data is fetched directly from public APIs with no account required. Read the full [Privacy Policy](https://windom.app/privacy.html).
+WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar and Spotify features. Finance data is fetched directly from public APIs with no account required. Read the full [Privacy Policy](https://windom.app/privacy.html).
 
 ---
 

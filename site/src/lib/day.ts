@@ -22,7 +22,7 @@ export type Pane =
   | 'calendar'
   | 'spotify'
   | 'finance'
-  | 'gmail'
+  | 'github'
   | 'focus';
 
 export interface DayStage {
@@ -59,8 +59,8 @@ export const DAY: Record<Stage, DayStage> = {
     scene: 'Sunlight scattering across open water',
     tint: 'var(--noon)',
     headline: 'The things you keep checking',
-    body: 'Markets, inbox, the pull request you are waiting on. Pulled in from the sources you already use, with no extra tab to keep open.',
-    spotlight: ['finance', 'gmail', 'weather'],
+    body: 'Markets, the pull request you are waiting on, the weather for the walk home. Pulled in from the sources you already use, with no extra tab to keep open.',
+    spotlight: ['finance', 'github', 'weather'],
   },
   evening: {
     stage: 'evening',
@@ -111,7 +111,6 @@ export const STAGE_CLOCK: Record<Stage, string> = {
 
 /** The dock, mirroring the extension's Quick Links. */
 export const DOCK = [
-  { label: 'Gmail', glyph: '✉' },
   { label: 'Calendar', glyph: '◷' },
   { label: 'GitHub', glyph: '⌥' },
   { label: 'Drive', glyph: '△' },
