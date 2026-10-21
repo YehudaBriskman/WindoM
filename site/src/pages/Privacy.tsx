@@ -46,21 +46,35 @@ export function Privacy() {
             You can delete your account and all associated server-side data at any time from
             <strong>Settings → Account → Delete account</strong>. All data is deleted permanently and immediately.
           </p>
-          <h2>Google Calendar &amp; Gmail integration (optional)</h2>
+          <h2>Google Calendar integration (optional)</h2>
           <p>
             If you connect your Google account, WindoM requests the following read-only scopes in a single OAuth consent:
-            <code>calendar.readonly</code>, <code>gmail.readonly</code>, <code>openid</code>, <code>email</code>, <code>profile</code>.
-            You can connect Calendar alone (which uses only <code>calendar.readonly</code>) or both Calendar and Gmail together.
+            <code>calendar.readonly</code>, <code>openid</code>, <code>email</code>, <code>profile</code>. That is the
+            complete list; nothing else is requested.
+          </p>
+          <p>
+            WindoM's use of information received from Google APIs adheres to the{' '}
+            <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noreferrer">
+              Google API Services User Data Policy
+            </a>
+            , including the Limited Use requirements. Google user data is never sold, never used for advertising, never
+            used to train any model, and is never read by a human except with your explicit consent, to resolve a
+            problem you have reported, or where the law requires it.
           </p>
           <p>
             Your Google OAuth access token is stored <strong>encrypted at rest</strong> on our servers using AES-256-GCM and is used only to make API requests on your behalf. We never share it with third parties.
           </p>
           <ul>
             <li><strong>Calendar:</strong> We fetch your upcoming events (title, time, calendar name) and display them on your dashboard. We do not read event descriptions, attendees, or any calendar outside of the visible list.</li>
-            <li><strong>Gmail:</strong> We fetch your unread inbox count and, for up to 5 recent unread messages, the following header-level metadata only: sender name and address, subject line, snippet (first ~100 characters), and received date. <strong>We do not read, store, or transmit full email body content.</strong> Fetched data is cached server-side for 45 seconds and then discarded.</li>
           </ul>
           <p>
             Disconnecting Google from <strong>Settings → Apps</strong> immediately revokes our stored token and deletes all cached data.
+          </p>
+          <p>
+            <strong>Gmail is no longer part of WindoM.</strong> Earlier versions could show an unread count and the
+            subject lines of recent mail, which required Google's restricted <code>gmail.readonly</code> scope. That
+            scope is no longer requested and the widget is no longer offered, so no mail data of any kind reaches our
+            servers. Tokens granted under the old consent lose the Gmail permission the next time you reconnect.
           </p>
           <h2>Spotify integration (optional)</h2>
           <p>
