@@ -10,13 +10,18 @@
  * could disagree with it. Written from the `/integrations` response the app
  * already fetches, so nothing here costs an extra request.
  *
- * Defaults to available. Before the first response, and for a signed-out
- * visitor who never makes one, showing the entry is the harmless direction to
- * be wrong in: connecting requires signing in anyway, and that is the moment
- * the real answer arrives.
+ * Defaults to UNAVAILABLE. The guard this needs to give is against showing a
+ * feature that cannot work: the published build talks to a server with Gmail
+ * off, so a card that appears before the first response and vanishes after it
+ * is a flicker advertising something that was never on offer. A reviewer
+ * comparing the extension against a consent screen that asks only for Calendar
+ * should not find an inbox in the settings either.
+ *
+ * A self-hosted server with GMAIL_ENABLED=true answers on the first
+ * /integrations call, and the entry appears then.
  */
 
-let gmailAvailable = true;
+let gmailAvailable = false;
 const listeners = new Set<() => void>();
 
 export function setGmailAvailable(available: boolean): void {
