@@ -27,7 +27,7 @@ Follow the [Local Setup Guide](https://windom.app/local-setup.html) to get the p
 ```
 web/        Chrome extension (React + Vite + TypeScript)
 backend/    API server (Fastify + Drizzle + PostgreSQL)
-docs/       GitHub Pages site - landing, user guide, legal, local setup
+site/       windom.app - Vite + React, deployed to GitHub Pages by workflow
 ```
 
 ## Code style

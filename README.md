@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/banner.png" alt="WindoM - Your Space, Your Flow" width="100%" style="border-radius:12px;" />
+<img src=".github/assets/banner.png" alt="WindoM - Your Space, Your Flow" width="100%" style="border-radius:12px;" />
 
 <br />
 <br />
@@ -43,7 +43,7 @@ quick links, focus timer, and more. All the essentials in one new tab, built wit
 <br />
 <br />
 
-<img src="docs/images/preview.png" alt="WindoM dashboard" width="100%" style="border-radius:12px;" />
+<img src=".github/assets/preview.png" alt="WindoM dashboard" width="100%" style="border-radius:12px;" />
 
 </div>
 
@@ -75,21 +75,21 @@ At a glance you see the time, the weather, your upcoming calendar events, unread
 <table>
 <tr>
 <td align="center" width="33%">
-<img src="docs/images/preview.png" alt="Main dashboard" width="100%" style="border-radius:8px;" /><br/>
+<img src=".github/assets/preview.png" alt="Main dashboard" width="100%" style="border-radius:8px;" /><br/>
 <sub><b>Main Dashboard</b></sub>
 </td>
 <td align="center" width="33%">
-<img src="docs/images/preview-settings.png" alt="Settings panel" width="100%" style="border-radius:8px;" /><br/>
+<img src=".github/assets/preview-settings.png" alt="Settings panel" width="100%" style="border-radius:8px;" /><br/>
 <sub><b>Settings Panel</b></sub>
 </td>
 <td align="center" width="33%">
-<img src="docs/images/preview-sidebar.png" alt="Sidebar" width="100%" style="border-radius:8px;" /><br/>
+<img src=".github/assets/preview-sidebar.png" alt="Sidebar" width="100%" style="border-radius:8px;" /><br/>
 <sub><b>Sidebar</b></sub>
 </td>
 </tr>
 <tr>
 <td align="center" colspan="3">
-<img src="docs/images/preview-account.png" alt="Account" width="60%" style="border-radius:8px;" /><br/>
+<img src=".github/assets/preview-account.png" alt="Account" width="60%" style="border-radius:8px;" /><br/>
 <sub><b>Account & Integrations</b></sub>
 </td>
 </tr>
@@ -196,7 +196,7 @@ WindoM/
 │   │   └── types/      # Shared TypeScript types
 │   └── manifest.json
 ├── backend/            # Fastify API server
-├── docs/               # GitHub Pages site - landing, user guide, legal, local setup
+├── site/               # windom.app - Vite + React, deployed by workflow
 └── .github/workflows/  # Auto-deploy and auto-publish pipelines
 ```
 
