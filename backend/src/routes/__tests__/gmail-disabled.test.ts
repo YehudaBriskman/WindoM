@@ -14,7 +14,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../services/gmail.service.js', () => ({ getGmailSummary: vi.fn() }));
 vi.mock('../../services/oauth.service.js', () => ({
-  createOAuthState: vi.fn(async () => 'state-1'),
+  createOAuthState: vi.fn(() => Promise.resolve('state-1')),
   verifyAndConsumeOAuthState: vi.fn(),
   exchangeGoogleCode: vi.fn(),
   storeOAuthTokens: vi.fn(),
