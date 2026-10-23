@@ -91,7 +91,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       # Pages reports the deploy complete before its CDN has finished serving the
       # new files, so checking immediately reports a false failure - the first run
