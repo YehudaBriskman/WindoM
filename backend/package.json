@@ -39,7 +39,7 @@
     "nodemailer": "^10.1.2",
     "pg": "^8.23.1",
     "pino": "^10.4.0",
-    "zod": "^3.23.8"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
