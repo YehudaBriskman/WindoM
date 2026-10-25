@@ -1,4 +1,21 @@
 version: 2
+
+# Grouping policy
+# ───────────────
+# Groups here only ever covered minor, patch and security updates, so every
+# major arrived as a pull request of its own. One week produced nine of them -
+# three of which were the GitHub Pages actions, which have to move together and
+# could not be merged separately anyway.
+#
+# Majors are grouped per ecosystem now, with one deliberate exception per npm
+# directory: TypeScript. A TypeScript major is a migration rather than a bump,
+# and bundling it means a single compiler change can hold every other update
+# hostage. Everything else is cheap enough to review as a batch, and CI says
+# whether the batch is good.
+#
+# Order matters: a dependency joins the first group it matches, so the narrow
+# groups are listed before the catch-alls.
+
 updates:
   - package-ecosystem: npm
     directory: /backend
@@ -6,18 +23,26 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      backend-compatible:
-        patterns: ['*']
-        update-types: [minor, patch]
       backend-security:
         applies-to: security-updates
         patterns: ['*']
+      backend-compatible:
+        patterns: ['*']
+        update-types: [minor, patch]
+      backend-majors:
+        patterns: ['*']
+        exclude-patterns: ['typescript']
+        update-types: [major]
+
   - package-ecosystem: npm
     directory: /web
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
+      web-security:
+        applies-to: security-updates
+        patterns: ['*']
       react-major:
         patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
         update-types: [major]
@@ -27,9 +52,30 @@ updates:
       web-compatible:
         patterns: ['*']
         update-types: [minor, patch]
-      web-security:
+      web-majors:
+        patterns: ['*']
+        exclude-patterns: ['typescript']
+        update-types: [major]
+
+  # The site was added after this file and was never covered, so its
+  # dependencies have never been updated by anything.
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      site-security:
         applies-to: security-updates
         patterns: ['*']
+      site-compatible:
+        patterns: ['*']
+        update-types: [minor, patch]
+      site-majors:
+        patterns: ['*']
+        exclude-patterns: ['typescript']
+        update-types: [major]
+
   - package-ecosystem: github-actions
     directory: /
     schedule:
@@ -38,3 +84,6 @@ updates:
       actions-compatible:
         patterns: ['*']
         update-types: [minor, patch]
+      actions-majors:
+        patterns: ['*']
+        update-types: [major]
