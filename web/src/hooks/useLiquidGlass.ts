@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Spring } from '../lib/liquid-glass';
 import { registerGlassSurface, type GlassKey } from '../lib/glass-registry';
+import { rimMaskFor } from '../components/GlassFilters';
 
 /**
  * Makes an element a pane of liquid glass.
@@ -31,8 +32,16 @@ const panes = new Set<Pane>();
 // light is, which is exactly what breaks the illusion.
 const viewportW = typeof window === 'undefined' ? 1280 : window.innerWidth;
 const viewportH = typeof window === 'undefined' ? 800 : window.innerHeight;
-const lightX = new Spring(viewportW / 2, 120, 20);
-const lightY = new Spring(-viewportH * 0.3, 120, 20);
+// Stiff and close to critically damped. The first pass used 120/20, which
+// takes the better part of a second to arrive - the highlight visibly trailed
+// the cursor instead of following it. Light has no inertia; what should lag is
+// the *material*, and that is the proximity spring below. This one only needs
+// enough softening to avoid looking stapled to the pointer.
+//
+// Critical damping for k=1400 is 2*sqrt(1400) = 75. Sitting just under it
+// settles in about 110ms, which reads as immediate.
+const lightX = new Spring(viewportW / 2, 1400, 70);
+const lightY = new Spring(-viewportH * 0.3, 1400, 70);
 
 let frame = 0;
 let lastTime = 0;
@@ -155,17 +164,21 @@ export function useLiquidGlass<T extends HTMLElement>(
     if (!el) return;
 
     bindPointer();
-    // Softer than the light's spring: the swell is a body of material moving,
-    // not a reflection, so it should feel heavier.
-    const pane: Pane = { el, key, proximity: new Spring(0, 90, 18) };
+    // Softer than the light, and deliberately so: this is the one thing that
+    // should lag. The reflection tracks, the material gathers.
+    const pane: Pane = { el, key, proximity: new Spring(0, 200, 26) };
     panes.add(pane);
 
     const measure = (): void => {
       const rect = el.getBoundingClientRect();
       if (rect.width < 2 || rect.height < 2) return;
       const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-      const id = registerGlassSurface(key, rect.width, rect.height, radius);
-      el.style.setProperty('--glass-refract', `url(#${id})`);
+      const surface = registerGlassSurface(key, rect.width, rect.height, radius);
+      el.style.setProperty('--glass-refract', `url(#${surface.id})`);
+      // The lens layer is confined to the bezel by this mask. Without it the
+      // sharp layer covers the whole pane and the legibility the heavy blur
+      // was bought for is given straight back.
+      el.style.setProperty('--glass-rim', `url("${rimMaskFor(surface, surface.id)}")`);
       // A pane that resized has moved every light value it was holding. The
       // settings panel grows from a 42px button to a full sheet, and without
       // this it kept the highlight it computed while it was still the button.

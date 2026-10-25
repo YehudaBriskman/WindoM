@@ -56,10 +56,11 @@
   /* Everything that moves does so on one curve, and it is not a linear one.
      Glass has mass: it starts slowly, carries, and arrives without a bounce
      it has not earned. */
+  /* Only discrete state changes are transitioned - hover, open, focus. The
+     continuous light values are sprung instead. */
   transition:
-    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── The backdrop ─────────────────────────────────────────────────────────
@@ -80,10 +81,18 @@
   z-index: -1;
 }
 
-/* ── The specular rim ─────────────────────────────────────────────────────
-   Two highlights, because real glass gives two: a broad sheen across the face
-   where the surface is flat, and a tight bright line along the rim where it
-   curves away. Both are anchored to the light, so both travel as it moves. */
+/* ── The lens ─────────────────────────────────────────────────────────────
+   The band of rim that actually bends.
+
+   The layer below this one blurs hard, which is what stops a bright widget
+   behind a pane from reading through it - but a heavily blurred backdrop is a
+   smooth gradient, and displacing a smooth gradient produces nothing visible.
+   Refraction only shows where detail survives to be bent.
+
+   So the lensing lives here instead: the same backdrop at a fraction of the
+   blur, displaced by the generated field, and masked to the bezel so it never
+   touches the middle. A crisp stretched band around the edge falling away into
+   softness - which is what looking through a thick pane is actually like. ── */
 .glass-panel::before,
 .glass-sidebar::before,
 .glass-settings::before,
@@ -95,7 +104,16 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
+
+  /* The lens. Masked to the bezel by the generated rim mask; where no mask has
+     been generated yet the layer is simply absent rather than covering the
+     pane. */
+  backdrop-filter: blur(5px) saturate(108%) var(--glass-refract, );
+  -webkit-mask-image: var(--glass-rim, none);
+  mask-image: var(--glass-rim, none);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 
   /* Two highlights from one light. The broad sheen is the face of the pane
      catching it; the tight core is the pointer's own reflection, which only
@@ -126,7 +144,11 @@
     inset -1px -1px 0 0 rgba(255, 255, 255, 0.08),
     inset 0 0 12px 0 rgba(255, 255, 255, calc(0.10 * var(--glass-lit)));
 
-  transition: box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  /* No transition here on purpose. These values are already being eased by a
+     spring in the hook, and a CSS transition over the top of that smooths the
+     smoothing - the two delays add, and the highlight ends up arriving about a
+     second after the pointer. Anything driven by --glass-* must be left alone
+     to follow its spring. */
 }
 
 /* ── Pressing ─────────────────────────────────────────────────────────────
@@ -142,64 +164,86 @@
 }
 
 /* ── Per-material depth ───────────────────────────────────────────────────
-   Thicker glass blurs more, dims more and carries a heavier shadow. The
-   brightness values are the legibility control: the lower the number, the more
-   a busy backdrop recedes behind the content. */
+
+   Legibility comes from the blur radius, not from paint.
+
+   The first attempt reached for `brightness(0.62)` and `saturate(170%)` and
+   produced a brown slab. Both were wrong in the same way. Dimming does not
+   make something look like glass, it makes it look like a dark card; and
+   amplifying saturation over a photograph bleeds its hue through, so a sunset
+   behind the panel turned the whole pane muddy orange.
+
+   What actually hides a bright widget behind a pane is blur *magnitude*. Text
+   and edges are high-frequency detail, and a wide enough radius destroys them
+   outright - what survives is a smooth luminance gradient, which reads as
+   something seen through thick glass rather than something competing with the
+   content in front.
+
+   So: a large radius, a mild desaturation to stop the backdrop's colour
+   dominating, a slight contrast pull toward mid-grey for the milky quality
+   frosted glass has, and a thin neutral veil - grey rather than navy, because
+   a blue veil over warm light is exactly what made it brown.
+   ───────────────────────────────────────────────────────────────────────── */
 
 .glass-panel::after {
-  backdrop-filter: blur(28px) saturate(170%) brightness(0.62) var(--glass-refract, );
+  backdrop-filter: blur(56px) saturate(88%) contrast(0.92) var(--glass-refract, );
 }
 .glass-panel {
-  background: rgba(14, 16, 24, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(22, 22, 26, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.45),
-    0 2px 10px rgba(0, 0, 0, 0.25);
+    0 24px 60px rgba(0, 0, 0, 0.4),
+    0 2px 10px rgba(0, 0, 0, 0.22);
 }
 
 .glass-sidebar::after {
-  backdrop-filter: blur(26px) saturate(170%) brightness(0.66) var(--glass-refract, );
+  backdrop-filter: blur(52px) saturate(88%) contrast(0.92) var(--glass-refract, );
 }
 .glass-sidebar {
-  background: rgba(14, 16, 24, 0.22);
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.3);
+  background: rgba(22, 22, 26, 0.18);
+  border-left: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.28);
 }
 
 .glass-settings::after {
-  backdrop-filter: blur(30px) saturate(170%) brightness(0.62) var(--glass-refract, );
+  backdrop-filter: blur(56px) saturate(88%) contrast(0.92) var(--glass-refract, );
 }
 .glass-settings {
-  background: rgba(14, 16, 24, 0.26);
-  border-right: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.3);
+  background: rgba(22, 22, 26, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.28);
 }
 
 .glass-quote::after {
-  backdrop-filter: blur(16px) saturate(150%) brightness(0.72) var(--glass-refract, );
+  backdrop-filter: blur(30px) saturate(92%) contrast(0.95) var(--glass-refract, );
 }
 .glass-quote {
-  background: rgba(14, 16, 24, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  background: rgba(22, 22, 26, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 
 .glass-credit::after {
-  backdrop-filter: blur(14px) saturate(150%) brightness(0.7) var(--glass-refract, );
+  backdrop-filter: blur(26px) saturate(92%) contrast(0.95) var(--glass-refract, );
 }
 .glass-credit {
-  background: rgba(14, 16, 24, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  background: rgba(22, 22, 26, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
+/* Small floating chrome sits over whatever the page is showing, so it blurs
+   hard for its size - a dock over a busy photograph has no panel area to hide
+   behind. */
 .glass-dock::after {
-  backdrop-filter: blur(20px) saturate(170%) brightness(0.62) var(--glass-refract, );
+  backdrop-filter: blur(40px) saturate(90%) contrast(0.94) var(--glass-refract, );
 }
 .glass-dock {
-  background: rgba(14, 16, 24, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  background: rgba(22, 22, 26, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.26),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* The pane's own content sits above the backdrop and below the rim. */
@@ -291,9 +335,8 @@
     inset 0 0 8px -2px rgba(255, 255, 255, calc(0.18 * var(--glass-lit, 0.8)));
 
   transition:
-    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* The sheen. A separate layer because these elements carry their own content

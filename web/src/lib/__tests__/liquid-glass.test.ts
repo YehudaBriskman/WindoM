@@ -156,6 +156,48 @@ describe('spring', () => {
     expect(Math.abs(s.value)).toBeLessThan(1000);
   });
 
+  it('stays stable at a stiffness no frame rate could integrate directly', () => {
+    // The real regression: at k=1400 c=70 a 1/30s frame breaks the stability
+    // limit of semi-implicit Euler outright, and the value ran to -4e10.
+    const s = new Spring(0, 1400, 70);
+    s.target = 500;
+    for (let i = 0; i < 200; i++) s.step(1 / 30);
+    expect(s.value).toBeCloseTo(500, 1);
+  });
+
+  it('does not diverge on a long frame at high stiffness', () => {
+    const s = new Spring(0, 1400, 70);
+    s.target = 100;
+    s.step(2);
+    expect(Number.isFinite(s.value)).toBe(true);
+    expect(Math.abs(s.value)).toBeLessThan(500);
+  });
+
+  it('covers the distance quickly, which is the point of stiffening it', () => {
+    // Measured to 99% rather than to rest: the last fraction of a pixel is not
+    // something anyone sees, and timing the tail would just be timing the rest
+    // threshold.
+    const s = new Spring(0, 1400, 70);
+    s.target = 100;
+    let frames = 0;
+    while (s.value < 99 && frames < 600) {
+      s.step(1 / 60);
+      frames++;
+    }
+    // Ten frames at 60Hz is about 165ms. The first tuning took nearly half a
+    // second to cover the same ground and the highlight visibly trailed the
+    // pointer; this is the bound that stops it drifting back there.
+    expect(frames).toBeLessThanOrEqual(10);
+  });
+
+  it('comes fully to rest rather than integrating forever', () => {
+    const s = new Spring(0, 1400, 70);
+    s.target = 100;
+    let frames = 0;
+    while (s.step(1 / 60) && frames < 600) frames++;
+    expect(frames).toBeLessThan(30);
+  });
+
   it('snaps without ringing when asked', () => {
     const s = new Spring(0);
     s.target = 50;

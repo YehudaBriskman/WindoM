@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   buildDisplacementField,
+  buildRimMask,
   fieldToDataURL,
+  rasterToDataURL,
   type GlassSurface,
 } from '../lib/liquid-glass';
 import { GLASS_PRESETS, subscribeGlassSurfaces, type GlassKey } from '../lib/glass-registry';
@@ -89,6 +91,21 @@ export function GlassFilters() {
 }
 
 const cache = new Map<string, { href: string; width: number; height: number; scale: number }>();
+
+/** Rim masks, keyed the same way. Read by the hook, not by this component. */
+const maskCache = new Map<string, string>();
+
+export function rimMaskFor(surface: GlassSurface, id: string): string {
+  const hit = maskCache.get(id);
+  if (hit !== undefined) return hit;
+  const url = rasterToDataURL(
+    buildRimMask(surface),
+    Math.round(surface.width),
+    Math.round(surface.height),
+  );
+  maskCache.set(id, url);
+  return url;
+}
 
 function buildFilter(surface: GlassSurface & { key: GlassKey }) {
   const id = surfaceId(surface);

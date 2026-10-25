@@ -204,15 +204,64 @@ export function buildDisplacementField(surface: GlassSurface): DisplacementField
   return { data, width: w, height: h, scale: max };
 }
 
-/** Rasterised field as a PNG data URL, for `feImage`. */
-export function fieldToDataURL(field: DisplacementField): string {
+/**
+ * An alpha mask covering just the bezel: opaque at the rim, clear inside.
+ *
+ * This is what makes the refraction visible at all. The pane blurs its backdrop
+ * hard so that text behind it stops competing - but displacing a backdrop that
+ * is already a smooth gradient changes nothing anybody can see. Refraction only
+ * reads where there is detail left to bend.
+ *
+ * So the lensing gets its own layer, blurred far less and confined to the rim
+ * by this mask. The result is the thing a thick pane actually does: a crisp,
+ * stretched band of the world around the edge, falling away into softness
+ * toward the middle.
+ *
+ * The falloff is smoothstepped rather than linear - a hard mask edge draws a
+ * visible seam exactly where the eye is already looking.
+ */
+export function buildRimMask(surface: GlassSurface): Uint8ClampedArray<ArrayBuffer> {
+  const { width, height, radius, bezel } = surface;
+  const w = Math.max(1, Math.round(width));
+  const h = Math.max(1, Math.round(height));
+  const data = new Uint8ClampedArray(new ArrayBuffer(w * h * 4));
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const o = (y * w + x) * 4;
+      const d = roundedRectDistance(x + 0.5, y + 0.5, w, h, radius);
+      let a = 0;
+      if (d > 0 && d < bezel) {
+        const t = 1 - d / bezel;
+        a = t * t * (3 - 2 * t);
+      } else if (d <= 0) {
+        a = 1;
+      }
+      data[o] = 255;
+      data[o + 1] = 255;
+      data[o + 2] = 255;
+      data[o + 3] = a * 255;
+    }
+  }
+  return data;
+}
+
+/** Any RGBA raster as a PNG data URL. */
+export function rasterToDataURL(
+  data: Uint8ClampedArray<ArrayBuffer>, width: number, height: number,
+): string {
   const canvas = document.createElement('canvas');
-  canvas.width = field.width;
-  canvas.height = field.height;
+  canvas.width = width;
+  canvas.height = height;
   const ctx = canvas.getContext('2d');
   if (!ctx) return '';
-  ctx.putImageData(new ImageData(field.data, field.width, field.height), 0, 0);
+  ctx.putImageData(new ImageData(data, width, height), 0, 0);
   return canvas.toDataURL('image/png');
+}
+
+/** Rasterised field as a PNG data URL, for `feImage`. */
+export function fieldToDataURL(field: DisplacementField): string {
+  return rasterToDataURL(field.data, field.width, field.height);
 }
 
 // ── Motion ──────────────────────────────────────────────────────────────────
@@ -225,6 +274,14 @@ export function fieldToDataURL(field: DisplacementField): string {
  * as light moving across something solid. Explicit Euler blows up at the
  * stiffnesses that feel right, so velocity is updated before position.
  */
+/**
+ * Internal integration step, in seconds.
+ *
+ * 1/480 stays stable up to a damping of 960, which is far past anything that
+ * feels good, so springs can be tuned without arithmetic.
+ */
+const FIXED_STEP = 1 / 480;
+
 export class Spring {
   value: number;
   velocity = 0;
@@ -237,14 +294,28 @@ export class Spring {
 
   /** Advance by `dt` seconds. Returns true while still moving. */
   step(dt: number): boolean {
-    // Long frames (a background tab, a slow paint) would otherwise integrate
-    // into a violent overshoot.
-    const h = Math.min(dt, 1 / 30);
-    const force = (this.target - this.value) * this.stiffness - this.velocity * this.damping;
-    this.velocity += force * h;
-    this.value += this.velocity * h;
+    // Substepped at a fixed internal rate, and this is not optional.
+    //
+    // Semi-implicit Euler is only stable while `h * damping < 2`. A frame of
+    // 1/30s against a damping of 70 gives 2.33: the damping term overshoots
+    // zero, flips the velocity, and grows without bound - the light ran off to
+    // -4e10 the first time this spring was stiffened. Fixing the internal step
+    // decouples stability from both the frame rate and the constants, so a
+    // spring can be tuned by feel without re-deriving its stability limit.
+    const total = Math.min(dt, 0.25);
+    const steps = Math.max(1, Math.ceil(total / FIXED_STEP));
+    const h = total / steps;
 
-    if (Math.abs(this.velocity) < 0.001 && Math.abs(this.target - this.value) < 0.001) {
+    for (let i = 0; i < steps; i++) {
+      const force = (this.target - this.value) * this.stiffness - this.velocity * this.damping;
+      this.velocity += force * h;
+      this.value += this.velocity * h;
+    }
+
+    // Rest threshold in pixels, since that is what every spring here carries.
+    // At 0.001 the spring kept integrating - and kept a rAF loop alive -
+    // for a quarter second after the motion was visually over.
+    if (Math.abs(this.velocity) < 0.05 && Math.abs(this.target - this.value) < 0.05) {
       this.value = this.target;
       this.velocity = 0;
       return false;

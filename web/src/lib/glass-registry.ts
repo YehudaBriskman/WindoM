@@ -64,17 +64,19 @@ export function registerGlassSurface(
   width: number,
   height: number,
   radius: number,
-): string {
+): Registered & { id: string } {
   const id = glassFilterId(key, width, height, radius);
-  if (surfaces.has(id)) return id;
+  const existing = surfaces.get(id);
+  if (existing) return { ...existing, id };
 
-  surfaces.set(id, {
+  const surface: Registered = {
     key,
     width: Math.round(width),
     height: Math.round(height),
     radius: Math.round(radius),
     ...GLASS_PRESETS[key],
-  });
+  };
+  surfaces.set(id, surface);
   notify();
-  return id;
+  return { ...surface, id };
 }
