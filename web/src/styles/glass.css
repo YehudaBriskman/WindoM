@@ -4,10 +4,37 @@
    ============================================================ */
 
 /* ============================================================
-   Liquid Glass Utilities (iOS-style with SVG distortion)
+   Liquid glass
+   ============================================================
+
+   The material is four layers, and the order matters:
+
+     ::after   the backdrop, refracted and optically thickened   (z -1)
+     element   the body tint                                     (z  0)
+     ::before  the specular rim and inner sheen                  (z  2)
+     content   whatever the pane is actually for                 (z  1)
+
+   The refraction comes from a generated displacement field - see
+   lib/liquid-glass.ts - delivered through the --glass-refract custom property,
+   because a filter URL cannot be written in a stylesheet for an element whose
+   size is not known until it is measured. Where no field has been generated
+   yet, the property is empty and the pane is simply blurred: correct, just not
+   yet curved.
+
+   No -webkit- prefix anywhere below. Blink treats -webkit-backdrop-filter as a
+   true alias rather than a fallback, so a prefixed declaration after the real
+   one replaces it - and the minifier, seeing two declarations of one property,
+   kept the prefixed one and discarded the refraction with it. The extension is
+   Chromium-only, so the prefix was only ever a way to lose the effect.
+
+   Optical density is the other half. The previous material tinted at 3% white,
+   which over a dark photograph is nothing, so a bright widget behind a panel
+   stayed legible through it and collided with the text in front. Glass does not
+   work that way: a thick pane dims and desaturates whatever is behind it until
+   it reads as texture. `brightness()` in the backdrop filter is what does that
+   here, and it is why the content on the pane now wins.
    ============================================================ */
 
-/* Shared base - positioning + stacking context for pseudo-elements */
 .glass-panel,
 .glass-sidebar,
 .glass-settings,
@@ -16,28 +43,29 @@
 .glass-dock {
   position: relative;
   isolation: isolate;
-  background: rgba(255, 255, 255, 0.03);
+
+  /* Lit from the upper left until the pointer says otherwise, so the material
+     is never flat on first paint. */
+  --glass-lx: 30%;
+  --glass-ly: -10%;
+  --glass-lit: 0.8;
+  /* 0 when the light is far from this pane, 1 when it is on it. Sprung in the
+     hook, so it arrives late and settles. */
+  --glass-prox: 0;
+
+  /* Everything that moves does so on one curve, and it is not a linear one.
+     Glass has mass: it starts slowly, carries, and arrives without a bounce
+     it has not earned. */
+  transition:
+    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Inner glow layer - liquid highlight edges */
-.glass-panel::before,
-.glass-sidebar::before,
-.glass-settings::before,
-.glass-quote::before,
-.glass-credit::before,
-.glass-dock::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
-    inset 0 0 3px 1px rgba(255, 255, 255, 0.5);
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Backdrop distortion layer - shared base */
+/* ── The backdrop ─────────────────────────────────────────────────────────
+   Refraction has to sit on its own layer. Putting a filter on the pane itself
+   displaces its children too, and text drawn through a displacement field is
+   unreadable. */
 .glass-panel::after,
 .glass-sidebar::after,
 .glass-settings::after,
@@ -52,72 +80,156 @@
   z-index: -1;
 }
 
-/* Per-element blur + distortion filter */
+/* ── The specular rim ─────────────────────────────────────────────────────
+   Two highlights, because real glass gives two: a broad sheen across the face
+   where the surface is flat, and a tight bright line along the rim where it
+   curves away. Both are anchored to the light, so both travel as it moves. */
+.glass-panel::before,
+.glass-sidebar::before,
+.glass-settings::before,
+.glass-quote::before,
+.glass-credit::before,
+.glass-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+
+  /* Two highlights from one light. The broad sheen is the face of the pane
+     catching it; the tight core is the pointer's own reflection, which only
+     appears as the light comes near - that is what --glass-prox gates. The
+     core tightens as it approaches, so the material reads as gathering toward
+     the cursor rather than merely brightening under it. */
+  background:
+    radial-gradient(
+      calc(28% - 10% * var(--glass-prox)) calc(26% - 9% * var(--glass-prox))
+        at var(--glass-lx) var(--glass-ly),
+      rgba(255, 255, 255, calc(0.30 * var(--glass-prox) * var(--glass-lit))) 0%,
+      rgba(255, 255, 255, calc(0.08 * var(--glass-prox) * var(--glass-lit))) 55%,
+      transparent 100%
+    ),
+    radial-gradient(
+      130% 100% at var(--glass-lx) var(--glass-ly),
+      rgba(255, 255, 255, calc(0.20 * var(--glass-lit))) 0%,
+      rgba(255, 255, 255, calc(0.05 * var(--glass-lit))) 38%,
+      transparent 72%
+    );
+
+  /* The rim light. An inset shadow traces the border, and offsetting it away
+     from the light is what makes the bright edge appear on the lit side and
+     the dark one opposite - the asymmetry that reads as a bevel rather than
+     an outline. */
+  box-shadow:
+    inset 1px 1px 0 0 rgba(255, 255, 255, calc((0.5 + 0.25 * var(--glass-prox)) * var(--glass-lit))),
+    inset -1px -1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 0 12px 0 rgba(255, 255, 255, calc(0.10 * var(--glass-lit)));
+
+  transition: box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Pressing ─────────────────────────────────────────────────────────────
+   A short, sharp give on the way down and a slower recovery. Equal timing in
+   both directions reads as a button; the asymmetry is what reads as something
+   yielding and springing back. */
+.glass-panel:active,
+.glass-dock:active,
+.glass-quote:active {
+  transition:
+    box-shadow 0.08s ease-out,
+    background-color 0.08s ease-out;
+}
+
+/* ── Per-material depth ───────────────────────────────────────────────────
+   Thicker glass blurs more, dims more and carries a heavier shadow. The
+   brightness values are the legibility control: the lower the number, the more
+   a busy backdrop recedes behind the content. */
+
 .glass-panel::after {
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  filter: url(#glass-distort);
+  backdrop-filter: blur(28px) saturate(170%) brightness(0.62) var(--glass-refract, );
 }
 .glass-panel {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background: rgba(14, 16, 24, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.45),
+    0 2px 10px rgba(0, 0, 0, 0.25);
 }
 
 .glass-sidebar::after {
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  filter: url(#glass-distort);
+  backdrop-filter: blur(26px) saturate(170%) brightness(0.66) var(--glass-refract, );
 }
 .glass-sidebar {
+  background: rgba(14, 16, 24, 0.22);
   border-left: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.3);
 }
 
 .glass-settings::after {
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  filter: url(#glass-distort);
+  backdrop-filter: blur(30px) saturate(170%) brightness(0.62) var(--glass-refract, );
 }
 .glass-settings {
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
+  background: rgba(14, 16, 24, 0.26);
+  border-right: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.3);
 }
 
 .glass-quote::after {
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  filter: url(#glass-distort-sm);
+  backdrop-filter: blur(16px) saturate(150%) brightness(0.72) var(--glass-refract, );
 }
 .glass-quote {
+  background: rgba(14, 16, 24, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .glass-credit::after {
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  filter: url(#glass-distort-sm);
+  backdrop-filter: blur(14px) saturate(150%) brightness(0.7) var(--glass-refract, );
 }
 .glass-credit {
+  background: rgba(14, 16, 24, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
 }
 
 .glass-dock::after {
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  filter: url(#glass-distort-sm);
+  backdrop-filter: blur(20px) saturate(170%) brightness(0.62) var(--glass-refract, );
 }
 .glass-dock {
+  background: rgba(14, 16, 24, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+}
+
+/* The pane's own content sits above the backdrop and below the rim. */
+.glass-panel > *,
+.glass-sidebar > *,
+.glass-settings > *,
+.glass-quote > *,
+.glass-credit > *,
+.glass-dock > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Reduced motion keeps the material and stops the light. The highlight is
+   pinned by the hook; this guards the transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .glass-panel,
+  .glass-sidebar,
+  .glass-settings,
+  .glass-quote,
+  .glass-credit,
+  .glass-dock {
+    transition: none !important;
+  }
 }
 
 /* Glass input - inputs can't use pseudo-elements, inline liquid glass */
 .glass-input {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
@@ -134,59 +246,117 @@
 }
 
 /* ============================================================
-   Shared element glass - grouped by identical values
+   Controls
+   ============================================================
+
+   Everything small: inputs, selects, buttons, rows, cards.
+
+   These get the light but not the lens. A displacement field is generated per
+   element geometry, and on a 36 pixel control the bezel would be two pixels
+   wide - refraction nobody can see, paid for with a rasterised field each. The
+   light is the opposite: it is the part you notice, and it costs nothing here
+   because --glass-lx, --glass-ly and --glass-prox inherit from whichever pane
+   the control sits on.
+
+   Inheriting means every control on a panel is lit by the same moving source
+   and they sweep together, which is what a large light actually does to a tray
+   of objects. A control lit independently of the panel it sits on looks like a
+   sticker on it.
    ============================================================ */
 
-/* Standard field glass: bg 0.05 · border 0.1 · inset shadow 0.4/0.15 */
+.glass-control,
 .settings-input,
 .settings-select,
+.settings-file-input,
+.settings-close,
+.settings-reset-btn,
 .todo-input,
 .todo-item,
 .calendar-date,
 .event-item,
-.settings-close {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.integration-card,
+.auth-user-card,
+.visibility-table {
+  position: relative;
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(6px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+
+  /* The rim, lit from the same source as the pane. The first inset is the lit
+     edge and the second the shaded one; keeping the shaded edge constant is
+     what stops a control from looking like it is glowing on both sides. */
   box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+    inset 1px 1px 0 -0.5px rgba(255, 255, 255, calc(0.42 * var(--glass-lit, 0.8))),
+    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.07),
+    inset 0 0 8px -2px rgba(255, 255, 255, calc(0.18 * var(--glass-lit, 0.8)));
+
+  transition:
+    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Standard field focus glass */
+/* The sheen. A separate layer because these elements carry their own content
+   and several of them are inputs, which cannot host pseudo-elements - so this
+   rides on the background instead, as a gradient layered under the tint. */
+.glass-control,
+.settings-close,
+.settings-reset-btn,
+.todo-item,
+.calendar-date,
+.event-item,
+.integration-card,
+.auth-user-card {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, calc(0.10 * var(--glass-lit, 0.8))) 0%,
+    rgba(255, 255, 255, 0.02) 42%,
+    transparent 75%
+  );
+}
+
+/* Hover lifts the material toward the light rather than just tinting it. */
+.glass-control:hover,
+.settings-close:hover,
+.settings-reset-btn:hover,
+.todo-item:hover,
+.calendar-date:hover,
+.event-item:hover,
+.integration-card:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow:
+    inset 1px 1px 0 -0.5px rgba(255, 255, 255, calc(0.62 * var(--glass-lit, 0.8))),
+    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.09),
+    inset 0 0 12px -2px rgba(255, 255, 255, calc(0.26 * var(--glass-lit, 0.8)));
+}
+
+/* Focus is a state the keyboard has to be able to see, so it reads as a ring
+   rather than a brightness change. */
 .settings-input:focus,
 .settings-select:focus,
-.todo-input:focus {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+.todo-input:focus,
+.glass-control:focus-visible,
+.glass-input:focus {
+  background-color: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.34);
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.06),
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
-    inset 0 0 3px 1px rgba(255, 255, 255, 0.25);
+    0 0 0 3px rgba(255, 255, 255, 0.08),
+    inset 1px 1px 0 -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 0 12px -2px rgba(255, 255, 255, 0.3);
+  outline: none;
 }
 
-/* Dim card glass: bg 0.04 · border 0.1 · inset shadow 0.35/0.12 */
-.settings-file-input,
-.auth-user-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Pressing: fast down, slow back. */
+.glass-control:active,
+.settings-close:active,
+.settings-reset-btn:active,
+.todo-item:active,
+.calendar-date:active {
+  background-color: rgba(255, 255, 255, 0.14);
   box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+    inset 2px 2px 6px -2px rgba(0, 0, 0, 0.5),
+    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.1);
+  transition-duration: 0.07s;
 }
 
-/* Subtle card glass: bg 0.04 · border 0.1 · inset shadow 0.3/0.1 */
-.integration-card,
-.visibility-table {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.3),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.1);
-}
-
-/* Muted hover glass: bg 0.1 · border-color 0.22 */
-.settings-close:hover,
-.settings-reset-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
-}
