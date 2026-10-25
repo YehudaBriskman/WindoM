@@ -30,7 +30,11 @@ describe('settings link validation', () => {
   ])('accepts HTTP(S) link %s', async (url) => {
     const response = await saveLink(url);
     expect(response.statusCode).toBe(200);
-    expect(saveSettings).toHaveBeenCalledWith('user-1', { widgets: { quickLinks: [{ name: 'Example', url }] } });
+    // Stored trimmed: the validator normalises surrounding whitespace rather
+    // than persisting a link that renders with a space in it and breaks any
+    // consumer that feeds it to `new URL()`.
+    expect(saveSettings).toHaveBeenCalledWith('user-1',
+      { widgets: { quickLinks: [{ name: 'Example', url: url.trim() }] } });
   });
 
   it.each(['', 'https://', 'example.com', '//example.com', '/path', 'javascript:alert(1)',
