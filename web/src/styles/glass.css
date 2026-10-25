@@ -109,7 +109,7 @@
   /* The lens. Masked to the bezel by the generated rim mask; where no mask has
      been generated yet the layer is simply absent rather than covering the
      pane. */
-  backdrop-filter: blur(5px) saturate(108%) var(--glass-refract, );
+  backdrop-filter: saturate(112%) brightness(1.04) var(--glass-refract, );
   -webkit-mask-image: var(--glass-rim, none);
   mask-image: var(--glass-rim, none);
   -webkit-mask-size: 100% 100%;
@@ -165,85 +165,80 @@
 
 /* ── Per-material depth ───────────────────────────────────────────────────
 
-   Legibility comes from the blur radius, not from paint.
+   Glass is a light material. Every previous attempt here got that backwards.
 
-   The first attempt reached for `brightness(0.62)` and `saturate(170%)` and
-   produced a brown slab. Both were wrong in the same way. Dimming does not
-   make something look like glass, it makes it look like a dark card; and
-   amplifying saturation over a photograph bleeds its hue through, so a sunset
-   behind the panel turned the whole pane muddy orange.
+   Look at what real liquid glass does over a photograph: you can still read
+   what is behind it. The terraces, the trees, the colour - all still there,
+   stretched and softened but present. The pane is brighter than its backdrop,
+   not darker, and the effect comes from *distortion* rather than occlusion.
 
-   What actually hides a bright widget behind a pane is blur *magnitude*. Text
-   and edges are high-frequency detail, and a wide enough radius destroys them
-   outright - what survives is a smooth luminance gradient, which reads as
-   something seen through thick glass rather than something competing with the
-   content in front.
+   Both earlier passes reached for the same wrong lever. First a dark tint,
+   then a brightness cut, then a 56px blur - each one hiding the backdrop a
+   little more thoroughly, and each one taking the pane further from glass and
+   closer to a card with a photo vaguely behind it.
 
-   So: a large radius, a mild desaturation to stop the backdrop's colour
-   dominating, a slight contrast pull toward mid-grey for the milky quality
-   frosted glass has, and a thin neutral veil - grey rather than navy, because
-   a blue veil over warm light is exactly what made it brown.
+   So: a light veil rather than a dark one, blur low enough that the backdrop
+   survives it, and a lift in brightness rather than a cut. White text stays
+   legible on it the way it does in the reference - through the shadow it
+   already carries, not by drowning everything underneath.
    ───────────────────────────────────────────────────────────────────────── */
 
 .glass-panel::after {
-  backdrop-filter: blur(56px) saturate(88%) contrast(0.92) var(--glass-refract, );
+  backdrop-filter: blur(14px) saturate(118%) brightness(1.06) var(--glass-refract, );
 }
 .glass-panel {
-  background: rgba(22, 22, 26, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.4),
-    0 2px 10px rgba(0, 0, 0, 0.22);
+    0 20px 50px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .glass-sidebar::after {
-  backdrop-filter: blur(52px) saturate(88%) contrast(0.92) var(--glass-refract, );
+  backdrop-filter: blur(13px) saturate(118%) brightness(1.05) var(--glass-refract, );
 }
 .glass-sidebar {
-  background: rgba(22, 22, 26, 0.18);
-  border-left: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.09);
+  border-left: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: -10px 0 34px rgba(0, 0, 0, 0.22);
 }
 
 .glass-settings::after {
-  backdrop-filter: blur(56px) saturate(88%) contrast(0.92) var(--glass-refract, );
+  backdrop-filter: blur(14px) saturate(118%) brightness(1.06) var(--glass-refract, );
 }
 .glass-settings {
-  background: rgba(22, 22, 26, 0.2);
-  border-right: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 12px 0 40px rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  border-right: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 10px 0 34px rgba(0, 0, 0, 0.22);
 }
 
 .glass-quote::after {
-  backdrop-filter: blur(30px) saturate(92%) contrast(0.95) var(--glass-refract, );
+  backdrop-filter: blur(10px) saturate(115%) brightness(1.04) var(--glass-refract, );
 }
 .glass-quote {
-  background: rgba(22, 22, 26, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.11);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
 }
 
 .glass-credit::after {
-  backdrop-filter: blur(26px) saturate(92%) contrast(0.95) var(--glass-refract, );
+  backdrop-filter: blur(10px) saturate(115%) brightness(1.04) var(--glass-refract, );
 }
 .glass-credit {
-  background: rgba(22, 22, 26, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
 }
 
-/* Small floating chrome sits over whatever the page is showing, so it blurs
-   hard for its size - a dock over a busy photograph has no panel area to hide
-   behind. */
 .glass-dock::after {
-  backdrop-filter: blur(40px) saturate(90%) contrast(0.94) var(--glass-refract, );
+  backdrop-filter: blur(12px) saturate(118%) brightness(1.06) var(--glass-refract, );
 }
 .glass-dock {
-  background: rgba(22, 22, 26, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.26),
-    0 1px 2px rgba(0, 0, 0, 0.2);
+    0 8px 26px rgba(0, 0, 0, 0.22),
+    0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 /* The pane's own content sits above the backdrop and below the rim. */
@@ -322,17 +317,21 @@
 .auth-user-card,
 .visibility-table {
   position: relative;
-  background: rgba(255, 255, 255, 0.055);
-  backdrop-filter: blur(6px) saturate(130%);
-  border: 1px solid rgba(255, 255, 255, 0.11);
+  /* Reads as a recess in the pane rather than another sheet on top of it: a
+     touch darker than the glass it sits in, with a bright upper rim. Tinting
+     these lighter than their parent is what made the first version look like
+     stickers. */
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(3px) saturate(112%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 
   /* The rim, lit from the same source as the pane. The first inset is the lit
      edge and the second the shaded one; keeping the shaded edge constant is
      what stops a control from looking like it is glowing on both sides. */
   box-shadow:
-    inset 1px 1px 0 -0.5px rgba(255, 255, 255, calc(0.42 * var(--glass-lit, 0.8))),
-    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.07),
-    inset 0 0 8px -2px rgba(255, 255, 255, calc(0.18 * var(--glass-lit, 0.8)));
+    inset 0 1px 0 0 rgba(255, 255, 255, calc(0.5 * var(--glass-lit, 0.8))),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.12),
+    inset 0 2px 6px -3px rgba(0, 0, 0, 0.3);
 
   transition:
     background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),

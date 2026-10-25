@@ -17,14 +17,18 @@ import type { GlassSurface } from './liquid-glass';
 
 /** Thickness and bezel per material, in pixels. */
 export const GLASS_PRESETS = {
+  // Bezels are wide on purpose. A 20px band on a 500px panel is a hairline
+  // nobody reads as thickness; the reference material bends light across a
+  // visible fraction of the pane, and that band is most of what makes it look
+  // like a solid object rather than a translucent rectangle.
   /** Dialogs and settings. Thick, because size reads as depth. */
-  panel: { bezel: 22, thickness: 26 },
+  panel: { bezel: 56, thickness: 34 },
   /** Edge-anchored surfaces. */
-  sidebar: { bezel: 20, thickness: 22 },
+  sidebar: { bezel: 48, thickness: 30 },
   /** Small floating chrome: docks, pills, the weather widget. */
-  dock: { bezel: 14, thickness: 16 },
+  dock: { bezel: 22, thickness: 20 },
   /** Quiet, nearly flat surfaces that sit under text. */
-  quote: { bezel: 12, thickness: 10 },
+  quote: { bezel: 20, thickness: 14 },
 } as const;
 
 export type GlassKey = keyof typeof GLASS_PRESETS;

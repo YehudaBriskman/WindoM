@@ -23,6 +23,17 @@ type Pane = {
   key: GlassKey;
   /** How near the light is to this pane, sprung so it swells and settles. */
   proximity: Spring;
+  /**
+   * Last known box, cached.
+   *
+   * Reading `getBoundingClientRect` inside the frame loop forces a synchronous
+   * layout, and because the loop also writes custom properties, the sequence
+   * became write-read-write-read across every pane on every frame - the
+   * browser re-laying-out six times a frame to answer questions whose answers
+   * had not changed. Geometry only moves on resize or scroll, so it is read
+   * there and only there.
+   */
+  rect: DOMRect | null;
 };
 
 const panes = new Set<Pane>();
@@ -56,9 +67,8 @@ function onPointerMove(event: PointerEvent): void {
 
 function paint(): void {
   for (const pane of panes) {
-    const { el } = pane;
-    const rect = el.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) continue;
+    const { el, rect } = pane;
+    if (!rect || rect.width === 0 || rect.height === 0) continue;
 
     // Where the light sits over this pane, as a percentage of its own box.
     // Values run outside 0-100 when the light is off the element, which is
@@ -166,11 +176,12 @@ export function useLiquidGlass<T extends HTMLElement>(
     bindPointer();
     // Softer than the light, and deliberately so: this is the one thing that
     // should lag. The reflection tracks, the material gathers.
-    const pane: Pane = { el, key, proximity: new Spring(0, 200, 26) };
+    const pane: Pane = { el, key, proximity: new Spring(0, 200, 26), rect: null };
     panes.add(pane);
 
     const measure = (): void => {
       const rect = el.getBoundingClientRect();
+      pane.rect = rect;
       if (rect.width < 2 || rect.height < 2) return;
       const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
       const surface = registerGlassSurface(key, rect.width, rect.height, radius);
@@ -194,8 +205,16 @@ export function useLiquidGlass<T extends HTMLElement>(
       : null;
     observer?.observe(el);
 
+    // Scrolling moves a pane under a light that has not moved, so the cache
+    // has to be refreshed - but passively and coalesced, never from the frame
+    // loop.
+    window.addEventListener('scroll', measure, { passive: true, capture: true });
+    window.addEventListener('resize', measure, { passive: true });
+
     return () => {
       observer?.disconnect();
+      window.removeEventListener('scroll', measure, { capture: true });
+      window.removeEventListener('resize', measure);
       panes.delete(pane);
     };
   }, [key]);
