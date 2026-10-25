@@ -1313,14 +1313,16 @@ input[type="file"]::file-selector-button:hover {
 
 .tab-sidebar-panel-left {
   left: 10px;
-  transform: translateX(-110%) scaleX(0.88);
+  /* No scale: a scaled element resamples its own filter, and the
+     refracted rim goes crooked for the length of the transition. */
+  transform: translateX(-110%);
   transform-origin: left center;
   border-left: none;
 }
 
 .tab-sidebar-panel-right {
   right: 10px;
-  transform: translateX(110%) scaleX(0.88);
+  transform: translateX(110%);
   transform-origin: right center;
   border-right: none;
 }

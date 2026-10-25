@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useSpotify } from '../../hooks/useSpotify';
+import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 export function SpotifyPlayer() {
+  const glassRef = useLiquidGlass<HTMLDivElement>('dock');
   const { isPlaying, progressMs, track, spotifyConnected, error, control } = useSpotify();
   const [hovered, setHovered] = useState(false);
 
@@ -11,6 +13,7 @@ export function SpotifyPlayer() {
 
   return (
     <div
+      ref={glassRef}
       className={`spotify-dock glass-dock${hovered ? ' spotify-dock--open' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

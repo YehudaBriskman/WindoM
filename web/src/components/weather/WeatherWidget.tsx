@@ -3,8 +3,10 @@ import { useWeather } from '../../hooks/useWeather';
 import { useSettings } from '../../contexts/SettingsContext';
 import { WeatherIcon } from './WeatherIcon';
 import { Thermometer, AlertTriangle } from 'lucide-react';
+import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 export function WeatherWidget() {
+  const glassRef = useLiquidGlass<HTMLDivElement>('dock');
   const { settings } = useSettings();
   const state = useWeather();
   const [hovered, setHovered] = useState(false);
@@ -38,6 +40,7 @@ export function WeatherWidget() {
   // status === 'ready'
   return (
     <div
+      ref={glassRef}
       className={`weather-widget glass-dock text-shadow-sm${hovered ? ' weather-widget--open' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}

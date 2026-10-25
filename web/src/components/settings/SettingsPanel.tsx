@@ -14,8 +14,10 @@ import { AppHub, type AppId } from "./sections/AppHub";
 import { AppCenterPanel } from "./sections/AppCenterPanel";
 import { TemplatesGallery } from "./sections/TemplatesGallery";
 import { AccountSettings } from "./sections/AccountSettings";
+import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 export function SettingsPanel() {
+  const glassRef = useLiquidGlass<HTMLDivElement>('panel');
   const { reset } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
@@ -67,6 +69,7 @@ export function SettingsPanel() {
 
       {/* Single container: gear button when collapsed, full panel when expanded */}
       <div
+        ref={glassRef}
         className={`settings-container glass-panel${isOpen ? " open" : ""}`}
         onClick={!isOpen ? () => setIsOpen(true) : undefined}
       >

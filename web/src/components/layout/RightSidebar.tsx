@@ -8,11 +8,14 @@ import { SpotifyTopTracks } from "../spotify/SpotifyTopTracks";
 import { HistorySection } from "../sidebar/HistorySection";
 import { GmailWidget } from "../gmail/GmailWidget";
 import { GitHubWidget } from "../github/GitHubWidget";
+import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 export function RightSidebar() {
+
   const { isOpen, toggle, close } = useSidebar();
   const { settings } = useSettings();
   const containerRef = useRef<HTMLDivElement>(null);
+  useLiquidGlass<HTMLDivElement>('panel', containerRef);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
