@@ -195,7 +195,13 @@ function PaneBox({ pane, state }: { pane: PaneSpec; state: string }) {
   return (
     <div
       className={`glass-pane pane-${pane.id}${state}`}
-      style={{ '--lift': `${pane.lift}rem` } as React.CSSProperties}
+      style={
+        {
+          '--lift': `${pane.lift}rem`,
+          top: pane.place.top,
+          [pane.place.side]: pane.place.inset,
+        } as React.CSSProperties
+      }
     >
       <span className="pane-label">{pane.label}</span>
       <PaneContents body={pane.body} />

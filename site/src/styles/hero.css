@@ -215,7 +215,10 @@
    card was off-screen. */
 .hero-facts {
   position: relative;
-  z-index: 2;
+  /* Above the card. The card is fixed at z-index 3 once it is travelling, and
+     these used to be the thing in front - a row that laps over the product's
+     lower edge only reads that way if it is on top of it. */
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--s-3);

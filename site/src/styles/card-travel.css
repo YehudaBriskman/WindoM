@@ -42,6 +42,33 @@
   z-index: 1;
   border-radius: var(--r-lg);
   overflow: hidden;
+
+  /**
+   * The resting pose and the pointer lean.
+   *
+   * On `transform`, while the travel owns `translate`, `scale` and `rotate` -
+   * three independent properties that compose rather than overwrite. Keeping
+   * them apart is the whole reason the card can lean toward the cursor while
+   * it is also being carried across the page.
+   *
+   * This was lost when the card moved out of the hero: `useTilt` went on
+   * writing the two custom properties and nothing read them any more, so the
+   * card sat square and dead while reporting a six-degree lean.
+   */
+  --rest-x: 1.5deg;
+  --rest-y: -8deg;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+
+  /* A long lens. The perspective applies to the card's own 1440px-wide
+     coordinate space, before the travel scales it down, so 90rem here is
+     roughly a ninety-degree field of view and the near edge balloons. Keeping
+     it at several times the card's own width gives the lean depth without the
+     distortion. */
+  transform: perspective(280rem)
+             rotateX(calc(var(--rest-x) + var(--tilt-x)))
+             rotateY(calc(var(--rest-y) + var(--tilt-y)));
+  transition: transform 320ms var(--ease);
 }
 
 /**
@@ -180,6 +207,17 @@ body.motion-paused .product-card-surface {
 .product-card-frame {
   position: absolute;
   inset: 0;
+  /* The picture is inert, and the two things in it that are not take the
+     pointer back below. Set here rather than on each container because the
+     stage is a stack of full-size layers and every one of them would
+     otherwise swallow a hit meant for a pane underneath it - which is how the
+     per-pane hover ended up unreachable despite its own rules being right. */
+  pointer-events: none;
+}
+
+.product-card .glass-pane,
+.product-card .stage-focus-controls {
+  pointer-events: auto;
 }
 
 /* The slot in the hero reserves the box the card will occupy. It draws

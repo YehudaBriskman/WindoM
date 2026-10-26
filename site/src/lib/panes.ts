@@ -51,6 +51,20 @@ export interface PaneSpec {
    * still be visible once divided by three.
    */
   lift: number;
+  /**
+   * Where the pane sits on the tab, as percentages of the card.
+   *
+   * Here rather than in eight hand-written CSS rules, because the rules could
+   * not see each other: adding two panes last round put `recent` on top of
+   * `finance` and `gmail` on top of `todos`, in both columns at once, and
+   * nothing could have caught it except looking. A single table can be read
+   * down a column and checked.
+   *
+   * Each column is a ladder of four with a pane's own height (~17%) of
+   * clearance, nudged horizontally so the result is a tab rather than a
+   * spreadsheet.
+   */
+  place: { top: string; side: 'left' | 'right'; inset: string };
   body: PaneBody;
 }
 
@@ -67,6 +81,7 @@ export const PANES: PaneSpec[] = [
     label: 'Weather',
     layer: 'back',
     lift: 0.75,
+    place: { top: '11%', side: 'left',  inset: '5%' },
     body: { kind: 'figure', figure: '18°', lines: ['Clear · Tel Aviv'] },
   },
   {
@@ -74,6 +89,7 @@ export const PANES: PaneSpec[] = [
     label: 'Markets',
     layer: 'back',
     lift: 1.1,
+    place: { top: '77%', side: 'left',  inset: '6%' },
     body: {
       kind: 'rows',
       rows: [
@@ -88,6 +104,7 @@ export const PANES: PaneSpec[] = [
     label: 'Recent',
     layer: 'back',
     lift: 0.6,
+    place: { top: '55%', side: 'left',  inset: '5%' },
     body: {
       kind: 'rows',
       rows: [
@@ -101,6 +118,7 @@ export const PANES: PaneSpec[] = [
     label: 'Today',
     layer: 'mid',
     lift: 1.65,
+    place: { top: '11%', side: 'right', inset: '5%' },
     body: {
       kind: 'list',
       items: [
@@ -115,6 +133,7 @@ export const PANES: PaneSpec[] = [
     label: 'Up next',
     layer: 'mid',
     lift: 1.35,
+    place: { top: '55%', side: 'right', inset: '7%' },
     body: {
       kind: 'figure',
       figure: '14:30',
@@ -127,6 +146,7 @@ export const PANES: PaneSpec[] = [
     label: 'Pull requests',
     layer: 'mid',
     lift: 1.9,
+    place: { top: '33%', side: 'left',  inset: '7%' },
     body: { kind: 'figure', figure: '3 open', small: true, lines: ['windom · release gate'] },
   },
   {
@@ -134,6 +154,7 @@ export const PANES: PaneSpec[] = [
     label: 'Inbox',
     layer: 'mid',
     lift: 1.0,
+    place: { top: '33%', side: 'right', inset: '6%' },
     body: { kind: 'figure', figure: '2 new', small: true, lines: ['Unsplash · API limits'] },
   },
   {
@@ -141,6 +162,7 @@ export const PANES: PaneSpec[] = [
     label: 'Now playing',
     layer: 'mid',
     lift: 1.5,
+    place: { top: '77%', side: 'right', inset: '5%' },
     body: { kind: 'track', title: 'Nightports', artist: 'Nikki Nair', progress: 38 },
   },
 ];

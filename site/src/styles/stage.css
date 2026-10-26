@@ -210,9 +210,13 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
+/* Dim, not absent. At 0.42 these vanished entirely over the afternoon
+   wallpaper, which is the brightest of the four - and a tab whose right-hand
+   column disappears for a quarter of the day does not read as a whole
+   interface, which is the entire point of dimming rather than hiding. */
 .glass-pane.is-dim {
-  opacity: 0.42;
-  transform: scale(0.95);
+  opacity: 0.62;
+  transform: scale(0.96);
 }
 
 /* Blur and refraction go on a backdrop layer behind the content, never on the
@@ -335,16 +339,6 @@
 
 /* Resting positions. Deliberately uneven - a symmetric arrangement reads as a
    diagram rather than somebody's desktop. */
-.pane-weather   { top: 15%;    left: 5%; }
-.pane-finance   { bottom: 13%; left: 6%;  min-width: 232px; }
-.pane-todos     { top: 14%;    right: 5%; }
-.pane-calendar  { top: 46%;    right: 7%; }
-.pane-github    { top: 40%;    left: 7%; }
-.pane-spotify   { bottom: 15%; right: 6%; min-width: 212px; }
-/* The two late arrivals fill the gaps the original six left: one under the
-   weather pill on the left, one between the todos and the calendar. */
-.pane-gmail     { top: 28%;    right: 6%; }
-.pane-recent    { top: 62%;    left: 5%;  min-width: 196px; }
 
 /* ── Focus mode ─────────────────────────────────────────────────────── */
 /* The one widget that is not a pane, because in the product it is not one -
@@ -869,6 +863,7 @@
 
 .stage-focus-controls {
   position: relative;
+  pointer-events: auto;
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -965,6 +960,10 @@
     transform var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     opacity var(--dur) var(--ease);
+}
+
+.glass-pane {
+  pointer-events: auto;
 }
 
 .glass-pane:hover {
