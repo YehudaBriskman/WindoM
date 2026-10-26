@@ -195,7 +195,7 @@
    ───────────────────────────────────────────────────────────────────────── */
 
 .glass-panel::after {
-  backdrop-filter: blur(14px) saturate(118%) brightness(1.06);
+  backdrop-filter: blur(5px) saturate(112%) brightness(1.04);
 }
 .glass-panel {
   background-color: rgba(255, 255, 255, 0.1);
@@ -206,7 +206,7 @@
 }
 
 .glass-sidebar::after {
-  backdrop-filter: blur(13px) saturate(118%) brightness(1.05);
+  backdrop-filter: blur(5px) saturate(112%) brightness(1.03);
 }
 .glass-sidebar {
   background-color: rgba(255, 255, 255, 0.09);
@@ -215,7 +215,7 @@
 }
 
 .glass-settings::after {
-  backdrop-filter: blur(14px) saturate(118%) brightness(1.06);
+  backdrop-filter: blur(5px) saturate(112%) brightness(1.04);
 }
 .glass-settings {
   background-color: rgba(255, 255, 255, 0.1);
@@ -224,7 +224,7 @@
 }
 
 .glass-quote::after {
-  backdrop-filter: blur(10px) saturate(115%) brightness(1.04);
+  backdrop-filter: blur(4px) saturate(110%) brightness(1.03);
 }
 .glass-quote {
   background-color: rgba(255, 255, 255, 0.07);
@@ -233,7 +233,7 @@
 }
 
 .glass-credit::after {
-  backdrop-filter: blur(10px) saturate(115%) brightness(1.04);
+  backdrop-filter: blur(4px) saturate(110%) brightness(1.03);
 }
 .glass-credit {
   background-color: rgba(255, 255, 255, 0.06);
@@ -242,7 +242,7 @@
 }
 
 .glass-dock::after {
-  backdrop-filter: blur(12px) saturate(118%) brightness(1.06);
+  backdrop-filter: blur(4px) saturate(112%) brightness(1.04);
 }
 .glass-dock {
   background-color: rgba(255, 255, 255, 0.1);
@@ -250,6 +250,21 @@
   box-shadow:
     0 8px 26px rgba(0, 0, 0, 0.22),
     0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+/* ── Legibility ───────────────────────────────────────────────────────────
+   Heavy blur used to carry this. At 4-5px the wallpaper reads through, which
+   is the point, but it also means text is sitting on a photograph. The shadow
+   goes on the panes so every label inside gets it; the handful of elements
+   that already carry .text-shadow-sm are unaffected, since theirs is more
+   specific and lands later. */
+.glass-panel,
+.glass-sidebar,
+.glass-settings,
+.glass-quote,
+.glass-credit,
+.glass-dock {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
 /* The pane's own content sits above the backdrop and below the rim. */
@@ -279,7 +294,7 @@
 /* Glass input - inputs can't use pseudo-elements, inline liquid glass */
 .glass-input {
   background-color: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(4px) saturate(112%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
