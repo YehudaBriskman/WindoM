@@ -1,0 +1,44 @@
+name: Chrome Web Store Status
+
+# Asks the store what it currently holds, and reports it.
+#
+# The upload action in publish-chrome.yml prints nothing, so a queued submission
+# and a silently rejected one produce identical logs. v1.5.0 published green
+# while the store went on serving 1.4.1, and there was no way to tell from CI
+# which had happened - the answer only existed in the Developer Dashboard.
+#
+# Read-only: it never uploads or publishes. Safe to run at any time.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version this check expects the draft to hold, e.g. 1.5.0. Optional.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  status:
+    name: Ask the store
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # The credentials live here, not at repo level.
+    environment: chrome-store
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Report what the store holds
+        run: node .github/scripts/report-store-status.mjs
+        env:
+          RELEASE_TAG: ${{ inputs.version }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
