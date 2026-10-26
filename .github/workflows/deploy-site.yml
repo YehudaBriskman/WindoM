@@ -79,6 +79,15 @@ jobs:
           for f in index.html 404.html sitemap.xml CNAME; do
             test -f "dist/$f" || { echo "::error::dist/$f is missing."; missing=1; }
           done
+          # The search index is generated from the rendered pages, so an empty
+          # or absent one means the extraction stopped matching the markup -
+          # which the prerender itself would not notice.
+          sections=$(grep -o '"id"' dist/search-index.json 2>/dev/null | wc -l)
+          echo "  search index: $sections sections"
+          if [ "$sections" -lt 50 ]; then
+            echo "::error::dist/search-index.json has $sections sections - expected well over 50."
+            missing=1
+          fi
           exit $missing
 
       - uses: actions/configure-pages@v6
