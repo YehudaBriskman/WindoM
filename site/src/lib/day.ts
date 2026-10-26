@@ -101,13 +101,66 @@ export function formatClock(date: Date): string {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-/** Mid-stage clock times, used once scroll takes over from real time. */
+/** Mid-stage clock times. Each is the hour its stage is anchored to. */
 export const STAGE_CLOCK: Record<Stage, string> = {
   morning: '08:20',
   afternoon: '14:05',
   evening: '19:40',
   night: '23:15',
 };
+
+/** Minutes past midnight, for interpolating between the anchors above. */
+function minutesOf(clock: string): number {
+  const [h = '0', m = '0'] = clock.split(':');
+  return Number(h) * 60 + Number(m);
+}
+
+/**
+ * The anchors as minutes, bracketed by an extra stop at either end.
+ *
+ * The outer two are extrapolation anchors rather than times anyone sees: the
+ * anchors sit at stage midpoints, so the first and last half-stage need
+ * something to interpolate towards. In practice the scroll runs 07:30 to 23:37.
+ */
+const CLOCK_STOPS = [
+  minutesOf('06:40'),
+  ...STAGES.map((s) => minutesOf(STAGE_CLOCK[s])),
+  minutesOf('23:59'),
+];
+
+/**
+ * The time of day at a point in the scroll, as a continuous value.
+ *
+ * Reading `STAGE_CLOCK[stage]` gave four fixed strings, so the clock teleported
+ * hours in a single frame at each stage boundary while the wallpaper behind it
+ * cross-faded over a second. The picture glided and the numbers jumped, and
+ * that mismatch is most of what read as jumpiness.
+ *
+ * Interpolated piecewise between the stage anchors rather than linearly across
+ * the whole day: each stage still reads exactly its anchor time at its
+ * midpoint - which is what the copy beside it is written against - and the
+ * minutes simply advance in between. The extra stop at either end means the
+ * clock is already moving as the first stage arrives and keeps moving out of
+ * the last, instead of sitting still at the extremes.
+ */
+export function clockForProgress(progress: number): string {
+  const clamped = Math.min(Math.max(progress, 0), 1);
+
+  // Anchors sit at stage midpoints, so the usable span runs from the first
+  // midpoint to the last with half a stage of run-up at either end.
+  const span = 1 / STAGES.length;
+  const position = clamped / span + 0.5; // 0.5 .. STAGES.length + 0.5
+  const index = Math.min(Math.floor(position), CLOCK_STOPS.length - 2);
+  const within = position - index;
+
+  const from = CLOCK_STOPS[index] ?? CLOCK_STOPS[0]!;
+  const to = CLOCK_STOPS[index + 1] ?? from;
+  const minutes = Math.round(from + (to - from) * Math.min(Math.max(within, 0), 1));
+
+  const date = new Date(2026, 0, 1, 0, 0, 0);
+  date.setMinutes(minutes);
+  return formatClock(date);
+}
 
 /** The dock, mirroring the extension's Quick Links. */
 export const DOCK = [
