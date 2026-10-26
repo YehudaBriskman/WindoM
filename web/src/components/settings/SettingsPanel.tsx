@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Settings, X } from "lucide-react";
+import { Settings } from "lucide-react";
 import { useSettings } from "../../contexts/SettingsContext";
 import { SETTINGS_EVENT } from "../../lib/settings-events";
 import { SettingsNav, type SettingsTab } from "./SettingsNav";
@@ -45,7 +45,38 @@ export function SettingsPanel() {
     };
   }, []);
 
-  const close = useCallback(() => setIsOpen(false), []);
+  /**
+   * Dismissal, now that the panel has no close button and no backdrop.
+   *
+   * The backdrop used to be the click-outside: a full-screen element under the
+   * panel catching every stray click. Removing it for an element anchored in a
+   * corner means the panel needs to listen for itself.
+   *
+   * Escape is not optional here. With the X gone, a keyboard user who opened
+   * this panel would otherwise have no way out of it at all.
+   */
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onPointerDown = (event: MouseEvent) => {
+      const panel = glassRef.current;
+      if (panel && !panel.contains(event.target as Node)) setIsOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+
+    // `mousedown` rather than `click`: a click whose target React unmounts
+    // mid-gesture - deleting a row, switching a tab - fails the `contains`
+    // check afterwards and would close the panel as a side effect.
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isOpen, glassRef]);
+
   const closeApp = useCallback(() => setOpenAppId(null), []);
 
   const handleReset = useCallback(async () => {
@@ -61,11 +92,6 @@ export function SettingsPanel() {
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className={`settings-backdrop ${isOpen ? "visible" : "hidden"}`}
-        onClick={close}
-      />
 
       {/* Single container: gear button when collapsed, full panel when expanded */}
       <div
@@ -100,18 +126,6 @@ export function SettingsPanel() {
               {activeTab === "account" && <AccountSettings />}
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              close();
-            }}
-            className="settings-close"
-            aria-label="Close settings"
-          >
-            <X size={18} />
-          </button>
         </div>
       </div>
 

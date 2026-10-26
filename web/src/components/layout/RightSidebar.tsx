@@ -1,5 +1,5 @@
 import { useRef, useEffect } from "react";
-import { LayoutList, X } from "lucide-react";
+import { LayoutList } from "lucide-react";
 import { useSidebar } from "../../hooks/useSidebar";
 import { useSettings } from "../../contexts/SettingsContext";
 import { TodoSection } from "../sidebar/TodoSection";
@@ -27,8 +27,20 @@ export function RightSidebar() {
         close();
       }
     }
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
+    // Escape, because with the close button gone this is the only way out for
+    // anyone not using a mouse.
+    function handleKey(e: KeyboardEvent) {
+      if (isOpen && e.key === "Escape") close();
+    }
+    // `mousedown` rather than `click`: a click whose target React unmounts
+    // mid-gesture - deleting a todo, say - fails the `contains` check when it
+    // finally fires, and the sidebar closed itself as a side effect.
+    document.addEventListener("mousedown", handleClick);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
   }, [isOpen, close]);
 
   return (
@@ -42,12 +54,6 @@ export function RightSidebar() {
       </div>
 
       <div className="sidebar-panel-content">
-        <div
-          onClick={(e) => { e.stopPropagation(); close(); }}
-          className="sidebar-close-btn"
-        >
-          <X size={18} />
-        </div>
         <div className="sidebar-content">
           {settings.general.showHistory && <HistorySection />}
           {settings.general.showTodo && <TodoSection />}

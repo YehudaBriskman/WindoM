@@ -211,8 +211,18 @@ a {
 /* ============================================================
    Scrollbar
    ============================================================ */
+/* No visible scrollbars anywhere.
+   Content still scrolls by wheel, trackpad and keyboard; what signals there is
+   more of it is the card clipped by the panel's bottom edge, which is a better
+   affordance than a hairline over a photograph. Two containers already did
+   this - .dock-rows and .finance-dashboard-scroll - so this generalises it. */
+* {
+  scrollbar-width: none;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 0;
+  height: 0;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -2077,9 +2087,15 @@ input[type="file"]::file-selector-button:hover {
   flex-direction: row;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--dur-content) var(--ease-out) var(--delay-content);
+  /* Leaving: no delay and quicker. The delay is there so content does not
+     appear while the box is still being resized, which is only a concern on
+     the way in - applied in both directions it left the content hanging in
+     the air for 200ms after the panel had already collapsed. */
+  transition: opacity var(--dur-sm-out) var(--ease-in);
 }
+/* Arriving: wait for the box to be most of the way there. */
 .settings-container.open .settings-inner {
+  transition: opacity var(--dur-content) var(--ease-out) var(--delay-content);
   opacity: 1;
   pointer-events: auto;
 }
@@ -2087,20 +2103,6 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Settings Backdrop
    ============================================================ */
-.settings-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  transition: opacity 0.4s;
-}
-.settings-backdrop.visible {
-  opacity: 1;
-}
-.settings-backdrop.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Settings Nav */
 /* The nav is a column of nothing but text, so it gets its own ground rather
@@ -4287,14 +4289,6 @@ body.focus-exiting .sidebar-container {
   transform: scale(1.08);
 }
 
-.guide-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(var(--scrim-blur));
-  animation: onboarding-fade-in 0.2s ease;
-}
 
 .guide-panel {
   position: fixed;

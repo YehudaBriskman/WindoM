@@ -71,11 +71,6 @@
   /* Everything that moves does so on one curve, and it is not a linear one.
      Glass has mass: it starts slowly, carries, and arrives without a bounce
      it has not earned. */
-  /* Only discrete state changes are transitioned - hover, open, focus. The
-     continuous light values are sprung instead. */
-  transition:
-    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 
   /* The specular, carried on the element's own background rather than a
      pseudo-element: ::before is the refracted rim and ::after is the backdrop,
@@ -111,6 +106,27 @@
     inset 0 -14px 22px -16px rgba(255, 255, 255, 0.14),
     inset 14px 0 22px -16px rgba(255, 255, 255, calc(0.32 * var(--glass-lit))),
     inset -14px 0 22px -16px rgba(255, 255, 255, 0.12);
+}
+
+/* `transition` is a single property: any declaration replaces the whole
+   shorthand rather than merging with it. Declared plainly here, this wiped
+   width, height and border-radius out of the settings panel's own transition
+   on close - the open state outranked it at (0,2,0) and so animated, while
+   the closed state tied at (0,1,0) and lost to this file's later position.
+   That is the entire reason panels opened smoothly and vanished instantly.
+
+   Only discrete state changes belong here anyway; the continuous light values
+   are sprung in the hook. */
+:where(
+  .glass-panel,
+  .glass-sidebar,
+  .glass-quote,
+  .glass-credit,
+  .glass-dock
+) {
+  transition:
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── The backdrop ─────────────────────────────────────────────────────────
