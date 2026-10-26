@@ -12,7 +12,7 @@ export function Guide() {
   return (
     <DocsLayout path="/he/guide" eyebrow="מדריך למשתמש" title="שימוש ב-WindoM" dir="rtl">
         <div className="callout tip">
-            <strong>רוב הפונקציות לא דורשות חשבון.</strong> שעון, מזג אוויר, משימות, רקעים, ציטוטים, קישורים מהירים וטיימר הפוקוס עובדים מיד ללא התחברות. חשבון נדרש רק לסנכרון Google Calendar ו-Spotify. תמיד אפשר להוסיף אחד מאוחר יותר.
+            <strong>רוב הפונקציות לא דורשות חשבון.</strong> שעון, מזג אוויר, משימות, רקעים, ציטוטים, קישורים מהירים וטיימר הפוקוס עובדים מיד ללא התחברות. חשבון נדרש רק לסנכרון Google Calendar, ל-Spotify ול-GitHub. תמיד אפשר להוסיף אחד מאוחר יותר.
           </div>
           <div className="feature-grid">
             <div className="feature-card">
@@ -56,7 +56,7 @@ export function Guide() {
             יצירת חשבון WindoM
             <span className="badge optional">Optional</span>
           </h2>
-          <p>חשבון WindoM מסנכרן את ההגדרות שלך בין מכשירים ונדרש לחיבור Google Calendar או Spotify. ההרשמה חינמית ולוקחת פחות מדקה.
+          <p>חשבון WindoM מסנכרן את ההגדרות שלך בין מכשירים ונדרש לחיבור Google Calendar, Spotify או GitHub. ההרשמה חינמית ולוקחת פחות מדקה.
           </p>
           <div className="step">
             <div className="step-num">1</div>

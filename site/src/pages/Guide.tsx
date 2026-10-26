@@ -12,7 +12,7 @@ export function Guide() {
   return (
     <DocsLayout path="/guide" eyebrow="User Guide" title="Using WindoM">
         <div className="callout tip">
-            <strong>No account required for most things.</strong> Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync and Spotify. You can always add one later.
+            <strong>No account required for most things.</strong> Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync, Spotify and GitHub. You can always add one later.
           </div>
           <div className="feature-grid">
             <div className="feature-card">
@@ -56,7 +56,7 @@ export function Guide() {
             Create a WindoM Account
             <span className="badge optional">Optional</span>
           </h2>
-          <p>A WindoM account syncs your settings across devices and is required to connect Google Calendar or Spotify. Registration is free and takes under a minute.
+          <p>A WindoM account syncs your settings across devices and is required to connect Google Calendar, Spotify or GitHub. Registration is free and takes under a minute.
           </p>
           <div className="step">
             <div className="step-num">1</div>
