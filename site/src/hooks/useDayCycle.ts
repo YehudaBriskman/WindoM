@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { STAGES, currentStage, formatClock, STAGE_CLOCK, type Stage } from '../lib/day';
+import { STAGES, currentStage, formatClock, clockForProgress, type Stage } from '../lib/day';
+
+/**
+ * How far past a stage boundary the scroll must travel before the stage
+ * changes, in stage widths. Small enough to be imperceptible, large enough to
+ * absorb trackpad jitter sitting on a threshold.
+ */
+const STAGE_COMMIT_MARGIN = 0.04;
 
 /** Whether the visitor has asked the OS for less motion. */
 export function usePrefersReducedMotion(): boolean {
@@ -92,10 +99,25 @@ export function useDayCycle(enabled: boolean): DayCycle {
       liveRef.current = false;
       setLive(false);
 
-      const index = Math.min(Math.floor(progress * STAGES.length), STAGES.length - 1);
-      const next = STAGES[index] ?? 'morning';
-      setStage(next);
-      setClock(STAGE_CLOCK[next]);
+      /**
+       * The stage is committed with a margin, the clock is not.
+       *
+       * A bare `Math.floor(progress * STAGES.length)` flips the moment progress
+       * crosses a boundary, so a scroll that settles on one - or a trackpad
+       * that jitters either side of it - swapped the stage back and forth and
+       * restarted the cross-fades each time. Requiring the boundary to be
+       * cleared by a margin before committing means the stage changes once.
+       *
+       * The clock has no such threshold on purpose: it is continuous now, and
+       * holding it back would reintroduce the stepping this replaced.
+       */
+      const exact = progress * STAGES.length;
+      const index = Math.min(Math.floor(exact), STAGES.length - 1);
+      const settled = STAGES[index] ?? 'morning';
+      const withinBoundary = Math.abs(exact - Math.round(exact)) < STAGE_COMMIT_MARGIN;
+
+      setStage((current) => (withinBoundary && current !== settled ? current : settled));
+      setClock(clockForProgress(progress));
     };
 
     // rAF-coalesced: the old site's feature-card handler wrote styles

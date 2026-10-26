@@ -7,10 +7,25 @@
  */
 
 /* The tall container. Its height is the scroll distance the cycle takes - the
-   single number to adjust if the day feels too fast or too slow. */
+   single number to adjust if the day feels too fast or too slow.
+
+   At 420vh it was too fast, and measurably so: the pin takes 100vh of that, so
+   four stages shared 320vh of travel - 80vh each, less than one screen of
+   scrolling per beat of the story. Worse, the stage cross-fades run 0.7s-1.1s,
+   which a normal flick outruns across 80vh, so fades were being cut off
+   part-way and restarted by the next stage.
+
+   700vh gives each stage 150vh, comfortably longer than its own fade.
+
+   `view-timeline-name` publishes this element's progress to its descendants so
+   the parallax below can be driven by the stage rather than by the document.
+   It is declared here because the timeline has to come from the element being
+   measured. */
 .day-stage {
   position: relative;
-  height: 420vh;
+  height: 700vh;
+  view-timeline-name: --day-stage;
+  view-timeline-axis: block;
 }
 
 .stage-pin {
@@ -452,13 +467,27 @@
 /* Scroll-driven, so it runs off the main thread. Chromium-only, which is not a
    constraint for a page whose entire audience installs Chrome extensions. */
 
-@supports (animation-timeline: scroll()) {
+@supports (animation-timeline: view()) {
   .is-animated .stage-layer-back,
   .is-animated .stage-layer-mid,
   .is-animated .stage-layer-front {
-    animation-timeline: scroll(root block);
-    animation-range: 0% 60%;
+    /* Driven by the stage, not the document.
+       `scroll(root block)` with a range of `0% 60%` measured the whole page, so
+       the parallax finished 60% of the way down a document whose length has
+       nothing to do with the story - it was over long before the day was, and
+       it moved at a rate that changed whenever content was added below.
+
+       `contain` on a timeline taller than the viewport spans exactly the
+       element's own scroll travel: from its top meeting the top of the
+       viewport to its bottom meeting the bottom. That is the 600vh the stage
+       actually occupies, so the parallax now begins and ends with it and stays
+       correct if the height above changes. */
+    animation-timeline: --day-stage;
+    animation-range: contain 0% contain 100%;
     animation-fill-mode: both;
+    /* Deliberately linear. A scroll-driven animation should track the input it
+       is bound to; easing it decouples the motion from the wheel and reads as
+       lag rather than polish. The rushed feeling was the range, fixed above. */
     animation-timing-function: linear;
   }
 
@@ -725,7 +754,7 @@
 }
 
 /* ── Leaving the stage ──────────────────────────────────────────────── */
-/* The pin releases at the end of its 420vh parent and slides away, which left
+/* The pin releases at the end of its tall parent and slides away, which left
    the half-cut tab sitting behind the first heading - two blocks of type in the
    same frame, neither winning. So the day dissolves into the page instead: the
    tab fades out over the stretch where it is being pushed off, and the content
