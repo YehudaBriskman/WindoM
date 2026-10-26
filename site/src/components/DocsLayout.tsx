@@ -41,8 +41,15 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
       <div className="docs-shell">
         <nav className="docs-nav" aria-label="Documentation">
           {docsGroups().map(({ group, pages }) => (
-            <div className="docs-nav-group" key={group}>
-              <h2 className="docs-nav-heading">{group}</h2>
+            /* `details` rather than a button and state: it collapses before
+               JavaScript runs and survives the static prerender, and the group
+               containing the current page is the one worth opening. */
+            <details
+              className="docs-nav-group"
+              key={group}
+              open={pages.some((p) => p.href === href)}
+            >
+              <summary className="docs-nav-heading">{group}</summary>
               <ul>
                 {pages.map((page) => (
                   <li key={page.href}>
@@ -57,7 +64,7 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
                   </li>
                 ))}
               </ul>
-            </div>
+            </details>
           ))}
         </nav>
 
@@ -84,7 +91,7 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
             <h2 className="docs-rail-heading">On this page</h2>
             <ul>
               {headings.map((h) => (
-                <li key={h.id}>
+                <li key={h.id} className={h.level === 3 ? 'is-sub' : undefined}>
                   <a href={`#${h.id}`}>{h.text}</a>
                 </li>
               ))}
@@ -127,10 +134,12 @@ function NeighbourLink({ page, rel }: { page: DocsPage; rel: 'prev' | 'next' }) 
 interface Heading {
   id: string;
   text: string;
+  /** 2 or 3. Subheadings are indented under the section they belong to. */
+  level: 2 | 3;
 }
 
 /**
- * Gives every `h2` an id derived from its own text, and collects them.
+ * Gives every `h2` and `h3` an id derived from its own text, and collects them.
  *
  * Walking the element tree rather than the rendered DOM means this runs during
  * the static prerender too, so the anchors exist in the HTML a reader gets with
@@ -152,7 +161,8 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
       ? cloneElement(element, undefined, walk(element.props.children))
       : element;
 
-    if (element.type !== 'h2') return walked;
+    const level = element.type === 'h2' ? 2 : element.type === 'h3' ? 3 : 0;
+    if (level === 0) return walked;
 
     const text = textOf(element.props.children);
     if (!text) return walked;
@@ -166,7 +176,7 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
       id = `${id}-${n}`;
     }
     seen.add(id);
-    headings.push({ id, text });
+    headings.push({ id, text, level: level as 2 | 3 });
 
     return cloneElement(walked as ReactElement<{ id?: string }>, { id });
   };
@@ -174,13 +184,24 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
   return { headings, content: walk(children) };
 }
 
-/** Flattens a heading's children to plain text, for the id and the rail. */
+/**
+ * Flattens a heading's children to plain text, for the id and the rail.
+ *
+ * Sibling nodes are joined with a space rather than concatenated. A heading
+ * like `<h2>Connect Spotify <span class="badge">BYOA</span></h2>` is separate
+ * nodes with no whitespace between them in the tree, so joining with nothing
+ * produced "Connect SpotifyBYOA" in the contents rail.
+ */
 function textOf(node: ReactNode): string {
+  return flatten(node).replace(/\s+/g, ' ').trim();
+}
+
+function flatten(node: ReactNode): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
   if (typeof node === 'string' || typeof node === 'number') return String(node);
-  if (Array.isArray(node)) return node.map(textOf).join('');
+  if (Array.isArray(node)) return node.map(flatten).join(' ');
   if (isValidElement(node)) {
-    return textOf((node as ReactElement<{ children?: ReactNode }>).props.children);
+    return flatten((node as ReactElement<{ children?: ReactNode }>).props.children);
   }
   return '';
 }
