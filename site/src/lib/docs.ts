@@ -11,6 +11,13 @@
  * needs a store release to repair. See the note in vite.config.ts.
  */
 
+export type Locale = 'en' | 'he';
+
+export const LOCALES: { code: Locale; label: string; dir: 'ltr' | 'rtl' }[] = [
+  { code: 'en', label: 'English', dir: 'ltr' },
+  { code: 'he', label: 'עברית', dir: 'rtl' },
+];
+
 export interface DocsPage {
   href: string;
   title: string;
@@ -18,16 +25,56 @@ export interface DocsPage {
   group: string;
   /** Short line under the title in the sidebar, where it earns its space. */
   blurb?: string;
+  /** Hebrew title and group, used when the sidebar is rendered in Hebrew. */
+  he?: { title: string; group: string; blurb?: string };
 }
 
 export const DOCS_PAGES: DocsPage[] = [
-  { href: '/guide.html', title: 'User Guide', group: 'Using WindoM', blurb: 'Every panel, and what it does' },
-  { href: '/support.html', title: 'Support', group: 'Using WindoM', blurb: 'Fixes for the common problems' },
-  { href: '/contact.html', title: 'Contact', group: 'Using WindoM' },
-  { href: '/local-setup.html', title: 'Local Setup', group: 'Developers', blurb: 'Run the whole stack yourself' },
-  { href: '/privacy.html', title: 'Privacy Policy', group: 'Legal' },
-  { href: '/terms.html', title: 'Terms of Use', group: 'Legal' },
+  {
+    href: '/guide.html', title: 'User Guide', group: 'Using WindoM',
+    blurb: 'Every panel, and what it does',
+    he: { title: 'מדריך למשתמש', group: 'שימוש ב-WindoM', blurb: 'כל פאנל, ומה הוא עושה' },
+  },
+  {
+    href: '/support.html', title: 'Support', group: 'Using WindoM',
+    blurb: 'Fixes for the common problems',
+    he: { title: 'תמיכה', group: 'שימוש ב-WindoM', blurb: 'פתרונות לתקלות הנפוצות' },
+  },
+  {
+    href: '/contact.html', title: 'Contact', group: 'Using WindoM',
+    he: { title: 'יצירת קשר', group: 'שימוש ב-WindoM' },
+  },
+  {
+    href: '/local-setup.html', title: 'Local Setup', group: 'Developers',
+    blurb: 'Run the whole stack yourself',
+    he: { title: 'הרצה מקומית', group: 'למפתחים', blurb: 'הרצת כל המערכת אצלך' },
+  },
+  {
+    href: '/privacy.html', title: 'Privacy Policy', group: 'Legal',
+    he: { title: 'מדיניות פרטיות', group: 'משפטי' },
+  },
+  {
+    href: '/terms.html', title: 'Terms of Use', group: 'Legal',
+    he: { title: 'תנאי שימוש', group: 'משפטי' },
+  },
 ];
+
+/** The same page in the other language. Hebrew pages live under `/he/`. */
+export function translatedHref(href: string, to: Locale): string {
+  const bare = href.replace(/^\/he\//, '/');
+  return to === 'he' ? `/he${bare}` : bare;
+}
+
+/** Which language a path is in, read from the path itself. */
+export function localeOf(href: string): Locale {
+  return href.startsWith('/he/') ? 'he' : 'en';
+}
+
+/** Title and group in the requested language, falling back to English. */
+export function labelFor(page: DocsPage, locale: Locale) {
+  if (locale === 'he' && page.he) return page.he;
+  return { title: page.title, group: page.group, blurb: page.blurb };
+}
 
 /**
  * The site navigation, shown on every page.
@@ -55,16 +102,17 @@ export const NAV_LINKS: NavLink[] = [
 ];
 
 /** The groups in sidebar order, derived so the two cannot disagree. */
-export function docsGroups(): { group: string; pages: DocsPage[] }[] {
+export function docsGroups(locale: Locale = 'en'): { group: string; pages: DocsPage[] }[] {
   const order: string[] = [];
   const byGroup = new Map<string, DocsPage[]>();
 
   for (const page of DOCS_PAGES) {
-    if (!byGroup.has(page.group)) {
-      byGroup.set(page.group, []);
-      order.push(page.group);
+    const group = labelFor(page, locale).group;
+    if (!byGroup.has(group)) {
+      byGroup.set(group, []);
+      order.push(group);
     }
-    byGroup.get(page.group)!.push(page);
+    byGroup.get(group)!.push(page);
   }
 
   return order.map((group) => ({ group, pages: byGroup.get(group)! }));

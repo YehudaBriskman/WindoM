@@ -1,4 +1,4 @@
-import { Layout } from '../components/Layout';
+import { DocsLayout } from '../../components/DocsLayout';
 
 /**
  * The Hebrew user guide, on its own URL so search engines can index it.
@@ -8,58 +8,51 @@ import { Layout } from '../components/Layout';
  * downloaded a language they could not read. Each language now has its own URL
  * and carries only its own copy, with hreflang alternates in the HTML entry.
  */
-export function GuideHe() {
+export function Guide() {
   return (
-    <Layout eyebrow="מדריך למשתמש" title="שימוש ב-WindoM" dir="rtl">
-      <div className="wrap wrap-prose prose">
-        <p className="lang-switch">
-          <a href="/guide.html" lang="en" hrefLang="en">English</a>
-        </p>
+    <DocsLayout href="/he/guide.html" eyebrow="מדריך למשתמש" title="שימוש ב-WindoM" dir="rtl">
         <div className="callout tip">
-            <strong>רוב הפונקציות לא דורשות חשבון.</strong>
-            שעון, מזג אוויר, משימות, רקעים, ציטוטים, קישורים מהירים וטיימר הפוקוס עובדים מיד ללא התחברות. חשבון נדרש רק לסנכרון Google Calendar ו-Spotify. תמיד אפשר להוסיף אחד מאוחר יותר.
+            <strong>רוב הפונקציות לא דורשות חשבון.</strong> שעון, מזג אוויר, משימות, רקעים, ציטוטים, קישורים מהירים וטיימר הפוקוס עובדים מיד ללא התחברות. חשבון נדרש רק לסנכרון Google Calendar ו-Spotify. תמיד אפשר להוסיף אחד מאוחר יותר.
           </div>
           <div className="feature-grid">
             <div className="feature-card">
-              <div className="feature-card-title">🕐 שעון ותאריך</div>
+              <div className="feature-card-title">שעון ותאריך</div>
               <div className="feature-card-desc">12/24 שעות, צבע מותאם, גודל גופן, פורמט תאריך. תמיד פעיל, ללא חשבון.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🌤 מזג אוויר</div>
+              <div className="feature-card-title">מזג אוויר</div>
               <div className="feature-card-desc">טמפרטורה ומצב מזג אוויר בזמן אמת. דורש מפתח API חינמי מ-OpenWeatherMap.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🖼 רקע</div>
+              <div className="feature-card-title">רקע</div>
               <div className="feature-card-desc">תמונות מתחלפות מ-Unsplash או העלה תמונה משלך. מאוחסן מקומית.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">⏱ טיימר פוקוס</div>
+              <div className="feature-card-title">טיימר פוקוס</div>
               <div className="feature-card-desc">הגדר כוונה ועמעם את כל השאר. ללא חשבון.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🔗 קישורים מהירים</div>
+              <div className="feature-card-title">קישורים מהירים</div>
               <div className="feature-card-desc">נעץ את האתרים הנפוצים ביותר לסרגל הדוק בחלק העליון.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">📋 משימות</div>
+              <div className="feature-card-title">משימות</div>
               <div className="feature-card-desc">רשימת משימות מקומית בסרגל הצד הימני. נשמר במכשיר שלך.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🎵 ספוטיפיי</div>
+              <div className="feature-card-title">ספוטיפיי</div>
               <div className="feature-card-desc">השיר הנוכחי בדוק העליון. דורש חשבון + אפליקציית Spotify Developer חינמית.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">📅 Google Calendar</div>
+              <div className="feature-card-title">Google Calendar</div>
               <div className="feature-card-desc">אירועים קרובים בסרגל הצד הימני. דורש חשבון + אישור Google.</div>
             </div>
           </div>
           <h2 id="account">
-            <span className="section-icon">👤</span>
-            יצירת חשבון WindoM
+            <span className="section-icon"></span> יצירת חשבון WindoM
             <span className="badge optional">Optional</span>
           </h2>
-          <p>
-            חשבון WindoM מסנכרן את ההגדרות שלך בין מכשירים ונדרש לחיבור Google Calendar או Spotify. ההרשמה חינמית ולוקחת פחות מדקה.
+          <p>חשבון WindoM מסנכרן את ההגדרות שלך בין מכשירים ונדרש לחיבור Google Calendar או Spotify. ההרשמה חינמית ולוקחת פחות מדקה.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -85,16 +78,13 @@ export function GuideHe() {
             לאחר התחברות, פורמט השעון, הרקע המועדף, הווידג'טים והקישורים המהירים שלך מסתנכרנים לענן ומופיעים בכל מכשיר שבו אתה מחובר ל-WindoM.
           </div>
           <h2 id="spotify">
-            <span className="section-icon">🎵</span>
-            חיבור ספוטיפיי
+            <span className="section-icon"></span> חיבור ספוטיפיי
             <span className="badge byoa">BYOA</span>
           </h2>
-          <p>
-            WindoM מציג את כרטיס השיר הנוכחי של ספוטיפיי ישירות בדוק לשונית החדשה. בגלל אופן פעולת ה-API של ספוטיפיי, כל משתמש מחבר את אפליקציית Spotify Developer החינמית שלו - זה שומר על פרטיות החשבון שלך ומונע הגבלות קצב משותפות. ההגדרה הכוללת לוקחת כ-2 דקות.
+          <p>WindoM מציג את כרטיס השיר הנוכחי של ספוטיפיי ישירות בדוק לשונית החדשה. בגלל אופן פעולת ה-API של ספוטיפיי, כל משתמש מחבר את אפליקציית Spotify Developer החינמית שלו - זה שומר על פרטיות החשבון שלך ומונע הגבלות קצב משותפות. ההגדרה הכוללת לוקחת כ-2 דקות.
           </p>
           <div className="callout spotify">
-            <strong>למה אני צריך אפליקציה משלי?</strong><br />
-            ה-Web API של ספוטיפיי דורש אפליקציית OAuth רשומה בפורטל המפתחים שלהם. במקום לנתב את כולם דרך אפליקציית WindoM משותפת (שיש לה מגבלות מכסה והשלכות פרטיות), כל משתמש יוצר אפליקציה חינמית משלו - קיבלת שליטה מלאה ואין מגבלות לדאוג להן.
+            <strong>למה אני צריך אפליקציה משלי?</strong><br />ה-Web API של ספוטיפיי דורש אפליקציית OAuth רשומה בפורטל המפתחים שלהם. במקום לנתב את כולם דרך אפליקציית WindoM משותפת (שיש לה מגבלות מכסה והשלכות פרטיות), כל משתמש יוצר אפליקציה חינמית משלו - קיבלת שליטה מלאה ואין מגבלות לדאוג להן.
           </div>
           <h3>לפני שמתחילים</h3>
           <ul>
@@ -125,11 +115,9 @@ export function GuideHe() {
           <div className="step">
             <div className="step-num">3</div>
             <div className="step-body">
-                <p>
-                  פתח את לשונית WindoM החדשה, לחץ על <strong>הגדרות</strong> (אייקון גלגל שיניים, שמאל תחתון), ועבור ללשונית <strong>ספוטיפיי</strong>.
+                <p>פתח את לשונית WindoM החדשה, לחץ על <strong>הגדרות</strong> (אייקון גלגל שיניים, שמאל תחתון), ועבור ללשונית <strong>ספוטיפיי</strong>.
                 </p>
-                <p>
-                  תראה תיבה עם התווית <strong>Redirect URI</strong> עם ערך שנראה כך:
+                <p>תראה תיבה עם התווית <strong>Redirect URI</strong> עם ערך שנראה כך:
                 </p>
                 <div className="redirect-uri-box">
                   <span className="redirect-uri-label">Redirect URI</span>
@@ -152,8 +140,7 @@ export function GuideHe() {
             </div>
           </div>
           <div className="callout warning">
-            <strong>שלב זה קל לפספס.</strong>
-            אם תדלג על הוספת ה-Redirect URI תקבל שגיאת <em>Invalid Client</em> בעת ניסיון החיבור. ה-URI חייב להתאים בדיוק - העתק אותו בעזרת הכפתור ב-WindoM, אל תקליד אותו ידנית.
+            <strong>שלב זה קל לפספס.</strong> אם תדלג על הוספת ה-Redirect URI תקבל שגיאת <em>Invalid Client</em> בעת ניסיון החיבור. ה-URI חייב להתאים בדיוק - העתק אותו בעזרת הכפתור ב-WindoM, אל תקליד אותו ידנית.
           </div>
           <h3>שלב 4 - העתק את ה-Client ID והתחבר</h3>
           <div className="step">
@@ -185,15 +172,12 @@ export function GuideHe() {
             סגרת את חלון ספוטיפיי לפני השלמת האישור. לחץ שוב על שמור והתחבר והשלם את תהליך האישור.
           </div>
           <div className="callout tip">
-            <strong>שינית פרופיל Chrome או התקנת מחדש?</strong>
-            ה-Redirect URI שלך יהיה שונה. עבור להגדרות → לשונית ספוטיפיי כדי לראות את ה-URI החדש, הוסף אותו להגדרות אפליקציית ספוטיפיי שלך (ניתן להוסיף מספר Redirect URIs), ואז התחבר מחדש.
+            <strong>שינית פרופיל Chrome או התקנת מחדש?</strong> ה-Redirect URI שלך יהיה שונה. עבור להגדרות → לשונית ספוטיפיי כדי לראות את ה-URI החדש, הוסף אותו להגדרות אפליקציית ספוטיפיי שלך (ניתן להוסיף מספר Redirect URIs), ואז התחבר מחדש.
           </div>
           <h2 id="calendar">
-            <span className="section-icon">📅</span>
-            חיבור Google Calendar
+            <span className="section-icon"></span> חיבור Google Calendar
           </h2>
-          <p>
-            WindoM מציג את אירועי Google Calendar הקרובים שלך בסרגל הצד הימני כך שהיום שלך תמיד גלוי. זה דורש חשבון WindoM ואישור Google חד-פעמי.
+          <p>WindoM מציג את אירועי Google Calendar הקרובים שלך בסרגל הצד הימני כך שהיום שלך תמיד גלוי. זה דורש חשבון WindoM ואישור Google חד-פעמי.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -225,11 +209,9 @@ export function GuideHe() {
             כברירת מחדל מוצגים אירועים ל-7 הימים הבאים. ניתן לשנות זאת ל-14 או 30 יום בהגדרות → <strong>לוח שנה</strong>.
           </div>
           <h2 id="finance">
-            <span className="section-icon">📈</span>
-            לוח מחוונים פיננסי
+            <span className="section-icon"></span> לוח מחוונים פיננסי
           </h2>
-          <p>
-            עקוב אחר מחירי מניות וקריפטו בזמן אמת ישירות בלשונית החדשה שלך. המחירים מתעדכנים מ-Yahoo Finance ו-CoinGecko - אין צורך במפתח API או חשבון. שני כרטיסים גלילים מופיעים בלוח המחוונים שלך: אחד למניות ואחד לקריפטו.
+          <p>עקוב אחר מחירי מניות וקריפטו בזמן אמת ישירות בלשונית החדשה שלך. המחירים מתעדכנים מ-Yahoo Finance ו-CoinGecko - אין צורך במפתח API או חשבון. שני כרטיסים גלילים מופיעים בלוח המחוונים שלך: אחד למניות ואחד לקריפטו.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -260,11 +242,9 @@ export function GuideHe() {
             הוספת טיקר חדש עוקפת את ה-cache מיד כך שתראה את המחיר מיידית.
           </div>
           <h2 id="focus">
-            <span className="section-icon">⏱</span>
-            טיימר פוקוס
+            <span className="section-icon"></span> טיימר פוקוס
           </h2>
-          <p>
-            טיימר הפוקוס מאפשר לך להגדיר כוונה לסשן שלך. כשהוא פעיל, הרקע מתעמעם וכל ממשק אחר נעלם כדי שלא יהיו הסחות דעת.
+          <p>טיימר הפוקוס מאפשר לך להגדיר כוונה לסשן שלך. כשהוא פעיל, הרקע מתעמעם וכל ממשק אחר נעלם כדי שלא יהיו הסחות דעת.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -289,11 +269,9 @@ export function GuideHe() {
             עבור להגדרות → <strong>פוקוס</strong> כדי לשמור את משימות הפוקוס הנפוצות ביותר שלך כבחירה מהירה, כך שלא תצטרך להקליד כל יום מחדש.
           </div>
           <h2 id="background">
-            <span className="section-icon">🖼</span>
-            שינוי הרקע
+            <span className="section-icon"></span> שינוי הרקע
           </h2>
-          <p>
-            WindoM תומך בשני מקורות רקע: תמונות נבחרות מ-Unsplash, או תמונה שאתה מעלה מהמכשיר שלך.
+          <p>WindoM תומך בשני מקורות רקע: תמונות נבחרות מ-Unsplash, או תמונה שאתה מעלה מהמכשיר שלך.
           </p>
           <h3>אפשרות א - תמונות Unsplash</h3>
           <div className="step">
@@ -305,8 +283,7 @@ export function GuideHe() {
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-                <p>
-                  אפשרי: הדבק <strong>Collection ID</strong> מ-Unsplash כדי לאצור את סגנון התמונה.
+                <p>אפשרי: הדבק <strong>Collection ID</strong> מ-Unsplash כדי לאצור את סגנון התמונה.
                   לאיתור מזהה אוסף: עבור אל <a href="https://unsplash.com/collections" target="_blank" rel="noreferrer">unsplash.com/collections</a>,
                   פתח כל אוסף, והעתק את המספר מה-URL -
                   למשל <code>unsplash.com/collections/<strong>4324303</strong>/...</code>
@@ -333,12 +310,10 @@ export function GuideHe() {
             </div>
           </div>
           <h2 id="weather">
-            <span className="section-icon">🌤</span>
-            ווידג'ט מזג אוויר
+            <span className="section-icon"></span> ווידג'ט מזג אוויר
             <span className="badge optional">דורש מפתח API</span>
           </h2>
-          <p>
-            ווידג'ט מזג האוויר מציג טמפרטורה ותנאים בזמן אמת בסרגל העליון. הוא משתמש ב-OpenWeatherMap חינמי - אתה צריך מפתח API משלך.
+          <p>ווידג'ט מזג האוויר מציג טמפרטורה ותנאים בזמן אמת בסרגל העליון. הוא משתמש ב-OpenWeatherMap חינמי - אתה צריך מפתח API משלך.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -349,8 +324,7 @@ export function GuideHe() {
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-              <p>
-                בלוח הבקרה של חשבונך, עבור אל <strong>API Keys</strong> והעתק את המפתח ברירת המחדל (או צור חדש בשם כמו <em>WindoM</em>).
+              <p>בלוח הבקרה של חשבונך, עבור אל <strong>API Keys</strong> והעתק את המפתח ברירת המחדל (או צור חדש בשם כמו <em>WindoM</em>).
               </p>
             </div>
           </div>
@@ -367,19 +341,16 @@ export function GuideHe() {
             </div>
           </div>
           <div className="callout">
-            <strong>מפתח API חדש לא עובד?</strong>
-            מפתחות OpenWeatherMap חינמיים יכולים לקחת עד 2 שעות להפעלה לאחר יצירה. אם קיבלת שגיאה מיד אחרי יצירת המפתח, המתן קצת ונסה שוב.
+            <strong>מפתח API חדש לא עובד?</strong> מפתחות OpenWeatherMap חינמיים יכולים לקחת עד 2 שעות להפעלה לאחר יצירה. אם קיבלת שגיאה מיד אחרי יצירת המפתח, המתן קצת ונסה שוב.
           </div>
           <div className="callout tip">
             <strong>מגבלות גרסה חינמית</strong> -
             התוכנית החינמית של OpenWeatherMap מאפשרת 1,000 קריאות API ביום. WindoM שומר את מזג האוויר במטמון ל-10 דקות לכל לשונית חדשה, כך שלעולם לא תתקרב למגבלה.
           </div>
           <h2 id="links">
-            <span className="section-icon">🔗</span>
-            קישורים מהירים וסרגל הדוק
+            <span className="section-icon"></span> קישורים מהירים וסרגל הדוק
           </h2>
-          <p>
-            נעץ את האתרים הנפוצים ביותר לסרגל הדוק שרץ לאורך חלק העליון של כל לשונית חדשה. כל קישור מוצג כסמל favicon - רחף מעליו לראות את התווית.
+          <p>נעץ את האתרים הנפוצים ביותר לסרגל הדוק שרץ לאורך חלק העליון של כל לשונית חדשה. כל קישור מוצג כסמל favicon - רחף מעליו לראות את התווית.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -400,11 +371,9 @@ export function GuideHe() {
             </div>
           </div>
           <h2 id="clock">
-            <span className="section-icon">🕐</span>
-            שעון ותאריך
+            <span className="section-icon"></span> שעון ותאריך
           </h2>
-          <p>
-            השעון הוא מרכז לשונית החדשה שלך. הכל בו ניתן להתאמה אישית.
+          <p>השעון הוא מרכז לשונית החדשה שלך. הכל בו ניתן להתאמה אישית.
           </p>
           <ul>
             <li><strong>פורמט</strong> - 12 שעות (עם AM/PM) או 24 שעות</li>
@@ -414,7 +383,6 @@ export function GuideHe() {
             <li><strong>סגנון</strong> - ספרות רגילות או גרסה בסגנון</li>
           </ul>
           <p>כל האפשרויות נמצאות בהגדרות → לשונית <strong>שעון</strong>.</p>
-      </div>
-    </Layout>
+    </DocsLayout>
   );
 }

@@ -173,7 +173,6 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
   background: rgba(12, 12, 22, 0.76);
   border: 1px solid var(--border-strong);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
   color: var(--text);
   font: inherit;
   font-size: 0.82rem;

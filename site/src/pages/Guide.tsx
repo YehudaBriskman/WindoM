@@ -11,54 +11,48 @@ import { DocsLayout } from '../components/DocsLayout';
 export function Guide() {
   return (
     <DocsLayout href="/guide.html" eyebrow="User Guide" title="Using WindoM">
-        <p className="lang-switch">
-          <a href="/he/guide.html" lang="he" hrefLang="he">עברית</a>
-        </p>
         <div className="callout tip">
-            <strong>No account required for most things.</strong>
-            Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync and Spotify. You can always add one later.
+            <strong>No account required for most things.</strong> Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync and Spotify. You can always add one later.
           </div>
           <div className="feature-grid">
             <div className="feature-card">
-              <div className="feature-card-title">🕐 Clock &amp; Date</div>
+              <div className="feature-card-title">Clock &amp; Date</div>
               <div className="feature-card-desc">12h / 24h, custom color, font size, date format. Always on, no account needed.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🌤 Weather</div>
+              <div className="feature-card-title">Weather</div>
               <div className="feature-card-desc">Live temperature and conditions. Needs a free OpenWeatherMap API key.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🖼 Background</div>
+              <div className="feature-card-title">Background</div>
               <div className="feature-card-desc">Rotating Unsplash photos or upload your own image. Stored locally.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">⏱ Focus Timer</div>
+              <div className="feature-card-title">Focus Timer</div>
               <div className="feature-card-desc">Set an intention and dim everything else. No account needed.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🔗 Quick Links</div>
+              <div className="feature-card-title">Quick Links</div>
               <div className="feature-card-desc">Pin your most-used sites to the dock bar at the top.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">📋 Todos</div>
+              <div className="feature-card-title">Todos</div>
               <div className="feature-card-desc">Local task list in the right sidebar. Stays on your device.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">🎵 Spotify</div>
+              <div className="feature-card-title">Spotify</div>
               <div className="feature-card-desc">Now-playing in the top dock. Needs an account + a free Spotify Developer app.</div>
             </div>
             <div className="feature-card">
-              <div className="feature-card-title">📅 Google Calendar</div>
+              <div className="feature-card-title">Google Calendar</div>
               <div className="feature-card-desc">Upcoming events in the right sidebar. Needs an account + Google authorization.</div>
             </div>
           </div>
           <h2 id="account">
-            <span className="section-icon">👤</span>
-            Create a WindoM Account
+            <span className="section-icon"></span> Create a WindoM Account
             <span className="badge optional">Optional</span>
           </h2>
-          <p>
-            A WindoM account syncs your settings across devices and is required to connect Google Calendar or Spotify. Registration is free and takes under a minute.
+          <p>A WindoM account syncs your settings across devices and is required to connect Google Calendar or Spotify. Registration is free and takes under a minute.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -84,16 +78,13 @@ export function Guide() {
             once signed in, your clock format, background preference, widgets, and quick links all sync to the cloud and appear on any device where you're logged in to WindoM.
           </div>
           <h2 id="spotify">
-            <span className="section-icon">🎵</span>
-            Connect Spotify
+            <span className="section-icon"></span> Connect Spotify
             <span className="badge byoa">BYOA</span>
           </h2>
-          <p>
-            WindoM shows your Spotify now-playing card directly in the new tab dock. Because of how Spotify's API works, each user connects their own free Spotify Developer app - this keeps your account private and avoids any shared rate limits. The whole setup takes about 2 minutes.
+          <p>WindoM shows your Spotify now-playing card directly in the new tab dock. Because of how Spotify's API works, each user connects their own free Spotify Developer app - this keeps your account private and avoids any shared rate limits. The whole setup takes about 2 minutes.
           </p>
           <div className="callout spotify">
-            <strong>Why do I need my own app?</strong><br />
-            Spotify's Web API requires an OAuth app registered in their developer portal. Instead of routing everyone through a shared WindoM app (which has quota limits and privacy implications), each user creates their own free app - you get full control and there are no limits to worry about.
+            <strong>Why do I need my own app?</strong><br />Spotify's Web API requires an OAuth app registered in their developer portal. Instead of routing everyone through a shared WindoM app (which has quota limits and privacy implications), each user creates their own free app - you get full control and there are no limits to worry about.
           </div>
           <h3>Before you start</h3>
           <ul>
@@ -124,11 +115,9 @@ export function Guide() {
           <div className="step">
             <div className="step-num">3</div>
             <div className="step-body">
-                <p>
-                  Open your WindoM new tab, click <strong>Settings</strong> (gear icon, bottom-left), then go to the <strong>Spotify</strong> tab.
+                <p>Open your WindoM new tab, click <strong>Settings</strong> (gear icon, bottom-left), then go to the <strong>Spotify</strong> tab.
                 </p>
-                <p>
-                  You'll see a box labelled <strong>Redirect URI</strong> with a value that looks like this:
+                <p>You'll see a box labelled <strong>Redirect URI</strong> with a value that looks like this:
                 </p>
                 <div className="redirect-uri-box">
                   <span className="redirect-uri-label">Redirect URI</span>
@@ -151,8 +140,7 @@ export function Guide() {
             </div>
           </div>
           <div className="callout warning">
-            <strong>This step is easy to miss.</strong>
-            If you skip adding the Redirect URI you'll get an <em>Invalid Client</em> error when you try to connect. The URI must match exactly - copy it using the button in WindoM, don't type it by hand.
+            <strong>This step is easy to miss.</strong> If you skip adding the Redirect URI you'll get an <em>Invalid Client</em> error when you try to connect. The URI must match exactly - copy it using the button in WindoM, don't type it by hand.
           </div>
           <h3>Step 4 - Copy your Client ID and connect</h3>
           <div className="step">
@@ -184,15 +172,12 @@ export function Guide() {
             you closed the Spotify popup before completing authorization. Click Save &amp; Connect again and complete the authorization flow.
           </div>
           <div className="callout tip">
-            <strong>Changed Chrome profile or reinstalled Chrome?</strong>
-            Your Redirect URI will be different. Go to Settings → Spotify tab to see the new URI, add it to your Spotify app settings (you can have multiple Redirect URIs), then reconnect.
+            <strong>Changed Chrome profile or reinstalled Chrome?</strong> Your Redirect URI will be different. Go to Settings → Spotify tab to see the new URI, add it to your Spotify app settings (you can have multiple Redirect URIs), then reconnect.
           </div>
           <h2 id="calendar">
-            <span className="section-icon">📅</span>
-            Connect Google Calendar
+            <span className="section-icon"></span> Connect Google Calendar
           </h2>
-          <p>
-            WindoM pulls your upcoming Google Calendar events into the right sidebar so your day is always visible. This requires a WindoM account and a one-time Google authorization.
+          <p>WindoM pulls your upcoming Google Calendar events into the right sidebar so your day is always visible. This requires a WindoM account and a one-time Google authorization.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -224,11 +209,9 @@ export function Guide() {
             by default events for the next 7 days are shown. You can change this to 14 or 30 days in Settings → <strong>Calendar</strong>.
           </div>
           <h2 id="finance">
-            <span className="section-icon">📈</span>
-            Finance Dashboard
+            <span className="section-icon"></span> Finance Dashboard
           </h2>
-          <p>
-            Track live stock prices and crypto rates directly on your new tab. Prices update from Yahoo Finance and CoinGecko - no API key or account needed. Two scrollable cards appear on your dashboard: one for stocks, one for crypto.
+          <p>Track live stock prices and crypto rates directly on your new tab. Prices update from Yahoo Finance and CoinGecko - no API key or account needed. Two scrollable cards appear on your dashboard: one for stocks, one for crypto.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -259,11 +242,9 @@ export function Guide() {
             adding a new ticker bypasses the cache immediately so you see the price right away.
           </div>
           <h2 id="focus">
-            <span className="section-icon">⏱</span>
-            Focus Timer
+            <span className="section-icon"></span> Focus Timer
           </h2>
-          <p>
-            The focus timer lets you set an intention for your session. While active, the background dims and all other UI fades away so nothing distracts you.
+          <p>The focus timer lets you set an intention for your session. While active, the background dims and all other UI fades away so nothing distracts you.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -288,11 +269,9 @@ export function Guide() {
             go to Settings → <strong>Focus</strong> to save your most common focus tasks as one-click presets, so you don't have to type the same thing every day.
           </div>
           <h2 id="background">
-            <span className="section-icon">🖼</span>
-            Change Your Background
+            <span className="section-icon"></span> Change Your Background
           </h2>
-          <p>
-            WindoM supports two background sources: curated photos from Unsplash, or an image you upload from your device.
+          <p>WindoM supports two background sources: curated photos from Unsplash, or an image you upload from your device.
           </p>
           <h3>Option A - Unsplash photos</h3>
           <div className="step">
@@ -304,8 +283,7 @@ export function Guide() {
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-                <p>
-                  Optionally, paste a <strong>Collection ID</strong> from Unsplash to curate the photo style.
+                <p>Optionally, paste a <strong>Collection ID</strong> from Unsplash to curate the photo style.
                   To find a collection ID: go to <a href="https://unsplash.com/collections" target="_blank" rel="noreferrer">unsplash.com/collections</a>,
                   open any collection, and copy the number from the URL -
                   e.g. <code>unsplash.com/collections/<strong>4324303</strong>/...</code>
@@ -332,12 +310,10 @@ export function Guide() {
             </div>
           </div>
           <h2 id="weather">
-            <span className="section-icon">🌤</span>
-            Weather Widget
+            <span className="section-icon"></span> Weather Widget
             <span className="badge optional">Needs API Key</span>
           </h2>
-          <p>
-            The weather widget shows live temperature and conditions in the top bar. It uses OpenWeatherMap's free tier - you need your own API key.
+          <p>The weather widget shows live temperature and conditions in the top bar. It uses OpenWeatherMap's free tier - you need your own API key.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -348,8 +324,7 @@ export function Guide() {
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-              <p>
-                In your account dashboard, go to <strong>API Keys</strong> and copy your default key (or create a new one labelled something like <em>WindoM</em>).
+              <p>In your account dashboard, go to <strong>API Keys</strong> and copy your default key (or create a new one labelled something like <em>WindoM</em>).
               </p>
             </div>
           </div>
@@ -366,19 +341,16 @@ export function Guide() {
             </div>
           </div>
           <div className="callout">
-            <strong>New API key not working?</strong>
-            OpenWeatherMap free keys can take up to 2 hours to activate after creation. If you get an error right after creating the key, wait a bit and try again.
+            <strong>New API key not working?</strong> OpenWeatherMap free keys can take up to 2 hours to activate after creation. If you get an error right after creating the key, wait a bit and try again.
           </div>
           <div className="callout tip">
             <strong>Free tier limits</strong> -
             OpenWeatherMap's free plan allows 1,000 API calls per day. WindoM caches the weather for 10 minutes per new tab, so you'll never come close to that limit.
           </div>
           <h2 id="links">
-            <span className="section-icon">🔗</span>
-            Quick Links &amp; Dock Bar
+            <span className="section-icon"></span> Quick Links &amp; Dock Bar
           </h2>
-          <p>
-            Pin your most-used sites to the dock bar that runs across the top of every new tab. Each link shows as a favicon icon - hover to see the label.
+          <p>Pin your most-used sites to the dock bar that runs across the top of every new tab. Each link shows as a favicon icon - hover to see the label.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -399,11 +371,9 @@ export function Guide() {
             </div>
           </div>
           <h2 id="clock">
-            <span className="section-icon">🕐</span>
-            Clock &amp; Date
+            <span className="section-icon"></span> Clock &amp; Date
           </h2>
-          <p>
-            The clock is the centerpiece of your new tab. Everything about it is customizable.
+          <p>The clock is the centerpiece of your new tab. Everything about it is customizable.
           </p>
           <ul>
             <li><strong>Format</strong> - 12-hour (with AM/PM) or 24-hour</li>

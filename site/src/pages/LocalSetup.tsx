@@ -1,4 +1,6 @@
 import { DocsLayout } from '../components/DocsLayout';
+import { EnvTable } from '../components/EnvTable';
+import { EXAMPLE_ENV } from '../lib/env-reference';
 /**
  * Developer setup. Ported from the previous hand-written page; the environment
  * reference table is the authoritative list of what the backend needs to boot,
@@ -132,119 +134,7 @@ export function LocalSetup() {
           </div>
 <h2 id="env-reference">Environment Reference</h2>
           <p>All variables go in <code>backend/.env</code>. The ones marked optional are only needed for specific features.</p>
-          <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Variable</th>
-                <th>Description</th>
-                <th>Required</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>PORT</code></td>
-                <td>Port the backend listens on. Default: <code>8080</code></td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td><code>DATABASE_URL</code></td>
-                <td>Postgres connection string. When using Docker Compose this is set automatically.</td>
-                <td>Yes</td>
-              </tr>
-              <tr>
-                <td><code>JWT_ACCESS_SECRET</code></td>
-                <td>Random secret used to sign access tokens. Generate with <code>openssl rand -base64 32</code></td>
-                <td>Yes</td>
-              </tr>
-              <tr>
-                <td><code>REFRESH_TOKEN_SECRET</code></td>
-                <td>Random secret used to sign refresh tokens. Generate separately from the above.</td>
-                <td>Yes</td>
-              </tr>
-              <tr>
-                <td><code>TOKEN_ENC_KEY_BASE64</code></td>
-                <td>32 random bytes base64-encoded. Used to encrypt OAuth tokens at rest.</td>
-                <td>Yes</td>
-              </tr>
-              <tr>
-                <td><code>GOOGLE_CLIENT_ID</code></td>
-                <td>OAuth 2.0 Client ID from Google Cloud Console.</td>
-                <td>For Google features</td>
-              </tr>
-              <tr>
-                <td><code>GOOGLE_CLIENT_SECRET</code></td>
-                <td>OAuth 2.0 Client Secret from Google Cloud Console.</td>
-                <td>For Google features</td>
-              </tr>
-              <tr>
-                <td><code>GOOGLE_REDIRECT_URI</code></td>
-                <td>Callback URL for Google Sign-in. Example: <code>http://localhost:8080/auth/google/callback</code></td>
-                <td>For Google features</td>
-              </tr>
-              <tr>
-                <td><code>GOOGLE_OAUTH_REDIRECT_URI</code></td>
-                <td>Callback URL for Google Calendar OAuth. Example: <code>http://localhost:8080/oauth/google/callback</code></td>
-                <td>For Calendar</td>
-              </tr>
-              <tr>
-                <td><code>SPOTIFY_CLIENT_ID</code></td>
-                <td>Client ID from your Spotify Developer app.</td>
-                <td>For Spotify</td>
-              </tr>
-              <tr>
-                <td><code>SPOTIFY_CLIENT_SECRET</code></td>
-                <td>Client Secret from your Spotify Developer app.</td>
-                <td>For Spotify</td>
-              </tr>
-              <tr>
-                <td><code>SPOTIFY_REDIRECT_URI</code></td>
-                <td>Callback URL for Spotify OAuth. Example: <code>http://localhost:8080/oauth/spotify/callback</code></td>
-                <td>For Spotify</td>
-              </tr>
-              <tr>
-                <td><code>CORS_ALLOWED_ORIGINS</code></td>
-                <td>Comma-separated list of allowed origins. Include your extension ID and localhost ports.</td>
-                <td>Yes</td>
-              </tr>
-              <tr>
-                <td><code>EXTENSION_REDIRECT_BASE</code></td>
-                <td>The chromiumapp.org URL for your extension. Used as the OAuth redirect base for the Chrome identity flow.</td>
-                <td>For Google features</td>
-              </tr>
-              <tr>
-                <td><code>SMTP_HOST</code></td>
-                <td>SMTP server. Defaults to <code>smtp.gmail.com</code>, so leaving it unset preserves the Gmail behaviour. Any provider works - Resend is <code>smtp.resend.com</code>, Brevo is <code>smtp-relay.brevo.com</code>.</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td><code>SMTP_PORT</code></td>
-                <td>Defaults to <code>465</code>, which uses implicit TLS. Port <code>587</code> negotiates STARTTLS instead; the code follows the port, so the two stay consistent.</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td><code>SMTP_USER</code></td>
-                <td>SMTP username. Not required to be an email address - several providers use a plain login, such as the literal <code>resend</code>. If this and <code>SMTP_PASS</code> are unset, emails are printed to the console instead of sent.</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td><code>SMTP_PASS</code></td>
-                <td>16-character Google App Password for the SMTP account. Generate at <em>myaccount.google.com → Security → 2-Step Verification → App Passwords</em>.</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td><code>FROM_EMAIL</code></td>
-                <td>The "From" address shown on outbound emails. Defaults to <code>noreply@windom.app</code>. On Gmail it must be <code>SMTP_USER</code> or a verified alias of it; dedicated providers only require the domain to be verified with them.</td>
-                <td>No</td>
-              </tr>
-              <tr>
-                <td><code>APP_URL</code></td>
-                <td>Public base URL of the backend. Used to build email verification and password-reset links. Example: <code>http://localhost:8080</code>.</td>
-                <td>No</td>
-              </tr>
-            </tbody>
-          </table>
-          </div>
+          <EnvTable locale="en" />
           <div className="callout">
             <strong>Finding your extension ID</strong> - load the extension as unpacked in Chrome, then go to <code>chrome://extensions</code>. The ID is shown under the extension name. Use it in <code>CORS_ALLOWED_ORIGINS</code> as <code>chrome-extension://YOUR_ID</code> and in <code>EXTENSION_REDIRECT_BASE</code> as <code>https://YOUR_ID.chromiumapp.org</code>.
           </div>
@@ -252,26 +142,7 @@ export function LocalSetup() {
           <div className="callout">
             <strong>DATABASE_URL note</strong> - when running with <code>docker-compose up</code>, the <code>DATABASE_URL</code> is automatically overridden to point to the <code>db</code> container (port 5432 internally). You only need to set it manually if you run the backend directly on your host, in which case use port <code>5433</code> - the host-mapped port Docker Compose exposes.
           </div>
-          <pre><code>PORT=8080
-        NODE_ENV=development
-        DATABASE_URL=postgresql://windom:windom@localhost:5433/windom
-        JWT_ACCESS_SECRET=your-generated-secret-here
-        REFRESH_TOKEN_SECRET=your-other-generated-secret-here
-        TOKEN_ENC_KEY_BASE64=your-generated-key-here
-        GOOGLE_CLIENT_ID=your-google-client-id
-        GOOGLE_CLIENT_SECRET=your-google-client-secret
-        GOOGLE_REDIRECT_URI=http://localhost:8080/auth/google/callback
-        GOOGLE_OAUTH_REDIRECT_URI=http://localhost:8080/oauth/google/callback
-        SPOTIFY_CLIENT_ID=your-spotify-client-id
-        SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
-        SPOTIFY_REDIRECT_URI=http://localhost:8080/oauth/spotify/callback
-        CORS_ALLOWED_ORIGINS=chrome-extension://YOUR_EXTENSION_ID,http://localhost:3000,http://localhost:5173
-        EXTENSION_REDIRECT_BASE=https://YOUR_EXTENSION_ID.chromiumapp.org
-        # Email - optional. If omitted, verification/reset emails are printed to the console.
-        # SMTP_USER=you@yourdomain.com
-        # SMTP_PASS=your-16-char-app-password
-        # FROM_EMAIL=noreply@windom.app
-        # APP_URL=http://localhost:8080</code></pre>
+          <pre><code>{EXAMPLE_ENV('en')}</code></pre>
     </DocsLayout>
   );
 }

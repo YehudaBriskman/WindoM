@@ -1,82 +1,215 @@
 /* ── Hero ───────────────────────────────────────────────────────────────
-   The first screen. Copy on the left, a live scaled-down dashboard on the
-   right, and a cue that the page continues. */
+   Copy on the left, the product bleeding off the right edge, lit from behind
+   by the hour it is showing. */
 
 .hero {
   position: relative;
   min-height: calc(100vh - 57px);
-  min-height: calc(100dvh - 57px); /* less the sticky nav */
+  min-height: calc(100dvh - 57px);
   display: flex;
   align-items: center;
-  padding: 56px 0 96px;
+  padding: 48px 0 96px;
+  /* The preview is wider than the viewport by design; this crops it rather
+     than letting it scroll the page sideways. */
+  overflow: hidden;
+}
+
+/* ── The light source ───────────────────────────────────────────────────
+   Behind the product, not behind the text. Its colour comes from the active
+   stage, so the page is lit by the same hour the preview depicts. */
+
+.hero-glow {
+  position: absolute;
+  top: 50%;
+  right: -10%;
+  width: 70vw;
+  height: 70vw;
+  max-height: 900px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.5;
+  pointer-events: none;
+  transition: background 1.1s var(--ease);
 }
 
 .hero-inner {
+  position: relative;
+  z-index: 1;
   width: 100%;
   max-width: var(--wrap);
   margin: 0 auto;
   padding: 0 24px;
   display: grid;
-  /* `auto` so the preview occupies exactly its own scaled width rather than
-     a fraction that clips it. */
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 56px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 40px;
   align-items: center;
 }
 
+/* ── Copy ───────────────────────────────────────────────────────────── */
+
 .hero-copy {
-  /* Stated rather than inherited: the previous site centred its hero, and a
-     long measure centred is harder to read than the same measure ranged left. */
+  /* Stated rather than inherited: a long measure centred is harder to read
+     than the same measure ranged left. */
   text-align: left;
 }
 
 .hero-copy h1 {
-  margin-bottom: 20px;
-  /* Smaller than the global h1, which tops out at 5.4rem - a size that cannot
-     fit beside the preview and broke "actually useful" across two lines. */
-  font-size: clamp(2.3rem, 4vw, 3.5rem);
-  text-wrap: balance;
+  margin-bottom: 22px;
+  font-size: clamp(2.6rem, 5.4vw, 4.6rem);
+  display: grid;
+}
+
+/* The two lines are set at different sizes and the second is indented, which
+   is what gives the reference its stepped look - two flush lines of identical
+   type read as a paragraph in bold rather than as a title. */
+.hero-line-1 {
+  font-size: 0.86em;
+  letter-spacing: -0.035em;
+}
+
+.hero-line-2 {
+  margin-left: 0.5em;
+  letter-spacing: -0.04em;
 }
 
 .hero-copy .lede {
-  margin-bottom: 28px;
+  margin-bottom: 30px;
+  max-width: 46ch;
 }
 
-.hero-chips {
+/* ── Specification strip ────────────────────────────────────────────────
+   Bracketed, one line, reading as a row of capabilities rather than the loose
+   tags it replaced - which wrapped onto a second line and read as metadata. */
+
+.hero-spec {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 10px 22px;
   list-style: none;
-  margin: 32px 0 0;
-  padding: 0;
+  margin: 38px 0 0;
+  padding: 14px 20px;
+  position: relative;
+  font-size: 0.85rem;
+  color: var(--muted-strong);
+  width: fit-content;
 }
 
-/* ── The preview ────────────────────────────────────────────────────────
-   `isolation` and a transform together establish a stacking and containing
-   block of their own, so the scaled Stage in here cannot share a 3D space
-   with the pinned Stage further down the page - they are the same component
-   and would otherwise interleave. */
+/* Corner brackets rather than a full border: the reference frames the strip
+   without boxing it in. */
+.hero-spec::before,
+.hero-spec::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-strong);
+}
 
-/* The Stage is built to fill a viewport, so it is rendered at a nominal
-   1440x900 and scaled down. The box is derived *from* the scale rather than the
-   other way round - `scale()` needs a unitless number, and there is no way to
-   get one from a container-query length, so sizing the box to match is what
-   makes the two agree exactly at every breakpoint. */
+.hero-spec::before {
+  top: 0;
+  left: 0;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.hero-spec::after {
+  bottom: 0;
+  right: 0;
+  border-left: 0;
+  border-top: 0;
+}
+
+.hero-spec li {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.hero-spec-glyph {
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+/* ── The product ────────────────────────────────────────────────────────
+   Wider than its column and cropped by the section, so it runs off the right
+   edge instead of sitting in a card centred in white space. */
+
+.hero-stage {
+  position: relative;
+  justify-self: start;
+  /* The perspective lives on the parent so the child rotates within a scene
+     rather than carrying its own vanishing point. */
+  perspective: 1400px;
+  perspective-origin: 50% 50%;
+}
+
 .hero-preview {
   --preview-w: 1440;
   --preview-h: 900;
-  --preview-scale: 0.4;
+  --preview-scale: 0.62;
 
   position: relative;
   isolation: isolate;
   width: calc(var(--preview-w) * 1px * var(--preview-scale));
   height: calc(var(--preview-h) * 1px * var(--preview-scale));
-  max-width: 100%;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
   overflow: hidden;
+  /* No border on the bleeding edge - a border there would draw the crop. */
   border: 1px solid var(--border-strong);
-  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
-  transform: translateZ(0);
+  border-right: 0;
+  box-shadow: -30px 40px 90px -40px rgba(0, 0, 0, 0.95);
+
+  /* Defaults, so the element is upright before the pointer has moved and when
+     the tilt is suppressed for reduced motion. */
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transform-style: preserve-3d;
+  /* Short, so it tracks the pointer rather than trailing it, but not zero -
+     an instant rotation reads as jitter on a high-polling mouse. */
+  transition:
+    transform 260ms var(--ease),
+    box-shadow 260ms var(--ease);
+}
+
+/* Reacting to the pointer being inside it, not merely near it. */
+.hero-preview:hover {
+  box-shadow: -34px 48px 110px -38px rgba(0, 0, 0, 0.98);
+}
+
+/* A highlight that travels across the glass as it leans, so the tilt reads as
+   a surface catching light rather than a box being rotated. */
+.hero-preview-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.07) 50%,
+    transparent 65%
+  );
+  transition: opacity 320ms var(--ease);
+}
+
+.hero-preview:hover .hero-preview-sheen {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-preview {
+    transition: none;
+  }
+
+  .hero-preview-sheen {
+    display: none;
+  }
 }
 
 .hero-preview-frame {
@@ -99,13 +232,14 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  animation: none;
+  opacity: 1;
 }
 
 /* The parallax is driven by a `view-timeline` published by `.day-stage`, which
    is not an ancestor here. An animation whose timeline does not resolve still
    applies its fill, so all three layers sat at the end keyframe - opacity 0,
-   scaled up - and the preview showed wallpaper and nothing else. The preview is
-   a still; it has no scroll of its own to be driven by.
+   scaled up - and the preview showed wallpaper and nothing else.
 
    `.is-animated` is in the selector to outrank the original, which is written
    as `.is-animated .stage-layer-back` - equal specificity would lose on source
@@ -118,19 +252,54 @@
   transform: none;
 }
 
-/* The narration belongs to the scroll story, not to a product shot. In the
-   preview it lands across the dashboard and reads as part of the interface,
-   which is the opposite of what a picture of the product should show. */
+/* The narration belongs to the scroll story, not to a product shot. */
 .hero-preview .story-headline,
 .hero-preview .story-body,
 .hero-preview .scroll-cue {
   display: none;
 }
 
-/* Same reason: the exit fade is driven by the pin's own view-timeline. */
-.hero-preview .stage-pin {
-  animation: none;
-  opacity: 1;
+/* ── Fact cards ─────────────────────────────────────────────────────────
+   Overlaid on the lower-right of the product, in the reference's flat-panel
+   style. */
+
+/* Anchored to the section, not to the preview. The preview deliberately runs
+   off the right edge, and cards positioned against it went with it. */
+.hero-facts {
+  position: absolute;
+  right: 24px;
+  bottom: 72px;
+  z-index: 2;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+  width: 270px;
+  background: var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.hero-facts li {
+  display: grid;
+  gap: 2px;
+  padding: 13px 16px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.hero-facts strong {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.hero-facts span {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.45;
 }
 
 /* ── Scroll cue ─────────────────────────────────────────────────────── */
@@ -138,7 +307,8 @@
 .hero-cue {
   position: absolute;
   left: 50%;
-  bottom: calc(28px + env(safe-area-inset-bottom));
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 1;
   transform: translateX(-50%);
   width: 26px;
   height: 40px;
@@ -171,24 +341,20 @@
 
 /* ── Narrow ─────────────────────────────────────────────────────────── */
 
-@media (max-width: 1200px) {
+@media (max-width: 1100px) {
   .hero-preview {
-    --preview-scale: 0.38;
+    --preview-scale: 0.5;
+  }
+
+  .hero-facts {
+    width: 240px;
   }
 }
 
 @media (max-width: 900px) {
   .hero {
     min-height: 0;
-    padding: 40px 0 72px;
-  }
-
-  /* The scale ladder below keeps the frame narrower than the box at every
-     width. The box has max-width: 100% and clips, so a scale that is too large
-     for the viewport does not overflow the page - it silently crops the
-     dashboard, which looks like a rendering fault rather than a small picture. */
-  .hero-preview {
-    --preview-scale: 0.42;
+    padding: 36px 0 72px;
   }
 
   .hero-inner {
@@ -196,10 +362,31 @@
     gap: 36px;
   }
 
-  /* The preview goes under the copy: on a phone the words are what matters,
-     and a 16:10 dashboard shrunk to 360px wide shows nothing legible anyway. */
+  .hero-glow {
+    right: -30%;
+    opacity: 0.35;
+  }
+
+  /* Contained rather than bleeding: a cropped product shot on a phone shows
+     a corner of a dashboard and reads as a rendering fault. */
+  .hero-stage {
+    justify-self: stretch;
+  }
+
   .hero-preview {
-    order: 2;
+    --preview-scale: 0.42;
+    max-width: 100%;
+    border-right: 1px solid var(--border-strong);
+    border-radius: var(--r-lg);
+  }
+
+  /* Below the product rather than over it - overlaid text on a narrow image
+     is unreadable. */
+  .hero-facts {
+    position: static;
+    width: auto;
+    margin-top: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   }
 
   .hero-cue {
@@ -222,7 +409,8 @@
     --preview-scale: 0.22;
   }
 
-  .hero-chips {
-    margin-top: 24px;
+  .hero-spec {
+    gap: 8px 16px;
+    padding: 12px 16px;
   }
 }

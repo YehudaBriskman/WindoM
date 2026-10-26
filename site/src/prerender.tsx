@@ -5,6 +5,12 @@ import { Support } from './pages/Support';
 import { Contact } from './pages/Contact';
 import { Guide } from './pages/Guide';
 import { LocalSetup } from './pages/LocalSetup';
+import { Guide as GuideHe } from './pages/he/Guide';
+import { Privacy as PrivacyHe } from './pages/he/Privacy';
+import { Terms as TermsHe } from './pages/he/Terms';
+import { Support as SupportHe } from './pages/he/Support';
+import { Contact as ContactHe } from './pages/he/Contact';
+import { LocalSetup as LocalSetupHe } from './pages/he/LocalSetup';
 
 /**
  * Pages rendered to real HTML at build time.
@@ -33,4 +39,10 @@ export const prerendered: Record<string, () => string> = {
   'contact.html': () => renderToStaticMarkup(<Contact />),
   'guide.html': () => renderToStaticMarkup(<Guide />),
   'local-setup.html': () => renderToStaticMarkup(<LocalSetup />),
+  'he/guide.html': () => renderToStaticMarkup(<GuideHe />),
+  'he/privacy.html': () => renderToStaticMarkup(<PrivacyHe />),
+  'he/terms.html': () => renderToStaticMarkup(<TermsHe />),
+  'he/support.html': () => renderToStaticMarkup(<SupportHe />),
+  'he/contact.html': () => renderToStaticMarkup(<ContactHe />),
+  'he/local-setup.html': () => renderToStaticMarkup(<LocalSetupHe />),
 };

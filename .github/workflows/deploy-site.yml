@@ -100,7 +100,7 @@ jobs:
       # fixed amount and hoping.
       - name: Verify the live URLs the extension depends on
         run: |
-          paths="/ /guide.html /privacy.html /terms.html /local-setup.html /support.html /contact.html /he/guide.html"
+          paths="/ /guide.html /privacy.html /terms.html /local-setup.html /support.html /contact.html /he/guide.html /he/privacy.html /he/terms.html /he/support.html /he/contact.html /he/local-setup.html"
           failed=0
           for path in $paths; do
             code=000
