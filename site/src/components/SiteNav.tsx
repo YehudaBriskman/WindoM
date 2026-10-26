@@ -38,7 +38,7 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
     <header className="site-nav">
       <div className="site-nav-inner">
         <Link className="site-nav-brand" to="/">
-          <span className="site-nav-mark" aria-hidden="true" />
+          <WindoMMark />
           {SITE.name}
         </Link>
 
@@ -118,6 +118,40 @@ function LocaleSwitch({ path, locale }: { path: string; locale: Locale }) {
       <GlobeGlyph />
       <span>{other.label}</span>
     </Link>
+  );
+}
+
+/**
+ * The product mark.
+ *
+ * Drawn rather than placed: the shipped icon is a PNG whose monogram turns to
+ * a smear below about 24px, and the nav shows it at 20px shrinking to 16px on
+ * scroll. A stroked vector holds its weight at any size, takes the theme's own
+ * accent rather than introducing the icon's cooler blue beside it, and costs
+ * no request. There is no SVG original anywhere in the repository, so one had
+ * to be authored either way.
+ */
+function WindoMMark() {
+  return (
+    <svg className="site-nav-mark" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="windom-mark" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="var(--accent)" />
+          <stop offset="100%" stopColor="var(--accent2)" />
+        </linearGradient>
+      </defs>
+      <rect x="0.5" y="0.5" width="23" height="23" rx="6.5" fill="url(#windom-mark)" />
+      {/* Round joins so the strokes stay solid when the mark is 16px wide and
+          the W is a little over a pixel thick. */}
+      <path
+        d="M6.4 7.8 L9.2 16.4 L12 11.2 L14.8 16.4 L17.6 7.8"
+        fill="none"
+        stroke="#0b0b16"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

@@ -400,8 +400,8 @@ p {
   }
 
   @keyframes nav-mark-shrink {
-    from { width: 18px; height: 18px; }
-    to { width: 14px; height: 14px; }
+    from { width: 1.25rem; height: 1.25rem; }
+    to { width: 1rem; height: 1rem; }
   }
 }
 
@@ -453,10 +453,11 @@ body.stage-owns-view .site-nav:focus-within {
 }
 
 .site-nav-mark {
-  width: 18px;
-  height: 18px;
-  border-radius: 6px;
-  background: var(--accent-grad);
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  /* The rounded corners are in the artwork, so nothing here clips it. */
+  display: block;
 }
 
 .site-nav-links {
