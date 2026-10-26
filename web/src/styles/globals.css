@@ -2,9 +2,125 @@
    Spring easing tokens - shared across all expanding elements
    ============================================================ */
 :root {
+  /* Overshoot. Reserved for small elements under direct manipulation - a
+     dropdown springing open reads as responsive, the same curve on a 520px
+     panel reads as wobble. Large surfaces use --ease-out below. */
   --spring:        cubic-bezier(0.34, 1.56, 0.64, 1);  /* full bounce   */
   --spring-gentle: cubic-bezier(0.34, 1.28, 0.64, 1);  /* subtle bounce */
   --snap-out:      cubic-bezier(0.4,  0,    0.6,  1);  /* crisp close   */
+
+  /* Open sizes for the two morphing panels.
+     Each of these was written twice - once on the container and again on the
+     inner element that has to match it - so changing one without the other
+     broke the panel. One definition now. */
+  --settings-w: min(520px, 90vw);
+  --settings-h: min(76vh, calc(100vh - 20px));
+  --sidebar-w: 340px;
+  --sidebar-h: calc(66vh - 20px);
+
+  /* ── Shape ──────────────────────────────────────────────────────────────
+     The app had 21 distinct numeric radii plus `50%` plus per-corner pairs,
+     in four clusters that each wanted to be one value: 6/7/8/9, 10/11/12,
+     14/16/18/20, 22/24/26/28. Nothing was deciding whether a thing was a pill
+     or a card, so every component picked for itself.
+
+     Four roles now. Pills for compact chrome that holds a single value, cards
+     for anything holding structured content.
+
+     --r-pill is 999px rather than 50% or height/2 on purpose: the app used all
+     three idioms for "circle", and the other two drift the moment an element
+     resizes. This one cannot. */
+  --r-pill: 999px;
+  --r-card: 20px;
+  --r-control: 12px;
+  --r-inner: 8px;
+  /* Progress bars, scrollbar thumbs, favicons - things only a few pixels tall,
+     where --r-inner would round them away entirely. */
+  --r-xs: 3px;
+
+  /* ── Spacing ────────────────────────────────────────────────────────────
+     Roughly 52 distinct padding values existed, using every integer from 1 to
+     10 as a horizontal pad somewhere. Six steps. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ── Controls ───────────────────────────────────────────────────────────
+     No text control in the app had an explicit height - they were all
+     emergent from padding plus font-size, which is why `.todo-add-btn` (36px)
+     sat a pixel short of the `.todo-input` beside it, and `.link-remove-btn`
+     (36px) a pixel proud of its input. One height fixes those by
+     construction. --control-h-sm is for the compact icon buttons. */
+  --control-h: 40px;
+  --control-h-sm: 32px;
+
+  /* ── Type ───────────────────────────────────────────────────────────────
+     There were no type tokens and 46 distinct font sizes across two unit
+     systems, so a legibility pass had nowhere to land.
+
+     Weights stop at 600 and 700 deliberately. This is a system font stack
+     with no webfont, and on a Linux fallback 500 may snap to 400 - so the
+     nineteen selectors set to 500 could have been rendering as body text all
+     along. 600 is the lightest weight that is reliably heavier. */
+  --weight-body: 400;
+  --weight-medium: 600;
+  --weight-strong: 700;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+
+  /* The floor for text over glass. Anything below this disappears the moment
+     the wallpaper is bright, and `opacity` must not be stacked on top of it -
+     the nav's locked state combined 0.35 opacity with 0.4 alpha and landed at
+     an effective 14% white. */
+  --ink-primary: rgba(255, 255, 255, 1);
+  --ink-secondary: rgba(255, 255, 255, 0.82);
+  --ink-tertiary: rgba(255, 255, 255, 0.66);
+
+  /* ── Glass ──────────────────────────────────────────────────────────────
+     Twenty surfaces blurred their backdrop independently of the glass system,
+     anywhere from 4px to 40px, so a dropdown could land 40px of blur on top of
+     a pane doing 5px. Two values: one for things you look *through*, one for
+     full-screen scrims you look *past*. */
+  /* Surfaces no longer blur at all - see the backdrop note in glass.css. The
+     token stays because fifteen non-glass surfaces still reference it, and
+     zero is the value they should all now share. */
+  --glass-blur: 0px;
+  --glass-sat: 112%;
+  --scrim-blur: 8px;
+
+  /* ── Motion ─────────────────────────────────────────────────────────────
+     Nineteen distinct durations existed, chosen per component.
+
+     Duration follows size, because size reads as mass: a toggle that takes as
+     long as a panel feels sluggish, and a panel that moves as fast as a toggle
+     feels weightless. */
+  --dur-sm: 160ms;   /* toggles, pills, small buttons */
+  --dur-md: 240ms;   /* dropdowns, popovers, cards */
+  --dur-lg: 360ms;   /* panels, sidebars, modals */
+
+  /* Leaving is quicker than arriving. An element on its way out has nothing
+     left to say, and matching the two makes dismissal feel reluctant. */
+  --dur-sm-out: 110ms;
+  --dur-md-out: 160ms;
+  --dur-lg-out: 240ms;
+
+  /* Arrives fast and settles slowly, the way something with weight comes to
+     rest. No overshoot: --spring below carries 1.56, which on a 520px panel is
+     a visible bounce rather than a settle. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Leaves decisively. */
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+
+  /* Content appears once its container has most of the way there - earlier and
+     the interior is visibly being resized. */
+  --dur-content: 180ms;
+  --delay-content: 200ms;
 }
 
 /* ============================================================
@@ -82,7 +198,7 @@ a {
 .app-loader-spinner {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   border: 2.5px solid rgba(255, 255, 255, 0.12);
   border-top-color: rgba(255, 255, 255, 0.7);
   animation: loader-spin 0.75s linear infinite;
@@ -95,15 +211,27 @@ a {
 /* ============================================================
    Scrollbar
    ============================================================ */
+/* No visible scrollbars anywhere.
+   Content still scrolls by wheel, trackpad and keyboard; what signals there is
+   more of it is the card clipped by the panel's bottom edge, which is a better
+   affordance than a hairline over a photograph. Two containers already did
+   this - .dock-rows and .finance-dashboard-scroll - so this generalises it. */
+* {
+  scrollbar-width: none;
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 0;
+  height: 0;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  /* The pane is clear now, so a 15% thumb floating over a photograph read as
+     a stray light line rather than a control. */
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--r-xs);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
@@ -129,15 +257,14 @@ select option {
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: white;
   font-size: 14px;
   cursor: pointer;
   text-align: left;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -176,11 +303,10 @@ select option {
   list-style: none;
   margin: 0;
   padding: 5px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   background: rgba(18, 14, 32, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.45),
     0 2px 8px rgba(0, 0, 0, 0.25),
@@ -189,7 +315,7 @@ select option {
 
 .glass-select-option {
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   font-size: 14px;
   color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
@@ -212,7 +338,7 @@ input[type="file"]::file-selector-button {
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   cursor: pointer;
   margin-right: 10px;
   transition: all 0.25s ease;
@@ -386,7 +512,7 @@ input[type="file"]::file-selector-button:hover {
   -webkit-appearance: none;
   height: 4px;
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   outline: none;
   cursor: pointer;
   display: block;
@@ -395,7 +521,7 @@ input[type="file"]::file-selector-button:hover {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.85);
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
@@ -412,7 +538,7 @@ input[type="file"]::file-selector-button:hover {
   height: 32px;
   padding: 2px;
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(255, 255, 255, 0.05);
   cursor: pointer;
   display: block;
@@ -421,7 +547,7 @@ input[type="file"]::file-selector-button:hover {
   padding: 2px;
 }
 .clock-color-input::-webkit-color-swatch {
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   border: none;
 }
 
@@ -446,6 +572,34 @@ input[type="file"]::file-selector-button:hover {
   border-color: rgba(255, 255, 255, 0.5);
 }
 
+
+/* ── Control sizing ───────────────────────────────────────────────────────
+   Text controls had no height at all - every one was emergent from padding
+   plus font-size, so `.todo-add-btn` (36px) sat a pixel short of the
+   `.todo-input` next to it and `.link-remove-btn` (36px) a pixel proud of
+   `.link-editor-input` (~35px). Declaring the height fixes the alignment by
+   construction rather than by trimming padding until it looks right. */
+.settings-input,
+.settings-select,
+.glass-select-trigger,
+.todo-input,
+.link-editor-input,
+.auth-google-btn,
+.link-add-btn,
+.auth-signout-btn {
+  height: var(--control-h);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.todo-add-btn,
+.link-remove-btn,
+.settings-close,
+.sidebar-close-btn {
+  height: var(--control-h-sm);
+  width: var(--control-h-sm);
+}
+
 /* ============================================================
    Weather Widget
    ============================================================ */
@@ -454,15 +608,14 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   align-items: center;
   height: 52px;
-  border-radius: 26px;
+  border-radius: var(--r-pill);
   overflow: hidden;
   padding: 0;
   gap: 0;
-  transition:
-    border-radius 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: border-radius var(--dur-sm) var(--spring);
 }
 .weather-widget--open {
-  border-radius: 16px;
+  border-radius: var(--r-pill);
 }
 
 /* ── Circle core - always visible ─────────────────────────── */
@@ -539,11 +692,10 @@ input[type="file"]::file-selector-button:hover {
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   overflow: hidden;
   background: rgba(15, 15, 25, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   z-index: 300;
@@ -614,7 +766,7 @@ input[type="file"]::file-selector-button:hover {
 
 .dock-bar {
   padding: 0;
-  border-radius: 18px;
+  border-radius: var(--r-pill);
   /* Fixed to exactly one row height so extra rows are hidden */
   overflow: hidden;
 }
@@ -654,7 +806,7 @@ input[type="file"]::file-selector-button:hover {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   overflow: hidden;
   cursor: pointer;
   text-decoration: none;
@@ -693,7 +845,7 @@ input[type="file"]::file-selector-button:hover {
   transition: opacity 0.15s ease;
   background: rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   width: 14px;
   height: 14px;
   display: flex;
@@ -720,7 +872,7 @@ input[type="file"]::file-selector-button:hover {
 }
 
 .dock-page-dot {
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.45);
   border: none;
   padding: 0;
@@ -749,7 +901,7 @@ input[type="file"]::file-selector-button:hover {
   width: 28px;
   height: 28px;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
 }
 
 .dock-fallback-hidden {
@@ -764,7 +916,7 @@ input[type="file"]::file-selector-button:hover {
   transform: translateX(-50%);
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   cursor: pointer;
   overflow: hidden;
   display: flex;
@@ -773,9 +925,9 @@ input[type="file"]::file-selector-button:hover {
   z-index: 200;
   opacity: 0.45;
   transition:
-    width    0.42s var(--spring),
-    height   0.42s var(--spring),
-    border-radius 0.42s var(--spring),
+    width var(--dur-md) var(--ease-out),
+    height var(--dur-md) var(--ease-out),
+    border-radius var(--dur-md) var(--ease-out),
     opacity  0.25s ease;
 }
 .dock-expandable:hover:not(.expanded) {
@@ -784,7 +936,7 @@ input[type="file"]::file-selector-button:hover {
 .dock-expandable.expanded {
   width: 280px;
   height: 192px;
-  border-radius: 16px;
+  border-radius: var(--r-pill);
   opacity: 1;
   cursor: default;
 }
@@ -840,7 +992,7 @@ input[type="file"]::file-selector-button:hover {
 
 .dock-form-input {
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 14px;
   outline: none;
@@ -852,7 +1004,7 @@ input[type="file"]::file-selector-button:hover {
 
 .dock-form-submit {
   padding: 10px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: white;
@@ -942,10 +1094,9 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   width: 100%;
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 28px;
+  border-radius: var(--r-pill);
   padding: 0 8px 0 18px;
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.12),
@@ -965,7 +1116,7 @@ input[type="file"]::file-selector-button:hover {
 
 /* Flatten bottom corners when dropdown is open */
 .search-bar-wrapper.dropdown-open {
-  border-radius: 28px 28px 0 0;
+  border-radius: var(--r-card) var(--r-card) 0 0;
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
@@ -1004,7 +1155,7 @@ input[type="file"]::file-selector-button:hover {
   height: 32px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   color: white;
   font-size: 16px;
   display: flex;
@@ -1029,11 +1180,10 @@ input[type="file"]::file-selector-button:hover {
   left: 0;
   right: 0;
   background: rgba(18, 18, 18, 0.55);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-top: none;
-  border-radius: 0 0 22px 22px;
+  border-radius: 0 0 var(--r-card) var(--r-card);
   overflow: hidden;
   z-index: 400;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
@@ -1077,7 +1227,7 @@ input[type="file"]::file-selector-button:hover {
 .suggestion-favicon {
   width: 15px;
   height: 15px;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   object-fit: contain;
 }
 
@@ -1109,7 +1259,7 @@ input[type="file"]::file-selector-button:hover {
   flex-shrink: 0;
   font-size: 11px;
   padding: 2px 9px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.65);
@@ -1123,8 +1273,7 @@ input[type="file"]::file-selector-button:hover {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(var(--scrim-blur));
   z-index: 800;
   display: flex;
   align-items: center;
@@ -1145,7 +1294,7 @@ input[type="file"]::file-selector-button:hover {
   position: relative;
   transform: scale(0.82);
   transform-origin: center center;
-  transition: transform 0.42s var(--spring);
+  transition: transform var(--dur-lg) var(--ease-out);
 }
 .search-overlay-backdrop.open .search-overlay-box {
   transform: scale(1);
@@ -1156,15 +1305,14 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   width: 100%;
   background: rgba(14, 14, 14, 0.72);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 28px;
+  border-radius: var(--r-pill);
   padding: 0 8px 0 18px;
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  transition: border-radius 0.3s var(--spring), border-color 0.25s ease;
+  transition: border-radius var(--dur-md) var(--spring), border-color var(--dur-md) var(--ease-out);
 }
 
 .search-overlay-input-row:focus-within {
@@ -1175,15 +1323,15 @@ input[type="file"]::file-selector-button:hover {
 }
 
 .search-overlay-input-row.dropdown-open {
-  border-radius: 28px 28px 0 0;
+  border-radius: var(--r-card) var(--r-card) 0 0;
   border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .search-overlay-dropdown {
-  border-radius: 0 0 22px 22px;
+  border-radius: 0 0 var(--r-card) var(--r-card);
   background: rgba(14, 14, 14, 0.65);
   transform-origin: top center;
-  animation: dropdown-spring-in 0.35s var(--spring) both;
+  animation: dropdown-spring-in var(--dur-md) var(--spring) both;
 }
 
 @keyframes dropdown-spring-in {
@@ -1204,7 +1352,7 @@ input[type="file"]::file-selector-button:hover {
   padding: 5px 10px;
   background: rgba(255, 255, 255, 0.09);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
+  border-radius: var(--r-pill);
   color: rgba(255, 255, 255, 0.65);
   font-size: 12px;
   font-family: inherit;
@@ -1228,10 +1376,9 @@ input[type="file"]::file-selector-button:hover {
   top: calc(100% + 6px);
   right: 6px;
   background: rgba(16, 16, 16, 0.92);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 4px;
   z-index: 10;
   min-width: 110px;
@@ -1248,7 +1395,7 @@ input[type="file"]::file-selector-button:hover {
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   text-align: left;
   transition: background 0.15s ease, color 0.15s ease;
 }
@@ -1288,7 +1435,7 @@ input[type="file"]::file-selector-button:hover {
   width: 2px;
   height: 60px;
   background: rgba(255, 255, 255, 0.18);
-  border-radius: 1px;
+  border-radius: var(--r-xs);
   z-index: 499;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -1307,20 +1454,22 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   flex-direction: column;
   padding: 12px 8px;
-  transition: transform 0.42s var(--spring);
-  border-radius: 12px;
+  transition: transform var(--dur-lg) var(--ease-out);
+  border-radius: var(--r-card);
 }
 
 .tab-sidebar-panel-left {
   left: 10px;
-  transform: translateX(-110%) scaleX(0.88);
+  /* No scale: a scaled element resamples its own filter, and the
+     refracted rim goes crooked for the length of the transition. */
+  transform: translateX(-110%);
   transform-origin: left center;
   border-left: none;
 }
 
 .tab-sidebar-panel-right {
   right: 10px;
-  transform: translateX(110%) scaleX(0.88);
+  transform: translateX(110%);
   transform-origin: right center;
   border-right: none;
 }
@@ -1337,7 +1486,7 @@ input[type="file"]::file-selector-button:hover {
   padding: 8px 10px;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: rgba(255, 255, 255, 0.65);
   font-size: 13px;
   font-family: inherit;
@@ -1372,7 +1521,7 @@ input[type="file"]::file-selector-button:hover {
   padding: 7px 10px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
   font-family: inherit;
@@ -1398,7 +1547,7 @@ input[type="file"]::file-selector-button:hover {
 .tab-sidebar-favicon {
   width: 16px;
   height: 16px;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -1406,7 +1555,7 @@ input[type="file"]::file-selector-button:hover {
 .tab-sidebar-favicon-placeholder {
   width: 16px;
   height: 16px;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
   background: rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
 }
@@ -1425,7 +1574,7 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: var(--r-control);
   padding: 3px;
   gap: 3px;
 }
@@ -1437,7 +1586,7 @@ input[type="file"]::file-selector-button:hover {
   justify-content: center;
   gap: 6px;
   padding: 8px 12px;
-  border-radius: 9px;
+  border-radius: var(--r-control);
   border: 1px solid transparent;
   background: transparent;
   color: rgba(255, 255, 255, 0.45);
@@ -1476,7 +1625,7 @@ input[type="file"]::file-selector-button:hover {
   padding: 10px 20px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   color: rgba(255, 255, 255, 0.6);
   font-size: 14px;
   font-family: inherit;
@@ -1508,8 +1657,7 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--scrim-blur));
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.5s ease;
@@ -1547,10 +1695,9 @@ input[type="file"]::file-selector-button:hover {
 .focus-stop-btn {
   padding: 12px 32px;
   background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 24px;
+  border-radius: var(--r-pill);
   color: white;
   font-size: 16px;
   font-family: inherit;
@@ -1582,7 +1729,7 @@ input[type="file"]::file-selector-button:hover {
   font: inherit;
   text-align: center;
   padding: 24px;
-  border-radius: 16px;
+  border-radius: var(--r-card);
   opacity: 0.9;
   transition: opacity 0.3s;
   cursor: pointer;
@@ -1612,16 +1759,16 @@ input[type="file"]::file-selector-button:hover {
   z-index: 200;
   width: 42px;
   height: 42px;
-  border-radius: 22px;
+  border-radius: var(--r-pill);
   cursor: pointer;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
-    width        0.42s var(--spring),
-    height       0.4s  var(--spring-gentle),
-    border-radius 0.42s var(--spring);
+    width var(--dur-lg-out) var(--ease-in),
+    height var(--dur-lg-out) var(--ease-in),
+    border-radius var(--dur-lg-out) var(--ease-in);
 }
 .sidebar-container:not(.open):hover {
   background: rgba(255, 255, 255, 0.1);
@@ -1632,10 +1779,16 @@ input[type="file"]::file-selector-button:hover {
     inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
 .sidebar-container.open {
-  width: 340px;
-  height: calc(66vh - 20px);
-  border-radius: 16px;
+  width: var(--sidebar-w);
+  height: var(--sidebar-h);
+  border-radius: var(--r-card);
   cursor: default;
+
+  /* Entry: slower than exit, one curve for both axes. */
+  transition:
+    width var(--dur-lg) var(--ease-out),
+    height var(--dur-lg) var(--ease-out),
+    border-radius var(--dur-lg) var(--ease-out);
 }
 
 .sidebar-btn-icon {
@@ -1656,8 +1809,8 @@ input[type="file"]::file-selector-button:hover {
   position: absolute;
   top: 0;
   left: 0;
-  width: 340px;
-  height: calc(66vh - 20px);
+  width: var(--sidebar-w);
+  height: var(--sidebar-h);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1680,7 +1833,7 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   color: rgba(255, 255, 255, 0.5);
   transition: color 0.2s, background 0.2s;
   flex-shrink: 0;
@@ -1723,7 +1876,7 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   transition: all 0.25s ease;
 }
 .todo-item:hover {
@@ -1760,7 +1913,7 @@ input[type="file"]::file-selector-button:hover {
 
 .todo-input {
   flex: 1;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 8px 12px;
   color: white;
   font-size: 14px;
@@ -1776,7 +1929,7 @@ input[type="file"]::file-selector-button:hover {
   height: 36px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 20px;
   cursor: pointer;
@@ -1805,7 +1958,7 @@ input[type="file"]::file-selector-button:hover {
   font-weight: 500;
   margin-bottom: 20px;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   text-align: center;
 }
 
@@ -1824,7 +1977,7 @@ input[type="file"]::file-selector-button:hover {
 .event-item {
   display: block;
   padding: 8px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   font-size: 13px;
 }
 .event-item-link {
@@ -1838,7 +1991,7 @@ input[type="file"]::file-selector-button:hover {
 .event-item-color-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   flex-shrink: 0;
 }
 .event-item-title {
@@ -1869,18 +2022,20 @@ input[type="file"]::file-selector-button:hover {
   z-index: 1000;
   width: 42px;
   height: 42px;
-  border-radius: 22px;
+  border-radius: var(--r-pill);
   cursor: pointer;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0.8;
+  /* Closing. The target state owns the transition, so the base rule is what
+     runs on the way out - and out is quicker than in. */
   transition:
-    width        0.45s var(--spring),
-    height       0.4s  var(--spring-gentle),
-    border-radius 0.45s var(--spring),
-    opacity      0.3s  ease;
+    width var(--dur-lg-out) var(--ease-in),
+    height var(--dur-lg-out) var(--ease-in),
+    border-radius var(--dur-lg-out) var(--ease-in),
+    opacity var(--dur-sm-out) var(--ease-in);
 }
 .settings-container:not(.open):hover {
   opacity: 1;
@@ -1892,11 +2047,20 @@ input[type="file"]::file-selector-button:hover {
     inset 0 0 2px 1px rgba(255, 255, 255, 0.3);
 }
 .settings-container.open {
-  width: min(520px, 90vw);
-  height: calc(100vh - 20px);
-  border-radius: 16px;
+  width: var(--settings-w);
+  height: var(--settings-h);
+  border-radius: var(--r-card);
   opacity: 1;
   cursor: default;
+
+  /* Opening. Both axes on one duration and one curve: when width and height
+     disagree about how far along they are, the box distorts for the length of
+     the morph, which is most of why this never felt right. */
+  transition:
+    width var(--dur-lg) var(--ease-out),
+    height var(--dur-lg) var(--ease-out),
+    border-radius var(--dur-lg) var(--ease-out),
+    opacity var(--dur-sm) var(--ease-out);
 }
 
 .settings-icon {
@@ -1917,15 +2081,21 @@ input[type="file"]::file-selector-button:hover {
   position: absolute;
   top: 0;
   left: 0;
-  width: min(520px, 90vw);
-  height: calc(100vh - 20px);
+  width: var(--settings-w);
+  height: var(--settings-h);
   display: flex;
   flex-direction: row;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease 0.25s;
+  /* Leaving: no delay and quicker. The delay is there so content does not
+     appear while the box is still being resized, which is only a concern on
+     the way in - applied in both directions it left the content hanging in
+     the air for 200ms after the panel had already collapsed. */
+  transition: opacity var(--dur-sm-out) var(--ease-in);
 }
+/* Arriving: wait for the box to be most of the way there. */
 .settings-container.open .settings-inner {
+  transition: opacity var(--dur-content) var(--ease-out) var(--delay-content);
   opacity: 1;
   pointer-events: auto;
 }
@@ -1933,23 +2103,13 @@ input[type="file"]::file-selector-button:hover {
 /* ============================================================
    Settings Backdrop
    ============================================================ */
-.settings-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  transition: opacity 0.4s;
-}
-.settings-backdrop.visible {
-  opacity: 1;
-}
-.settings-backdrop.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
 
 /* Settings Nav */
+/* The nav is a column of nothing but text, so it gets its own ground rather
+   than sitting on bare glass. This is the pattern throughout: the pane is a
+   lens, regions that carry writing are paper laid on it. */
 .settings-nav {
+  background: var(--glass-ink);
   width: 140px;
   flex-shrink: 0;
   display: flex;
@@ -1963,17 +2123,23 @@ input[type="file"]::file-selector-button:hover {
   border: none;
   text-align: left;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: var(--text-base);
+  /* Was implicit 400 at 40% white - normal weight, barely-there colour, and
+     eight of the nine items sit in this state at once. It was the
+     lowest-contrast primary navigation in the app. */
+  font-weight: var(--weight-medium);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s, background-color 0.2s;
   font-family: inherit;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--ink-tertiary);
 }
 .settings-nav-btn:hover {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--ink-primary);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 .settings-nav-btn.active {
-  color: white;
+  color: var(--ink-primary);
+  font-weight: var(--weight-strong);
 }
 .settings-nav-btn.locked {
   opacity: 0.35;
@@ -1997,7 +2163,7 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: none;
   border: none;
   color: inherit;
@@ -2016,7 +2182,11 @@ input[type="file"]::file-selector-button:hover {
   flex: 1;
 }
 
+/* The scrolling body sat flush against the panel's right edge, so its
+   scrollbar ran straight into a 20px rounded corner and was clipped at both
+   ends. Inset it far enough to clear the curve. */
 .settings-main {
+  padding-right: var(--space-2);
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -2025,11 +2195,19 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* Settings Form Controls */
+/* Content sits on paper, not on the lens.
+   The pane is clear glass now, so anything carrying text needs its own ground.
+   This is the grouping element the settings sections already use - 35 of them
+   across 20 files - so one rule grounds the whole surface. */
 .settings-group {
-  margin-bottom: 20px;
+  background: var(--glass-ink);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-control);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 .settings-group + .settings-group {
-  margin-top: 28px;
+  margin-top: var(--space-4);
 }
 
 .settings-section-heading {
@@ -2047,14 +2225,15 @@ input[type="file"]::file-selector-button:hover {
 .settings-label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
-  opacity: 0.9;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--ink-secondary);
 }
 
 .settings-input {
   width: 100%;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 14px;
   font-family: inherit;
@@ -2083,7 +2262,7 @@ input[type="file"]::file-selector-button:hover {
 .settings-select {
   width: 100%;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 14px;
   outline: none;
@@ -2102,7 +2281,7 @@ input[type="file"]::file-selector-button:hover {
   flex-shrink: 0;
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2110,8 +2289,7 @@ input[type="file"]::file-selector-button:hover {
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -2138,7 +2316,7 @@ input[type="checkbox"] {
   width: 16px;
   height: 16px;
   min-width: 16px;
-  border-radius: 5px;
+  border-radius: var(--r-xs);
   border: 1.5px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.07);
   cursor: pointer;
@@ -2193,7 +2371,7 @@ input[type="checkbox"]:focus-visible {
 .settings-save-btn {
   flex: 1;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -2217,7 +2395,7 @@ input[type="checkbox"]:focus-visible {
 .settings-reset-btn {
   flex: 1;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 16px;
   cursor: pointer;
@@ -2232,7 +2410,7 @@ input[type="checkbox"]:focus-visible {
 /* Settings Message */
 .settings-message {
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   margin-bottom: 20px;
   font-size: 14px;
   text-align: center;
@@ -2291,7 +2469,7 @@ input[type="checkbox"]:focus-visible {
   padding: 6px 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: background 0.15s ease;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
 }
 
 .link-table-row:last-child {
@@ -2312,7 +2490,7 @@ input[type="checkbox"]:focus-visible {
 .link-favicon-preview {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   object-fit: contain;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2322,7 +2500,7 @@ input[type="checkbox"]:focus-visible {
 .link-favicon-fallback {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -2334,7 +2512,7 @@ input[type="checkbox"]:focus-visible {
 .link-editor-input {
   width: 100%;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   color: white;
   font-size: 13px;
   outline: none;
@@ -2369,7 +2547,7 @@ input[type="checkbox"]:focus-visible {
   padding: 10px;
   background: rgba(34, 197, 94, 0.1);
   border: 1px solid rgba(34, 197, 94, 0.25);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 14px;
   cursor: pointer;
@@ -2394,7 +2572,7 @@ input[type="checkbox"]:focus-visible {
   height: 36px;
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: 10px;
+  border-radius: var(--r-control);
   color: white;
   font-size: 24px;
   line-height: 1;
@@ -2445,7 +2623,7 @@ input[type="checkbox"]:focus-visible {
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   border: none;
   background: transparent;
   color: rgba(255, 255, 255, 0.7);
@@ -2554,7 +2732,7 @@ body.focus-exiting .sidebar-container {
 .photo-thumb {
   position: relative;
   aspect-ratio: 16 / 10;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   overflow: hidden;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -2595,7 +2773,7 @@ body.focus-exiting .sidebar-container {
   right: 4px;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.85);
@@ -2620,7 +2798,7 @@ body.focus-exiting .sidebar-container {
   left: 4px;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: rgba(255, 255, 255, 0.7);
@@ -2647,7 +2825,7 @@ body.focus-exiting .sidebar-container {
 .visibility-table {
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   overflow: hidden;
 }
 
@@ -2705,7 +2883,7 @@ body.focus-exiting .sidebar-container {
   display: inline-block;
   width: 40px;
   height: 22px;
-  border-radius: 11px;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.18);
   transition: background 0.25s ease, border-color 0.25s ease;
@@ -2728,7 +2906,7 @@ body.focus-exiting .sidebar-container {
   left: 2px;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.6);
   transition: transform 0.25s ease, background 0.25s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -2750,7 +2928,7 @@ body.focus-exiting .sidebar-container {
   gap: 8px;
   width: 100%;
   padding: 10px 14px;
-  border-radius: 12px;
+  border-radius: var(--r-control);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
@@ -2799,7 +2977,7 @@ body.focus-exiting .sidebar-container {
   padding: 8px 12px;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
+  border-radius: var(--r-inner);
 }
 
 .integration-error {
@@ -2808,7 +2986,7 @@ body.focus-exiting .sidebar-container {
   padding: 8px 12px;
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   margin-top: -6px;
   margin-bottom: 8px;
 }
@@ -2867,13 +3045,13 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   margin-bottom: 20px;
 }
 .auth-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
@@ -2906,7 +3084,7 @@ body.focus-exiting .sidebar-container {
 .auth-signout-btn {
   width: 100%;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: rgba(239, 68, 68, 0.08);
   border: 1px solid rgba(239, 68, 68, 0.2);
   color: rgba(255, 200, 200, 0.9);
@@ -2937,7 +3115,7 @@ body.focus-exiting .sidebar-container {
   gap: 10px;
   background: rgba(255, 200, 60, 0.1);
   border: 1px solid rgba(255, 200, 60, 0.25);
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   padding: 10px 12px;
   margin-bottom: 14px;
 }
@@ -2950,7 +3128,7 @@ body.focus-exiting .sidebar-container {
 .verification-resend-btn {
   background: rgba(255, 200, 60, 0.15);
   border: 1px solid rgba(255, 200, 60, 0.3);
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   color: rgba(255, 200, 60, 0.9);
   font-size: 12px;
   padding: 4px 10px;
@@ -2986,7 +3164,7 @@ body.focus-exiting .sidebar-container {
 .danger-delete-btn {
   width: 100%;
   padding: 10px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: transparent;
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: rgba(239, 100, 100, 0.8);
@@ -3009,7 +3187,7 @@ body.focus-exiting .sidebar-container {
   padding: 14px;
   background: rgba(239, 68, 68, 0.05);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 12px;
+  border-radius: var(--r-card);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -3029,7 +3207,7 @@ body.focus-exiting .sidebar-container {
 .danger-confirm-cancel {
   flex: 1;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.65);
@@ -3046,7 +3224,7 @@ body.focus-exiting .sidebar-container {
 .danger-confirm-submit {
   flex: 1;
   padding: 8px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.35);
   color: rgba(255, 150, 150, 1);
@@ -3070,7 +3248,7 @@ body.focus-exiting .sidebar-container {
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: var(--r-card);
   font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
   box-shadow:
@@ -3109,10 +3287,10 @@ body.focus-exiting .sidebar-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
+  border-radius: var(--r-card);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
   color: inherit;
@@ -3134,7 +3312,7 @@ body.focus-exiting .sidebar-container {
   justify-content: center;
   width: 52px;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   color: rgba(255, 255, 255, 0.85);
 }
 /* Connection status dot - bottom-right corner of icon */
@@ -3144,7 +3322,7 @@ body.focus-exiting .sidebar-container {
   right: 4px;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(255, 255, 255, 0.2);
   border: 1.5px solid rgba(0, 0, 0, 0.3);
 }
@@ -3161,7 +3339,7 @@ body.focus-exiting .sidebar-container {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--scrim-blur));
   z-index: 1100;
 }
 .app-center-panel {
@@ -3174,7 +3352,7 @@ body.focus-exiting .sidebar-container {
   max-height: min(600px, calc(100vh - 40px));
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: var(--r-card);
   overflow: hidden;
   outline: none;
 }
@@ -3197,7 +3375,7 @@ body.focus-exiting .sidebar-container {
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: rgba(255, 255, 255, 0.08);
 }
 .app-center-name {
@@ -3211,7 +3389,7 @@ body.focus-exiting .sidebar-container {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   border: none;
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.6);
@@ -3245,7 +3423,7 @@ body.focus-exiting .sidebar-container {
 .template-card {
   display: flex;
   flex-direction: column;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   overflow: hidden;
@@ -3288,7 +3466,7 @@ body.focus-exiting .sidebar-container {
 .template-apply-btn {
   margin: 8px 10px 10px;
   padding: 7px 0;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   border: 1px solid color-mix(in srgb, var(--template-accent, #fff) 30%, transparent);
   background: color-mix(in srgb, var(--template-accent, #fff) 10%, transparent);
   color: color-mix(in srgb, var(--template-accent, #fff) 85%, white);
@@ -3308,7 +3486,7 @@ body.focus-exiting .sidebar-container {
   top: 8px;
   right: 8px;
   padding: 3px 9px;
-  border-radius: 20px;
+  border-radius: var(--r-card);
   background: #4ade80;
   color: #052e16;
   font-size: 10px;
@@ -3323,13 +3501,13 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   margin-bottom: 12px;
 }
 .integration-icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3361,7 +3539,7 @@ body.focus-exiting .sidebar-container {
 }
 .integration-connect-btn {
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: white;
@@ -3385,7 +3563,7 @@ body.focus-exiting .sidebar-container {
 }
 .integration-disconnect-btn {
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(239, 68, 68, 0.07);
   border: 1px solid rgba(239, 68, 68, 0.18);
   color: rgba(255, 160, 160, 0.9);
@@ -3413,7 +3591,7 @@ body.focus-exiting .sidebar-container {
   flex-direction: column;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 16px;
+  border-radius: var(--r-card);
 }
 .spotify-widget-row {
   display: flex;
@@ -3422,13 +3600,13 @@ body.focus-exiting .sidebar-container {
 }
 .spotify-progress-bar {
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: rgba(255, 255, 255, 0.12);
   overflow: hidden;
 }
 .spotify-progress-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: #1DB954;
   transition: width 0.5s linear;
 }
@@ -3448,14 +3626,14 @@ body.focus-exiting .sidebar-container {
 .spotify-album-art {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   object-fit: cover;
   flex-shrink: 0;
 }
 .spotify-album-art-placeholder {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
@@ -3491,7 +3669,7 @@ body.focus-exiting .sidebar-container {
 }
 .spotify-eq-bar {
   width: 3px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: #1DB954;
 }
 .spotify-eq-bar:nth-child(1) { animation: spotify-eq1 1s ease-in-out infinite; }
@@ -3528,7 +3706,7 @@ body.focus-exiting .sidebar-container {
   display: flex;
   align-items: center;
   flex-direction: row;
-  border-radius: 22px;
+  border-radius: var(--r-pill);
   overflow: hidden;
   cursor: default;
   flex-shrink: 0;
@@ -3540,7 +3718,7 @@ body.focus-exiting .sidebar-container {
 
 .spotify-dock--open {
   width: 272px;
-  border-radius: 16px;
+  border-radius: var(--r-pill);
 }
 
 /* ── Expandable panel (left side, grows when hovered) ─────────── */
@@ -3573,7 +3751,7 @@ body.focus-exiting .sidebar-container {
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   border: none;
   background: none;
   color: rgba(255, 255, 255, 0.65);
@@ -3607,13 +3785,13 @@ body.focus-exiting .sidebar-container {
 }
 .spotify-dock-progress-bar {
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: rgba(255, 255, 255, 0.18);
   overflow: hidden;
 }
 .spotify-dock-progress-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   background: #1DB954;
   transition: width 0.5s linear;
 }
@@ -3631,7 +3809,7 @@ body.focus-exiting .sidebar-container {
   cursor: pointer;
   padding: 0;
   position: relative;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   transition: background 0.15s ease;
 }
 .spotify-dock-disc-btn:hover {
@@ -3642,7 +3820,7 @@ body.focus-exiting .sidebar-container {
 .spotify-dock-disc {
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   overflow: hidden;
   position: relative;
   display: flex;
@@ -3664,7 +3842,7 @@ body.focus-exiting .sidebar-container {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   display: block;
 }
 .spotify-dock-art-placeholder {
@@ -3683,7 +3861,7 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   background: rgba(0, 0, 0, 0.45);
   pointer-events: none;
 }
@@ -3723,7 +3901,7 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   gap: 10px;
   padding: 6px 8px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   text-decoration: none;
   color: inherit;
   cursor: pointer;
@@ -3741,14 +3919,14 @@ body.focus-exiting .sidebar-container {
 .spotify-top-track-art {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   object-fit: cover;
   flex-shrink: 0;
 }
 .spotify-top-track-art-placeholder {
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   background: rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
@@ -3864,8 +4042,7 @@ body.focus-exiting .sidebar-container {
   inset: 0;
   z-index: 2000;
   background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--scrim-blur));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3881,11 +4058,10 @@ body.focus-exiting .sidebar-container {
   position: relative;
   width: min(420px, 90vw);
   padding: 36px 32px 28px;
-  border-radius: 20px;
+  border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
@@ -3905,7 +4081,7 @@ body.focus-exiting .sidebar-container {
   right: 14px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   padding: 4px 6px;
@@ -3953,7 +4129,7 @@ body.focus-exiting .sidebar-container {
 .onboarding-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   border: none;
   background: rgba(255, 255, 255, 0.25);
   cursor: pointer;
@@ -3975,7 +4151,7 @@ body.focus-exiting .sidebar-container {
 .onboarding-btn-back {
   flex: 0 0 auto;
   padding: 9px 18px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.65);
@@ -3991,7 +4167,7 @@ body.focus-exiting .sidebar-container {
 .onboarding-btn-next {
   flex: 1;
   padding: 9px 18px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   border: none;
   background: rgba(255, 255, 255, 0.18);
   color: rgba(255, 255, 255, 0.95);
@@ -4021,11 +4197,10 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border-radius: 14px;
+  border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: notice-slide-up 0.4s var(--spring-gentle);
   white-space: nowrap;
@@ -4062,7 +4237,7 @@ body.focus-exiting .sidebar-container {
 
 .spotify-notice-connect {
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: var(--r-inner);
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.9);
@@ -4097,7 +4272,7 @@ body.focus-exiting .sidebar-container {
 .guide-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   width: 34px;
   height: 34px;
   display: flex;
@@ -4114,15 +4289,6 @@ body.focus-exiting .sidebar-container {
   transform: scale(1.08);
 }
 
-.guide-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1200;
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: onboarding-fade-in 0.2s ease;
-}
 
 .guide-panel {
   position: fixed;
@@ -4131,11 +4297,10 @@ body.focus-exiting .sidebar-container {
   z-index: 1201;
   width: min(360px, calc(100vw - 32px));
   max-height: min(480px, calc(100vh - 80px));
-  border-radius: 14px;
+  border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
@@ -4183,7 +4348,7 @@ body.focus-exiting .sidebar-container {
 .guide-panel-close {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 7px;
+  border-radius: var(--r-inner);
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   padding: 3px 5px;
@@ -4206,7 +4371,7 @@ body.focus-exiting .sidebar-container {
   gap: 12px;
   margin: 10px 12px 0;
   padding: 9px 12px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   background: rgba(123, 158, 245, 0.1);
   border: 1px solid rgba(123, 158, 245, 0.22);
   cursor: pointer;
@@ -4261,7 +4426,7 @@ body.focus-exiting .sidebar-container {
 }
 .guide-panel-body::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
+  border-radius: var(--r-xs);
 }
 
 /* ── Collapsible section ── */
@@ -4357,7 +4522,7 @@ body.focus-exiting .sidebar-container {
   width: 16px;
   height: 16px;
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 50%;
+  border-radius: var(--r-pill);
   font-size: 0.68rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.55);
@@ -4372,7 +4537,7 @@ body.focus-exiting .sidebar-container {
 .guide-block-note {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 7px;
+  border-radius: var(--r-inner);
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
@@ -4389,7 +4554,7 @@ body.focus-exiting .sidebar-container {
 .guide-block-tip {
   background: rgba(255, 220, 100, 0.07);
   border: 1px solid rgba(255, 220, 100, 0.18);
-  border-radius: 7px;
+  border-radius: var(--r-inner);
   padding: 8px 10px;
   display: flex;
   flex-direction: column;
@@ -4417,7 +4582,7 @@ body.focus-exiting .sidebar-container {
 .guide-block-code {
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   padding: 8px 10px;
   overflow-x: auto;
   font-size: 0.75rem;
@@ -4437,7 +4602,7 @@ body.focus-exiting .sidebar-container {
 .finance-tab {
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
+  border-radius: var(--r-xs);
   color: rgba(255, 255, 255, 0.5);
   cursor: pointer;
   font-size: 0.65rem;
@@ -4505,7 +4670,7 @@ body.focus-exiting .sidebar-container {
 .finance-crypto-label {
   display: inline-block;
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   border: 1px solid rgba(255, 255, 255, 0.15);
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.5);
@@ -4534,7 +4699,7 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   gap: 7px;
   padding: 4px 6px;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   text-decoration: none;
   transition: background 0.12s;
 }
@@ -4544,7 +4709,7 @@ body.focus-exiting .sidebar-container {
 .history-favicon {
   width: 14px;
   height: 14px;
-  border-radius: 2px;
+  border-radius: var(--r-xs);
   flex-shrink: 0;
 }
 .history-title {
@@ -4575,9 +4740,8 @@ body.focus-exiting .sidebar-container {
 .finance-dashboard {
   background: rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.11);
-  border-radius: 14px;
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  border-radius: var(--r-card);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -4653,7 +4817,7 @@ body.focus-exiting .sidebar-container {
   gap: 5px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
+  border-radius: var(--r-pill);
   padding: 3px 8px 3px 10px;
   font-size: 0.72rem;
   font-weight: 700;
@@ -4680,8 +4844,8 @@ body.focus-exiting .sidebar-container {
   right: 0;
   background: rgba(20, 20, 30, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
-  backdrop-filter: blur(16px);
+  border-radius: var(--r-control);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   overflow: hidden;
   z-index: 200;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
@@ -4755,7 +4919,7 @@ body.focus-exiting .sidebar-container {
   color: #fff;
   font-size: 0.65rem;
   font-weight: 700;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   padding: 1px 6px;
   min-width: 18px;
   text-align: center;
@@ -4779,7 +4943,7 @@ body.focus-exiting .sidebar-container {
 }
 .gmail-message-row {
   padding: 7px 6px;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   cursor: default;
   transition: background 0.15s;
 }
@@ -4849,7 +5013,7 @@ body.focus-exiting .sidebar-container {
   font-size: 0.65rem;
   font-weight: 700;
   padding: 1px 5px;
-  border-radius: 10px;
+  border-radius: var(--r-control);
   min-width: 18px;
   text-align: center;
 }
@@ -4874,7 +5038,7 @@ body.focus-exiting .sidebar-container {
   align-items: center;
   gap: 8px;
   padding: 5px 6px;
-  border-radius: 6px;
+  border-radius: var(--r-inner);
   text-decoration: none;
   color: rgba(255, 255, 255, 0.7);
   transition: background 0.15s;

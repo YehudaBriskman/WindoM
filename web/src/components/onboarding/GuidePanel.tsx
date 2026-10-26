@@ -254,7 +254,6 @@ export function GuidePanel(): React.ReactElement {
 
       {isOpen && (
         <>
-          <div className="guide-backdrop" onClick={close} />
           <div className="guide-panel" role="dialog" aria-modal="true" aria-label="WindoM Guide">
 
             <div className="guide-panel-header">

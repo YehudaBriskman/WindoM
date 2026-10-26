@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**WindoM** - A Chrome extension new tab dashboard built with React 19, TypeScript, Vite 8, Tailwind CSS v4, and lucide-react icons.
+**WindoM** - A Chrome extension new tab dashboard built with React 19, TypeScript, Vite 8, hand-written CSS, and lucide-react icons.
 
 Features: clock, greeting, background images (Unsplash/local), weather widget, quick links + dock bar, daily quotes, focus mode with timer, todo list, calendar events, Gmail inbox, Spotify, a finance dashboard, GitHub pull requests and issues, tab history, and a full settings panel.
 
@@ -13,7 +13,7 @@ Features: clock, greeting, background images (Unsplash/local), weather widget, q
 - **React 19** - Functional components + hooks
 - **TypeScript** - Strict mode
 - **Vite 8** + `@crxjs/vite-plugin` - Chrome extension builds with HMR
-- **Tailwind CSS v4** - CSS-first config in `src/styles/globals.css` (no `tailwind.config.js`); custom `@utility` directives for glassmorphism
+- **Plain CSS** - no framework. `src/styles/globals.css` (~4900 lines) holds layout and components; `src/styles/glass.css` holds the glass material. Design tokens are CSS custom properties in the `:root` block at the top of globals.css: radius (`--r-pill`, `--r-card`, `--r-control`, `--r-inner`, `--r-xs`), spacing (`--space-1`..`6`), control heights and panel sizes. Use them rather than literals.
 - **lucide-react** - SVG icon library
 
 ## Development Commands
@@ -63,14 +63,15 @@ web/                               (repo root for the extension)
     │   │   └── sections/          (GeneralSettings, BackgroundSettings, WeatherSettings, QuotesSettings, LinksSettings)
     │   └── ui/                    (GlassPanel, GlassButton, GlassInput)
     ├── utils/                     (weather-icons, temperature, time, url, hash)
-    └── styles/globals.css         (Tailwind imports + @utility glass-panel, glass-sidebar, etc.)
+    └── styles/globals.css         (:root design tokens, layout, components)
+    └── styles/glass.css           (the liquid glass material)
 ```
 
 ## Architecture
 
 - **State**: React Context wraps the entire app in order: `SettingsProvider → BackgroundProvider → FocusTimerProvider`. Settings sync with `chrome.storage.sync` and propagate across tabs via `chrome.storage.onChanged`.
 - **One hook per feature**: Each module (weather, quotes, links, etc.) has a dedicated custom hook encapsulating all logic, API calls, and caching.
-- **Glassmorphism**: Custom Tailwind v4 `@utility` directives (`glass-panel`, `glass-sidebar`, `glass-settings`, etc.) in `globals.css` provide consistent blur/transparency styling.
+- **Liquid glass**: plain classes (`glass-panel`, `glass-sidebar`, `glass-dock`, ...) in `glass.css`. Each pane blurs its backdrop lightly and refracts the wallpaper through a generated displacement field along its rim - `src/lib/liquid-glass.ts` computes the optics, `useLiquidGlass` measures panes and drives the light. The refraction is applied with `filter:` to a copy of the wallpaper, *not* `backdrop-filter`, which silently erases the backdrop when given a displacement map.
 - **Chrome APIs**: Typed wrappers in `src/lib/chrome-storage.ts` for async get/set/onChange on both sync and local storage.
 - **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, Open-Meteo, Quotable, Yahoo Finance, CoinGecko, GitHub).
 
