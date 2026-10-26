@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Spring } from '../lib/liquid-glass';
-import { registerGlassSurface, type GlassKey } from '../lib/glass-registry';
-import { rimMaskFor } from '../components/GlassFilters';
+import { type GlassKey } from '../lib/glass-registry';
 
 /**
  * Makes an element a pane of liquid glass.
@@ -179,29 +178,22 @@ export function useLiquidGlass<T extends HTMLElement>(
     const pane: Pane = { el, key, proximity: new Spring(0, 200, 26), rect: null };
     panes.add(pane);
 
+    // Geometry is cheap and must stay current; the field is expensive and can
+    // afford to wait. Splitting them is the whole fix for the half-second of
+    // script that opening a panel used to cost.
     const measure = (): void => {
-      const rect = el.getBoundingClientRect();
-      pane.rect = rect;
-      if (rect.width < 2 || rect.height < 2) return;
-      const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
-      const surface = registerGlassSurface(key, rect.width, rect.height, radius);
-      el.style.setProperty('--glass-refract', `url(#${surface.id})`);
-      // The lens layer is confined to the bezel by this mask. Without it the
-      // sharp layer covers the whole pane and the legibility the heavy blur
-      // was bought for is given straight back.
-      el.style.setProperty('--glass-rim', `url("${rimMaskFor(surface, surface.id)}")`);
-      // A pane that resized has moved every light value it was holding. The
-      // settings panel grows from a 42px button to a full sheet, and without
-      // this it kept the highlight it computed while it was still the button.
-      paint();
-      start();
+      pane.rect = el.getBoundingClientRect();
     };
 
     measure();
     paint();
 
     const observer = typeof ResizeObserver === 'function'
-      ? new ResizeObserver(measure)
+      ? new ResizeObserver(() => {
+          measure();
+          paint();
+          start();
+        })
       : null;
     observer?.observe(el);
 

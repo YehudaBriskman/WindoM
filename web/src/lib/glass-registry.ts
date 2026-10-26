@@ -52,8 +52,19 @@ export function subscribeGlassSurfaces(listener: Listener): () => void {
   };
 }
 
+/**
+ * Sizes are bucketed to 8px before they become a key.
+ *
+ * A field costs a pass over every pixel plus a PNG encode, and the difference
+ * between a 519px pane and a 520px one is not something a rim shows. Bucketing
+ * means a scrollbar appearing, a font settling or a window nudge reuses the
+ * field already built instead of paying for a new one.
+ */
+const BUCKET = 8;
+const bucket = (v: number): number => Math.max(BUCKET, Math.round(v / BUCKET) * BUCKET);
+
 export function glassFilterId(key: GlassKey, width: number, height: number, radius: number): string {
-  return `glass-${key}-${Math.round(width)}x${Math.round(height)}r${Math.round(radius)}`;
+  return `glass-${key}-${bucket(width)}x${bucket(height)}r${Math.round(radius)}`;
 }
 
 /**
@@ -75,8 +86,8 @@ export function registerGlassSurface(
 
   const surface: Registered = {
     key,
-    width: Math.round(width),
-    height: Math.round(height),
+    width: bucket(width),
+    height: bucket(height),
     radius: Math.round(radius),
     ...GLASS_PRESETS[key],
   };
