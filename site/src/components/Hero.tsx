@@ -24,9 +24,9 @@ const CAPABILITIES = [
  * lists what is stored, and most of the product works signed out.
  */
 const FACTS = [
-  { title: 'Free and open source', body: 'MIT licensed, every line on GitHub' },
-  { title: 'No tracking', body: 'No analytics, no telemetry, no ads' },
-  { title: 'No account needed', body: 'Sign in only for Calendar and Spotify' },
+  { stat: 'MIT', title: 'Open source', body: 'Every line on GitHub' },
+  { stat: 'Zero', title: 'Tracking', body: 'No analytics, no ads' },
+  { stat: 'Free', title: 'Always', body: 'No account required' },
 ];
 
 /**
@@ -55,13 +55,13 @@ export function Hero({ cycle, animated }: HeroProps) {
           <span className="eyebrow">Chrome extension</span>
 
           <h1 id="hero-heading">
-            <span className="hero-line-1">Your new tab,</span>
-            <span className="hero-line-2 gradient-text">actually useful</span>
+            <span className="hero-line-1">A new tab</span>
+            <span className="hero-line-2 gradient-text">worth opening.</span>
           </h1>
 
           <p className="lede">
-            Everything you were about to open anyway - your calendar, the weather, what you
-            meant to do today - on a wallpaper that moves with the hour.
+            Your calendar, the weather and what you meant to do today - waiting on the tab you
+            already open fifty times a day, on a wallpaper that moves with the hour.
           </p>
 
           <div className="btn-row">
@@ -95,24 +95,28 @@ export function Hero({ cycle, animated }: HeroProps) {
           aria-hidden because it is a picture of the product: every claim it
           makes is also made in the copy beside it.
         */}
-        <div className="hero-stage" aria-hidden="true">
-          <div className="hero-preview" ref={tiltRef}>
+        <div className="hero-stage">
+          <div className="hero-preview" ref={tiltRef} aria-hidden="true">
             <div className="hero-preview-frame">
               <Stage cycle={cycle} animated={animated} />
             </div>
             <span className="hero-preview-sheen" aria-hidden="true" />
           </div>
+
+          {/* A row of three, sitting below the product and lapping over its
+              bottom edge - the arrangement in the reference, where the cards
+              read as floating in front of the image rather than captioning it. */}
+          <ul className="hero-facts" aria-label="Key facts">
+            {FACTS.map((f) => (
+              <li key={f.title}>
+                <span className="hero-fact-stat">{f.stat}</span>
+                <strong>{f.title}</strong>
+                <span className="hero-fact-body">{f.body}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
-
-      <ul className="hero-facts" aria-label="Key facts">
-        {FACTS.map((f) => (
-          <li key={f.title}>
-            <strong>{f.title}</strong>
-            <span>{f.body}</span>
-          </li>
-        ))}
-      </ul>
 
       <a className="hero-cue" href="#day-stage" aria-label="Skip to the demonstration">
         <span className="hero-cue-rail" aria-hidden="true" />

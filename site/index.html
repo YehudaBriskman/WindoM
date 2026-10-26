@@ -29,9 +29,52 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700&display=swap"
     />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "WindoM",
+        "applicationCategory": "BrowserApplication",
+        "operatingSystem": "Chrome",
+        "url": "https://windom.app",
+        "description": "WindoM replaces the Chrome new tab page with a dashboard: calendar, weather, todos, markets and a focus timer, on a wallpaper that moves with the hour.",
+        "softwareVersion": "1.5.1",
+        "license": "https://opensource.org/licenses/MIT",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "author": { "@type": "Person", "name": "Yehuda Briskman", "url": "https://yehudabriskman.com" },
+        "downloadUrl": "https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb",
+        "privacyPolicy": "https://windom.app/privacy.html"
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!--
+        The hero's static copy, so the page is not an empty shell to anything
+        that cannot run JavaScript. `createRoot` replaces the contents of this
+        container on mount, so the browser experience is unchanged.
+
+        Only the text that never changes lives here. The clock and the day
+        animation are deliberately absent: baking them would freeze one moment
+        of a moving page into the document.
+      -->
+      <section>
+        <p>Chrome extension</p>
+        <h1>Your new tab, actually useful</h1>
+        <p>
+          WindoM replaces the blank Chrome new tab with everything you were about to open
+          anyway - your calendar, the weather, what you meant to do today - on a wallpaper
+          that moves with the hour.
+        </p>
+        <p>
+          <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb">Add to Chrome</a>
+          &middot; <a href="/guide.html">User Guide</a>
+          &middot; <a href="/support.html">Support</a>
+          &middot; <a href="/privacy.html">Privacy</a>
+        </p>
+      </section>
+    </div>
     <script type="module" src="/src/entries/index.tsx"></script>
   </body>
 </html>

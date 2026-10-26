@@ -14,7 +14,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "typecheck": "tsc -b --noEmit",
-    "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs"
+    "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs && node scripts/sitemap.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

@@ -20,7 +20,11 @@
 
   /* Type */
   --text: #e8e8f0;
-  --muted: #6b6b85;
+  /* 5.01:1 on --bg. The previous #6b6b85 measured 3.86:1, below the 4.5:1 that
+     WCAG AA asks of normal text - and it is the colour of the breadcrumbs, the
+     sidebar group headings, the page blurbs and every "last updated" line, so
+     the failure covered most of the site's secondary text. */
+  --muted: #7d7d9a;
   --muted-strong: #9a9ab5;
 
   /* Accent pair, used for gradient headings and primary actions */
