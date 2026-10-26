@@ -52,6 +52,49 @@
   --r-lg: 16px;
   --r-pill: 999px;
 
+  /**
+   * Spacing, in rem.
+   *
+   * The stylesheets had around 400 px literals between them, most of them one
+   * of eight recurring values written out by hand. A ramp means a reader can
+   * tell at a glance whether two gaps are meant to match, and it means the
+   * whole site responds to the browser's font-size setting instead of pinning
+   * itself to device pixels.
+   *
+   * Hairline borders stay in px deliberately. A 1px rule is a device pixel,
+   * not a measure of type, and scaling it only makes it blurry.
+   */
+  --s-1: 0.25rem;  /*  4px */
+  --s-2: 0.5rem;   /*  8px */
+  --s-3: 0.75rem;  /* 12px */
+  --s-4: 1rem;     /* 16px */
+  --s-5: 1.5rem;   /* 24px */
+  --s-6: 2rem;     /* 32px */
+  --s-7: 3rem;     /* 48px */
+  --s-8: 4.5rem;   /* 72px */
+
+  /**
+   * The sticky chrome, measured once.
+   *
+   * The documentation pages stack two sticky bars: the site nav, and the
+   * breadcrumb bar beneath it. Four separate things have to clear that stack -
+   * the bar's own offset, both sticky side columns, and the scroll anchoring
+   * for headings - and each of them used to carry its own hand-copied number.
+   * They drifted 22px out of agreement, which is why the sidebar and rail
+   * headings ended up behind the glass.
+   *
+   * `--nav-h-stuck` rather than `--nav-h`: the nav shrinks as you scroll, and
+   * the bar only ever sticks once that has happened, so the flush offset is
+   * the shrunk height.
+   */
+  --nav-pad: var(--s-3);
+  --nav-pad-stuck: var(--s-1);
+  --nav-icon: 2.25rem;  /* 36px, the tallest thing in the bar */
+  --nav-h: calc(var(--nav-pad) * 2 + var(--nav-icon) + 1px);
+  --nav-h-stuck: calc(var(--nav-pad-stuck) * 2 + var(--nav-icon) + 1px);
+  --bar-h: 3.125rem;
+  --chrome-h: calc(var(--nav-h-stuck) + var(--bar-h));
+
   /* Motion. One curve, three durations - enough vocabulary for a marketing site. */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 0.18s;
@@ -61,6 +104,16 @@
   /* Layout */
   --wrap: 1120px;
   --wrap-prose: 760px;
+  /**
+   * The hero gets its own, wider measure.
+   *
+   * At 1120px the hero reads as an island on a large display: the headline
+   * stops growing around 1486px while the page keeps widening, so a 1920px
+   * viewport showed 490px of text in a 1344px grid. The rest of the site is
+   * prose and keeps the narrower wrap, where a short measure is the point.
+   */
+  --wrap-wide: clamp(1120px, 88vw, 1680px);
+  --gutter: clamp(var(--s-4), 2.5vw, var(--s-8));
 
   color-scheme: dark;
 }
