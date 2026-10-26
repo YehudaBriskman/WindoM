@@ -49,7 +49,7 @@ export function Guide() {
             </div>
           </div>
           <h2 id="account">
-            <span className="section-icon"></span> יצירת חשבון WindoM
+            יצירת חשבון WindoM
             <span className="badge optional">Optional</span>
           </h2>
           <p>חשבון WindoM מסנכרן את ההגדרות שלך בין מכשירים ונדרש לחיבור Google Calendar או Spotify. ההרשמה חינמית ולוקחת פחות מדקה.
@@ -78,7 +78,7 @@ export function Guide() {
             לאחר התחברות, פורמט השעון, הרקע המועדף, הווידג'טים והקישורים המהירים שלך מסתנכרנים לענן ומופיעים בכל מכשיר שבו אתה מחובר ל-WindoM.
           </div>
           <h2 id="spotify">
-            <span className="section-icon"></span> חיבור ספוטיפיי
+            חיבור ספוטיפיי
             <span className="badge byoa">BYOA</span>
           </h2>
           <p>WindoM מציג את כרטיס השיר הנוכחי של ספוטיפיי ישירות בדוק לשונית החדשה. בגלל אופן פעולת ה-API של ספוטיפיי, כל משתמש מחבר את אפליקציית Spotify Developer החינמית שלו - זה שומר על פרטיות החשבון שלך ומונע הגבלות קצב משותפות. ההגדרה הכוללת לוקחת כ-2 דקות.
@@ -113,7 +113,7 @@ export function Guide() {
           </div>
           <h3>שלב 2 - העתק את ה-Redirect URI מ-WindoM</h3>
           <div className="step">
-            <div className="step-num">3</div>
+            <div className="step-num">1</div>
             <div className="step-body">
                 <p>פתח את לשונית WindoM החדשה, לחץ על <strong>הגדרות</strong> (אייקון גלגל שיניים, שמאל תחתון), ועבור ללשונית <strong>ספוטיפיי</strong>.
                 </p>
@@ -122,19 +122,19 @@ export function Guide() {
                 <div className="redirect-uri-box">
                   <span className="redirect-uri-label">Redirect URI</span>
                   <span className="redirect-uri-value">https://&lt;your-extension-id&gt;.chromiumapp.org/</span>
+                </div>
                 <p>לחץ על כפתור <strong>העתק</strong> לידו. URI זה ייחודי להתקנת Chrome שלך - אל תקליד אותו ידנית.</p>
-              </div>
             </div>
           </div>
           <h3>שלב 3 - הוסף את ה-Redirect URI לאפליקציית ספוטיפיי שלך</h3>
           <div className="step">
-            <div className="step-num">4</div>
+            <div className="step-num">1</div>
             <div className="step-body">
               <p>חזור אל <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer">Spotify Developer Dashboard</a>, לחץ על האפליקציה שלך, ואז לחץ על <strong>Settings</strong> (למעלה ימין בדף האפליקציה שלך).</p>
             </div>
           </div>
           <div className="step">
-            <div className="step-num">5</div>
+            <div className="step-num">2</div>
             <div className="step-body">
               <p>גלול לשדה <strong>Redirect URIs</strong>. הדבק את ה-URI שהעתקת מ-WindoM, לחץ על <strong>Add</strong>, ואז על <strong>Save</strong> בתחתית.</p>
             </div>
@@ -144,19 +144,19 @@ export function Guide() {
           </div>
           <h3>שלב 4 - העתק את ה-Client ID והתחבר</h3>
           <div className="step">
-            <div className="step-num">6</div>
+            <div className="step-num">1</div>
             <div className="step-body">
               <p>עדיין בדף ה-Settings של אפליקציית ספוטיפיי שלך, העתק את ה-<strong>Client ID</strong> בחלק העליון. הוא נראה כמחרוזת hex בת 32 תווים, למשל <code>b3d9a1f0c84e...</code></p>
             </div>
           </div>
           <div className="step">
-            <div className="step-num">7</div>
+            <div className="step-num">2</div>
             <div className="step-body">
               <p>חזור ל-WindoM → הגדרות → לשונית <strong>ספוטיפיי</strong>. הדבק את ה-Client ID בשדה הקלט ולחץ על <strong>שמור והתחבר</strong>.</p>
             </div>
           </div>
           <div className="step">
-            <div className="step-num">8</div>
+            <div className="step-num">3</div>
             <div className="step-body">
                 <p>יופיע חלון קופץ לאישור ספוטיפיי. לחץ על <strong>Agree</strong>.</p>
                 <p>אתה מחובר. כרטיס השיר הנוכחי יופיע בדוק העליון בפעם הבאה שתנגן שיר.</p>
@@ -175,7 +175,7 @@ export function Guide() {
             <strong>שינית פרופיל Chrome או התקנת מחדש?</strong> ה-Redirect URI שלך יהיה שונה. עבור להגדרות → לשונית ספוטיפיי כדי לראות את ה-URI החדש, הוסף אותו להגדרות אפליקציית ספוטיפיי שלך (ניתן להוסיף מספר Redirect URIs), ואז התחבר מחדש.
           </div>
           <h2 id="calendar">
-            <span className="section-icon"></span> חיבור Google Calendar
+            חיבור Google Calendar
           </h2>
           <p>WindoM מציג את אירועי Google Calendar הקרובים שלך בסרגל הצד הימני כך שהיום שלך תמיד גלוי. זה דורש חשבון WindoM ואישור Google חד-פעמי.
           </p>
@@ -209,7 +209,7 @@ export function Guide() {
             כברירת מחדל מוצגים אירועים ל-7 הימים הבאים. ניתן לשנות זאת ל-14 או 30 יום בהגדרות → <strong>לוח שנה</strong>.
           </div>
           <h2 id="finance">
-            <span className="section-icon"></span> לוח מחוונים פיננסי
+            לוח מחוונים פיננסי
           </h2>
           <p>עקוב אחר מחירי מניות וקריפטו בזמן אמת ישירות בלשונית החדשה שלך. המחירים מתעדכנים מ-Yahoo Finance ו-CoinGecko - אין צורך במפתח API או חשבון. שני כרטיסים גלילים מופיעים בלוח המחוונים שלך: אחד למניות ואחד לקריפטו.
           </p>
@@ -242,7 +242,7 @@ export function Guide() {
             הוספת טיקר חדש עוקפת את ה-cache מיד כך שתראה את המחיר מיידית.
           </div>
           <h2 id="focus">
-            <span className="section-icon"></span> טיימר פוקוס
+            טיימר פוקוס
           </h2>
           <p>טיימר הפוקוס מאפשר לך להגדיר כוונה לסשן שלך. כשהוא פעיל, הרקע מתעמעם וכל ממשק אחר נעלם כדי שלא יהיו הסחות דעת.
           </p>
@@ -269,7 +269,7 @@ export function Guide() {
             עבור להגדרות → <strong>פוקוס</strong> כדי לשמור את משימות הפוקוס הנפוצות ביותר שלך כבחירה מהירה, כך שלא תצטרך להקליד כל יום מחדש.
           </div>
           <h2 id="background">
-            <span className="section-icon"></span> שינוי הרקע
+            שינוי הרקע
           </h2>
           <p>WindoM תומך בשני מקורות רקע: תמונות נבחרות מ-Unsplash, או תמונה שאתה מעלה מהמכשיר שלך.
           </p>
@@ -310,7 +310,7 @@ export function Guide() {
             </div>
           </div>
           <h2 id="weather">
-            <span className="section-icon"></span> ווידג'ט מזג אוויר
+            ווידג'ט מזג אוויר
             <span className="badge optional">דורש מפתח API</span>
           </h2>
           <p>ווידג'ט מזג האוויר מציג טמפרטורה ותנאים בזמן אמת בסרגל העליון. הוא משתמש ב-OpenWeatherMap חינמי - אתה צריך מפתח API משלך.
@@ -348,7 +348,7 @@ export function Guide() {
             התוכנית החינמית של OpenWeatherMap מאפשרת 1,000 קריאות API ביום. WindoM שומר את מזג האוויר במטמון ל-10 דקות לכל לשונית חדשה, כך שלעולם לא תתקרב למגבלה.
           </div>
           <h2 id="links">
-            <span className="section-icon"></span> קישורים מהירים וסרגל הדוק
+            קישורים מהירים וסרגל הדוק
           </h2>
           <p>נעץ את האתרים הנפוצים ביותר לסרגל הדוק שרץ לאורך חלק העליון של כל לשונית חדשה. כל קישור מוצג כסמל favicon - רחף מעליו לראות את התווית.
           </p>
@@ -371,7 +371,7 @@ export function Guide() {
             </div>
           </div>
           <h2 id="clock">
-            <span className="section-icon"></span> שעון ותאריך
+            שעון ותאריך
           </h2>
           <p>השעון הוא מרכז לשונית החדשה שלך. הכל בו ניתן להתאמה אישית.
           </p>
