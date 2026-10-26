@@ -160,18 +160,12 @@
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
 
-  /* Until a field and a mask exist the layer would be an unmasked wallpaper
-     covering the pane, so it stays hidden until both arrive. */
-  opacity: 0;
-}
-
-.glass-panel[style*="--glass-rim"]::before,
-.glass-sidebar[style*="--glass-rim"]::before,
-.glass-settings[style*="--glass-rim"]::before,
-.glass-quote[style*="--glass-rim"]::before,
-.glass-credit[style*="--glass-rim"]::before,
-.glass-dock[style*="--glass-rim"]::before {
-  opacity: 1;
+  /* Driven by the hook: 0 while the pane is in motion or before a field
+     exists, 1 once one has been built for the pane's current geometry. The
+     mask and the alignment are both cut for one exact size, so showing this
+     at any other size paints an unmasked wallpaper across the screen. */
+  opacity: var(--glass-lens, 0);
+  transition: opacity 0.18s ease-out;
 }
 
 /* ── Per-material depth ───────────────────────────────────────────────────

@@ -53,6 +53,15 @@
      construction. --control-h-sm is for the compact icon buttons. */
   --control-h: 40px;
   --control-h-sm: 32px;
+
+  /* ── Glass ──────────────────────────────────────────────────────────────
+     Twenty surfaces blurred their backdrop independently of the glass system,
+     anywhere from 4px to 40px, so a dropdown could land 40px of blur on top of
+     a pane doing 5px. Two values: one for things you look *through*, one for
+     full-screen scrims you look *past*. */
+  --glass-blur: 5px;
+  --glass-sat: 112%;
+  --scrim-blur: 8px;
 }
 
 /* ============================================================
@@ -184,8 +193,7 @@ select option {
   font-size: 14px;
   cursor: pointer;
   text-align: left;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -227,8 +235,7 @@ select option {
   border-radius: var(--r-control);
   background: rgba(18, 14, 32, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.45),
     0 2px 8px rgba(0, 0, 0, 0.25),
@@ -618,8 +625,7 @@ input[type="file"]::file-selector-button:hover {
   border-radius: var(--r-control);
   overflow: hidden;
   background: rgba(15, 15, 25, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   z-index: 300;
@@ -1018,8 +1024,7 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   width: 100%;
   background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--r-pill);
   padding: 0 8px 0 18px;
@@ -1105,8 +1110,7 @@ input[type="file"]::file-selector-button:hover {
   left: 0;
   right: 0;
   background: rgba(18, 18, 18, 0.55);
-  backdrop-filter: blur(40px) saturate(200%);
-  -webkit-backdrop-filter: blur(40px) saturate(200%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-top: none;
   border-radius: 0 0 var(--r-card) var(--r-card);
@@ -1199,8 +1203,7 @@ input[type="file"]::file-selector-button:hover {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(var(--scrim-blur));
   z-index: 800;
   display: flex;
   align-items: center;
@@ -1232,8 +1235,7 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   width: 100%;
   background: rgba(14, 14, 14, 0.72);
-  backdrop-filter: blur(24px) saturate(140%);
-  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--r-pill);
   padding: 0 8px 0 18px;
@@ -1304,8 +1306,7 @@ input[type="file"]::file-selector-button:hover {
   top: calc(100% + 6px);
   right: 6px;
   background: rgba(16, 16, 16, 0.92);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--r-control);
   padding: 4px;
@@ -1586,8 +1587,7 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--scrim-blur));
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.5s ease;
@@ -1625,8 +1625,7 @@ input[type="file"]::file-selector-button:hover {
 .focus-stop-btn {
   padding: 12px 32px;
   background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--r-pill);
   color: white;
@@ -2188,8 +2187,7 @@ input[type="file"]::file-selector-button:hover {
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -3190,7 +3188,7 @@ body.focus-exiting .sidebar-container {
   border-radius: var(--r-card);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   cursor: pointer;
   transition: background 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
   color: inherit;
@@ -3239,7 +3237,7 @@ body.focus-exiting .sidebar-container {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--scrim-blur));
   z-index: 1100;
 }
 .app-center-panel {
@@ -3942,8 +3940,7 @@ body.focus-exiting .sidebar-container {
   inset: 0;
   z-index: 2000;
   background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--scrim-blur));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3962,8 +3959,7 @@ body.focus-exiting .sidebar-container {
   border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
@@ -4102,8 +4098,7 @@ body.focus-exiting .sidebar-container {
   border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: notice-slide-up 0.4s var(--spring-gentle);
   white-space: nowrap;
@@ -4197,8 +4192,7 @@ body.focus-exiting .sidebar-container {
   inset: 0;
   z-index: 1200;
   background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(var(--scrim-blur));
   animation: onboarding-fade-in 0.2s ease;
 }
 
@@ -4212,8 +4206,7 @@ body.focus-exiting .sidebar-container {
   border-radius: var(--r-card);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(40px) saturate(180%);
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
@@ -4654,8 +4647,7 @@ body.focus-exiting .sidebar-container {
   background: rgba(0, 0, 0, 0.28);
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: var(--r-card);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -4759,7 +4751,7 @@ body.focus-exiting .sidebar-container {
   background: rgba(20, 20, 30, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--r-control);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   overflow: hidden;
   z-index: 200;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);

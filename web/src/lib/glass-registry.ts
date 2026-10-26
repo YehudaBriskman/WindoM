@@ -84,12 +84,28 @@ export function registerGlassSurface(
   const existing = surfaces.get(id);
   if (existing) return { ...existing, id };
 
+  const preset = GLASS_PRESETS[key];
+  const w = bucket(width);
+  const h = bucket(height);
+
+  /**
+   * The bezel is capped at a quarter of the pane's shorter side.
+   *
+   * A preset is a thickness in pixels, which is right for a panel and wrong
+   * for anything narrow: the tab sidebar is 194px wide, so a 48px bezel on
+   * each side left barely 90px of flat middle and the refraction smeared
+   * across almost the whole thing. A rim should read as an edge, not as the
+   * element.
+   */
+  const bezel = Math.min(preset.bezel, Math.min(w, h) * 0.25);
+
   const surface: Registered = {
     key,
-    width: bucket(width),
-    height: bucket(height),
+    width: w,
+    height: h,
     radius: Math.round(radius),
-    ...GLASS_PRESETS[key],
+    ...preset,
+    bezel,
   };
   surfaces.set(id, surface);
   notify();

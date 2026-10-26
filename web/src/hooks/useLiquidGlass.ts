@@ -253,6 +253,7 @@ export function useLiquidGlass<T extends HTMLElement>(
         .then(() => {
           if (cancelled) return;
           el.style.setProperty('--glass-refract', `url(#${surface.id})`);
+          el.style.setProperty('--glass-lens', '1');
           paint();
           start();
         })
@@ -272,6 +273,15 @@ export function useLiquidGlass<T extends HTMLElement>(
      * a single open. Nothing needs a field mid-transition.
      */
     const scheduleRegenerate = (): void => {
+      // The lens goes away the moment the pane starts moving, and does not come
+      // back until a field has been built for the size it ended up.
+      //
+      // It carries a full copy of the wallpaper masked to the bezel, and both
+      // the mask and the alignment are built for one exact geometry. Leave it
+      // visible through a resize and it paints that wallpaper unmasked at the
+      // wrong size - which is what was tearing across the screen for the length
+      // of every panel transition.
+      el.style.setProperty('--glass-lens', '0');
       measure();
       paint();
       window.clearTimeout(settle);
