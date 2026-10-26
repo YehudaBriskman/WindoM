@@ -9,6 +9,7 @@ import '../styles/pages.css';
 import '../styles/hero.css';
 import '../styles/docs.css';
 import '../styles/stage.css';
+import '../styles/card-travel.css';
 import '../styles/motion.css';
 
 /**

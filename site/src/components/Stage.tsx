@@ -193,7 +193,10 @@ function FocusControl({ focus }: { focus: ReturnType<typeof useFocusDemo> }) {
 
 function PaneBox({ pane, state }: { pane: PaneSpec; state: string }) {
   return (
-    <div className={`glass-pane pane-${pane.id}${state}`}>
+    <div
+      className={`glass-pane pane-${pane.id}${state}`}
+      style={{ '--lift': `${pane.lift}rem` } as React.CSSProperties}
+    >
       <span className="pane-label">{pane.label}</span>
       <PaneContents body={pane.body} />
     </div>

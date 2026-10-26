@@ -157,10 +157,11 @@
 
 .hero-stage {
   position: relative;
-  /* The perspective lives here so the cluster rotates within a scene rather
-     than carrying its own vanishing point. */
-  perspective: 90rem;
-  perspective-origin: 50% 50%;
+  /* No `perspective` here, deliberately. An ancestor with perspective becomes
+     the containing block for any `position: fixed` descendant, and the card
+     that rests in this section has to be fixed once it starts travelling. The
+     cluster carries its own vanishing point in its transform instead, which
+     has the same effect on it and none on anything else. */
 }
 
 /**
@@ -174,6 +175,8 @@
  */
 .hero-cluster {
   position: relative;
+  /* The card is no longer inside this box - it is the sibling above. The
+     cluster is the fact row alone now, and it leans on its own. */
   /* The resting pose: turned slightly away rather than square to the viewer,
      so the object has depth before anyone touches it. The pointer tilt is
      added to this, and returns to it. */
@@ -182,7 +185,8 @@
   --tilt-x: 0deg;
   --tilt-y: 0deg;
 
-  transform: rotateX(calc(var(--rest-x) + var(--tilt-x)))
+  transform: perspective(90rem)
+             rotateX(calc(var(--rest-x) + var(--tilt-x)))
              rotateY(calc(var(--rest-y) + var(--tilt-y)));
   transform-style: preserve-3d;
   /* Short, so it tracks the pointer rather than trailing it, but not zero -
@@ -190,131 +194,12 @@
   transition: transform 260ms var(--ease);
 }
 
-.hero-preview {
-  --preview-w: 1440;
-  --preview-h: 900;
+/* The product itself is no longer rendered here.
+   The page owns one card and moves it between slots; everything that used to
+   live in this file about scaling a preview, neutralising the stage inside
+   it and hiding its narration now belongs to the card. What the hero keeps
+   is the box the card rests in while it is here. See styles/card-travel.css. */
 
-  position: relative;
-  isolation: isolate;
-  /* Fills the track it is given and keeps the screen's proportions, instead
-     of being a constant 892.8px that the viewport had to accommodate. */
-  width: 100%;
-  aspect-ratio: var(--preview-w) / var(--preview-h);
-  /* So the frame inside can measure itself against this box. */
-  container-type: size;
-
-  border-radius: var(--r-lg);
-  border: 1px solid var(--border-strong);
-  /* The clip lives here rather than on the cluster: a non-visible overflow
-     forces `transform-style: flat`, which is why the old `preserve-3d` did
-     nothing. Keeping them on separate elements is what makes the cards able
-     to rise out of the screen's plane. */
-  overflow: hidden;
-  transform-style: flat;
-}
-
-/* A highlight that travels across the glass as it leans, so the tilt reads as
-   a surface catching light rather than a box being rotated. */
-.hero-preview-sheen {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.07) 50%,
-    transparent 65%
-  );
-  transition: opacity 320ms var(--ease);
-}
-
-.hero-preview:hover .hero-preview-sheen {
-  opacity: 1;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-cluster {
-    transition: none;
-  }
-
-  .hero-preview-sheen {
-    display: none;
-  }
-}
-
-/* A paused page is a still page: the pointer tilt is suppressed in the hook,
-   and the resting pose is flattened so nothing is left mid-lean. */
-body.motion-paused .hero-cluster {
-  --rest-x: 0deg;
-  --rest-y: 0deg;
-  transition: none;
-}
-
-.hero-preview-frame {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(var(--preview-w) * 1px);
-  height: calc(var(--preview-h) * 1px);
-  transform-origin: top left;
-  /* The scale is read from the box rather than set by hand per breakpoint.
-     Dividing one length by another yields the bare number `scale()` needs, so
-     a 1440px design lands exactly on whatever width the track gave us - no
-     ladder of media queries, and no width at which it is slightly wrong.
-     The first declaration is the fallback for engines that reject the
-     division; they keep it and drop the line below. */
-  transform: scale(0.42);
-  transform: scale(calc(100cqw / (var(--preview-w) * 1px)));
-  /* The picture takes no clicks; the focus control inside it takes its own
-     back. Without this the whole frame swallowed the pointer, which is right
-     for a product shot and wrong for the one thing in it you can operate. */
-  pointer-events: none;
-}
-
-.hero-preview .stage-focus-controls {
-  pointer-events: auto;
-}
-
-/* The stage must not pin inside the preview - it is a picture, not a scroll
-   story. `inset: 0` matters as much as the position: an absolutely positioned
-   box with no inset shrink-wraps its contents, and the contents are themselves
-   absolutely positioned, so the whole stage collapsed to zero width. */
-.hero-preview .stage-pin {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  animation: none;
-  opacity: 1;
-}
-
-/* The parallax is driven by a `view-timeline` published by `.day-stage`, which
-   is not an ancestor here. An animation whose timeline does not resolve still
-   applies its fill, so all three layers sat at the end keyframe - opacity 0,
-   scaled up - and the preview showed wallpaper and nothing else.
-
-   `.is-animated` is in the selector to outrank the original, which is written
-   as `.is-animated .stage-layer-back` - equal specificity would lose on source
-   order, because stage.css is imported after this file. */
-.hero-preview .is-animated .stage-layer-back,
-.hero-preview .is-animated .stage-layer-mid,
-.hero-preview .is-animated .stage-layer-front {
-  animation: none;
-  opacity: 1;
-  transform: none;
-}
-
-/* The narration belongs to the scroll story, not to a product shot. Hidden
-   with `display: none` rather than visually, so it leaves the accessibility
-   tree too - which is what lets the preview drop its own `aria-hidden` and
-   expose the focus control. */
-.hero-preview .story-headline,
-.hero-preview .story-body,
-.hero-preview .scroll-cue {
-  display: none;
-}
 
 /* ── Fact cards ─────────────────────────────────────────────────────────
    Overlaid on the lower-right of the product, in the reference's flat-panel

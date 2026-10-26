@@ -24,13 +24,17 @@
 .day-stage {
   position: relative;
   height: 700vh;
-  view-timeline-name: --day-stage;
+  /* The timeline name is published by the slot itself, as `--slot-day`, so
+     that every section claiming the card names its timeline the same way. */
   view-timeline-axis: block;
 }
 
 .stage-pin {
-  position: sticky;
-  top: 0;
+  /* Inside the card, which is the thing that moves. The stage used to pin
+     itself to the viewport; the card does that now, and this simply fills
+     it. */
+  position: absolute;
+  inset: 0;
   /* `dvh`, not `vh`: on a phone `100vh` is the viewport with the browser chrome
      collapsed, which is not what is on screen while the URL bar is showing. The
      pin was therefore taller than the visible area and the tab sat cropped.
@@ -488,7 +492,7 @@
        viewport to its bottom meeting the bottom. That is the 600vh the stage
        actually occupies, so the parallax now begins and ends with it and stays
        correct if the height above changes. */
-    animation-timeline: --day-stage;
+    animation-timeline: --slot-day;
     animation-range: contain 0% contain 100%;
     animation-fill-mode: both;
     /* Deliberately linear. A scroll-driven animation should track the input it
@@ -771,22 +775,6 @@
    until it is actually released, which is exactly the moment the fade should
    start - no scroll offsets to keep in sync with the stage height. */
 
-@supports (animation-timeline: view()) {
-  body:not(.motion-paused) .stage-pin {
-    animation: stage-exit linear both;
-    animation-timeline: view();
-    animation-range: exit 0% exit 50%;
-  }
-
-  @keyframes stage-exit {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-}
 
 /* The reader should not meet the first heading while the tab is still on
    screen, whether or not the fade above is running. */
@@ -963,4 +951,44 @@
   .stage-pin[data-focus] .stage-wallpaper {
     scale: 1;
   }
+}
+
+/* ── Panes rise to the pointer ──────────────────────────────────────────
+   Each by its own distance, declared per pane in lib/panes.ts. A uniform
+   lift makes eight panes look like one sheet with a hover state; varying it
+   makes each read as its own object at its own height above the glass. The
+   back layer rises less than the mid layer so the hover agrees with the
+   depth the parallax already implies rather than contradicting it. */
+
+.glass-pane {
+  transition:
+    transform var(--dur) var(--ease),
+    border-color var(--dur) var(--ease),
+    opacity var(--dur) var(--ease);
+}
+
+.glass-pane:hover {
+  transform: translateY(calc(var(--lift, 0.75rem) * -1)) scale(1.025);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  z-index: 5;
+}
+
+/* A dimmed pane is not the one the hour is about, so it brightens as it
+   rises rather than staying at the 0.42 the spotlight left it. */
+.glass-pane.is-dim:hover {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass-pane,
+  .glass-pane:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+body.motion-paused .glass-pane,
+body.motion-paused .glass-pane:hover {
+  transform: none;
+  transition: none;
 }
