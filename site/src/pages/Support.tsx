@@ -10,7 +10,7 @@ import { GITHUB_URL, CONTACT_EMAIL, STORE_URL } from '../lib/site';
  */
 export function Support() {
   return (
-    <DocsLayout href="/support.html" eyebrow="Help" title="Support" subtitle="Fixes for the problems that actually come up">
+    <DocsLayout path="/support" eyebrow="Help" title="Support" subtitle="Fixes for the problems that actually come up">
       <p>
         Most problems with WindoM fall into one of a handful of shapes. Try the matching fix
         below first - if none of them helps, <a href={`${GITHUB_URL}/issues/new`}>open an issue

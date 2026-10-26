@@ -1,113 +1,28 @@
-/**
- * The documentation pages, in reading order.
- *
- * One list, read by the sidebar, the previous/next links and the footer, so
- * adding a page is a single entry rather than four edits in four files - which
- * is the mistake the old site made with its copy-pasted shells.
- *
- * `href` is the built filename, not a route. These URLs are contractual:
- * `privacy.html` and `terms.html` are registered against the Chrome Web Store
- * listing and `guide.html` is compiled into the extension, so renaming one
- * needs a store release to repair. See the note in vite.config.ts.
- */
-
-export type Locale = 'en' | 'he';
-
-export const LOCALES: { code: Locale; label: string; dir: 'ltr' | 'rtl' }[] = [
-  { code: 'en', label: 'English', dir: 'ltr' },
-  { code: 'he', label: 'עברית', dir: 'rtl' },
-];
-
-export interface DocsPage {
-  href: string;
-  title: string;
-  /** Sidebar grouping. Pages are listed under their group in array order. */
-  group: string;
-  /** Short line under the title in the sidebar, where it earns its space. */
-  blurb?: string;
-  /** Hebrew title and group, used when the sidebar is rendered in Hebrew. */
-  he?: { title: string; group: string; blurb?: string };
-}
-
-export const DOCS_PAGES: DocsPage[] = [
-  {
-    href: '/guide.html', title: 'User Guide', group: 'Using WindoM',
-    blurb: 'Every panel, and what it does',
-    he: { title: 'מדריך למשתמש', group: 'שימוש ב-WindoM', blurb: 'כל פאנל, ומה הוא עושה' },
-  },
-  {
-    href: '/support.html', title: 'Support', group: 'Using WindoM',
-    blurb: 'Fixes for the common problems',
-    he: { title: 'תמיכה', group: 'שימוש ב-WindoM', blurb: 'פתרונות לתקלות הנפוצות' },
-  },
-  {
-    href: '/contact.html', title: 'Contact', group: 'Using WindoM',
-    he: { title: 'יצירת קשר', group: 'שימוש ב-WindoM' },
-  },
-  {
-    href: '/local-setup.html', title: 'Local Setup', group: 'Developers',
-    blurb: 'Run the whole stack yourself',
-    he: { title: 'הרצה מקומית', group: 'למפתחים', blurb: 'הרצת כל המערכת אצלך' },
-  },
-  {
-    href: '/privacy.html', title: 'Privacy Policy', group: 'Legal',
-    he: { title: 'מדיניות פרטיות', group: 'משפטי' },
-  },
-  {
-    href: '/terms.html', title: 'Terms of Use', group: 'Legal',
-    he: { title: 'תנאי שימוש', group: 'משפטי' },
-  },
-];
-
-/** The same page in the other language. Hebrew pages live under `/he/`. */
-export function translatedHref(href: string, to: Locale): string {
-  const bare = href.replace(/^\/he\//, '/');
-  return to === 'he' ? `/he${bare}` : bare;
-}
-
-/** Which language a path is in, read from the path itself. */
-export function localeOf(href: string): Locale {
-  return href.startsWith('/he/') ? 'he' : 'en';
-}
-
-/** Title and group in the requested language, falling back to English. */
-export function labelFor(page: DocsPage, locale: Locale) {
-  if (locale === 'he' && page.he) return page.he;
-  return { title: page.title, group: page.group, blurb: page.blurb };
-}
+import { ROUTES, LOCALES, type Locale, type SiteRoute } from '../routes';
 
 /**
- * The site navigation, shown on every page.
+ * The documentation navigation, derived from the route table.
  *
- * Deliberately the things a reader might actually want next rather than a map
- * of the site: what the product does, where to get help, and where the source
- * is. The install call to action lives in the hero instead, where it has room
- * to be a real button.
- *
- * `/#updates` is the release feed on the home page. It is honest but thin until
- * the feed is fixed - see issue #374, where it is broken three separate ways.
+ * This file used to hold its own list of pages, which meant the sidebar and the
+ * build could disagree about what the site contained. It derives now: there is
+ * one description of the site in `routes.tsx` and everything else reads it.
  */
-export interface NavLink {
-  href: string;
-  label: string;
-  /** Rendered as an icon to the right rather than a word in the middle. */
-  external?: boolean;
+
+export type { Locale, SiteRoute };
+export { LOCALES };
+
+/** Documentation pages in the given language, in reading order. */
+export function docsPages(locale: Locale): SiteRoute[] {
+  return ROUTES.filter((r) => r.group !== undefined && r.locale === locale);
 }
 
-export const NAV_LINKS: NavLink[] = [
-  { href: '/guide.html', label: 'Guide' },
-  { href: '/support.html', label: 'Support' },
-  { href: '/local-setup.html', label: 'Docs' },
-  { href: '/#updates', label: 'Changelog' },
-];
-
-/** The groups in sidebar order, derived so the two cannot disagree. */
-export function docsGroups(locale: Locale = 'en'): { group: string; pages: DocsPage[] }[] {
+/** Those pages grouped, with the group order taken from the table itself. */
+export function docsGroups(locale: Locale = 'en'): { group: string; pages: SiteRoute[] }[] {
   const order: string[] = [];
-  const byGroup = new Map<string, DocsPage[]>();
+  const byGroup = new Map<string, SiteRoute[]>();
 
-  for (const page of DOCS_PAGES) {
-    const group = labelFor(page, locale).group;
+  for (const page of docsPages(locale)) {
+    const group = page.group!;
     if (!byGroup.has(group)) {
       byGroup.set(group, []);
       order.push(group);
@@ -118,12 +33,55 @@ export function docsGroups(locale: Locale = 'en'): { group: string; pages: DocsP
   return order.map((group) => ({ group, pages: byGroup.get(group)! }));
 }
 
-/** The pages either side of `href`, for the footer links. */
-export function docsNeighbours(href: string): { prev?: DocsPage; next?: DocsPage } {
-  const index = DOCS_PAGES.findIndex((p) => p.href === href);
+/** The pages either side of `path`, within its own language. */
+export function docsNeighbours(path: string): { prev?: SiteRoute; next?: SiteRoute } {
+  const route = ROUTES.find((r) => r.path === path);
+  if (!route) return {};
+  const siblings = docsPages(route.locale);
+  const index = siblings.findIndex((p) => p.path === path);
   if (index === -1) return {};
-  return { prev: DOCS_PAGES[index - 1], next: DOCS_PAGES[index + 1] };
+  return { prev: siblings[index - 1], next: siblings[index + 1] };
 }
+
+/**
+ * The same page in the other language.
+ *
+ * Matched through `twinOf` rather than by rewriting the path, so a translation
+ * that does not follow the `/he/<same-slug>` convention still resolves.
+ */
+export function translatedPath(path: string, to: Locale): string | undefined {
+  const route = ROUTES.find((r) => r.path === path);
+  if (!route?.twinOf) return undefined;
+  if (route.locale === to) return route.path;
+  return ROUTES.find((r) => r.twinOf === route.twinOf && r.locale === to)?.path;
+}
+
+/** Which language a path is in, read from the table rather than from the string. */
+export function localeOf(path: string): Locale {
+  return ROUTES.find((r) => r.path === path)?.locale ?? 'en';
+}
+
+export interface NavLink {
+  path: string;
+  label: string;
+}
+
+/**
+ * The site navigation, shown on every page.
+ *
+ * Deliberately the things a reader might want next rather than a map of the
+ * site: what the product does, where to get help, and where the source is. The
+ * install call to action lives in the hero, where it has room to be a button.
+ *
+ * `/#updates` is the release feed on the home page - honest but thin until the
+ * feed itself is fixed, which is issue #374.
+ */
+export const NAV_LINKS: NavLink[] = [
+  { path: '/guide', label: 'Guide' },
+  { path: '/support', label: 'Support' },
+  { path: '/local-setup', label: 'Docs' },
+  { path: '/#updates', label: 'Changelog' },
+];
 
 /**
  * A stable anchor id from heading text.
@@ -136,7 +94,7 @@ export function headingId(text: string): string {
   return text
     .toLowerCase()
     .replace(/['’]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^a-z0-9֐-׿]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
 }

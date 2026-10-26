@@ -10,7 +10,7 @@ import { DocsLayout } from '../../components/DocsLayout';
  */
 export function Guide() {
   return (
-    <DocsLayout href="/he/guide.html" eyebrow="מדריך למשתמש" title="שימוש ב-WindoM" dir="rtl">
+    <DocsLayout path="/he/guide" eyebrow="מדריך למשתמש" title="שימוש ב-WindoM" dir="rtl">
         <div className="callout tip">
             <strong>רוב הפונקציות לא דורשות חשבון.</strong> שעון, מזג אוויר, משימות, רקעים, ציטוטים, קישורים מהירים וטיימר הפוקוס עובדים מיד ללא התחברות. חשבון נדרש רק לסנכרון Google Calendar ו-Spotify. תמיד אפשר להוסיף אחד מאוחר יותר.
           </div>

@@ -315,3 +315,114 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
     opacity: 1 !important;
   }
 }
+
+/* ── View transitions ───────────────────────────────────────────────── */
+/* Routing is what makes these possible: the shell is no longer torn down
+   between pages, so the browser has an old and a new frame to interpolate.
+   What they buy is the thing that reads as a documentation site rather than a
+   sequence of pages - the sidebar, the rail and the bar do not move at all,
+   and only the column you are reading changes.
+ *
+ * Each of those is given its own transition name so it is captured as its own
+ * layer rather than being folded into the single root snapshot, which would
+ * cross-fade the whole viewport and flash the navigation on every click. */
+
+@supports (view-transition-name: none) {
+  body:not(.motion-paused) .docs-main {
+    view-transition-name: docs-main;
+  }
+
+  /* Named so they are captured apart from the content, then told not to
+     animate: these elements are the frame, and a frame that fades is a frame
+     you notice. The sidebar's current-page marker therefore switches cleanly
+     instead of dissolving from one row to another. */
+  body:not(.motion-paused) .docs-nav {
+    view-transition-name: docs-nav;
+  }
+  body:not(.motion-paused) .docs-rail {
+    view-transition-name: docs-rail;
+  }
+  body:not(.motion-paused) .docs-bar {
+    view-transition-name: docs-bar;
+  }
+  body:not(.motion-paused) .site-nav {
+    view-transition-name: site-nav;
+  }
+  body:not(.motion-paused) .ambient {
+    view-transition-name: ambient;
+  }
+
+  ::view-transition-old(docs-nav),
+  ::view-transition-old(docs-rail),
+  ::view-transition-old(docs-bar),
+  ::view-transition-old(site-nav),
+  ::view-transition-old(ambient) {
+    animation: none;
+    opacity: 0;
+  }
+
+  ::view-transition-new(docs-nav),
+  ::view-transition-new(docs-rail),
+  ::view-transition-new(docs-bar),
+  ::view-transition-new(site-nav),
+  ::view-transition-new(ambient) {
+    animation: none;
+    opacity: 1;
+  }
+
+  /* The group animates the box from the old size to the new one, and two
+     documentation pages are rarely the same height - so the default morph
+     stretches a snapshot of the privacy policy into the shape of the terms
+     while it fades. Holding the group still and letting each snapshot keep its
+     own height is what stops the text distorting mid-transition. */
+  ::view-transition-group(docs-main) {
+    animation-duration: 0s;
+  }
+
+  ::view-transition-old(docs-main),
+  ::view-transition-new(docs-main) {
+    height: auto;
+    mix-blend-mode: normal;
+  }
+
+  ::view-transition-old(docs-main) {
+    animation: vt-leave 140ms var(--ease) both;
+  }
+
+  ::view-transition-new(docs-main) {
+    animation: vt-enter 260ms var(--ease) 80ms both;
+  }
+
+  @keyframes vt-leave {
+    to {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+  }
+
+  @keyframes vt-enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+}
+
+/* The OS setting wins here as it does everywhere else. Dropping the names is
+   enough: with nothing captured separately there is no transition to run. */
+@media (prefers-reduced-motion: reduce) {
+  .docs-main,
+  .docs-nav,
+  .docs-rail,
+  .docs-bar,
+  .site-nav,
+  .ambient {
+    view-transition-name: none !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

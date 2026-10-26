@@ -16,7 +16,7 @@ import { DocsLayout } from '../../components/DocsLayout';
 export function Privacy() {
   return (
     <DocsLayout
-      href="/he/privacy.html"
+      path="/he/privacy"
       eyebrow="משפטי"
       title="מדיניות פרטיות"
       subtitle="עודכן לאחרונה: 27 באפריל 2026"

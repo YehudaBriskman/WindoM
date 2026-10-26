@@ -12,7 +12,7 @@ import { GITHUB_URL, CONTACT_EMAIL, STORE_URL } from '../../lib/site';
 export function Support() {
   return (
     <DocsLayout
-      href="/he/support.html"
+      path="/he/support"
       eyebrow="עזרה"
       title="תמיכה"
       subtitle="פתרונות לתקלות שבאמת קורות"

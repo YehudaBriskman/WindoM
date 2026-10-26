@@ -1,32 +1,23 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { SITE, GITHUB_URL } from '../lib/site';
-import { NAV_LINKS, LOCALES, translatedHref, type Locale } from '../lib/docs';
+import { NAV_LINKS, LOCALES, translatedPath, type Locale } from '../lib/docs';
 
 interface SiteNavProps {
   /** Marks the matching link as current. Pass the page's own path. */
   current?: string;
   /** Which language this page is in. Drives the switcher and the link targets. */
   locale?: Locale;
-  /**
-   * The page's real path including any `/he/` prefix. The switcher needs it to
-   * point at this page's twin rather than at the site root.
-   */
-  docsHref?: string;
 }
 
 /**
  * The bar across the top of every page.
  *
- * Until now the only way between pages was a back link to the home page and a
- * list in the footer, so reaching the guide from the privacy policy meant two
- * navigations and a scroll. This is the same links in the place people look
- * for them.
- *
  * Rendered by both shells rather than by each page, so there is one definition
  * and the links cannot drift apart between the marketing and documentation
  * sides of the site.
  */
-export function SiteNav({ current, locale = 'en', docsHref }: SiteNavProps) {
+export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
   const [open, setOpen] = useState(false);
 
   /**
@@ -46,10 +37,10 @@ export function SiteNav({ current, locale = 'en', docsHref }: SiteNavProps) {
   return (
     <header className="site-nav">
       <div className="site-nav-inner">
-        <a className="site-nav-brand" href="/">
+        <Link className="site-nav-brand" to="/">
           <span className="site-nav-mark" aria-hidden="true" />
           {SITE.name}
-        </a>
+        </Link>
 
         {/* Hidden from the accessibility tree when collapsed rather than merely
             off screen, so a screen reader is not offered links it cannot reach. */}
@@ -58,25 +49,28 @@ export function SiteNav({ current, locale = 'en', docsHref }: SiteNavProps) {
           aria-label="Main"
           id="site-nav-links"
         >
-          {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              className={`nav-link${link.href === current ? ' is-current' : ''}`}
-              href={locale === 'he' && link.href.startsWith('/') && link.href.endsWith('.html')
-                ? translatedHref(link.href, 'he')
-                : link.href}
-              aria-current={link.href === current ? 'page' : undefined}
-              onClick={() => setOpen(false)}
-            >
-              {link.label}
-            </a>
-          ))}
+          {NAV_LINKS.map((link) => {
+            // A hash link stays on the home page; the rest follow the language.
+            const to = link.path.startsWith('/#')
+              ? link.path
+              : (locale === 'he' ? translatedPath(link.path, 'he') : undefined) ?? link.path;
+            return (
+              <Link
+                key={link.path}
+                className={`nav-link${link.path === current ? ' is-current' : ''}`}
+                to={to}
+                aria-current={link.path === current ? 'page' : undefined}
+                onClick={() => setOpen(false)}
+                viewTransition
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="site-nav-end">
-          {/* Only where there is a translation to switch to. A control that
-              offers a language the page does not have is worse than none. */}
-          {docsHref && <LocaleSwitch href={docsHref} locale={locale} />}
+          {current && <LocaleSwitch path={current} locale={locale} />}
 
           <a
             className="site-nav-icon"
@@ -106,24 +100,24 @@ export function SiteNav({ current, locale = 'en', docsHref }: SiteNavProps) {
 /**
  * The language control.
  *
- * Points at this page's twin rather than at the other language's home, so
- * switching keeps your place - which is the only version of this control that
- * is actually useful mid-document.
+ * Points at this page's twin rather than at the other language's home, and as a
+ * route change rather than a page load - so switching keeps your scroll
+ * position and the open sidebar group, which is the only version of this
+ * control that is useful in the middle of a long document.
+ *
+ * Absent where there is no translation to offer: a control that advertises a
+ * language the page does not have is worse than no control.
  */
-function LocaleSwitch({ href, locale }: { href: string; locale: Locale }) {
+function LocaleSwitch({ path, locale }: { path: string; locale: Locale }) {
   const other = LOCALES.find((l) => l.code !== locale);
-  if (!other) return null;
+  const to = other ? translatedPath(path, other.code) : undefined;
+  if (!other || !to) return null;
 
   return (
-    <a
-      className="locale-switch"
-      href={translatedHref(href, other.code)}
-      lang={other.code}
-      hrefLang={other.code}
-    >
+    <Link className="locale-switch" to={to} lang={other.code} hrefLang={other.code} viewTransition>
       <GlobeGlyph />
       <span>{other.label}</span>
-    </a>
+    </Link>
   );
 }
 
