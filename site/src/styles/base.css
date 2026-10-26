@@ -392,9 +392,11 @@ p {
     }
   }
 
+  /* The two ends are the tokens the chrome height is computed from, so the
+     bar's height and everything that has to clear it cannot disagree. */
   @keyframes nav-tighten {
-    from { padding-top: 10px; padding-bottom: 10px; }
-    to { padding-top: 4px; padding-bottom: 4px; }
+    from { padding-top: var(--nav-pad); padding-bottom: var(--nav-pad); }
+    to { padding-top: var(--nav-pad-stuck); padding-bottom: var(--nav-pad-stuck); }
   }
 
   @keyframes nav-mark-shrink {
@@ -433,10 +435,10 @@ body.stage-owns-view .site-nav:focus-within {
   width: 100%;
   max-width: var(--wrap);
   margin: 0 auto;
-  padding: 10px 24px;
+  padding: var(--nav-pad) var(--s-5);
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: var(--s-6);
 }
 
 .site-nav-brand {
@@ -559,8 +561,12 @@ body.stage-owns-view .site-nav:focus-within {
 
 @media (max-width: 760px) {
   .site-nav-inner {
-    gap: 12px;
-    padding: 8px 16px;
+    gap: var(--s-3);
+    /* Only the inline padding. The block padding is animated by nav-tighten,
+       whose keyframes sit outside this query and win against a plain
+       declaration - so the old `padding: 8px 16px` here never applied
+       vertically and the bar was silently 61px, not the 57px it claimed. */
+    padding-inline: var(--s-4);
   }
 
   .nav-toggle {

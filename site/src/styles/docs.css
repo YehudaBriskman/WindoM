@@ -19,7 +19,10 @@
    it to about 500px while leaving two wide empty gutters outside the panels. */
 .docs-shell {
   width: 100%;
-  padding: 0 clamp(16px, 2.5vw, 40px) 72px;
+  /* Air under the breadcrumb bar. The columns used to begin exactly at its
+     bottom edge, so the sidebar and the rail started flush against the glass
+     with nothing between them and it. */
+  padding: var(--s-5) var(--gutter) var(--s-8);
   display: grid;
   gap: clamp(32px, 4vw, 72px);
   grid-template-columns: 260px minmax(0, 1fr) 240px;
@@ -30,7 +33,6 @@
 
 .docs-nav {
   position: sticky;
-  top: 24px;
   font-size: 0.9rem;
 }
 
@@ -100,7 +102,7 @@
 }
 
 .docs-head {
-  padding: 8px 0 28px;
+  padding: var(--s-6) 0 var(--s-5);
   border-bottom: 1px solid var(--border);
   margin-bottom: 32px;
 }
@@ -110,15 +112,11 @@
 }
 
 /* Anchored headings sit clear of the top when jumped to. */
-.docs-main .prose h2 {
-  scroll-margin-top: 24px;
-}
 
 /* ── Contents of this page ──────────────────────────────────────────── */
 
 .docs-rail {
   position: sticky;
-  top: 24px;
   font-size: 0.84rem;
   border-left: 1px solid var(--border);
   padding-left: 18px;
@@ -314,15 +312,28 @@
 
 /* Anchored headings clear the sticky nav when jumped to, rather than landing
    underneath it. */
+/**
+ * Clearance for an anchored heading.
+ *
+ * On the element rather than as `scroll-padding-top` on the scrollport,
+ * because the two are not interchangeable here: with both set they add on a
+ * direct load but not on a link click, so the same heading landed in two
+ * different places depending on how you reached it. This one value is honoured
+ * identically by a native anchor jump, by `scrollIntoView` in RouteChrome, and
+ * by a result picked out of the search dialog.
+ */
 .docs-main .prose h2,
 .docs-main .prose h3 {
-  scroll-margin-top: 76px;
+  scroll-margin-top: calc(var(--chrome-h-rest) + var(--s-4));
 }
 
 /* The sidebar and rail sit below the nav rather than under it. */
 .docs-nav,
 .docs-rail {
-  top: 76px;
+  /* One token, not a number copied into three places. The three copies had
+     drifted to 76px against a 98px chrome, which is why both of these
+     columns' headings sat behind the breadcrumb bar whenever they stuck. */
+  top: calc(var(--chrome-h) + var(--s-4));
 }
 
 /* ── Breadcrumb bar ─────────────────────────────────────────────────────
@@ -331,12 +342,16 @@
 
 .docs-bar {
   position: sticky;
-  top: 48px;
+  /* Flush under the nav, which has shrunk to --nav-h-stuck by the time this
+     bar can stick. The old 48px was neither: it hid the bar's top edge
+     behind the nav at rest, then opened a three-pixel slit once the nav
+     tightened, through which the page scrolled between the two bars. */
+  top: var(--nav-h-stuck);
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px clamp(16px, 2.5vw, 40px);
+  gap: var(--s-3);
+  padding: var(--s-2) var(--gutter);
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   backdrop-filter: blur(14px) saturate(160%);
   border-bottom: 1px solid var(--border);
@@ -413,7 +428,17 @@
 }
 
 .docs.is-collapsed .docs-shell {
-  grid-template-columns: minmax(0, 1fr) 200px;
+  /* Matching the rail's own width, and only while the rail is actually
+     shown. This rule outranks the media queries below it on specificity, so
+     without the query it kept a dead 200px track plus a 72px gap between
+     1101px and 1280px, where the rail is hidden. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1281px) {
+  .docs.is-collapsed .docs-shell {
+    grid-template-columns: minmax(0, 1fr) 240px;
+  }
 }
 
 @media (max-width: 1100px) {

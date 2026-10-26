@@ -89,11 +89,29 @@
    */
   --nav-pad: var(--s-3);
   --nav-pad-stuck: var(--s-1);
-  --nav-icon: 2.25rem;  /* 36px, the tallest thing in the bar */
-  --nav-h: calc(var(--nav-pad) * 2 + var(--nav-icon) + 1px);
-  --nav-h-stuck: calc(var(--nav-pad-stuck) * 2 + var(--nav-icon) + 1px);
+  /* The links row, which is the tallest thing in the bar - taller than the
+     36px GitHub mark it would be easy to assume sets the height. Measured
+     rather than assumed, because assuming it was the icon is what left the
+     breadcrumb bar three pixels short and opened a slit between the two. */
+  --nav-row: 2.4375rem;
+  --nav-h: calc(var(--nav-pad) * 2 + var(--nav-row) + 1px);
+  --nav-h-stuck: calc(var(--nav-pad-stuck) * 2 + var(--nav-row) + 1px);
   --bar-h: 3.125rem;
+  /* For sticky offsets: what the chrome measures once it is stuck, which is
+     the only state in which anything has to stick beneath it. */
   --chrome-h: calc(var(--nav-h-stuck) + var(--bar-h));
+  /**
+   * For scroll anchoring: what the chrome measures before it tightens.
+   *
+   * The nav is sticky, so it occupies flow space, and shrinking it on scroll
+   * pulls the whole document up by the difference. The browser picks an
+   * anchor's resting place in the pre-shrink layout and the reflow then moves
+   * the heading up underneath the bar - which is why a jumped-to heading
+   * landed a pixel behind the glass while the maths said it should clear.
+   * Clearing the taller measurement costs a little air once tightened and is
+   * correct in both states.
+   */
+  --chrome-h-rest: calc(var(--nav-h) + var(--bar-h));
 
   /* Motion. One curve, three durations - enough vocabulary for a marketing site. */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
