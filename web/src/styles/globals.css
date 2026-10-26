@@ -57,12 +57,40 @@
   --control-h: 40px;
   --control-h-sm: 32px;
 
+  /* ── Type ───────────────────────────────────────────────────────────────
+     There were no type tokens and 46 distinct font sizes across two unit
+     systems, so a legibility pass had nowhere to land.
+
+     Weights stop at 600 and 700 deliberately. This is a system font stack
+     with no webfont, and on a Linux fallback 500 may snap to 400 - so the
+     nineteen selectors set to 500 could have been rendering as body text all
+     along. 600 is the lightest weight that is reliably heavier. */
+  --weight-body: 400;
+  --weight-medium: 600;
+  --weight-strong: 700;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-lg: 16px;
+
+  /* The floor for text over glass. Anything below this disappears the moment
+     the wallpaper is bright, and `opacity` must not be stacked on top of it -
+     the nav's locked state combined 0.35 opacity with 0.4 alpha and landed at
+     an effective 14% white. */
+  --ink-primary: rgba(255, 255, 255, 1);
+  --ink-secondary: rgba(255, 255, 255, 0.82);
+  --ink-tertiary: rgba(255, 255, 255, 0.66);
+
   /* ── Glass ──────────────────────────────────────────────────────────────
      Twenty surfaces blurred their backdrop independently of the glass system,
      anywhere from 4px to 40px, so a dropdown could land 40px of blur on top of
      a pane doing 5px. Two values: one for things you look *through*, one for
      full-screen scrims you look *past*. */
-  --glass-blur: 5px;
+  /* Surfaces no longer blur at all - see the backdrop note in glass.css. The
+     token stays because fifteen non-glass surfaces still reference it, and
+     zero is the value they should all now share. */
+  --glass-blur: 0px;
   --glass-sat: 112%;
   --scrim-blur: 8px;
 
@@ -575,7 +603,7 @@ input[type="file"]::file-selector-button:hover {
   transition: border-radius var(--dur-sm) var(--spring);
 }
 .weather-widget--open {
-  border-radius: var(--r-card);
+  border-radius: var(--r-pill);
 }
 
 /* ── Circle core - always visible ─────────────────────────── */
@@ -726,7 +754,7 @@ input[type="file"]::file-selector-button:hover {
 
 .dock-bar {
   padding: 0;
-  border-radius: var(--r-card);
+  border-radius: var(--r-pill);
   /* Fixed to exactly one row height so extra rows are hidden */
   overflow: hidden;
 }
@@ -896,7 +924,7 @@ input[type="file"]::file-selector-button:hover {
 .dock-expandable.expanded {
   width: 280px;
   height: 192px;
-  border-radius: var(--r-card);
+  border-radius: var(--r-pill);
   opacity: 1;
   cursor: default;
 }
@@ -2091,17 +2119,23 @@ input[type="file"]::file-selector-button:hover {
   border: none;
   text-align: left;
   padding: 10px 16px;
-  font-size: 14px;
+  font-size: var(--text-base);
+  /* Was implicit 400 at 40% white - normal weight, barely-there colour, and
+     eight of the nine items sit in this state at once. It was the
+     lowest-contrast primary navigation in the app. */
+  font-weight: var(--weight-medium);
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s, background-color 0.2s;
   font-family: inherit;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--ink-tertiary);
 }
 .settings-nav-btn:hover {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--ink-primary);
+  background-color: rgba(255, 255, 255, 0.06);
 }
 .settings-nav-btn.active {
-  color: white;
+  color: var(--ink-primary);
+  font-weight: var(--weight-strong);
 }
 .settings-nav-btn.locked {
   opacity: 0.35;
@@ -2153,11 +2187,19 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* Settings Form Controls */
+/* Content sits on paper, not on the lens.
+   The pane is clear glass now, so anything carrying text needs its own ground.
+   This is the grouping element the settings sections already use - 35 of them
+   across 20 files - so one rule grounds the whole surface. */
 .settings-group {
-  margin-bottom: 20px;
+  background: var(--glass-ink);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--r-control);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
 }
 .settings-group + .settings-group {
-  margin-top: 28px;
+  margin-top: var(--space-4);
 }
 
 .settings-section-heading {
@@ -2175,8 +2217,9 @@ input[type="file"]::file-selector-button:hover {
 .settings-label {
   display: block;
   margin-bottom: 8px;
-  font-size: 14px;
-  opacity: 0.9;
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--ink-secondary);
 }
 
 .settings-input {
@@ -3667,7 +3710,7 @@ body.focus-exiting .sidebar-container {
 
 .spotify-dock--open {
   width: 272px;
-  border-radius: var(--r-card);
+  border-radius: var(--r-pill);
 }
 
 /* ── Expandable panel (left side, grows when hovered) ─────────── */
