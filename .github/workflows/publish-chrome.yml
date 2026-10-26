@@ -114,12 +114,15 @@ jobs:
           client-id: ${{ secrets.CHROME_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
-          publish: true
+          # Deliberately false: this flag does not submit the item. v1.5.0 uploaded
+          # cleanly with publish: true, the step went green printing nothing, and the
+          # draft sat in the dashboard with "Submit for review" still waiting to be
+          # clicked. The submission is made explicitly below, where its response is
+          # read instead of discarded.
+          publish: false
 
-      # The upload action prints nothing - a queued submission and a silently
-      # rejected one leave identical logs. v1.5.0 went out green while the store
-      # kept serving 1.4.1, and nothing in CI could say which had happened. This
-      # asks the store and fails the release if it rejected the package.
+      # Runs even when the upload fails, because a rejected package is exactly when
+      # the reason matters. Read-only.
       - name: Confirm what the store accepted
         if: always()
         run: |
@@ -129,6 +132,25 @@ jobs:
           fi
           node ../.github/scripts/report-store-status.mjs
         env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      # Only on a clean upload - submitting a draft the store rejected would just
+      # queue a known-bad package for review.
+      - name: Submit for review
+        run: |
+          if [ ! -f ../.github/scripts/report-store-status.mjs ]; then
+            echo "::error::This tag predates the explicit submit step, so the upload"
+            echo "::error::is sitting in Draft. Submit it from the dashboard, or"
+            echo "::error::re-tag from a commit that contains this workflow."
+            exit 1
+          fi
+          node ../.github/scripts/report-store-status.mjs
+        env:
+          SUBMIT_FOR_REVIEW: 'true'
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { interpretItem, interpretPublish } from './report-store-status.mjs';
+import { interpretItem, interpretPublish, publishItem } from './report-store-status.mjs';
 
 test('a rejected upload is an error, and says why', () => {
   const { errors } = interpretItem({
@@ -73,4 +73,39 @@ test('NOT_FOUND still catches a draft stuck on the wrong version', () => {
     { expectedVersion: '1.5.0' },
   );
   assert.equal(errors.length, 1);
+});
+
+test('publishItem reports OK as queued for review', async () => {
+  const fake = async () => ({ ok: true, json: async () => ({ status: ['OK'] }) });
+  const { errors, notes } = await publishItem('abc', 't', fake);
+  assert.deepEqual(errors, []);
+  assert.match(notes.join(' '), /queued for review/);
+});
+
+test('publishItem surfaces a status array returned on a 200', async () => {
+  const fake = async () => ({
+    ok: true,
+    json: async () => ({ status: ['ITEM_NOT_UPDATABLE'], statusDetail: ['Item is in review'] }),
+  });
+  const { errors } = await publishItem('abc', 't', fake);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /ITEM_NOT_UPDATABLE: Item is in review/);
+});
+
+test('publishItem reports an HTTP failure that carries no status', async () => {
+  const fake = async () => ({ ok: false, status: 403, json: async () => ({}) });
+  const { errors } = await publishItem('abc', 't', fake);
+  assert.equal(errors.length, 1);
+  assert.match(errors[0], /HTTP 403/);
+});
+
+test('publishItem prefers the status array over the HTTP code', async () => {
+  // A 400 that still explains itself should report the explanation, not the code.
+  const fake = async () => ({
+    ok: false,
+    status: 400,
+    json: async () => ({ status: ['NOT_AUTHORIZED'], statusDetail: ['Account cannot publish'] }),
+  });
+  const { errors } = await publishItem('abc', 't', fake);
+  assert.match(errors[0], /NOT_AUTHORIZED: Account cannot publish/);
 });
