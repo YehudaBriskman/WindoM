@@ -15,6 +15,7 @@ import { AppCenterPanel } from "./sections/AppCenterPanel";
 import { TemplatesGallery } from "./sections/TemplatesGallery";
 import { AccountSettings } from "./sections/AccountSettings";
 import { useLiquidGlass } from '../../hooks/useLiquidGlass';
+import { shouldDismissPanel } from '../../lib/panel-dismissal';
 
 export function SettingsPanel() {
   const glassRef = useLiquidGlass<HTMLDivElement>('panel');
@@ -58,12 +59,24 @@ export function SettingsPanel() {
   useEffect(() => {
     if (!isOpen) return;
 
+    // The app centre is a sibling of this panel rather than a child, so a click
+    // on the Connect button for an integration used to land "outside" and
+    // dismiss the panel underneath it - taking the component driving the OAuth
+    // call with it. shouldDismissPanel owns that distinction.
     const onPointerDown = (event: MouseEvent) => {
-      const panel = glassRef.current;
-      if (panel && !panel.contains(event.target as Node)) setIsOpen(false);
+      if (shouldDismissPanel(event.target as Node | null, glassRef.current)) {
+        setIsOpen(false);
+      }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key !== "Escape") return;
+      // Escape dismisses the topmost thing, which is the app centre when one is
+      // open - closing the panel out from under it would take both at once.
+      if (openAppId) {
+        setOpenAppId(null);
+        return;
+      }
+      setIsOpen(false);
     };
 
     // `mousedown` rather than `click`: a click whose target React unmounts
@@ -75,7 +88,7 @@ export function SettingsPanel() {
       document.removeEventListener("mousedown", onPointerDown);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [isOpen, glassRef]);
+  }, [isOpen, glassRef, openAppId]);
 
   const closeApp = useCallback(() => setOpenAppId(null), []);
 
