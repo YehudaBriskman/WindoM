@@ -1,6 +1,7 @@
 import { renderToString } from 'react-dom/server';
 import { RouterProvider, createMemoryRouter } from 'react-router';
-import { ROUTES, legacyPathOf, type SiteRoute } from './routes';
+import { ROUTES, legacyPathOf, titleFor, type SiteRoute } from './routes';
+import { RouteChrome } from './components/RouteChrome';
 import { NotFound } from './pages/NotFound';
 
 /**
@@ -64,7 +65,7 @@ function escapeHtml(s: string): string {
  */
 function headFor(route: SiteRoute): string {
   const canonical = `${ORIGIN}${route.path}`;
-  const title = route.path === '/' ? route.title : `${route.title} - WindoM`;
+  const title = titleFor(route);
   const image = `${ORIGIN}/images/banner.png`;
 
   const twins = route.twinOf ? ROUTES.filter((r) => r.twinOf === route.twinOf) : [];
@@ -134,9 +135,10 @@ function headFor(route: SiteRoute): string {
  * reference the hashed bundle and would be a dead page with no styling.
  */
 function renderNotFound(): Rendered {
-  const router = createMemoryRouter([{ path: '*', element: <NotFound /> }], {
-    initialEntries: ['/not-found'],
-  });
+  const router = createMemoryRouter(
+    [{ element: <RouteChrome />, children: [{ path: '*', element: <NotFound /> }] }],
+    { initialEntries: ['/not-found'] },
+  );
 
   return {
     files: ['404.html'],
@@ -154,9 +156,12 @@ function renderNotFound(): Rendered {
 /** Renders every route, plus the not-found page. */
 export function renderAll(): Rendered[] {
   const pages: Rendered[] = ROUTES.map((route) => {
-    const router = createMemoryRouter([{ path: route.path, element: route.element }], {
-      initialEntries: [route.path],
-    });
+    // The same layout the browser router mounts, so the tree being hydrated
+    // matches the tree that was rendered. It emits no markup of its own.
+    const router = createMemoryRouter(
+      [{ element: <RouteChrome />, children: [{ path: route.path, element: route.element }] }],
+      { initialEntries: [route.path] },
+    );
 
     const files = [cleanFile(route.path)];
     if (route.legacyHtml) files.push(legacyFile(route.path));

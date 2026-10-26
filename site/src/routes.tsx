@@ -200,6 +200,11 @@ export const ROUTES: SiteRoute[] = [
   },
 ];
 
+/** `<title>` for a route: the home page carries the suffix already. */
+export function titleFor(route: SiteRoute): string {
+  return route.path === '/' ? route.title : `${route.title} - WindoM`;
+}
+
 /** `/privacy` -> `/privacy.html`, `/` -> `/index.html`. */
 export function legacyPathOf(path: string): string {
   return path === '/' ? '/index.html' : `${path}.html`;

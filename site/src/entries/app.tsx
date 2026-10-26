@@ -2,6 +2,7 @@ import { StrictMode } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router';
 import { ROUTES, legacyPathOf } from '../routes';
+import { RouteChrome } from '../components/RouteChrome';
 import { NotFound } from '../pages/NotFound';
 import '../styles/base.css';
 import '../styles/pages.css';
@@ -22,12 +23,19 @@ import '../styles/motion.css';
  * draw it again.
  */
 const router = createBrowserRouter([
-  ...ROUTES.flatMap((route) => {
-    const entries = [{ path: route.path, element: route.element }];
-    if (route.legacyHtml) entries.push({ path: legacyPathOf(route.path), element: route.element });
-    return entries;
-  }),
-  { path: '*', element: <NotFound /> },
+  {
+    element: <RouteChrome />,
+    children: [
+      ...ROUTES.flatMap((route) => {
+        const entries = [{ path: route.path, element: route.element }];
+        if (route.legacyHtml) {
+          entries.push({ path: legacyPathOf(route.path), element: route.element });
+        }
+        return entries;
+      }),
+      { path: '*', element: <NotFound /> },
+    ],
+  },
 ]);
 
 const root = document.getElementById('root');
