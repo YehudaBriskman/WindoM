@@ -4,6 +4,7 @@ import { useLinks } from '../../hooks/useLinks';
 import { useSettings } from '../../contexts/SettingsContext';
 import { DockItem } from './DockItem';
 import { isValidUrl } from '../../utils/url';
+import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 const ITEMS_PER_ROW = 9;
 const ROW_HEIGHT = 44;
@@ -11,6 +12,7 @@ const MAX_ROWS = 3;
 const MAX_LINKS = MAX_ROWS * ITEMS_PER_ROW;
 
 export function DockBar() {
+  const glassRef = useLiquidGlass<HTMLDivElement>('dock');
   const { settings } = useSettings();
   const { links, addLink, removeLink } = useLinks();
   const [showForm, setShowForm] = useState(false);
@@ -108,7 +110,7 @@ export function DockBar() {
 
   return (
     <div className="dock-wrapper">
-      <div className="dock-bar glass-dock">
+      <div ref={glassRef} className="dock-bar glass-dock">
         <div className="dock-rows" ref={rowsRef}>
           {rows.map((row, rowIndex) => (
             <div key={rowIndex} className="dock-row">

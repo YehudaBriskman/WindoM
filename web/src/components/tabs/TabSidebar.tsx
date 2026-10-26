@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { isOwnExtensionSender, isTabSnapshotList, parseTabsChanged, type TabSnapshot } from '../../lib/runtime-messages';
+import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 interface TabEntry {
   id: number;
@@ -16,6 +17,7 @@ const hasChromeApi = typeof chrome !== 'undefined';
 const isContentScript = window.location.protocol !== 'chrome-extension:';
 
 export function TabSidebar() {
+  const glassRef = useLiquidGlass<HTMLDivElement>('sidebar');
   const { settings } = useSettings();
   const [tabs, setTabs] = useState<TabEntry[]>([]);
   const [visible, setVisible] = useState(false);
@@ -129,6 +131,7 @@ export function TabSidebar() {
 
       {/* Sidebar panel */}
       <div
+        ref={glassRef}
         className={`tab-sidebar-panel tab-sidebar-panel-${side}${visible ? ' visible' : ''} glass-sidebar`}
         onMouseEnter={showSidebar}
         onMouseLeave={hideSidebar}
