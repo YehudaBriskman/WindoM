@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { searchIndexDevPlugin } from './scripts/search-index.mjs';
 
 /**
  * One HTML entry.
@@ -10,7 +11,10 @@ import react from '@vitejs/plugin-react';
  * single shell this builds.
  */
 export default defineConfig({
-  plugins: [react()],
+  // The search index is a build artefact, so the dev server has to be told how
+  // to produce one - otherwise documentation search is permanently unavailable
+  // in development. The plugin is `apply: 'serve'` and adds nothing to a build.
+  plugins: [react(), searchIndexDevPlugin()],
   build: {
     // Matches the heaviest asset we ship, so the warning stays meaningful.
     chunkSizeWarningLimit: 600,
