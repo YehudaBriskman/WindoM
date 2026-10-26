@@ -7,11 +7,12 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [1.5.0] - 2026-10-21
+## [1.5.0] - 2026-10-26
 
-The Gmail widget is removed and the site is rebuilt. The first of those is a
-licensing decision rather than a product one: reading mail required a Google
-scope that would have cost $500-4,500 a year, every year, to keep publishable.
+The glass is computed optics now rather than a stack of CSS tricks, the Gmail
+widget is removed, and the site is rebuilt. The Gmail removal is a licensing
+decision rather than a product one: reading mail required a Google scope that
+would have cost $500-4,500 a year, every year, to keep publishable.
 
 ### Removed
 - **The Gmail widget.** It needed `gmail.readonly`, which Google classes as a
@@ -22,15 +23,25 @@ scope that would have cost $500-4,500 a year, every year, to keep publishable.
   free. Nothing was deleted - the feature is behind `GMAIL_ENABLED`, off by
   default - so it can return if the reading is ever moved into the extension,
   where the assessment requirement may not apply.
-
-### Changed
-- The extension stops offering Gmail when the server does not provide it,
-  rather than showing a Connect button that could never finish
-- `/integrations` reports which features the server actually offers
-- The privacy policy lists exactly the scopes requested and carries the Limited
-  Use statement the Google API Services User Data Policy requires
+- The close buttons on the settings panel and the right sidebar, and the
+  full-page dimming behind them. Both panels are anchored to a corner and
+  opened by a visible button, so a scrim and an X were saying something the
+  panel's own position already said. Dismissal is now click-outside, Escape, or
+  the same button that opened it.
+- The scrollbar inside the settings panel. A card clipped by the panel edge
+  already reads as "more below".
 
 ### Added
+- **Real refraction.** The rim of every pane bends the wallpaper behind it
+  through Snell's law, across a quartic squircle profile, with the direction
+  taken from a rounded-rectangle distance field and incidence capped at 65
+  degrees - past that, Fresnel reflectance means a real surface reflects rather
+  than transmits. Each distinct pane geometry gets its own displacement field,
+  generated once and cached.
+- **A light source with mass.** The specular highlight tracks the pointer
+  through a stiff spring while the material gathers behind it through a softer
+  one. A highlight pinned exactly to the cursor reads as a texture painted on
+  the surface; one that lags and settles reads as light moving across an object.
 - windom.app is a working new tab rather than a page about one: the visitor's
   own clock and greeting, the four bundled wallpapers crossfading through a day
   as you scroll, and each hour foregrounding the part of the product you would
@@ -38,7 +49,42 @@ scope that would have cost $500-4,500 a year, every year, to keep publishable.
 - The site's content is built from the extension's own screenshots and
   wallpapers instead of a feature grid
 
+### Changed
+- **The glass is a light material.** Legibility comes from grounds underneath
+  the text rather than from dimming the pane: chrome is glass, content is paper.
+  Earlier attempts to rescue the look by tinting and darkening were
+  compensating for a backdrop that was already being discarded, which is how it
+  spent two rounds looking like a brown slab.
+- One motion system across every pane, with durations sized by how much
+  material is moving and exits quicker than entries
+- 25 distinct radius expressions collapsed to 5 tokens - pills for compact
+  chrome, squircles for content
+- The extension stops offering Gmail when the server does not provide it,
+  rather than showing a Connect button that could never finish
+- `/integrations` reports which features the server actually offers
+- The privacy policy lists exactly the scopes requested and carries the Limited
+  Use statement the Google API Services User Data Policy requires
+
 ### Fixed
+- **The refraction was erasing the backdrop instead of bending it.** A
+  `feDisplacementMap` fed by `feImage` returns nothing when referenced from
+  `backdrop-filter`, so the pane went flat and everything behind it vanished.
+  This one fault explains every symptom the work started from: the blur looked
+  wrong because there was no backdrop left to blur, and nothing curved because
+  nothing was being displaced. The rim now displaces its own aligned copy of
+  the wallpaper with `filter:`, which does work.
+- **The effect was missing from every build.** Blink treats
+  `-webkit-backdrop-filter` as a true alias, so the minifier kept the prefixed
+  copy and discarded the real declaration.
+- 519ms of script on every panel open, from rasterising a full displacement
+  field on each frame of the opening animation
+- Layout thrashing: `getBoundingClientRect` read per pane per frame and
+  interleaved with style writes
+- Panels animated open but snapped shut, because `transition` is a single
+  property and the material stylesheet was replacing the panel's own
+- The right sidebar closed itself on the click that opened it
+- The weather widget had no glass at all - it renders a different element while
+  loading, and the hook had already registered the first one
 - Focus mode on the site replaced the clock instead of drawing over it
 - The backend test suite and the Docker Compose files run on a clean checkout,
   where before both needed a hand-made `.env` that is not in the repository
