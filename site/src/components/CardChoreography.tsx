@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSlotGeometry, type Slot } from '../hooks/useSlotGeometry';
+import { slotElementId } from '../lib/slots';
 
 /**
  * One card, moved between the positions the page asks for.
@@ -35,8 +36,9 @@ import { useSlotGeometry, type Slot } from '../hooks/useSlotGeometry';
 
 interface ChoreographyValue {
   register: (slot: Slot) => void;
-  /** True once slots have been measured and the card has lifted out of flow. */
-  travelling: boolean;
+  /** Rendered by the first slot, so it is correct before any measurement. */
+  card: ReactNode;
+  restingSlot: string;
 }
 
 const Choreography = createContext<ChoreographyValue | null>(null);
@@ -83,14 +85,13 @@ export function CardChoreography({ children, card, order, enabled }: CardChoreog
   const scopeNames = order.map((id) => `--slot-${id}`).join(', ');
 
   return (
-    <Choreography.Provider value={{ register, travelling: enabled }}>
+    <Choreography.Provider value={{ register, card, restingSlot: order[0] ?? '' }}>
       <div
         className="card-choreography"
         ref={scope}
         style={{ timelineScope: scopeNames } as React.CSSProperties}
         data-travelling={enabled ? 'true' : 'false'}
       >
-        {card}
         {children}
       </div>
     </Choreography.Provider>
@@ -117,7 +118,11 @@ export function CardSlot({ id, full, className, children }: CardSlotProps) {
   const ctx = useChoreography();
 
   useEffect(() => {
-    ctx?.register({ id, element: ref.current, full });
+    // A section may mark where inside itself the card should land. Without
+    // one the section's own box is the target, which is what a slot the
+    // height of the card wants.
+    const target = ref.current?.querySelector<HTMLElement>('[data-card-target]') ?? ref.current;
+    ctx?.register({ id, element: ref.current, target, full });
     // Registration is by id; re-running on every context change would thrash.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, full]);
@@ -125,11 +130,29 @@ export function CardSlot({ id, full, className, children }: CardSlotProps) {
   return (
     <div
       ref={ref}
-      id={`slot-${id}`}
+      id={slotElementId(id)}
       className={`card-slot${full ? ' is-full' : ''}${className ? ` ${className}` : ''}`}
       style={{ viewTimelineName: `--slot-${id}` } as React.CSSProperties}
     >
+      {/* The card lives in the DOM inside the slot it rests in, so the
+          prerendered page and a visitor without JavaScript both get a card
+          in the right place with no measurement involved. Travelling makes
+          it `position: fixed`, which leaves the flow without leaving the
+          tree - the reason no ancestor of this slot may carry a transform,
+          a filter or a perspective. */}
+      {ctx && id === ctx.restingSlot ? ctx.card : null}
       {children}
     </div>
   );
+}
+
+/**
+ * Marks where inside a section the card should come to rest.
+ *
+ * A section taller than the card - one that holds it for a while, or sets
+ * copy beside it - needs to say which part of itself the card occupies. The
+ * element draws nothing; it is a measured box.
+ */
+export function CardTarget({ className }: { className?: string }) {
+  return <div data-card-target className={`card-target${className ? ` ${className}` : ''}`} />;
 }

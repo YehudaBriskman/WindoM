@@ -1,0 +1,326 @@
+/* ── The travelling card ────────────────────────────────────────────────
+   One card, moved between the positions the page asks for.
+
+   The division of labour: JavaScript measures each slot and publishes its
+   rect as `--slot-<id>-{x,y,w}`; the keyframes below use those properties as
+   their endpoints, and scroll-driven animation does the per-frame work. No
+   scroll listener is involved, and a resize re-targets a running animation
+   by changing a property rather than by rebuilding anything.
+
+   Each leg is driven by the timeline of the slot it is arriving at, reached
+   by name through the `timeline-scope` on `.card-choreography`. The card is
+   `position: fixed` and a descendant of none of those sections, which is
+   exactly the case `timeline-scope` exists for. */
+
+.card-choreography {
+  position: relative;
+}
+
+/* A slot is a measuring box and a scroll length. It draws nothing. */
+.card-slot {
+  position: relative;
+}
+
+.card-slot.is-full {
+  /* The card fills the window here, so the slot's own width is irrelevant -
+     only its height, which is the distance the stage is held for. */
+  width: 100%;
+}
+
+/**
+ * The card before anything has been measured.
+ *
+ * Also the permanent state without JavaScript, and when motion is suppressed.
+ * It fills the slot it is rendered in, as ordinary flow content: a correct,
+ * static card that simply does not travel. Nothing about this state is a
+ * fallback in the apologetic sense - it is the page with one fewer effect,
+ * and it needs no measurement to be right.
+ */
+.product-card {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+/**
+ * Once measured, the card leaves the flow and becomes the thing that moves.
+ *
+ * Its intrinsic size is the design size the Stage is drawn at; every slot is
+ * reached by scaling that box down, which is the same trick the hero preview
+ * already used and means the card has exactly one layout at every size.
+ */
+.card-choreography[data-travelling='true'][data-measured='true'] .product-card {
+  position: fixed;
+  inset: auto;
+  top: 0;
+  left: 0;
+  width: var(--card-w);
+  height: var(--card-h);
+  transform-origin: top left;
+  /* Behind the site chrome, above the page. */
+  z-index: 3;
+  will-change: translate, scale;
+
+  translate: var(--slot-hero-x) var(--slot-hero-y);
+  scale: calc(var(--slot-hero-w) / var(--card-w));
+}
+
+@supports (animation-timeline: view()) {
+  .card-choreography[data-travelling='true'][data-measured='true'] .product-card {
+    /**
+     * One animation per leg, in visiting order.
+     *
+     * The first carries `both` so that before its range the card holds the
+     * hero slot. Every later leg carries `forwards` only: a backwards fill
+     * would apply its own starting value - the slot before it - from the top
+     * of the page, and because later declarations win it would override the
+     * leg actually running. With `forwards` a leg contributes nothing until
+     * its range begins, which is what makes the sequence compose.
+     */
+    animation:
+      card-to-day linear both,
+      card-to-panel linear forwards;
+    animation-timeline: --slot-day, --slot-panel;
+    /* `entry` on a section taller than the viewport runs from its top
+       touching the viewport bottom to its top reaching the viewport top -
+       one screen of scroll, ending exactly as the section takes over. */
+    animation-range:
+      entry 0% entry 100%,
+      entry 0% entry 100%;
+  }
+
+  @keyframes card-to-day {
+    from {
+      translate: var(--slot-hero-x) var(--slot-hero-y);
+      scale: calc(var(--slot-hero-w) / var(--card-w));
+    }
+    to {
+      translate: var(--slot-day-x) var(--slot-day-y);
+      scale: calc(var(--slot-day-w) / var(--card-w));
+    }
+  }
+
+  @keyframes card-to-panel {
+    from {
+      translate: var(--slot-day-x) var(--slot-day-y);
+      scale: calc(var(--slot-day-w) / var(--card-w));
+    }
+    to {
+      translate: var(--slot-panel-x) var(--slot-panel-y);
+      scale: calc(var(--slot-panel-w) / var(--card-w));
+    }
+  }
+}
+
+/**
+ * The card loses its edges as it fills the window.
+ *
+ * Driven by the same timeline as the travel so the two cannot drift. A
+ * rounded, bordered rectangle that happens to be viewport-sized still reads
+ * as a card; losing the corner radius at the moment it arrives is what makes
+ * it read as having become the screen.
+ */
+.card-choreography[data-travelling='true'][data-measured='true'] .product-card-surface {
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-strong);
+  overflow: hidden;
+  height: 100%;
+}
+
+@supports (animation-timeline: view()) {
+  .card-choreography[data-travelling='true'][data-measured='true'] .product-card-surface {
+    animation: card-edges linear both;
+    animation-timeline: --slot-day;
+    /* Finishes a little before the travel does, so the card is already whole
+       by the time it lands rather than still resolving. */
+    animation-range: entry 55% entry 100%;
+  }
+
+  @keyframes card-edges {
+    from {
+      border-radius: var(--r-lg);
+      border-color: var(--border-strong);
+    }
+    to {
+      border-radius: 0;
+      border-color: transparent;
+    }
+  }
+}
+
+/* ── Suppressed ─────────────────────────────────────────────────────────
+   Both of the site's motion switches stop the travel. The card stays in the
+   hero and each section shows its own content in place. */
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card {
+    animation: none !important;
+  }
+}
+
+body.motion-paused .product-card,
+body.motion-paused .product-card-surface {
+  animation: none !important;
+}
+
+/* ── Inside the card ────────────────────────────────────────────────── */
+
+.product-card-surface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+}
+
+/* The tab is drawn at the card's own size, so there is nothing to scale here
+   - the card itself is what shrinks. That is the point of a fixed intrinsic
+   size: the panes never reflow as it travels, they only get larger. */
+.product-card-frame {
+  position: absolute;
+  inset: 0;
+}
+
+/* The slot in the hero reserves the box the card will occupy. It draws
+   nothing; the card is painted over it. */
+.hero-preview-slot {
+  width: 100%;
+  aspect-ratio: 1440 / 900;
+}
+
+/* ── The narrative arrives with the card ────────────────────────────────
+   The per-hour copy belongs to the scroll story. While the card is still in
+   the hero it would sit beside the page's own headline arguing the same
+   point in smaller type, so it fades in as the card lands. */
+
+.product-card .stage-story,
+.product-card .scroll-cue {
+  opacity: 0;
+}
+
+@supports (animation-timeline: view()) {
+  .card-choreography[data-travelling='true'] .product-card .stage-story,
+  .card-choreography[data-travelling='true'] .product-card .scroll-cue {
+    animation: card-story-in linear both;
+    animation-timeline: --slot-day;
+    animation-range: entry 70% entry 100%;
+  }
+
+  @keyframes card-story-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+/* Without the travel there is no arrival to wait for. */
+.card-choreography[data-travelling='false'] .product-card .stage-story,
+.card-choreography[data-travelling='false'] .product-card .scroll-cue {
+  opacity: 1;
+}
+
+/* ── The lean stops once it is the screen ───────────────────────────────
+   A lean is how a card sits on a page. Something filling the window is not
+   sitting on anything, so the pointer tilt is dropped the moment the stage
+   owns the view - the class the day section already sets for the nav. */
+
+body.stage-owns-view .product-card {
+  transform: none;
+}
+
+/* ── The panel section ──────────────────────────────────────────────── */
+
+.panel-stage {
+  position: relative;
+  display: grid;
+  align-items: center;
+  min-height: 160vh;
+  padding: var(--s-8) var(--gutter);
+}
+
+.panel-copy {
+  width: min(100%, 34rem);
+  /* Ranged against the side the card is not on. */
+  margin-inline-start: auto;
+}
+
+/* The box the card lands in for the panel section: the left half, set down
+   from the top so the copy beside it reads at the same height. */
+.panel-card-target {
+  position: absolute;
+  left: var(--gutter);
+  top: 12vh;
+  width: min(44vw, 38rem);
+  aspect-ratio: 1440 / 900;
+  pointer-events: none;
+}
+
+/* ── The card is whole again once the day is over ───────────────────────
+   The depth parallax runs on the day section's timeline with a forward
+   fill, so past that section it holds its last keyframe - every layer at
+   zero opacity, which is right for an exit and wrong for a card that has
+   gone somewhere else to be looked at. Without this it arrives empty, and
+   it does so silently: there is no error, just a card with nothing in it.
+
+   `!important` because a regular declaration cannot outrank an animation's
+   fill, and the alternative - a second animation on the same elements -
+   would have to restate the parallax to avoid replacing it. */
+
+body.past-day-stage .product-card .stage-layer {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* The cue belongs to the pinned stage; there is nothing left to scroll
+   through by the time the card is beside the copy. */
+body.past-day-stage .product-card .scroll-cue {
+  opacity: 0 !important;
+}
+
+/* ── And it gets its edges back ─────────────────────────────────────────
+   It lost them becoming the screen. Leaving the screen, it is a card being
+   discussed rather than a window being used, so the corners and the rim
+   return on the same timeline that moves it. */
+
+@supports (animation-timeline: view()) {
+  .card-choreography[data-travelling='true'][data-measured='true'] .product-card-surface {
+    animation:
+      card-edges linear both,
+      card-edges-back linear forwards;
+    animation-timeline: --slot-day, --slot-panel;
+    animation-range:
+      entry 55% entry 100%,
+      entry 20% entry 70%;
+  }
+
+  @keyframes card-edges-back {
+    from {
+      border-radius: 0;
+      border-color: transparent;
+    }
+    to {
+      border-radius: var(--r-lg);
+      border-color: var(--border-strong);
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  /* The card takes the full column and the copy sits beneath it. Half a
+     phone's width is not a product shot, it is a thumbnail. */
+  .panel-card-target {
+    left: var(--gutter);
+    right: var(--gutter);
+    width: auto;
+  }
+
+  .panel-copy {
+    margin-inline-start: 0;
+    margin-top: 48vw;
+  }
+
+  .panel-stage {
+    min-height: 130vh;
+  }
+}
