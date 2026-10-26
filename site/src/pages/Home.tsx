@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { Updates } from '../components/Updates';
 import { Stage } from '../components/Stage';
@@ -47,6 +48,38 @@ export function Home() {
   // a disabled one.
   const animated = !reduced && !paused;
   const cycle = useDayCycle(animated);
+
+  /**
+   * Hide the navigation while the day-stage owns the screen.
+   *
+   * The stage is a full-viewport animation; a bar across the top of it is the
+   * one piece of chrome that cannot be justified there. A class on `document.body`
+   * rather than a store or context because `SiteNav` is rendered by `Layout`,
+   * above this component in the tree - and it mirrors how the extension itself
+   * drives focus mode.
+   */
+  useEffect(() => {
+    const stage = document.getElementById('day-stage');
+    if (!stage) return;
+
+    // Fires when the stage covers the top of the viewport, which is exactly
+    // when the pin takes over - no scroll listener and no measurement of our
+    // own to keep in step with the CSS.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        document.body.classList.toggle('stage-owns-view', entry?.isIntersecting === true);
+      },
+      // A sliver at the very top of the viewport: the stage intersects it from
+      // the moment it pins until the moment it releases.
+      { rootMargin: '0px 0px -99% 0px', threshold: 0 },
+    );
+    observer.observe(stage);
+
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove('stage-owns-view');
+    };
+  }, []);
   const active = DAY[cycle.stage];
 
   return (
