@@ -56,7 +56,8 @@
 
 .hero-copy h1 {
   margin-bottom: 22px;
-  font-size: clamp(2.6rem, 5.4vw, 4.6rem);
+  font-size: clamp(2.8rem, 5.6vw, 5.2rem);
+  line-height: 0.95;
   display: grid;
 }
 
@@ -64,18 +65,19 @@
    is what gives the reference its stepped look - two flush lines of identical
    type read as a paragraph in bold rather than as a title. */
 .hero-line-1 {
-  font-size: 0.86em;
+  font-size: 0.82em;
   letter-spacing: -0.035em;
 }
 
 .hero-line-2 {
-  margin-left: 0.5em;
+  margin-left: 0.28em;
   letter-spacing: -0.04em;
 }
 
 .hero-copy .lede {
-  margin-bottom: 30px;
-  max-width: 46ch;
+  margin-bottom: 34px;
+  max-width: 44ch;
+  font-size: 1.18rem;
 }
 
 /* ── Specification strip ────────────────────────────────────────────────
@@ -263,41 +265,60 @@
    Overlaid on the lower-right of the product, in the reference's flat-panel
    style. */
 
-/* Anchored to the section, not to the preview. The preview deliberately runs
-   off the right edge, and cards positioned against it went with it. */
+/* Three cards in a row beneath the product, pulled up so they overlap its
+   lower edge - the arrangement in the reference, where the panels read as
+   floating in front of the image rather than captioning it underneath. */
 .hero-facts {
-  position: absolute;
-  right: 24px;
-  bottom: 72px;
+  position: relative;
   z-index: 2;
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-  gap: 1px;
-  width: 270px;
-  background: var(--border);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  overflow: hidden;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: -56px 0 0;
+  padding: 0 0 0 28px;
+  /* The preview deliberately runs off the right edge; the cards must not.
+     Sized against the viewport rather than the container, because the
+     container is the thing that bleeds - and narrow enough that the row still
+     clears the edge once its own left offset is counted. */
+  width: min(100%, 46vw);
+  max-width: 640px;
 }
 
 .hero-facts li {
   display: grid;
   gap: 2px;
-  padding: 13px 16px;
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(10px);
+  padding: 16px 18px;
+  border-radius: var(--r-md);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 80%, transparent);
+  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 50px -28px rgba(0, 0, 0, 0.95);
+}
+
+.hero-fact-stat {
+  font-family: var(--display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 .hero-facts strong {
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   font-weight: 600;
   color: var(--text);
 }
 
-.hero-facts span {
-  font-size: 0.78rem;
+.hero-fact-body {
+  font-size: 0.8rem;
   color: var(--muted);
   line-height: 1.45;
 }
@@ -380,13 +401,12 @@
     border-radius: var(--r-lg);
   }
 
-  /* Below the product rather than over it - overlaid text on a narrow image
-     is unreadable. */
+  /* No overlap on a phone: a card lapping over a 340px-wide product shot
+     covers most of it. */
   .hero-facts {
-    position: static;
-    width: auto;
     margin-top: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    padding-left: 0;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
   .hero-cue {
