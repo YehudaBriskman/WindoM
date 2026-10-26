@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { SITE, STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
+import { STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
+import { SiteNav } from './SiteNav';
 
 interface LayoutProps {
   children: ReactNode;
@@ -37,12 +38,11 @@ export function Layout({
       </a>
       <div className="ambient" aria-hidden="true" />
 
+      <SiteNav />
+
       {variant === 'page' && (
         <header className="page-header">
           <div className="wrap wrap-prose">
-            <a className="back-link" href="/">
-              <span aria-hidden="true">←</span> {SITE.name}
-            </a>
             {eyebrow && <span className="eyebrow">{eyebrow}</span>}
             {title && <h1>{title}</h1>}
             {subtitle && <p className="updated">{subtitle}</p>}

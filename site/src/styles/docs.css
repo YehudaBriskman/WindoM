@@ -243,3 +243,67 @@
   padding-left: 0;
   padding-right: 18px;
 }
+
+/* ── Collapsible groups ─────────────────────────────────────────────────
+   Native `details`, so the sidebar is structure rather than a flat list and
+   still works with no JavaScript and inside the prerender. */
+
+.docs-nav-group > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  user-select: none;
+}
+
+/* The default marker is replaced by one that points the way it opens. */
+.docs-nav-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.docs-nav-group > summary::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-left: 4px solid currentColor;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+.docs-nav-group[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.docs-nav-group > summary:hover {
+  color: var(--muted-strong);
+}
+
+/* ── Nested contents ────────────────────────────────────────────────── */
+
+.docs-rail li.is-sub {
+  margin-left: 12px;
+  font-size: 0.97em;
+}
+
+.docs-rail li.is-sub a {
+  color: color-mix(in srgb, var(--muted) 72%, transparent);
+}
+
+.docs-rail li.is-sub a:hover {
+  color: var(--muted-strong);
+}
+
+/* Anchored headings clear the sticky nav when jumped to, rather than landing
+   underneath it. */
+.docs-main .prose h2,
+.docs-main .prose h3 {
+  scroll-margin-top: 76px;
+}
+
+/* The sidebar and rail sit below the nav rather than under it. */
+.docs-nav,
+.docs-rail {
+  top: 76px;
+}

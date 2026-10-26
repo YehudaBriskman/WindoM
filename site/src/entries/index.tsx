@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { Home } from '../pages/Home';
 import '../styles/base.css';
 import '../styles/pages.css';
+import '../styles/hero.css';
 import '../styles/stage.css';
 import '../styles/motion.css';
 

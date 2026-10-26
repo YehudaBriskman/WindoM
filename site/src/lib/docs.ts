@@ -29,6 +29,31 @@ export const DOCS_PAGES: DocsPage[] = [
   { href: '/terms.html', title: 'Terms of Use', group: 'Legal' },
 ];
 
+/**
+ * The site navigation, shown on every page.
+ *
+ * Deliberately the things a reader might actually want next rather than a map
+ * of the site: what the product does, where to get help, and where the source
+ * is. The install call to action lives in the hero instead, where it has room
+ * to be a real button.
+ *
+ * `/#updates` is the release feed on the home page. It is honest but thin until
+ * the feed is fixed - see issue #374, where it is broken three separate ways.
+ */
+export interface NavLink {
+  href: string;
+  label: string;
+  /** Rendered as an icon to the right rather than a word in the middle. */
+  external?: boolean;
+}
+
+export const NAV_LINKS: NavLink[] = [
+  { href: '/guide.html', label: 'Guide' },
+  { href: '/support.html', label: 'Support' },
+  { href: '/local-setup.html', label: 'Docs' },
+  { href: '/#updates', label: 'Changelog' },
+];
+
 /** The groups in sidebar order, derived so the two cannot disagree. */
 export function docsGroups(): { group: string; pages: DocsPage[] }[] {
   const order: string[] = [];

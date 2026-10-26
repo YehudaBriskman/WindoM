@@ -1,6 +1,7 @@
 import { Layout } from '../components/Layout';
 import { Updates } from '../components/Updates';
 import { Stage } from '../components/Stage';
+import { Hero } from '../components/Hero';
 import { Beat } from '../components/Beat';
 import { Wallpapers } from '../components/Wallpapers';
 import { Ambient } from '../components/Ambient';
@@ -53,6 +54,8 @@ export function Home() {
       <GlassFilters />
       <Ambient />
       <MotionToggle paused={paused} onToggle={toggleMotion} />
+
+      <Hero cycle={cycle} animated={animated} />
 
       {/* ── The stage: a working new tab, pinned while the day passes ── */}
       <section className="day-stage" id="day-stage">
