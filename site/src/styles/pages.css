@@ -313,6 +313,25 @@
   filter: blur(26px);
 }
 
+/**
+ * Contained below the width where the wrap has margins to spare.
+ *
+ * The bloom is `inset: -16% -12%` of the figure, and it is scaled up from
+ * 0.75 by a `view()` animation as the screenshot arrives - so it reaches its
+ * full overhang exactly when the section appears. Below about 1200px that
+ * overhang lands past the edge of the page and widens the document by some
+ * thirty-five pixels, which stays widened for the rest of the scroll.
+ *
+ * It is a decorative blur, so nothing is lost by holding it inside the
+ * figure. A document that is wider than the window because of a glow is still
+ * a document that is too wide.
+ */
+@media (max-width: 1200px) {
+  .beat-splash {
+    inset: -16% 0;
+  }
+}
+
 .beat-frame {
   position: relative;
   z-index: 1;
