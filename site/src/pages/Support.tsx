@@ -78,9 +78,19 @@ export function Support() {
 
       <h2>Settings did not follow me to another computer</h2>
       <p>
-        Settings sync through your Chrome profile, so both machines need to be signed in to the
-        same Chrome account with sync enabled. Background images, cached weather and tab history
-        are deliberately excluded - they are large, and they stay on the device that made them.
+        Settings follow your WindoM account. Sign in from <strong>Settings → Account</strong> on
+        both machines and your clock format, background choice, widget layout and quick links
+        arrive on the second one. If you are signed in on one machine and not the other, there is
+        nothing linking them.
+      </p>
+      <p>
+        Without an account, Chrome's own profile sync carries them instead, which needs both
+        machines signed in to the same Chrome account with sync enabled - and it stops at the
+        boundary of that profile, so a different browser or a work profile will not see them.
+      </p>
+      <p>
+        Either way, background images, cached weather and tab history are deliberately excluded.
+        They are large, and they stay on the device that made them.
       </p>
 
       <h2>Reporting something else</h2>
