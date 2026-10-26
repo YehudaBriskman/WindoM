@@ -3,6 +3,8 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Support } from './pages/Support';
 import { Contact } from './pages/Contact';
+import { Guide } from './pages/Guide';
+import { LocalSetup } from './pages/LocalSetup';
 
 /**
  * Pages rendered to real HTML at build time.
@@ -29,4 +31,6 @@ export const prerendered: Record<string, () => string> = {
   'terms.html': () => renderToStaticMarkup(<Terms />),
   'support.html': () => renderToStaticMarkup(<Support />),
   'contact.html': () => renderToStaticMarkup(<Contact />),
+  'guide.html': () => renderToStaticMarkup(<Guide />),
+  'local-setup.html': () => renderToStaticMarkup(<LocalSetup />),
 };
