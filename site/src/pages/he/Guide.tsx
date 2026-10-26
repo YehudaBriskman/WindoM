@@ -21,7 +21,7 @@ export function Guide() {
             </div>
             <div className="feature-card">
               <div className="feature-card-title">מזג אוויר</div>
-              <div className="feature-card-desc">טמפרטורה ומצב מזג אוויר בזמן אמת. דורש מפתח API חינמי מ-OpenWeatherMap.</div>
+              <div className="feature-card-desc">טמפרטורה ומצב מזג אוויר בזמן אמת. ללא מפתח API, ללא חשבון.</div>
             </div>
             <div className="feature-card">
               <div className="feature-card-title">רקע</div>
@@ -311,41 +311,40 @@ export function Guide() {
           </div>
           <h2 id="weather">
             ווידג'ט מזג אוויר
-            <span className="badge optional">דורש מפתח API</span>
           </h2>
-          <p>ווידג'ט מזג האוויר מציג טמפרטורה ותנאים בזמן אמת בסרגל העליון. הוא משתמש ב-OpenWeatherMap חינמי - אתה צריך מפתח API משלך.
+          <p>ווידג'ט מזג האוויר מציג טמפרטורה ותנאים בזמן אמת בסרגל העליון. הוא קורא נתונים מ-Open-Meteo, שאינו דורש מפתח API ואינו דורש חשבון - אין להירשם לשום שירות ואין מה להדביק.
           </p>
           <div className="step">
             <div className="step-num">1</div>
             <div className="step-body">
-              <p>עבור אל <a href="https://openweathermap.org" target="_blank" rel="noreferrer">openweathermap.org</a> וצור חשבון חינמי.</p>
+              <p>פתח הגדרות WindoM → לשונית <strong>מזג אוויר</strong>.</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-              <p>בלוח הבקרה של חשבונך, עבור אל <strong>API Keys</strong> והעתק את המפתח ברירת המחדל (או צור חדש בשם כמו <em>WindoM</em>).
-              </p>
+              <p>בשדה <strong>Temperature Unit</strong> בחר צלזיוס (°C) או פרנהייט (°F).</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">3</div>
             <div className="step-body">
-              <p>פתח הגדרות WindoM → לשונית <strong>מזג אוויר</strong>. הדבק את מפתח ה-API שלך והכנס את שם העיר שלך (למשל <code>Tel Aviv</code> או <code>New York</code>). בחר °C או °F ולחץ על <strong>שמור</strong>.</p>
+                <p>התחל להקליד שם עיר בשדה <strong>Location</strong> (למשל <code>Tel Aviv</code> או <code>New York</code>). ערים מתאימות מופיעות מתחת לשדה עם האזור והמדינה שלהן - לחץ על זו שהתכוונת אליה.</p>
+                <p>אם תשאיר את השדה ריק, WindoM יבקש את המיקום שלך מהדפדפן.</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">4</div>
             <div className="step-body">
-              <p>ווידג'ט מזג האוויר מופיע בפינה השמאלית העליונה של לשונית החדשה שלך.</p>
+              <p>ווידג'ט מזג האוויר מופיע בפינה השמאלית העליונה של לשונית החדשה שלך. אין כפתור שמירה - השינוי חל ברגע הבחירה.</p>
             </div>
           </div>
           <div className="callout">
-            <strong>מפתח API חדש לא עובד?</strong> מפתחות OpenWeatherMap חינמיים יכולים לקחת עד 2 שעות להפעלה לאחר יצירה. אם קיבלת שגיאה מיד אחרי יצירת המפתח, המתן קצת ונסה שוב.
+            <strong>מוצג מקום שגוי?</strong> כששדה המיקום ריק והדפדפן אינו מספק נקודות ציון, WindoM נופל בחזרה לזיהוי גס לפי כתובת ה-IP, שיכול להיות רחוק למדי ב-VPN או ברשת סלולרית. הקלדת עיר ידנית מקבעת את המיקום.
           </div>
           <div className="callout tip">
-            <strong>מגבלות גרסה חינמית</strong> -
-            התוכנית החינמית של OpenWeatherMap מאפשרת 1,000 קריאות API ביום. WindoM שומר את מזג האוויר במטמון ל-10 דקות לכל לשונית חדשה, כך שלעולם לא תתקרב למגבלה.
+            <strong>מתרענן כל 30 דקות</strong> -
+            הקריאה האחרונה נשמרת במטמון, כך שהווידג'ט מוצג מלא כבר ברגע שלשונית חדשה נפתחת, ומתעדכן כשהקריאה הטרייה מגיעה.
           </div>
           <h2 id="links">
             קישורים מהירים וסרגל הדוק

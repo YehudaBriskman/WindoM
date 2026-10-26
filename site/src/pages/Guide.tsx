@@ -21,7 +21,7 @@ export function Guide() {
             </div>
             <div className="feature-card">
               <div className="feature-card-title">Weather</div>
-              <div className="feature-card-desc">Live temperature and conditions. Needs a free OpenWeatherMap API key.</div>
+              <div className="feature-card-desc">Live temperature and conditions. No API key, no account.</div>
             </div>
             <div className="feature-card">
               <div className="feature-card-title">Background</div>
@@ -311,41 +311,40 @@ export function Guide() {
           </div>
           <h2 id="weather">
             Weather Widget
-            <span className="badge optional">Needs API Key</span>
           </h2>
-          <p>The weather widget shows live temperature and conditions in the top bar. It uses OpenWeatherMap's free tier - you need your own API key.
+          <p>The weather widget shows live temperature and conditions in the top bar. It reads from Open-Meteo, which needs no API key and no account - there is nothing to sign up for and nothing to paste in.
           </p>
           <div className="step">
             <div className="step-num">1</div>
             <div className="step-body">
-              <p>Go to <a href="https://openweathermap.org" target="_blank" rel="noreferrer">openweathermap.org</a> and create a free account.</p>
+              <p>Open WindoM Settings → <strong>Weather</strong> tab.</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-              <p>In your account dashboard, go to <strong>API Keys</strong> and copy your default key (or create a new one labelled something like <em>WindoM</em>).
-              </p>
+              <p>Set <strong>Temperature Unit</strong> to Celsius (°C) or Fahrenheit (°F).</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">3</div>
             <div className="step-body">
-              <p>Open WindoM Settings → <strong>Weather</strong> tab. Paste your API key and enter your city name (e.g. <code>Tel Aviv</code> or <code>New York</code>). Choose °C or °F and click <strong>Save</strong>.</p>
+                <p>Start typing a city in the <strong>Location</strong> field (e.g. <code>Tel Aviv</code> or <code>New York</code>). Matching cities appear below the field with their region and country - click the one you mean.</p>
+                <p>Leave the field empty and WindoM asks the browser for your location instead.</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">4</div>
             <div className="step-body">
-              <p>The weather widget appears in the top-left of your new tab.</p>
+              <p>The weather widget appears in the top-left of your new tab. There is no Save button - the change applies as soon as you pick it.</p>
             </div>
           </div>
           <div className="callout">
-            <strong>New API key not working?</strong> OpenWeatherMap free keys can take up to 2 hours to activate after creation. If you get an error right after creating the key, wait a bit and try again.
+            <strong>Showing the wrong place?</strong> With the Location field empty, WindoM falls back to a rough lookup from your IP address when the browser will not give coordinates, which can be a long way out on a VPN or a mobile connection. Type a city by hand to pin it.
           </div>
           <div className="callout tip">
-            <strong>Free tier limits</strong> -
-            OpenWeatherMap's free plan allows 1,000 API calls per day. WindoM caches the weather for 10 minutes per new tab, so you'll never come close to that limit.
+            <strong>Refreshed every 30 minutes</strong> -
+            the last reading is cached, so the widget is already filled in when a new tab opens and updates once the fresh reading arrives.
           </div>
           <h2 id="links">
             Quick Links &amp; Dock Bar
