@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { STAGES, currentStage, formatClock, clockForProgress, type Stage } from '../lib/day';
 import { useHydrated } from './useHydrated';
+import { slotElementId } from '../lib/slots';
 
 /**
  * How far past a stage boundary the scroll must travel before the stage
@@ -8,6 +9,9 @@ import { useHydrated } from './useHydrated';
  * absorb trackpad jitter sitting on a threshold.
  */
 const STAGE_COMMIT_MARGIN = 0.04;
+
+/** The section whose scroll drives the day. */
+const DAY_SLOT_ID = slotElementId('day');
 
 /** Whether the visitor has asked the OS for less motion. */
 export function usePrefersReducedMotion(): boolean {
@@ -91,7 +95,7 @@ export function useDayCycle(enabled: boolean): DayCycle {
 
     const read = () => {
       frame = 0;
-      const stageEl = document.getElementById('day-stage');
+      const stageEl = document.getElementById(DAY_SLOT_ID);
       if (!stageEl) return;
 
       // Progress through the pinned stage: 0 at the top, 1 when its tall

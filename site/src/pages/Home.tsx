@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { Updates } from '../components/Updates';
-import { Stage } from '../components/Stage';
+import { CardChoreography, CardSlot, CardTarget } from '../components/CardChoreography';
+import { slotElementId } from '../lib/slots';
+import { ProductCard } from '../components/ProductCard';
 import { Hero } from '../components/Hero';
 import { Beat } from '../components/Beat';
 import { Wallpapers } from '../components/Wallpapers';
@@ -59,7 +61,7 @@ export function Home() {
    * drives focus mode.
    */
   useEffect(() => {
-    const stage = document.getElementById('day-stage');
+    const stage = document.getElementById(slotElementId('day'));
     if (!stage) return;
 
     // Fires when the stage covers the top of the viewport, which is exactly
@@ -75,9 +77,31 @@ export function Home() {
     );
     observer.observe(stage);
 
+    /**
+     * And once the card has left the day behind.
+     *
+     * The depth parallax is driven by the day section's timeline with a
+     * forward fill, so past that section it holds its last keyframe - which
+     * is every layer at zero opacity. That is correct while the stage is
+     * exiting and wrong once the card is a card again somewhere else, and it
+     * fails invisibly: the card simply arrives empty. This says when the day
+     * is over so the layers can be restored.
+     */
+    const panel = document.getElementById(slotElementId('panel'));
+    const afterDay = panel
+      ? new IntersectionObserver(
+          ([entry]) => {
+            document.body.classList.toggle('past-day-stage', entry?.isIntersecting === true);
+          },
+          { rootMargin: '0px 0px -40% 0px', threshold: 0 },
+        )
+      : null;
+    if (panel && afterDay) afterDay.observe(panel);
+
     return () => {
       observer.disconnect();
-      document.body.classList.remove('stage-owns-view');
+      afterDay?.disconnect();
+      document.body.classList.remove('stage-owns-view', 'past-day-stage');
     };
   }, []);
   const active = DAY[cycle.stage];
@@ -88,12 +112,22 @@ export function Home() {
       <Ambient />
       <MotionToggle paused={paused} onToggle={toggleMotion} />
 
-      <Hero cycle={cycle} animated={animated} />
+      {/**
+        * One card for the whole page.
+        *
+        * It rests in the hero's slot, travels to fill the window as the day
+        * stage arrives, and moves aside again for the panel section. Each of
+        * those is a slot; the card is rendered once, here.
+        */}
+      <CardChoreography
+        card={<ProductCard cycle={cycle} animated={animated} />}
+        order={['hero', 'day', 'panel']}
+        enabled={animated}
+      >
+        <Hero cycle={cycle} />
 
-      {/* ── The stage: a working new tab, pinned while the day passes ── */}
-      <section className="day-stage" id="day-stage">
-        <Stage cycle={cycle} animated={animated} />
-      </section>
+        {/* ── The stage: the card fills the window while the day passes ── */}
+        <CardSlot id="day" full className="day-stage" />
 
       {/* ── What the stage was ─────────────────────────────────────── */}
       <section className="section intro">
@@ -129,20 +163,28 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── Two beats, each one a real screenshot ──────────────────── */}
-      <Beat
-        side="right"
-        eyebrow="One panel"
-        title={
-          <>
+      {/**
+        * The card's third destination.
+        *
+        * It moves aside and shrinks, and the copy takes the space it leaves -
+        * the same tab, now being talked about rather than demonstrated. This
+        * section is the proof that the engine generalises: a slot and a
+        * keyframe block, with nothing in the choreography needing to know it
+        * exists.
+        */}
+      <CardSlot id="panel" className="panel-stage">
+        <CardTarget className="panel-card-target" />
+        <div className="panel-copy">
+          <span className="eyebrow reveal">One panel</span>
+          <h2 className="reveal">
             Today and <span className="gradient-text">tomorrow</span>, in the same place
-          </>
-        }
-        body="Tasks you add in a line, and the calendar you already keep, stacked in one sidebar. It opens from the tab you were going to open anyway."
-        image="/images/shot-sidebar.webp"
-        alt="The WindoM sidebar showing today's tasks above a list of upcoming calendar events"
-        caption="Tasks and Google Calendar, in the sidebar."
-      />
+          </h2>
+          <p className="lede reveal">
+            Tasks you add in a line, and the calendar you already keep, stacked in one
+            sidebar. It opens from the tab you were going to open anyway.
+          </p>
+        </div>
+      </CardSlot>
 
       <Beat
         side="left"
@@ -262,6 +304,7 @@ export function Home() {
           </div>
         </div>
       </section>
+      </CardChoreography>
     </Layout>
   );
 }
