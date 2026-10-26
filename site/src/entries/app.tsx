@@ -15,8 +15,11 @@ import '../styles/motion.css';
  * One entry for the whole site, replacing thirteen.
  *
  * Every route is registered twice - at its clean path and at the `.html` path
- * the Chrome Web Store has registered - so a visitor arriving on either lands
- * on the same page rather than on a redirect.
+ * someone else holds: the Chrome Web Store listing, the guide link compiled into
+ * the extension, and `/index.html` from the multi-page site this replaced. A
+ * visitor arriving on either lands on the same page rather than on a redirect.
+ * The rule is "every file the build emits has a route", and the way it breaks is
+ * one shape being derivable from the route table while another is not.
  *
  * `hydrateRoot` rather than `createRoot`: each route is prerendered to real
  * HTML, and rendering into a populated container would throw that away and
@@ -28,7 +31,15 @@ const router = createBrowserRouter([
     children: [
       ...ROUTES.flatMap((route) => {
         const entries = [{ path: route.path, element: route.element }];
-        if (route.legacyHtml) {
+        /* The home page is registered at `/index.html` too, even though it does
+           not carry `legacyHtml`. That flag means "write a second file", and the
+           root needs no second file: the shell the prerender fills *is*
+           `dist/index.html`. So the file shipped, the server served the whole
+           home page from it, and the router - having no match - fell through to
+           `*` and replaced it with "Page not found" a moment after hydration,
+           under the home page's own title. `/index.html` was a real URL on the
+           previous multi-page site, so inbound links to it exist. */
+        if (route.legacyHtml || route.path === '/') {
           entries.push({ path: legacyPathOf(route.path), element: route.element });
         }
         return entries;
