@@ -1,0 +1,9 @@
+# Responsible disclosure for windom.app and the WindoM Chrome extension.
+# Please report privately rather than opening a public issue, so a fix can
+# ship before the problem is described publicly.
+
+Contact: mailto:yehudabriskman@windom.app
+Expires: 2027-10-26T00:00:00.000Z
+Preferred-Languages: en, he
+Canonical: https://windom.app/.well-known/security.txt
+Policy: https://windom.app/contact.html
