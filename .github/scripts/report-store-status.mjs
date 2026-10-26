@@ -43,6 +43,12 @@ export function interpretItem(item, { expectedVersion } = {}) {
     notes.push('Upload still processing at the store; no verdict yet.');
   } else if (state === 'SUCCESS') {
     notes.push('Store accepted the package. It becomes public when review clears.');
+  } else if (state === 'NOT_FOUND') {
+    // Reported once no upload operation is in flight, which is the usual state
+    // some hours after a release. It describes the absence of an operation, not
+    // the absence of the item - crxVersion below is what says whether the
+    // package landed.
+    notes.push('No upload operation in flight; the draft below is what the store holds.');
   } else if (state) {
     notes.push(`Unrecognised uploadState: ${state}`);
   } else {
@@ -107,6 +113,24 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     // Never print the resource wholesale - it carries identifiers we do not need in a log.
     console.log(`uploadState: ${item.uploadState ?? '(none)'}`);
     if (item.crxVersion) console.log(`draft version: ${item.crxVersion}`);
+
+    // The draft alone cannot say whether a release is live. Printing both makes
+    // the one question anyone actually has - did it ship? - answerable from the
+    // log: equal means shipped, draft ahead means still waiting on review.
+    try {
+      const live = await fetch(`${API}/${id}?projection=PUBLISHED`, { headers });
+      const published = await live.json();
+      console.log(`published version: ${published.crxVersion ?? '(unknown)'}`);
+      if (published.crxVersion && item.crxVersion) {
+        console.log(
+          published.crxVersion === item.crxVersion
+            ? 'Draft and published agree: this version is live.'
+            : `Draft ${item.crxVersion} is ahead of published ${published.crxVersion} - awaiting review.`,
+        );
+      }
+    } catch {
+      console.log('published version: (could not be read)');
+    }
 
     const { errors, notes } = interpretItem(item, { expectedVersion });
     for (const note of notes) console.log(note);
