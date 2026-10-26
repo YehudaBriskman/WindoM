@@ -294,7 +294,9 @@ p {
 
 .site-footer {
   border-top: 1px solid var(--border);
-  padding: 40px 0;
+  /* The extra bottom padding clears the home indicator on a phone without a
+     physical button, where the last row of links otherwise sits under it. */
+  padding: 40px 0 calc(40px + env(safe-area-inset-bottom));
   text-align: center;
   color: var(--muted);
   font-size: 0.88rem;
@@ -330,4 +332,189 @@ p {
 .updated {
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+/* ── Site navigation ────────────────────────────────────────────────────
+   On every page. Sticky, because the point of it is to be reachable from
+   halfway down a long document rather than only at the top. */
+
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border-bottom: 1px solid var(--border);
+  /* Clears the notch and the rounded corners of a phone in landscape. Resolves
+     to zero everywhere else, and to zero everywhere at all without
+     viewport-fit=cover on the document. */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.site-nav-inner {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.site-nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.site-nav-mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  background: var(--accent-grad);
+}
+
+.site-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.nav-link {
+  padding: 7px 12px;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  text-decoration: none;
+  font-size: 0.92rem;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.nav-link:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.nav-link.is-current {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.site-nav-end {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.site-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.site-nav-icon:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* The disclosure button exists only where the links are collapsed. */
+.nav-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.nav-toggle-bars,
+.nav-toggle-bars::before,
+.nav-toggle-bars::after {
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: currentColor;
+  transition: transform var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+}
+
+.nav-toggle-bars::before,
+.nav-toggle-bars::after {
+  content: '';
+  position: absolute;
+}
+
+.nav-toggle-bars::before {
+  transform: translateY(-5px);
+}
+
+.nav-toggle-bars::after {
+  transform: translateY(5px);
+}
+
+.nav-toggle-bars.is-open {
+  background: transparent;
+}
+
+.nav-toggle-bars.is-open::before {
+  transform: rotate(45deg);
+}
+
+.nav-toggle-bars.is-open::after {
+  transform: rotate(-45deg);
+}
+
+@media (max-width: 760px) {
+  .site-nav-inner {
+    gap: 12px;
+    padding: 8px 16px;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    position: relative;
+  }
+
+  /* Collapsed: taken out of the layout and out of the accessibility tree, so a
+     screen reader is not offered links that are not reachable. */
+  .site-nav-links {
+    display: none;
+  }
+
+  .site-nav-links.is-open {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    margin: 0;
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .site-nav-links.is-open .nav-link {
+    padding: 11px 12px;
+  }
 }

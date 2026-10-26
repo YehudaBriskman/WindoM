@@ -1,6 +1,7 @@
 import { Children, cloneElement, isValidElement, type ReactNode, type ReactElement } from 'react';
-import { SITE, STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
+import { STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
 import { docsGroups, docsNeighbours, headingId, type DocsPage } from '../lib/docs';
+import { SiteNav } from './SiteNav';
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -35,11 +36,7 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
       </a>
       <div className="ambient" aria-hidden="true" />
 
-      <header className="docs-top">
-        <a className="back-link" href="/">
-          <span aria-hidden="true">←</span> {SITE.name}
-        </a>
-      </header>
+      <SiteNav current={href} />
 
       <div className="docs-shell">
         <nav className="docs-nav" aria-label="Documentation">
