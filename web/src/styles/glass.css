@@ -406,7 +406,6 @@
 .integration-card,
 .auth-user-card,
 .visibility-table {
-  position: relative;
   /* Reads as a recess in the pane rather than another sheet on top of it: a
      touch darker than the glass it sits in, with a bright upper rim. Tinting
      these lighter than their parent is what made the first version look like

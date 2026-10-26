@@ -218,7 +218,9 @@ a {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  /* The pane is clear now, so a 15% thumb floating over a photograph read as
+     a stray light line rather than a control. */
+  background: rgba(255, 255, 255, 0.3);
   border-radius: var(--r-xs);
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -2178,7 +2180,11 @@ input[type="file"]::file-selector-button:hover {
   flex: 1;
 }
 
+/* The scrolling body sat flush against the panel's right edge, so its
+   scrollbar ran straight into a 20px rounded corner and was clipped at both
+   ends. Inset it far enough to clear the curve. */
 .settings-main {
+  padding-right: var(--space-2);
   flex: 1;
   display: flex;
   flex-direction: column;
