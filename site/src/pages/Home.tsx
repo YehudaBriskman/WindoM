@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { Updates } from '../components/Updates';
-import { CardChoreography, CardSlot, CardTarget } from '../components/CardChoreography';
-import { slotElementId } from '../lib/slots';
-import { ProductCard } from '../components/ProductCard';
+import { Choreography, Scene, SceneTarget } from '../components/Choreography';
+import { sceneElementId } from '../lib/scenes';
+import { ProductCard, CARD } from '../components/ProductCard';
 import { Hero } from '../components/Hero';
 import { Beat } from '../components/Beat';
 import { Wallpapers } from '../components/Wallpapers';
@@ -61,7 +61,7 @@ export function Home() {
    * drives focus mode.
    */
   useEffect(() => {
-    const stage = document.getElementById(slotElementId('day'));
+    const stage = document.getElementById(sceneElementId('day'));
     if (!stage) return;
 
     // Fires when the stage covers the top of the viewport, which is exactly
@@ -87,7 +87,7 @@ export function Home() {
      * fails invisibly: the card simply arrives empty. This says when the day
      * is over so the layers can be restored.
      */
-    const panel = document.getElementById(slotElementId('panel'));
+    const panel = document.getElementById(sceneElementId('panel'));
     const afterDay = panel
       ? new IntersectionObserver(
           ([entry]) => {
@@ -119,15 +119,15 @@ export function Home() {
         * stage arrives, and moves aside again for the panel section. Each of
         * those is a slot; the card is rendered once, here.
         */}
-      <CardChoreography
-        card={<ProductCard cycle={cycle} animated={animated} />}
-        order={['hero', 'day', 'panel']}
+      <Choreography
+        actor={<ProductCard cycle={cycle} animated={animated} />}
+        design={CARD}
         enabled={animated}
       >
         <Hero cycle={cycle} />
 
         {/* ── The stage: the card fills the window while the day passes ── */}
-        <CardSlot id="day" full className="day-stage" />
+        <Scene id="day" className="day-stage" />
 
       {/* ── What the stage was ─────────────────────────────────────── */}
       <section className="section intro">
@@ -172,8 +172,8 @@ export function Home() {
         * keyframe block, with nothing in the choreography needing to know it
         * exists.
         */}
-      <CardSlot id="panel" className="panel-stage">
-        <CardTarget className="panel-card-target" />
+      <Scene id="panel" className="panel-stage">
+        <SceneTarget className="panel-scene-target" />
         <div className="panel-copy">
           <span className="eyebrow reveal">One panel</span>
           <h2 className="reveal">
@@ -184,7 +184,7 @@ export function Home() {
             sidebar. It opens from the tab you were going to open anyway.
           </p>
         </div>
-      </CardSlot>
+      </Scene>
 
       <Beat
         side="left"
@@ -304,7 +304,7 @@ export function Home() {
           </div>
         </div>
       </section>
-      </CardChoreography>
+      </Choreography>
     </Layout>
   );
 }

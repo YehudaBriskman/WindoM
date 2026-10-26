@@ -1,40 +1,37 @@
-/* ── The travelling card ────────────────────────────────────────────────
-   One card, moved between the positions the page asks for.
+/* ── The choreographed actor ────────────────────────────────────────────
+   What is in this file is only what the engine does *not* generate: the
+   resting state, the surfaces, and the two suppressed states.
 
-   The division of labour: JavaScript measures each slot and publishes its
-   rect as `--slot-<id>-{x,y,w}`; the keyframes below use those properties as
-   their endpoints, and scroll-driven animation does the per-frame work. No
-   scroll listener is involved, and a resize re-targets a running animation
-   by changing a property rather than by rebuilding anything.
+   Every keyframe, every timeline wiring and every position is written at
+   runtime by `useChoreographyEngine` from the scene table and the measured
+   layout. There is nothing here to keep in step with how many scenes the
+   page has, which is the point - the previous version hand-wrote one
+   keyframe block per leg and could only ever describe the legs someone had
+   remembered to write. */
 
-   Each leg is driven by the timeline of the slot it is arriving at, reached
-   by name through the `timeline-scope` on `.card-choreography`. The card is
-   `position: fixed` and a descendant of none of those sections, which is
-   exactly the case `timeline-scope` exists for. */
-
-.card-choreography {
+.choreography {
   position: relative;
 }
 
-/* A slot is a measuring box and a scroll length. It draws nothing. */
-.card-slot {
+/* A scene is a measuring box and a scroll length. It draws nothing itself. */
+.scene {
   position: relative;
 }
 
-.card-slot.is-full {
-  /* The card fills the window here, so the slot's own width is irrelevant -
-     only its height, which is the distance the stage is held for. */
+.scene.is-full {
+  /* The actor fills the window here, so the scene's own width is irrelevant -
+     only its height, which is how long it is held. */
   width: 100%;
 }
 
 /**
- * The card before anything has been measured.
+ * The actor at rest.
  *
- * Also the permanent state without JavaScript, and when motion is suppressed.
- * It fills the slot it is rendered in, as ordinary flow content: a correct,
- * static card that simply does not travel. Nothing about this state is a
- * fallback in the apologetic sense - it is the page with one fewer effect,
- * and it needs no measurement to be right.
+ * The permanent state without JavaScript, and when motion is suppressed. It
+ * fills the scene it is rendered in, as ordinary flow content: a correct,
+ * static card that simply does not travel. Nothing about this is a fallback
+ * in the apologetic sense - it is the page with one fewer effect, and it
+ * needs no measurement to be right.
  */
 .product-card {
   position: absolute;
@@ -72,13 +69,14 @@
 }
 
 /**
- * Once measured, the card leaves the flow and becomes the thing that moves.
+ * Travelling, it leaves the flow and becomes the thing that moves.
  *
- * Its intrinsic size is the design size the Stage is drawn at; every slot is
- * reached by scaling that box down, which is the same trick the hero preview
- * already used and means the card has exactly one layout at every size.
+ * Its intrinsic size is the design size the tab is drawn at; every scene is
+ * reached by scaling that one box, which means the actor has exactly one
+ * layout no matter how large it is being shown - it grows, it never
+ * relayouts.
  */
-.card-choreography[data-travelling='true'][data-measured='true'] .product-card {
+.choreography[data-travelling='true'] .product-card {
   position: fixed;
   inset: auto;
   top: 0;
@@ -88,58 +86,11 @@
   transform-origin: top left;
   /* Behind the site chrome, above the page. */
   z-index: 3;
-  will-change: translate, scale;
+  will-change: translate, scale, rotate;
 
-  translate: var(--slot-hero-x) var(--slot-hero-y);
-  scale: calc(var(--slot-hero-w) / var(--card-w));
 }
 
-@supports (animation-timeline: view()) {
-  .card-choreography[data-travelling='true'][data-measured='true'] .product-card {
-    /**
-     * One animation per leg, in visiting order.
-     *
-     * The first carries `both` so that before its range the card holds the
-     * hero slot. Every later leg carries `forwards` only: a backwards fill
-     * would apply its own starting value - the slot before it - from the top
-     * of the page, and because later declarations win it would override the
-     * leg actually running. With `forwards` a leg contributes nothing until
-     * its range begins, which is what makes the sequence compose.
-     */
-    animation:
-      card-to-day linear both,
-      card-to-panel linear forwards;
-    animation-timeline: --slot-day, --slot-panel;
-    /* `entry` on a section taller than the viewport runs from its top
-       touching the viewport bottom to its top reaching the viewport top -
-       one screen of scroll, ending exactly as the section takes over. */
-    animation-range:
-      entry 0% entry 100%,
-      entry 0% entry 100%;
-  }
 
-  @keyframes card-to-day {
-    from {
-      translate: var(--slot-hero-x) var(--slot-hero-y);
-      scale: calc(var(--slot-hero-w) / var(--card-w));
-    }
-    to {
-      translate: var(--slot-day-x) var(--slot-day-y);
-      scale: calc(var(--slot-day-w) / var(--card-w));
-    }
-  }
-
-  @keyframes card-to-panel {
-    from {
-      translate: var(--slot-day-x) var(--slot-day-y);
-      scale: calc(var(--slot-day-w) / var(--card-w));
-    }
-    to {
-      translate: var(--slot-panel-x) var(--slot-panel-y);
-      scale: calc(var(--slot-panel-w) / var(--card-w));
-    }
-  }
-}
 
 /**
  * The card loses its edges as it fills the window.
@@ -149,33 +100,14 @@
  * as a card; losing the corner radius at the moment it arrives is what makes
  * it read as having become the screen.
  */
-.card-choreography[data-travelling='true'][data-measured='true'] .product-card-surface {
+.choreography[data-travelling='true'] .product-card-surface {
   border-radius: var(--r-lg);
   border: 1px solid var(--border-strong);
   overflow: hidden;
   height: 100%;
 }
 
-@supports (animation-timeline: view()) {
-  .card-choreography[data-travelling='true'][data-measured='true'] .product-card-surface {
-    animation: card-edges linear both;
-    animation-timeline: --slot-day;
-    /* Finishes a little before the travel does, so the card is already whole
-       by the time it lands rather than still resolving. */
-    animation-range: entry 55% entry 100%;
-  }
 
-  @keyframes card-edges {
-    from {
-      border-radius: var(--r-lg);
-      border-color: var(--border-strong);
-    }
-    to {
-      border-radius: 0;
-      border-color: transparent;
-    }
-  }
-}
 
 /* ── Suppressed ─────────────────────────────────────────────────────────
    Both of the site's motion switches stop the travel. The card stays in the
@@ -237,23 +169,11 @@ body.motion-paused .product-card-surface {
   opacity: 0;
 }
 
-@supports (animation-timeline: view()) {
-  .card-choreography[data-travelling='true'] .product-card .stage-story,
-  .card-choreography[data-travelling='true'] .product-card .scroll-cue {
-    animation: card-story-in linear both;
-    animation-timeline: --slot-day;
-    animation-range: entry 70% entry 100%;
-  }
 
-  @keyframes card-story-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-}
 
 /* Without the travel there is no arrival to wait for. */
-.card-choreography[data-travelling='false'] .product-card .stage-story,
-.card-choreography[data-travelling='false'] .product-card .scroll-cue {
+.choreography[data-travelling='false'] .product-card .stage-story,
+.choreography[data-travelling='false'] .product-card .scroll-cue {
   opacity: 1;
 }
 
@@ -284,7 +204,7 @@ body.stage-owns-view .product-card {
 
 /* The box the card lands in for the panel section: the left half, set down
    from the top so the copy beside it reads at the same height. */
-.panel-card-target {
+.panel-scene-target {
   position: absolute;
   left: var(--gutter);
   top: 12vh;
@@ -321,33 +241,12 @@ body.past-day-stage .product-card .scroll-cue {
    discussed rather than a window being used, so the corners and the rim
    return on the same timeline that moves it. */
 
-@supports (animation-timeline: view()) {
-  .card-choreography[data-travelling='true'][data-measured='true'] .product-card-surface {
-    animation:
-      card-edges linear both,
-      card-edges-back linear forwards;
-    animation-timeline: --slot-day, --slot-panel;
-    animation-range:
-      entry 55% entry 100%,
-      entry 20% entry 70%;
-  }
 
-  @keyframes card-edges-back {
-    from {
-      border-radius: 0;
-      border-color: transparent;
-    }
-    to {
-      border-radius: var(--r-lg);
-      border-color: var(--border-strong);
-    }
-  }
-}
 
 @media (max-width: 900px) {
   /* The card takes the full column and the copy sits beneath it. Half a
      phone's width is not a product shot, it is a thumbnail. */
-  .panel-card-target {
+  .panel-scene-target {
     left: var(--gutter);
     right: var(--gutter);
     width: auto;
@@ -360,5 +259,71 @@ body.past-day-stage .product-card .scroll-cue {
 
   .panel-stage {
     min-height: 130vh;
+  }
+}
+
+/* ── The actor's contents ───────────────────────────────────────────────
+   Stacked, and cross-faded by the engine on the scene timelines. The first
+   is opaque so the page is correct before any sheet has been written. */
+
+.product-card-content {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  /* Inert as a layer. The contents are stacked, so whichever is on top would
+     otherwise swallow every hit meant for the one below it even at zero
+     opacity - the screenshot was catching the pointer that belonged to the
+     live tab's panes. What is actually usable takes the pointer back below. */
+  pointer-events: none;
+}
+
+.product-card-content:first-child {
+  opacity: 1;
+}
+
+.card-shot {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Without the engine there is nothing to cross-fade to, so the opening
+   content is the only one shown. */
+.choreography[data-travelling='false'] .product-card-content {
+  opacity: 0;
+}
+
+.choreography[data-travelling='false'] .product-card-content:first-child {
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  /* Square to the viewer. The lean is a pointer affordance and there is no
+     pointer here, and its rotated bounding box was poking a dozen pixels past
+     the edge of the window - a card that overflows to express depth nobody
+     can interact with is a poor trade. */
+  .product-card {
+    --rest-x: 0deg;
+    --rest-y: 0deg;
+  }
+}
+
+/* A scene's scroll length, declared in the scene table. */
+.scene {
+  min-height: var(--scene-length, auto);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* No travel means nothing to travel through. Seven screens of scrolling
+     past a card that is not moving is not a reduced experience, it is a
+     tedious one. */
+  .scene {
+    min-height: auto;
+  }
+
+  .scene.is-full {
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 }

@@ -23,9 +23,8 @@
    measured. */
 .day-stage {
   position: relative;
-  height: 700vh;
-  /* The timeline name is published by the slot itself, as `--slot-day`, so
-     that every section claiming the card names its timeline the same way. */
+  /* The length and the timeline name are the scene table's, not this file's.
+     Two descriptions of how long the day is would be one too many. */
   view-timeline-axis: block;
 }
 
@@ -472,39 +471,16 @@
    constraint for a page whose entire audience installs Chrome extensions. */
 
 @supports (animation-timeline: view()) {
-  .is-animated .stage-layer-back,
-  .is-animated .stage-layer-mid,
-  .is-animated .stage-layer-front {
-    /* Driven by the stage, not the document.
-       `scroll(root block)` with a range of `0% 60%` measured the whole page, so
-       the parallax finished 60% of the way down a document whose length has
-       nothing to do with the story - it was over long before the day was, and
-       it moved at a rate that changed whenever content was added below.
+  /* Only the keyframes live here; they are design. Which timeline drives
+     them, over what range, is declared in the scene table and written by the
+     engine - `contain 0% contain 100%` on the day scene, which spans exactly
+     the scroll that scene occupies.
 
-       `contain` on a timeline taller than the viewport spans exactly the
-       element's own scroll travel: from its top meeting the top of the
-       viewport to its bottom meeting the bottom. That is the 600vh the stage
-       actually occupies, so the parallax now begins and ends with it and stays
-       correct if the height above changes. */
-    animation-timeline: --slot-day;
-    animation-range: contain 0% contain 100%;
-    animation-fill-mode: both;
-    /* Deliberately linear. A scroll-driven animation should track the input it
-       is bound to; easing it decouples the motion from the wheel and reads as
-       lag rather than polish. The rushed feeling was the range, fixed above. */
-    animation-timing-function: linear;
-  }
-
-  /* Each layer recedes at its own rate: that difference is the depth. */
-  .is-animated .stage-layer-back {
-    animation-name: layer-back;
-  }
-  .is-animated .stage-layer-mid {
-    animation-name: layer-mid;
-  }
-  .is-animated .stage-layer-front {
-    animation-name: layer-front;
-  }
+     The timeline's name used to be written in this file, and it drifted the
+     moment the scenes were renamed: the animation stopped resolving, its
+     `both` fill applied the end keyframe, and every layer went to zero
+     opacity. A blank stage, with no error. A timeline name is the engine's to
+     know, not this file's. */
 
   @keyframes layer-back {
     from {

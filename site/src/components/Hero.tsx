@@ -1,4 +1,4 @@
-import { CardSlot } from './CardChoreography';
+import { Scene } from './Choreography';
 import { useTilt } from '../hooks/useTilt';
 import { STORE_URL } from '../lib/site';
 import { DAY } from '../lib/day';
@@ -93,7 +93,7 @@ export function Hero({ cycle }: HeroProps) {
           {/* The fact cards still lean as a group; the product itself is no
               longer inside this cluster. It is one card owned by the page,
               and this slot is the box it occupies while it is here. */}
-          <CardSlot id="hero" className="hero-preview-slot" />
+          <Scene id="hero" className="hero-preview-slot" />
 
           <div className="hero-cluster" ref={tiltRef}>
             {/* A row of three, sitting below the product and lapping over its
