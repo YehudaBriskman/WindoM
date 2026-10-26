@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiGet } from '../lib/api';
 import { useSettings } from '../contexts/SettingsContext';
+import { useGmailAvailable } from './useServerFeatures';
 import { GMAIL_POLL_INTERVAL_MS } from '../lib/timing-constants';
 
 export interface GmailMessage {
@@ -18,7 +19,21 @@ export interface GmailSummary {
 
 export function useGmail() {
   const { settings } = useSettings();
-  const gmailConnected = settings.integrations.gmail.connected;
+  const gmailAvailable = useGmailAvailable();
+
+  /**
+   * Connected *and* still offered.
+   *
+   * `connected` is a saved setting, so for anyone who linked Gmail before the
+   * widget was withdrawn it stays true indefinitely - and polling on the
+   * strength of it alone meant a request every interval to an endpoint the
+   * server answers 401 to by design. Before the session fix in #362 those 401s
+   * were among the ones exhausting the refresh budget and logging people out.
+   *
+   * The server is the authority on what it will actually serve, so the saved
+   * flag only decides whether the user *wants* the widget.
+   */
+  const gmailConnected = settings.integrations.gmail.connected && gmailAvailable;
   const [summary, setSummary] = useState<GmailSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
