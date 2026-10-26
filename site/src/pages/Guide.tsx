@@ -44,6 +44,10 @@ export function Guide() {
               <div className="feature-card-desc">Now-playing in the top dock. Needs an account + a free Spotify Developer app.</div>
             </div>
             <div className="feature-card">
+              <div className="feature-card-title">GitHub</div>
+              <div className="feature-card-desc">Notifications, review requests and assigned issues. Needs an account + a GitHub token.</div>
+            </div>
+            <div className="feature-card">
               <div className="feature-card-title">Google Calendar</div>
               <div className="feature-card-desc">Upcoming events in the right sidebar. Needs an account + Google authorization.</div>
             </div>
@@ -207,6 +211,39 @@ export function Guide() {
           <div className="callout tip">
             <strong>Look-ahead window</strong> -
             by default events for the next 7 days are shown. You can change this to 14 or 30 days in Settings → <strong>Calendar</strong>.
+          </div>
+          <h2 id="github">
+            Connect GitHub
+          </h2>
+          <p>The GitHub widget puts three numbers in the right sidebar: unread notifications, pull requests waiting on your review, and open issues assigned to you. Each row links straight to the matching page on GitHub. It needs a WindoM account and a personal access token you create yourself.
+          </p>
+          <div className="step">
+            <div className="step-num">1</div>
+            <div className="step-body">
+              <p>Make sure you have a WindoM account and are signed in (Settings → Account tab).</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">2</div>
+            <div className="step-body">
+                <p>Go to <a href="https://github.com/settings/tokens/new?scopes=notifications,repo&description=WindoM" target="_blank" rel="noreferrer">github.com/settings/tokens/new</a>. The link preselects the two scopes WindoM needs - <code>notifications</code> and <code>repo</code> - so check they are ticked, set an expiry you are happy with, and click <strong>Generate token</strong>.</p>
+                <p>Copy the token straight away. It starts with <code>ghp_</code> and GitHub shows it only once.</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">3</div>
+            <div className="step-body">
+              <p>Open Settings → <strong>Apps hub</strong> → click the <strong>GitHub</strong> card. Paste the token into <strong>Personal Access Token</strong> and click <strong>Connect</strong>.</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">4</div>
+            <div className="step-body">
+              <p>The counts appear in the right sidebar and refresh on their own. <strong>Show GitHub in sidebar</strong> on the same card hides the widget without disconnecting.</p>
+            </div>
+          </div>
+          <div className="callout warning">
+            <strong>Why the repo scope?</strong> The review-request and assigned-issue counts come from GitHub's search API, which only includes private repositories for a token that carries <code>repo</code>. On a classic token that scope also grants write access, which WindoM never uses - so treat the token like a password, and revoke it from <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer">your token settings</a> if you stop using the widget.
           </div>
           <h2 id="finance">
             Finance Dashboard

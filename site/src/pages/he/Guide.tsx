@@ -44,6 +44,10 @@ export function Guide() {
               <div className="feature-card-desc">השיר הנוכחי בדוק העליון. דורש חשבון + אפליקציית Spotify Developer חינמית.</div>
             </div>
             <div className="feature-card">
+              <div className="feature-card-title">GitHub</div>
+              <div className="feature-card-desc">התראות, בקשות לסקירה ו-issues שהוקצו לך. דורש חשבון + אסימון GitHub.</div>
+            </div>
+            <div className="feature-card">
               <div className="feature-card-title">Google Calendar</div>
               <div className="feature-card-desc">אירועים קרובים בסרגל הצד הימני. דורש חשבון + אישור Google.</div>
             </div>
@@ -207,6 +211,39 @@ export function Guide() {
           <div className="callout tip">
             <strong>חלון מראש</strong> -
             כברירת מחדל מוצגים אירועים ל-7 הימים הבאים. ניתן לשנות זאת ל-14 או 30 יום בהגדרות → <strong>לוח שנה</strong>.
+          </div>
+          <h2 id="github">
+            חיבור GitHub
+          </h2>
+          <p>ווידג'ט GitHub מציב שלושה מספרים בסרגל הצד הימני: התראות שלא נקראו, בקשות משיכה שממתינות לסקירה שלך, ו-issues פתוחים שהוקצו לך. כל שורה מקשרת ישירות לעמוד המתאים ב-GitHub. נדרשים חשבון WindoM ואסימון גישה אישי שאתה יוצר בעצמך.
+          </p>
+          <div className="step">
+            <div className="step-num">1</div>
+            <div className="step-body">
+              <p>ודא שיש לך חשבון WindoM ואתה מחובר (הגדרות → לשונית חשבון).</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">2</div>
+            <div className="step-body">
+                <p>עבור אל <a href="https://github.com/settings/tokens/new?scopes=notifications,repo&description=WindoM" target="_blank" rel="noreferrer">github.com/settings/tokens/new</a>. הקישור מסמן מראש את שתי ההרשאות ש-WindoM צריך - <code>notifications</code> ו-<code>repo</code> - אז ודא שהן מסומנות, בחר תוקף שנוח לך, ולחץ על <strong>Generate token</strong>.</p>
+                <p>העתק את האסימון מיד. הוא מתחיל ב-<code>ghp_</code> ו-GitHub מציג אותו פעם אחת בלבד.</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">3</div>
+            <div className="step-body">
+              <p>פתח הגדרות → <strong>מרכז אפליקציות</strong> → לחץ על כרטיס <strong>GitHub</strong>. הדבק את האסימון בשדה <strong>Personal Access Token</strong> ולחץ על <strong>Connect</strong>.</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">4</div>
+            <div className="step-body">
+              <p>המספרים מופיעים בסרגל הצד הימני ומתרעננים מעצמם. המתג <strong>Show GitHub in sidebar</strong> באותו כרטיס מסתיר את הווידג'ט בלי לנתק את החיבור.</p>
+            </div>
+          </div>
+          <div className="callout warning">
+            <strong>למה צריך את ההרשאה repo?</strong> ספירת בקשות הסקירה וה-issues שהוקצו לך מגיעה מממשק החיפוש של GitHub, שכולל מאגרים פרטיים רק עבור אסימון שנושא <code>repo</code>. ב-classic token ההרשאה הזו מעניקה גם גישת כתיבה, ש-WindoM לעולם אינו עושה בה שימוש - לכן כדאי להתייחס לאסימון כמו לסיסמה, ולבטל אותו דרך <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer">הגדרות האסימונים שלך</a> אם הפסקת להשתמש בווידג'ט.
           </div>
           <h2 id="finance">
             לוח מחוונים פיננסי

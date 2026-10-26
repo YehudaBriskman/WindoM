@@ -94,6 +94,29 @@ export function Privacy() {
             Your Spotify OAuth token is stored encrypted on our servers and is used only to fetch your currently-playing track (artist, title, album art, playback state). We do not access your library, playlists, listening history, or follower data.
             Disconnecting Spotify immediately deletes the stored token.
           </p>
+          <h2>GitHub integration (optional)</h2>
+          <p>
+            The GitHub widget shows three counts in the sidebar: unread notifications, open pull requests waiting on
+            your review, and open issues assigned to you. Connecting it means creating a GitHub <strong>classic
+            personal access token</strong> with the <code>notifications</code> and <code>repo</code> scopes and
+            pasting it into <strong>Settings → Apps → GitHub</strong>. It requires a WindoM account.
+          </p>
+          <p>
+            That token is sent to our server over HTTPS and stored <strong>encrypted at rest</strong> using
+            AES-256-GCM, alongside your GitHub username. Our server - not your browser - calls{' '}
+            <code>api.github.com</code> with it, and returns only those three numbers and the username to the
+            extension. Nothing about the notifications, pull requests or issues themselves is stored: no titles, no
+            repository names, no contents. The counts are held in memory on the server for one minute to stay inside
+            GitHub's rate limits, and are never written to disk.
+          </p>
+          <p>
+            The <code>repo</code> scope is broad - on a classic token it covers read and write access to the
+            repositories you can reach. WindoM only ever issues the three read requests described above, but the
+            token itself carries everything GitHub granted it, so treat it as a credential. Disconnecting from{' '}
+            <strong>Settings → Apps</strong> deletes it from our database immediately, and you can revoke it at any
+            time from your{' '}
+            <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer">GitHub token settings</a>.
+          </p>
           <h2>Browser permissions</h2>
           <p>WindoM requests the following Chrome permissions and uses them as described:</p>
           <table>
@@ -121,7 +144,10 @@ export function Privacy() {
           </table>
           <h2>Third-party APIs called directly by the extension</h2>
           <p>
-            The following services are contacted directly from your browser. WindoM's servers are not involved in these requests, and we do not share personal data with these services.
+            The following services are contacted when a feature that needs them is switched on. Every one except
+            GitHub is called directly from your browser, with WindoM's servers not involved; GitHub is called by our
+            server, because that is where the access token is held. Nothing is sent to any of them beyond what its
+            row below lists.
           </p>
           <table>
             <thead>
@@ -169,6 +195,11 @@ export function Privacy() {
                 <td>Fetch real-time cryptocurrency prices</td>
               </tr>
               <tr>
+                <td><strong>GitHub</strong> (<code>api.github.com</code>)</td>
+                <td>Your personal access token - sent by our server, not by your browser</td>
+                <td>Count unread notifications, review requests and assigned issues for the GitHub widget. See the GitHub section above for where the token is stored.</td>
+              </tr>
+              <tr>
                 <td><strong>Google Favicons</strong> (<code>google.com/s2/favicons</code>)</td>
                 <td>Domain name</td>
                 <td>Fetch favicon icons for quick links</td>
@@ -199,7 +230,7 @@ export function Privacy() {
           <h2>Security</h2>
           <p>
             All communication between the extension and our servers uses HTTPS.
-            OAuth tokens (Google, Spotify) are encrypted at rest using AES-256-GCM with a server-side key.
+            Service credentials - Google and Spotify OAuth tokens, and the GitHub personal access token - are encrypted at rest using AES-256-GCM with a server-side key.
             Passwords are hashed with bcrypt (cost factor 12).
             Authentication uses short-lived JWT access tokens (15-minute TTL) and rotating refresh tokens stored as <code>HttpOnly; Secure; SameSite=None</code> cookies.
             Refresh token reuse is detected and triggers automatic session revocation.
