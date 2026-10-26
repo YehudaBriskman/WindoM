@@ -1,17 +1,24 @@
 /* ── Hero ───────────────────────────────────────────────────────────────
-   Copy on the left, the product bleeding off the right edge, lit from behind
-   by the hour it is showing. */
+   Copy on the left, the product beside it, lit from behind by the hour it is
+   showing.
+
+   The preview used to run deliberately off the right edge. It was a fixed
+   892.8px box in a 541.8px track, so the overhang depended entirely on the
+   viewport: 337px off-screen at 1101px, 167px at 1440px, exactly flush at
+   1774px, and above that it inverted and left dead space beside the card. A
+   bleed that only works at one window size is not a bleed, so the card is now
+   sized from the space it has and is whole at every width. */
 
 .hero {
   position: relative;
-  min-height: calc(100vh - 57px);
-  min-height: calc(100dvh - 57px);
+  min-height: calc(100vh - var(--nav-h));
+  min-height: calc(100dvh - var(--nav-h));
   display: flex;
   align-items: center;
-  padding: 48px 0 96px;
-  /* The preview is wider than the viewport by design; this crops it rather
-     than letting it scroll the page sideways. */
-  overflow: hidden;
+  padding: var(--s-7) 0 var(--s-8);
+  /* Still clipped, but now only for the glow behind the card - nothing in the
+     content is expected to leave the box. */
+  overflow: clip;
 }
 
 /* ── The light source ───────────────────────────────────────────────────
@@ -22,9 +29,8 @@
   position: absolute;
   top: 50%;
   right: -10%;
-  width: 70vw;
-  height: 70vw;
-  max-height: 900px;
+  width: min(70vw, 56rem);
+  height: min(70vw, 56rem);
   transform: translateY(-50%);
   border-radius: 50%;
   filter: blur(90px);
@@ -37,12 +43,15 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: var(--wrap);
+  max-width: var(--wrap-wide);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--gutter);
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  gap: 40px;
+  /* Both tracks are proportional and both are allowed to shrink to nothing,
+     so the preview can never demand more width than the row has. The copy
+     keeps the larger share because it is the thing being read. */
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
+  gap: clamp(var(--s-6), 4vw, var(--s-8));
   align-items: center;
 }
 
@@ -55,9 +64,13 @@
 }
 
 .hero-copy h1 {
-  margin-bottom: 22px;
-  font-size: clamp(2.8rem, 5.6vw, 5.2rem);
-  line-height: 0.95;
+  margin-bottom: var(--s-5);
+  /* Keeps growing with the window instead of stopping at 5.2rem around
+     1486px, which is what left the headline marooned in the middle of a wide
+     display. The ceiling is high enough to fill a 2560px screen and low
+     enough that the two lines still fit the column. */
+  font-size: clamp(2.8rem, 6.2vw, 7.6rem);
+  line-height: 0.92;
   display: grid;
 }
 
@@ -75,9 +88,12 @@
 }
 
 .hero-copy .lede {
-  margin-bottom: 34px;
-  max-width: 44ch;
-  font-size: 1.18rem;
+  margin-bottom: var(--s-6);
+  /* Widens with the headline rather than staying at a fixed 44ch, so the copy
+     block reads as one column instead of a big title over a narrow paragraph.
+     Still capped by measure, which is what keeps it readable. */
+  max-width: min(52ch, 100%);
+  font-size: clamp(1.08rem, 0.95rem + 0.5vw, 1.38rem);
 }
 
 /* ── Specification strip ────────────────────────────────────────────────
@@ -88,12 +104,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px 22px;
+  gap: var(--s-2) var(--s-5);
   list-style: none;
-  margin: 38px 0 0;
-  padding: 14px 20px;
+  margin: var(--s-6) 0 0;
+  padding: var(--s-3) var(--s-4);
   position: relative;
-  font-size: 0.85rem;
+  font-size: clamp(0.82rem, 0.78rem + 0.15vw, 0.95rem);
   color: var(--muted-strong);
   width: fit-content;
 }
@@ -104,8 +120,8 @@
 .hero-spec::after {
   content: '';
   position: absolute;
-  width: 14px;
-  height: 14px;
+  width: var(--s-3);
+  height: var(--s-3);
   border: 1px solid var(--border-strong);
 }
 
@@ -126,7 +142,7 @@
 .hero-spec li {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--s-2);
   white-space: nowrap;
 }
 
@@ -141,46 +157,60 @@
 
 .hero-stage {
   position: relative;
-  justify-self: start;
-  /* The perspective lives on the parent so the child rotates within a scene
-     rather than carrying its own vanishing point. */
-  perspective: 1400px;
+  /* The perspective lives here so the cluster rotates within a scene rather
+     than carrying its own vanishing point. */
+  perspective: 90rem;
   perspective-origin: 50% 50%;
+}
+
+/**
+ * The cluster: the preview and the fact cards as one object.
+ *
+ * They used to be unrelated - the preview leaned toward the pointer while the
+ * cards sat flat beside it, so the two never looked like parts of the same
+ * thing. Rotating the group instead means the cards lean with the screen they
+ * belong to, and `preserve-3d` lets each one still lift out of that plane on
+ * its own.
+ */
+.hero-cluster {
+  position: relative;
+  /* The resting pose: turned slightly away rather than square to the viewer,
+     so the object has depth before anyone touches it. The pointer tilt is
+     added to this, and returns to it. */
+  --rest-x: 1.5deg;
+  --rest-y: -8deg;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+
+  transform: rotateX(calc(var(--rest-x) + var(--tilt-x)))
+             rotateY(calc(var(--rest-y) + var(--tilt-y)));
+  transform-style: preserve-3d;
+  /* Short, so it tracks the pointer rather than trailing it, but not zero -
+     an instant rotation reads as jitter on a high-polling mouse. */
+  transition: transform 260ms var(--ease);
 }
 
 .hero-preview {
   --preview-w: 1440;
   --preview-h: 900;
-  --preview-scale: 0.62;
 
   position: relative;
   isolation: isolate;
-  width: calc(var(--preview-w) * 1px * var(--preview-scale));
-  height: calc(var(--preview-h) * 1px * var(--preview-scale));
-  border-radius: var(--r-lg) 0 0 var(--r-lg);
-  overflow: hidden;
-  /* No border on the bleeding edge - a border there would draw the crop. */
+  /* Fills the track it is given and keeps the screen's proportions, instead
+     of being a constant 892.8px that the viewport had to accommodate. */
+  width: 100%;
+  aspect-ratio: var(--preview-w) / var(--preview-h);
+  /* So the frame inside can measure itself against this box. */
+  container-type: size;
+
+  border-radius: var(--r-lg);
   border: 1px solid var(--border-strong);
-  border-right: 0;
-  box-shadow: -30px 40px 90px -40px rgba(0, 0, 0, 0.95);
-
-  /* Defaults, so the element is upright before the pointer has moved and when
-     the tilt is suppressed for reduced motion. */
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-
-  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
-  transform-style: preserve-3d;
-  /* Short, so it tracks the pointer rather than trailing it, but not zero -
-     an instant rotation reads as jitter on a high-polling mouse. */
-  transition:
-    transform 260ms var(--ease),
-    box-shadow 260ms var(--ease);
-}
-
-/* Reacting to the pointer being inside it, not merely near it. */
-.hero-preview:hover {
-  box-shadow: -34px 48px 110px -38px rgba(0, 0, 0, 0.98);
+  /* The clip lives here rather than on the cluster: a non-visible overflow
+     forces `transform-style: flat`, which is why the old `preserve-3d` did
+     nothing. Keeping them on separate elements is what makes the cards able
+     to rise out of the screen's plane. */
+  overflow: hidden;
+  transform-style: flat;
 }
 
 /* A highlight that travels across the glass as it leans, so the tilt reads as
@@ -205,13 +235,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-preview {
+  .hero-cluster {
     transition: none;
   }
 
   .hero-preview-sheen {
     display: none;
   }
+}
+
+/* A paused page is a still page: the pointer tilt is suppressed in the hook,
+   and the resting pose is flattened so nothing is left mid-lean. */
+body.motion-paused .hero-cluster {
+  --rest-x: 0deg;
+  --rest-y: 0deg;
+  transition: none;
 }
 
 .hero-preview-frame {
@@ -221,7 +259,14 @@
   width: calc(var(--preview-w) * 1px);
   height: calc(var(--preview-h) * 1px);
   transform-origin: top left;
-  transform: scale(var(--preview-scale));
+  /* The scale is read from the box rather than set by hand per breakpoint.
+     Dividing one length by another yields the bare number `scale()` needs, so
+     a 1440px design lands exactly on whatever width the track gave us - no
+     ladder of media queries, and no width at which it is slightly wrong.
+     The first declaration is the fallback for engines that reject the
+     division; they keep it and drop the line below. */
+  transform: scale(0.42);
+  transform: scale(calc(100cqw / (var(--preview-w) * 1px)));
   pointer-events: none;
 }
 
@@ -266,36 +311,67 @@
    style. */
 
 /* Three cards in a row beneath the product, pulled up so they overlap its
-   lower edge - the arrangement in the reference, where the panels read as
-   floating in front of the image rather than captioning it underneath. */
+   lower edge - the panels read as floating in front of the image rather than
+   captioning it underneath.
+
+   Width is simply the cluster's now that the preview no longer bleeds. The
+   old `min(100%, 46vw)` was measured against a container that was itself
+   892.8px of deliberate overhang, so the row's size depended on how far the
+   card was off-screen. */
 .hero-facts {
   position: relative;
   z-index: 2;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--s-3);
   list-style: none;
-  margin: -56px 0 0;
-  padding: 0 0 0 28px;
-  /* The preview deliberately runs off the right edge; the cards must not.
-     Sized against the viewport rather than the container, because the
-     container is the thing that bleeds - and narrow enough that the row still
-     clears the edge once its own left offset is counted. */
-  width: min(100%, 46vw);
-  max-width: 640px;
+  width: 100%;
+  margin: clamp(-3.5rem, -3vw, -2rem) 0 0;
+  padding: 0;
+  /* So each card can lift out of the cluster's plane rather than sliding
+     along it. */
+  transform-style: preserve-3d;
 }
 
 .hero-facts li {
   display: grid;
-  gap: 2px;
-  padding: 16px 18px;
+  gap: var(--s-1);
+  padding: var(--s-4);
   border-radius: var(--r-md);
   border: 1px solid color-mix(in srgb, var(--border-strong) 80%, transparent);
   background: color-mix(in srgb, var(--bg) 62%, transparent);
   backdrop-filter: blur(18px) saturate(180%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 24px 50px -28px rgba(0, 0, 0, 0.95);
+  /* Only the inner highlight that reads as a lit top edge. The drop shadow
+     is gone: the lean is what gives the cluster depth, and a cast shadow
+     under a rotating object has to be faked to stay plausible. */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: translateZ(0);
+  transition:
+    transform 240ms var(--ease),
+    border-color 240ms var(--ease),
+    background-color 240ms var(--ease);
+}
+
+/* Each card floats up out of the screen behind it, on its own. Separate from
+   the cluster lean, so hovering one card does not disturb the other two. */
+.hero-facts li:hover {
+  transform: translate3d(0, -0.5rem, 3.5rem);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-facts li,
+  .hero-facts li:hover {
+    transform: none;
+    transition: none;
+  }
+}
+
+body.motion-paused .hero-facts li,
+body.motion-paused .hero-facts li:hover {
+  transform: none;
+  transition: none;
 }
 
 .hero-fact-stat {
@@ -328,25 +404,31 @@
 .hero-cue {
   position: absolute;
   left: 50%;
-  bottom: calc(24px + env(safe-area-inset-bottom));
+  bottom: calc(var(--s-5) + env(safe-area-inset-bottom));
   z-index: 1;
   transform: translateX(-50%);
-  width: 26px;
-  height: 40px;
+  width: 1.625rem;
+  height: 2.5rem;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 8px;
+  padding-top: var(--s-2);
   border: 1px solid var(--border-strong);
   border-radius: var(--r-pill);
 }
 
 .hero-cue-rail {
   width: 2px;
-  height: 7px;
+  height: 0.4375rem;
   border-radius: 2px;
   background: var(--muted-strong);
   animation: hero-cue-drift 1.8s var(--ease) infinite;
+}
+
+/* The pause control covers every other animation on the page; it covered none
+   of the hero's, so a paused page still had a pulsing scroll cue. */
+body.motion-paused .hero-cue-rail {
+  animation: none;
 }
 
 @keyframes hero-cue-drift {
@@ -360,27 +442,20 @@
   }
 }
 
-/* ── Narrow ─────────────────────────────────────────────────────────── */
-
-@media (max-width: 1100px) {
-  .hero-preview {
-    --preview-scale: 0.5;
-  }
-
-  .hero-facts {
-    width: 240px;
-  }
-}
+/* ── Narrow ─────────────────────────────────────────────────────────────
+   There is no `--preview-scale` ladder any more. The frame measures itself
+   against its container, so every width between 320px and 2560px is handled
+   by one rule rather than by five breakpoints that each had to be guessed. */
 
 @media (max-width: 900px) {
   .hero {
     min-height: 0;
-    padding: 36px 0 72px;
+    padding: var(--s-6) 0 var(--s-7);
   }
 
   .hero-inner {
     grid-template-columns: minmax(0, 1fr);
-    gap: 36px;
+    gap: var(--s-6);
   }
 
   .hero-glow {
@@ -388,25 +463,18 @@
     opacity: 0.35;
   }
 
-  /* Contained rather than bleeding: a cropped product shot on a phone shows
-     a corner of a dashboard and reads as a rendering fault. */
-  .hero-stage {
-    justify-self: stretch;
+  /* Square to the viewer on a phone. The lean is a pointer affordance, and
+     there is no pointer here - at this width it only costs legibility. */
+  .hero-cluster {
+    --rest-x: 0deg;
+    --rest-y: 0deg;
   }
 
-  .hero-preview {
-    --preview-scale: 0.42;
-    max-width: 100%;
-    border-right: 1px solid var(--border-strong);
-    border-radius: var(--r-lg);
-  }
-
-  /* No overlap on a phone: a card lapping over a 340px-wide product shot
-     covers most of it. */
+  /* No overlap on a phone: a card lapping over a narrow product shot covers
+     most of it. */
   .hero-facts {
-    margin-top: 16px;
-    padding-left: 0;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    margin-top: var(--s-4);
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
   }
 
   .hero-cue {
@@ -414,23 +482,9 @@
   }
 }
 
-@media (max-width: 760px) {
-  .hero-preview {
-    --preview-scale: 0.34;
-  }
-}
-
 @media (max-width: 560px) {
-  .hero-inner {
-    padding: 0 16px;
-  }
-
-  .hero-preview {
-    --preview-scale: 0.22;
-  }
-
   .hero-spec {
-    gap: 8px 16px;
-    padding: 12px 16px;
+    gap: var(--s-2) var(--s-4);
+    padding: var(--s-3) var(--s-4);
   }
 }

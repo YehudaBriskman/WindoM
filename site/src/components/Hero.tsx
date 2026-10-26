@@ -96,25 +96,31 @@ export function Hero({ cycle, animated }: HeroProps) {
           makes is also made in the copy beside it.
         */}
         <div className="hero-stage">
-          <div className="hero-preview" ref={tiltRef} aria-hidden="true">
-            <div className="hero-preview-frame">
-              <Stage cycle={cycle} animated={animated} />
+          {/* The preview and the cards lean as one object, so the tilt is
+              applied here rather than to the screen alone - cards that stayed
+              flat while the screen behind them turned never looked attached
+              to it. */}
+          <div className="hero-cluster" ref={tiltRef}>
+            <div className="hero-preview" aria-hidden="true">
+              <div className="hero-preview-frame">
+                <Stage cycle={cycle} animated={animated} />
+              </div>
+              <span className="hero-preview-sheen" aria-hidden="true" />
             </div>
-            <span className="hero-preview-sheen" aria-hidden="true" />
-          </div>
 
-          {/* A row of three, sitting below the product and lapping over its
-              bottom edge - the arrangement in the reference, where the cards
-              read as floating in front of the image rather than captioning it. */}
-          <ul className="hero-facts" aria-label="Key facts">
-            {FACTS.map((f) => (
-              <li key={f.title}>
-                <span className="hero-fact-stat">{f.stat}</span>
-                <strong>{f.title}</strong>
-                <span className="hero-fact-body">{f.body}</span>
-              </li>
-            ))}
-          </ul>
+            {/* A row of three, sitting below the product and lapping over its
+                bottom edge, so the cards read as floating in front of the
+                image rather than captioning it. */}
+            <ul className="hero-facts" aria-label="Key facts">
+              {FACTS.map((f) => (
+                <li key={f.title}>
+                  <span className="hero-fact-stat">{f.stat}</span>
+                  <strong>{f.title}</strong>
+                  <span className="hero-fact-body">{f.body}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 

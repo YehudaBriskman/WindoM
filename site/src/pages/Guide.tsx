@@ -49,7 +49,7 @@ export function Guide() {
             </div>
           </div>
           <h2 id="account">
-            <span className="section-icon"></span> Create a WindoM Account
+            Create a WindoM Account
             <span className="badge optional">Optional</span>
           </h2>
           <p>A WindoM account syncs your settings across devices and is required to connect Google Calendar or Spotify. Registration is free and takes under a minute.
@@ -78,7 +78,7 @@ export function Guide() {
             once signed in, your clock format, background preference, widgets, and quick links all sync to the cloud and appear on any device where you're logged in to WindoM.
           </div>
           <h2 id="spotify">
-            <span className="section-icon"></span> Connect Spotify
+            Connect Spotify
             <span className="badge byoa">BYOA</span>
           </h2>
           <p>WindoM shows your Spotify now-playing card directly in the new tab dock. Because of how Spotify's API works, each user connects their own free Spotify Developer app - this keeps your account private and avoids any shared rate limits. The whole setup takes about 2 minutes.
@@ -113,7 +113,7 @@ export function Guide() {
           </div>
           <h3>Step 2 - Copy your Redirect URI from WindoM</h3>
           <div className="step">
-            <div className="step-num">3</div>
+            <div className="step-num">1</div>
             <div className="step-body">
                 <p>Open your WindoM new tab, click <strong>Settings</strong> (gear icon, bottom-left), then go to the <strong>Spotify</strong> tab.
                 </p>
@@ -122,19 +122,19 @@ export function Guide() {
                 <div className="redirect-uri-box">
                   <span className="redirect-uri-label">Redirect URI</span>
                   <span className="redirect-uri-value">https://&lt;your-extension-id&gt;.chromiumapp.org/</span>
+                </div>
                 <p>Click the <strong>Copy</strong> button next to it. This URI is unique to your Chrome installation - do not type it manually.</p>
-              </div>
             </div>
           </div>
           <h3>Step 3 - Add the Redirect URI to your Spotify app</h3>
           <div className="step">
-            <div className="step-num">4</div>
+            <div className="step-num">1</div>
             <div className="step-body">
               <p>Go back to the <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noreferrer">Spotify Developer Dashboard</a>, click on your app, then click <strong>Settings</strong> (top right of your app page).</p>
             </div>
           </div>
           <div className="step">
-            <div className="step-num">5</div>
+            <div className="step-num">2</div>
             <div className="step-body">
               <p>Scroll to the <strong>Redirect URIs</strong> field. Paste the URI you copied from WindoM, then click <strong>Add</strong>, then <strong>Save</strong> at the bottom.</p>
             </div>
@@ -144,19 +144,19 @@ export function Guide() {
           </div>
           <h3>Step 4 - Copy your Client ID and connect</h3>
           <div className="step">
-            <div className="step-num">6</div>
+            <div className="step-num">1</div>
             <div className="step-body">
               <p>Still on your Spotify app's Settings page, copy the <strong>Client ID</strong> at the top. It looks like a 32-character hex string, e.g. <code>b3d9a1f0c84e...</code></p>
             </div>
           </div>
           <div className="step">
-            <div className="step-num">7</div>
+            <div className="step-num">2</div>
             <div className="step-body">
               <p>Go back to WindoM → Settings → <strong>Spotify</strong> tab. Paste the Client ID into the input field and click <strong>Save &amp; Connect</strong>.</p>
             </div>
           </div>
           <div className="step">
-            <div className="step-num">8</div>
+            <div className="step-num">3</div>
             <div className="step-body">
                 <p>A Spotify authorization popup will appear. Click <strong>Agree</strong>.</p>
                 <p>You're connected. The now-playing card will appear in the top dock the next time you play a track.</p>
@@ -175,7 +175,7 @@ export function Guide() {
             <strong>Changed Chrome profile or reinstalled Chrome?</strong> Your Redirect URI will be different. Go to Settings → Spotify tab to see the new URI, add it to your Spotify app settings (you can have multiple Redirect URIs), then reconnect.
           </div>
           <h2 id="calendar">
-            <span className="section-icon"></span> Connect Google Calendar
+            Connect Google Calendar
           </h2>
           <p>WindoM pulls your upcoming Google Calendar events into the right sidebar so your day is always visible. This requires a WindoM account and a one-time Google authorization.
           </p>
@@ -209,7 +209,7 @@ export function Guide() {
             by default events for the next 7 days are shown. You can change this to 14 or 30 days in Settings → <strong>Calendar</strong>.
           </div>
           <h2 id="finance">
-            <span className="section-icon"></span> Finance Dashboard
+            Finance Dashboard
           </h2>
           <p>Track live stock prices and crypto rates directly on your new tab. Prices update from Yahoo Finance and CoinGecko - no API key or account needed. Two scrollable cards appear on your dashboard: one for stocks, one for crypto.
           </p>
@@ -242,7 +242,7 @@ export function Guide() {
             adding a new ticker bypasses the cache immediately so you see the price right away.
           </div>
           <h2 id="focus">
-            <span className="section-icon"></span> Focus Timer
+            Focus Timer
           </h2>
           <p>The focus timer lets you set an intention for your session. While active, the background dims and all other UI fades away so nothing distracts you.
           </p>
@@ -269,7 +269,7 @@ export function Guide() {
             go to Settings → <strong>Focus</strong> to save your most common focus tasks as one-click presets, so you don't have to type the same thing every day.
           </div>
           <h2 id="background">
-            <span className="section-icon"></span> Change Your Background
+            Change Your Background
           </h2>
           <p>WindoM supports two background sources: curated photos from Unsplash, or an image you upload from your device.
           </p>
@@ -310,7 +310,7 @@ export function Guide() {
             </div>
           </div>
           <h2 id="weather">
-            <span className="section-icon"></span> Weather Widget
+            Weather Widget
             <span className="badge optional">Needs API Key</span>
           </h2>
           <p>The weather widget shows live temperature and conditions in the top bar. It uses OpenWeatherMap's free tier - you need your own API key.
@@ -348,7 +348,7 @@ export function Guide() {
             OpenWeatherMap's free plan allows 1,000 API calls per day. WindoM caches the weather for 10 minutes per new tab, so you'll never come close to that limit.
           </div>
           <h2 id="links">
-            <span className="section-icon"></span> Quick Links &amp; Dock Bar
+            Quick Links &amp; Dock Bar
           </h2>
           <p>Pin your most-used sites to the dock bar that runs across the top of every new tab. Each link shows as a favicon icon - hover to see the label.
           </p>
@@ -371,7 +371,7 @@ export function Guide() {
             </div>
           </div>
           <h2 id="clock">
-            <span className="section-icon"></span> Clock &amp; Date
+            Clock &amp; Date
           </h2>
           <p>The clock is the centerpiece of your new tab. Everything about it is customizable.
           </p>
