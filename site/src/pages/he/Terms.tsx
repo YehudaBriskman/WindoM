@@ -1,10 +1,11 @@
 import { DocsLayout } from '../../components/DocsLayout';
+import { Link } from 'react-router';
 
 /**
  * Hebrew terms of use.
  *
  * A translation for convenience, not a second contract. The English text at
- * /terms.html is the authoritative one and this page says so in its first
+ * /terms is the authoritative one and this page says so in its first
  * paragraph - two versions of an agreement can only ever be as aligned as the
  * translation between them, so one of them has to govern.
  */
@@ -19,7 +20,7 @@ export function Terms() {
     >
       <div className="callout">
         <strong>הנוסח המחייב הוא האנגלי.</strong> תרגום זה ניתן לנוחות הקריאה בלבד. במקרה
-        של סתירה או אי-בהירות, <a href="/terms.html">הנוסח האנגלי</a> הוא הקובע.
+        של סתירה או אי-בהירות, <Link to="/terms">הנוסח האנגלי</Link> הוא הקובע.
       </div>
 
       <h2>1. קבלת התנאים</h2>
@@ -238,7 +239,7 @@ export function Terms() {
 
       <h2>11. פרטיות</h2>
       <p>
-        השימוש שלך ב-WindoM כפוף גם ל<a href="/he/privacy.html">מדיניות הפרטיות</a> שלנו,
+        השימוש שלך ב-WindoM כפוף גם ל<Link to="/he/privacy">מדיניות הפרטיות</Link> שלנו,
         המסבירה אילו נתונים נאספים, כיצד נעשה בהם שימוש, ומהן זכויותיך לגביהם. בשימוש
         ב-WindoM אתה מסכים למדיניות הפרטיות.
       </p>

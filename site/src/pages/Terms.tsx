@@ -1,4 +1,5 @@
 import { DocsLayout } from '../components/DocsLayout';
+import { Link } from 'react-router';
 
 /**
  * Terms governing the hosted service and the published extension.
@@ -128,7 +129,7 @@ export function Terms() {
           </p>
           <h2>11. Privacy</h2>
           <p>
-            Your use of WindoM is also governed by our <a href="privacy.html">Privacy Policy</a>, which explains what data we collect, how we use it, and your rights regarding that data.
+            Your use of WindoM is also governed by our <Link to="/privacy">Privacy Policy</Link>, which explains what data we collect, how we use it, and your rights regarding that data.
             By using WindoM, you agree to the Privacy Policy.
           </p>
           <h2>12. Termination</h2>

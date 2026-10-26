@@ -1,9 +1,10 @@
 import { DocsLayout } from '../../components/DocsLayout';
+import { Link } from 'react-router';
 
 /**
  * Hebrew privacy policy.
  *
- * A translation, not a second policy. The English text at /privacy.html is the
+ * A translation, not a second policy. The English text at /privacy is the
  * authoritative one and is the version under Google's OAuth review - this page
  * says so in its own first paragraph, which is both standard practice and the
  * honest position: a translated contract that claims equal force is a
@@ -24,7 +25,7 @@ export function Privacy() {
     >
       <div className="callout">
         <strong>הנוסח המחייב הוא האנגלי.</strong> תרגום זה ניתן לנוחות הקריאה בלבד. במקרה
-        של סתירה או אי-בהירות, <a href="/privacy.html">הנוסח האנגלי</a> הוא הקובע.
+        של סתירה או אי-בהירות, <Link to="/privacy">הנוסח האנגלי</Link> הוא הקובע.
       </div>
 
       <p>

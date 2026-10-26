@@ -1,5 +1,6 @@
 import { DocsLayout } from '../components/DocsLayout';
 import { GITHUB_URL, CONTACT_EMAIL, STORE_URL } from '../lib/site';
+import { Link } from 'react-router';
 
 /**
  * Where someone goes when WindoM is not behaving.
@@ -51,7 +52,7 @@ export function Support() {
         Expected, and safe. WindoM's verification with Google is in review. Until it completes,
         Google shows that warning for applications it has not finished reviewing. You can
         continue past it, and the extension only ever asks to <em>read</em> your calendar - the
-        exact permissions are listed in the <a href="/privacy.html">privacy policy</a>.
+        exact permissions are listed in the <Link to="/privacy">privacy policy</Link>.
       </p>
 
       <h2>The Gmail widget has gone</h2>

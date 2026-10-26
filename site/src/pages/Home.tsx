@@ -12,6 +12,7 @@ import { useDayCycle, usePrefersReducedMotion } from '../hooks/useDayCycle';
 import { DAY } from '../lib/day';
 import { FEATURES } from '../data/features';
 import { SITE, STORE_URL, GITHUB_URL, PROJECT_PAGE } from '../lib/site';
+import { Link } from 'react-router';
 
 const FAQ = [
   {
@@ -111,12 +112,12 @@ export function Home() {
             <a className="btn btn-primary" href={STORE_URL}>
               Add to Chrome
             </a>
-            <a className="btn btn-secondary" href="/guide.html">
+            <Link className="btn btn-secondary" to="/guide">
               User Guide
-            </a>
-            <a className="btn btn-secondary" href="/local-setup.html">
+            </Link>
+            <Link className="btn btn-secondary" to="/local-setup">
               Run it locally
-            </a>
+            </Link>
             <a className="btn btn-secondary" href={GITHUB_URL}>
               GitHub
             </a>

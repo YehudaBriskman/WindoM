@@ -1,5 +1,6 @@
 import { DocsLayout } from '../../components/DocsLayout';
 import { GITHUB_URL, CONTACT_EMAIL, STORE_URL } from '../../lib/site';
+import { Link } from 'react-router';
 
 /**
  * Hebrew support page.
@@ -62,7 +63,7 @@ export function Support() {
         זה צפוי, וזה בטוח. האימות של WindoM מול Google נמצא בבדיקה. עד שהיא תסתיים,
         Google מציגה את האזהרה הזו לאפליקציות שהבדיקה שלהן טרם הושלמה. אפשר להמשיך
         מעבר לה, והתוסף מבקש אך ורק <em>לקרוא</em> את היומן שלך - ההרשאות המדויקות
-        מפורטות ב<a href="/he/privacy.html">מדיניות הפרטיות</a>.
+        מפורטות ב<Link to="/he/privacy">מדיניות הפרטיות</Link>.
       </p>
 
       <h2>הווידג'ט של Gmail נעלם</h2>
