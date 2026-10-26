@@ -360,10 +360,14 @@
  * different places depending on how you reached it. This one value is honoured
  * identically by a native anchor jump, by `scrollIntoView` in RouteChrome, and
  * by a result picked out of the search dialog.
+ *
+ * It can be the plain chrome height now. While the nav shrank on scroll it had
+ * to clear the taller pre-shrink measurement, because the reflow moved the
+ * heading after the browser had chosen where to put it.
  */
 .docs-main .prose h2,
 .docs-main .prose h3 {
-  scroll-margin-top: calc(var(--chrome-h-rest) + var(--s-4));
+  scroll-margin-top: calc(var(--chrome-h) + var(--s-4));
 }
 
 /* The sidebar and rail sit below the nav rather than under it. */
@@ -381,11 +385,12 @@
 
 .docs-bar {
   position: sticky;
-  /* Flush under the nav, which has shrunk to --nav-h-stuck by the time this
-     bar can stick. The old var(--s-7) was neither: it hid the bar's top edge
-     behind the nav at rest, then opened a three-pixel slit once the nav
-     tightened, through which the page scrolled between the two bars. */
-  top: var(--nav-h-stuck);
+  /* Flush under the nav. The old 48px was neither its height nor anything
+     else: it hid the bar's top edge behind the nav at rest, and once the nav
+     shrank on scroll it opened a three-pixel slit through which the page
+     scrolled between the two bars. The nav is a constant height now, so this
+     is simply where it ends. */
+  top: var(--nav-h);
   z-index: 40;
   display: flex;
   align-items: center;

@@ -101,9 +101,14 @@ export function Hero({ cycle, animated }: HeroProps) {
               flat while the screen behind them turned never looked attached
               to it. */}
           <div className="hero-cluster" ref={tiltRef}>
-            <div className="hero-preview" aria-hidden="true">
+            {/* Not `aria-hidden` as a whole any more. The Stage already hides
+                each decorative part of itself, and the hero's CSS removes the
+                narrative copy that would otherwise be read twice - which
+                leaves the focus control as the only thing exposed here, which
+                is exactly what should be. */}
+            <div className="hero-preview">
               <div className="hero-preview-frame">
-                <Stage cycle={cycle} animated={animated} />
+                <Stage cycle={cycle} animated={animated} interactive />
               </div>
               <span className="hero-preview-sheen" aria-hidden="true" />
             </div>

@@ -370,41 +370,6 @@ p {
     opacity 320ms var(--ease);
 }
 
-/* ── Tightens on scroll ─────────────────────────────────────────────────
-   Driven by the scroll position itself rather than a listener, the same
-   technique the stage uses for its parallax: it runs off the main thread and
-   there is no threshold to flicker around. */
-
-@supports (animation-timeline: scroll()) {
-  @media not (prefers-reduced-motion: reduce) {
-    .site-nav-inner {
-      animation: nav-tighten linear both;
-      animation-timeline: scroll(root block);
-      /* Over the first 7.5rem, which is roughly the point where the page has
-         clearly been scrolled rather than nudged. */
-      animation-range: 0 7.5rem;
-    }
-
-    .site-nav-mark {
-      animation: nav-mark-shrink linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0 7.5rem;
-    }
-  }
-
-  /* The two ends are the tokens the chrome height is computed from, so the
-     bar's height and everything that has to clear it cannot disagree. */
-  @keyframes nav-tighten {
-    from { padding-top: var(--nav-pad); padding-bottom: var(--nav-pad); }
-    to { padding-top: var(--nav-pad-stuck); padding-bottom: var(--nav-pad-stuck); }
-  }
-
-  @keyframes nav-mark-shrink {
-    from { width: 1.25rem; height: 1.25rem; }
-    to { width: 1rem; height: 1rem; }
-  }
-}
-
 /* ── Out of the way of the day ──────────────────────────────────────────
    The stage is a full-viewport animation and a bar across the top of it is the
    one piece of chrome with no justification there. `Home` sets this class
@@ -563,11 +528,10 @@ body.stage-owns-view .site-nav:focus-within {
 @media (max-width: 760px) {
   .site-nav-inner {
     gap: var(--s-3);
-    /* Only the inline padding. The block padding is animated by nav-tighten,
-       whose keyframes sit outside this query and win against a plain
-       declaration - so the old `padding: var(--s-2) var(--s-4)` here never applied
-       vertically and the bar was silently 3.8125rem, not the 3.5625rem it claimed. */
-    padding-inline: var(--s-4);
+    /* This applies now. It used to be overruled vertically by the scroll
+       shrink's keyframes, which sat outside the query and beat a plain
+       declaration, so the mobile bar was silently taller than it claimed. */
+    padding: var(--s-2) var(--s-4);
   }
 
   .nav-toggle {

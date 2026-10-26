@@ -23,6 +23,8 @@ export type Pane =
   | 'spotify'
   | 'finance'
   | 'github'
+  | 'gmail'
+  | 'recent'
   | 'focus';
 
 export interface DayStage {
@@ -50,7 +52,7 @@ export const DAY: Record<Stage, DayStage> = {
     tint: 'var(--dawn)',
     headline: 'Your day, before you ask for it',
     body: 'Open a tab and today is already there: what is on, what is due, and what the weather is doing. Nothing to click.',
-    spotlight: ['calendar', 'todos', 'weather'],
+    spotlight: ['calendar', 'todos', 'weather', 'gmail'],
   },
   afternoon: {
     stage: 'afternoon',
@@ -60,7 +62,7 @@ export const DAY: Record<Stage, DayStage> = {
     tint: 'var(--noon)',
     headline: 'The things you keep checking',
     body: 'Markets, the pull request you are waiting on, the weather for the walk home. Pulled in from the sources you already use, with no extra tab to keep open.',
-    spotlight: ['finance', 'github', 'weather'],
+    spotlight: ['finance', 'github', 'weather', 'recent'],
   },
   evening: {
     stage: 'evening',
@@ -162,10 +164,3 @@ export function clockForProgress(progress: number): string {
   return formatClock(date);
 }
 
-/** The dock, mirroring the extension's Quick Links. */
-export const DOCK = [
-  { label: 'Calendar', glyph: '◷' },
-  { label: 'GitHub', glyph: '⌥' },
-  { label: 'Drive', glyph: '△' },
-  { label: 'Spotify', glyph: '♪' },
-] as const;
