@@ -70,10 +70,21 @@ export function Privacy() {
             Disconnecting Google from <strong>Settings → Apps</strong> immediately revokes our stored token and deletes all cached data.
           </p>
           <p>
-            <strong>Gmail is no longer part of WindoM.</strong> Earlier versions could show an unread count and the
-            subject lines of recent mail, which required Google's restricted <code>gmail.readonly</code> scope. That
-            scope is no longer requested and the widget is no longer offered, so no mail data of any kind reaches our
-            servers. Tokens granted under the old consent lose the Gmail permission the next time you reconnect.
+            <strong>Gmail is switched off.</strong> Earlier versions could show an unread count and the
+            subject lines of recent mail, which required Google's restricted <code>gmail.readonly</code> scope.
+            The code for that widget is still in the extension and the server, but it is gated on a server-side
+            setting (<code>GMAIL_ENABLED</code>) that is <strong>off</strong> on the server WindoM ships against.
+            While it is off the scope is never added to the consent screen, the server refuses every mail request,
+            and the Gmail card does not appear in <strong>Settings → Apps</strong>. No mail data of any kind reaches
+            our servers, and tokens granted under the old consent lose the Gmail permission the next time you
+            reconnect.
+          </p>
+          <p>
+            Turning that setting on would mean requesting a restricted scope, which Google only permits after an
+            annual third-party security assessment. If it is ever turned on for the hosted service, this policy will
+            be updated to describe what is read before the change ships. Anyone running their own WindoM server can
+            enable it for themselves, in which case the mail data goes to their server and this policy does not
+            apply to it.
           </p>
           <h2>Spotify integration (optional)</h2>
           <p>
@@ -178,7 +189,7 @@ export function Privacy() {
             <li>We do not read the content of pages you visit</li>
             <li>We do not collect keystrokes or form input from other websites</li>
             <li>We do not share or sell any data to third parties</li>
-            <li>We do not access your email - no mail scope is requested and no mail data reaches our servers</li>
+            <li>We do not access your email - the mail scope is disabled on the hosted service, as described above, and no mail data reaches our servers</li>
           </ul>
           <h2>Data sharing</h2>
           <p>
