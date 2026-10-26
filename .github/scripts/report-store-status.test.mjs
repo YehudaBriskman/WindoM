@@ -59,3 +59,18 @@ test('publish failure surfaces the status and its detail', () => {
   assert.equal(errors.length, 1);
   assert.match(errors[0], /ITEM_NOT_UPDATABLE: Item is currently in review/);
 });
+
+test('NOT_FOUND describes an absent operation, not an absent item', () => {
+  const { errors, notes } = interpretItem({ uploadState: 'NOT_FOUND', crxVersion: '1.5.0' });
+  assert.deepEqual(errors, []);
+  assert.match(notes.join(' '), /No upload operation in flight/);
+  assert.doesNotMatch(notes.join(' '), /Unrecognised/);
+});
+
+test('NOT_FOUND still catches a draft stuck on the wrong version', () => {
+  const { errors } = interpretItem(
+    { uploadState: 'NOT_FOUND', crxVersion: '1.4.1' },
+    { expectedVersion: '1.5.0' },
+  );
+  assert.equal(errors.length, 1);
+});
