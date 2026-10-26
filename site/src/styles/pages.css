@@ -422,3 +422,157 @@
     font-size: 0.6rem;
   }
 }
+
+/* ── Documentation components ───────────────────────────────────────────
+   These classes are authored throughout the guide and the setup notes and
+   had no CSS anywhere in the project. They were styled in the hand-written
+   docs/guide.html, which was retired in #326; the React rewrite kept the
+   markup and lost the stylesheet. Ninety-two numbered steps were rendering
+   as a bare digit on its own line above its paragraph, which is what a
+   `div` with no rules does. */
+
+/* ── Steps ──────────────────────────────────────────────────────────── */
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-4);
+  margin-bottom: var(--s-5);
+}
+
+.step-num {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  margin-top: 0.125rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 700;
+  /* The digit is the only thing in the circle; the inherited 1.7 would push
+     it off centre. */
+  line-height: 1;
+}
+
+.step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.step-body p {
+  margin-bottom: var(--s-2);
+}
+
+.step-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Callout variants ───────────────────────────────────────────────────
+   The guide authors `.callout.tip`, `.callout.warning` and
+   `.callout.spotify`; only the base rule and an unused `.callout-warn`
+   existed, so every callout on the site looked identical regardless of what
+   it was trying to say. */
+
+.callout.tip {
+  border-left-color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 6%, transparent);
+}
+
+.callout.warning,
+.callout-warn {
+  border-left-color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 6%, transparent);
+}
+
+.callout.spotify {
+  border-left-color: var(--spotify);
+  background: color-mix(in srgb, var(--spotify) 6%, transparent);
+}
+
+.callout strong {
+  color: var(--text);
+}
+
+/* ── Badge variants ─────────────────────────────────────────────────── */
+
+.badge.optional {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+  color: var(--accent);
+}
+
+.badge.byoa {
+  background: color-mix(in srgb, var(--spotify) 10%, transparent);
+  border-color: color-mix(in srgb, var(--spotify) 25%, transparent);
+  color: var(--spotify);
+}
+
+/* ── Feature cards ──────────────────────────────────────────────────────
+   The grid that holds these was styled; the cards inside it were not, so
+   the guide opened with eight unbordered blocks of text that nonetheless
+   animated in on scroll. */
+
+.feature-card {
+  padding: var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.feature-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--surface-strong);
+}
+
+.feature-card-title {
+  margin-bottom: var(--s-1);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.feature-card-desc {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--muted-strong);
+}
+
+/* ── Redirect URI box ───────────────────────────────────────────────────
+   A value the reader has to copy exactly, so it is set apart and made
+   selectable rather than being left to run inline with the prose. */
+
+.redirect-uri-box {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin: var(--s-3) 0;
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.redirect-uri-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.redirect-uri-value {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.82rem;
+  color: var(--code);
+  /* The value is a URL with no spaces; without this it widens the column. */
+  word-break: break-all;
+  user-select: all;
+}

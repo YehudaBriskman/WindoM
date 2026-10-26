@@ -32,6 +32,13 @@
   --accent2: #a78bfa;
   --accent-grad: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
 
+  /* Semantic accents for documentation callouts and badges. Carried over
+     from the hand-written guide, whose stylesheet was retired with it. */
+  --ok: #6dca6d;
+  --warn: #e2b96e;
+  --spotify: #1db954;
+  --code: #e2c97e;
+
   /* Light temperature for the four day stages. Sampled from the wallpapers
      themselves rather than picked, so the wash agrees with the photograph it
      sits over instead of fighting it. */
