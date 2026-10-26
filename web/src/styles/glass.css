@@ -61,6 +61,41 @@
   transition:
     border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* The specular, carried on the element's own background rather than a
+     pseudo-element: ::before is the refracted rim and ::after is the backdrop,
+     and both are spoken for.
+
+     Two highlights from one light. The broad sheen is the face of the pane
+     catching it; the tight core is the pointer's own reflection, which only
+     appears as the light comes near - that is what --glass-prox gates. The core
+     tightens as it approaches, so the material reads as gathering toward the
+     cursor rather than just brightening under it. */
+  background-image:
+    radial-gradient(
+      calc(28% - 10% * var(--glass-prox)) calc(26% - 9% * var(--glass-prox))
+        at var(--glass-lx) var(--glass-ly),
+      rgba(255, 255, 255, calc(0.3 * var(--glass-prox) * var(--glass-lit))) 0%,
+      rgba(255, 255, 255, calc(0.08 * var(--glass-prox) * var(--glass-lit))) 55%,
+      transparent 100%
+    ),
+    radial-gradient(
+      130% 100% at var(--glass-lx) var(--glass-ly),
+      rgba(255, 255, 255, calc(0.2 * var(--glass-lit))) 0%,
+      rgba(255, 255, 255, calc(0.05 * var(--glass-lit))) 38%,
+      transparent 72%
+    );
+
+  /* The compressed band at the edge. Four inset shadows rather than one ring,
+     so the lit side reads brighter than the shaded one and the edge has a
+     direction instead of being an outline. */
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, calc(0.75 * var(--glass-lit))),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 14px 22px -16px rgba(255, 255, 255, calc(0.5 * var(--glass-lit))),
+    inset 0 -14px 22px -16px rgba(255, 255, 255, 0.14),
+    inset 14px 0 22px -16px rgba(255, 255, 255, calc(0.32 * var(--glass-lit))),
+    inset -14px 0 22px -16px rgba(255, 255, 255, 0.12);
 }
 
 /* ── The backdrop ─────────────────────────────────────────────────────────
@@ -81,18 +116,25 @@
   z-index: -1;
 }
 
-/* ── The lens ─────────────────────────────────────────────────────────────
-   The band of rim that actually bends.
+/* ── The refracted rim ────────────────────────────────────────────────────
 
-   The layer below this one blurs hard, which is what stops a bright widget
-   behind a pane from reading through it - but a heavily blurred backdrop is a
-   smooth gradient, and displacing a smooth gradient produces nothing visible.
-   Refraction only shows where detail survives to be bent.
+   The band where the pane bends what is behind it.
 
-   So the lensing lives here instead: the same backdrop at a fraction of the
-   blur, displaced by the generated field, and masked to the bezel so it never
-   touches the middle. A crisp stretched band around the edge falling away into
-   softness - which is what looking through a thick pane is actually like. ── */
+   This cannot be done with `backdrop-filter`. A displacement map fed by
+   `feImage` returns nothing there: the pane does not refract its backdrop, it
+   erases it and goes flat grey. Verified by capturing one frame twice over a
+   striped backdrop, with the filter and with `--glass-refract: none`, and again
+   after preloading the map and growing the filter region - the stripes vanish
+   every time.
+
+   `filter:` on an ordinary element does work. So the rim paints its own copy of
+   the wallpaper, offset to line up with the real one behind the pane, displaces
+   that with the generated field, and is masked to the bezel so the flat middle
+   of the pane is left to the blur underneath.
+
+   It shows the wallpaper rather than everything behind the pane, which for a
+   rim band is what you would see anyway.
+   ───────────────────────────────────────────────────────────────────────── */
 .glass-panel::before,
 .glass-sidebar::before,
 .glass-settings::before,
@@ -106,66 +148,30 @@
   pointer-events: none;
   z-index: 0;
 
-  /* The lens. Masked to the bezel by the generated rim mask; where no mask has
-     been generated yet the layer is simply absent rather than covering the
-     pane. */
-  backdrop-filter: saturate(112%) brightness(1.04);
+  background-image: var(--glass-wall, none);
+  background-size: var(--glass-wall-size, cover);
+  background-position: var(--glass-wall-x, 0) var(--glass-wall-y, 0);
+  background-repeat: no-repeat;
+
+  filter: var(--glass-refract, none);
+
   -webkit-mask-image: var(--glass-rim, none);
   mask-image: var(--glass-rim, none);
   -webkit-mask-size: 100% 100%;
   mask-size: 100% 100%;
 
-  /* Two highlights from one light. The broad sheen is the face of the pane
-     catching it; the tight core is the pointer's own reflection, which only
-     appears as the light comes near - that is what --glass-prox gates. The
-     core tightens as it approaches, so the material reads as gathering toward
-     the cursor rather than merely brightening under it. */
-  background:
-    radial-gradient(
-      calc(28% - 10% * var(--glass-prox)) calc(26% - 9% * var(--glass-prox))
-        at var(--glass-lx) var(--glass-ly),
-      rgba(255, 255, 255, calc(0.30 * var(--glass-prox) * var(--glass-lit))) 0%,
-      rgba(255, 255, 255, calc(0.08 * var(--glass-prox) * var(--glass-lit))) 55%,
-      transparent 100%
-    ),
-    radial-gradient(
-      130% 100% at var(--glass-lx) var(--glass-ly),
-      rgba(255, 255, 255, calc(0.20 * var(--glass-lit))) 0%,
-      rgba(255, 255, 255, calc(0.05 * var(--glass-lit))) 38%,
-      transparent 72%
-    );
-
-  /* The compressed band. Four inset shadows rather than one ring, so the lit
-     side reads brighter than the shaded one and the edge has a direction. */
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, calc(0.75 * var(--glass-lit))),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 14px 22px -16px rgba(255, 255, 255, calc(0.5 * var(--glass-lit))),
-    inset 0 -14px 22px -16px rgba(255, 255, 255, 0.14),
-    inset 14px 0 22px -16px rgba(255, 255, 255, calc(0.32 * var(--glass-lit))),
-    inset -14px 0 22px -16px rgba(255, 255, 255, 0.12);
-
-  /* The rim light. An inset shadow traces the border, and offsetting it away
-     from the light is what makes the bright edge appear on the lit side and
-     the dark one opposite - the asymmetry that reads as a bevel rather than
-     an outline. */
-  /* No transition here on purpose. These values are already being eased by a
-     spring in the hook, and a CSS transition over the top of that smooths the
-     smoothing - the two delays add, and the highlight ends up arriving about a
-     second after the pointer. Anything driven by --glass-* must be left alone
-     to follow its spring. */
+  /* Until a field and a mask exist the layer would be an unmasked wallpaper
+     covering the pane, so it stays hidden until both arrive. */
+  opacity: 0;
 }
 
-/* ── Pressing ─────────────────────────────────────────────────────────────
-   A short, sharp give on the way down and a slower recovery. Equal timing in
-   both directions reads as a button; the asymmetry is what reads as something
-   yielding and springing back. */
-.glass-panel:active,
-.glass-dock:active,
-.glass-quote:active {
-  transition:
-    box-shadow 0.08s ease-out,
-    background-color 0.08s ease-out;
+.glass-panel[style*="--glass-rim"]::before,
+.glass-sidebar[style*="--glass-rim"]::before,
+.glass-settings[style*="--glass-rim"]::before,
+.glass-quote[style*="--glass-rim"]::before,
+.glass-credit[style*="--glass-rim"]::before,
+.glass-dock[style*="--glass-rim"]::before {
+  opacity: 1;
 }
 
 /* ── Per-material depth ───────────────────────────────────────────────────
@@ -192,7 +198,7 @@
   backdrop-filter: blur(14px) saturate(118%) brightness(1.06);
 }
 .glass-panel {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow:
     0 20px 50px rgba(0, 0, 0, 0.3),
@@ -203,7 +209,7 @@
   backdrop-filter: blur(13px) saturate(118%) brightness(1.05);
 }
 .glass-sidebar {
-  background: rgba(255, 255, 255, 0.09);
+  background-color: rgba(255, 255, 255, 0.09);
   border-left: 1px solid rgba(255, 255, 255, 0.24);
   box-shadow: -10px 0 34px rgba(0, 0, 0, 0.22);
 }
@@ -212,7 +218,7 @@
   backdrop-filter: blur(14px) saturate(118%) brightness(1.06);
 }
 .glass-settings {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border-right: 1px solid rgba(255, 255, 255, 0.28);
   box-shadow: 10px 0 34px rgba(0, 0, 0, 0.22);
 }
@@ -221,7 +227,7 @@
   backdrop-filter: blur(10px) saturate(115%) brightness(1.04);
 }
 .glass-quote {
-  background: rgba(255, 255, 255, 0.07);
+  background-color: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
 }
@@ -230,7 +236,7 @@
   backdrop-filter: blur(10px) saturate(115%) brightness(1.04);
 }
 .glass-credit {
-  background: rgba(255, 255, 255, 0.06);
+  background-color: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
 }
@@ -239,7 +245,7 @@
   backdrop-filter: blur(12px) saturate(118%) brightness(1.06);
 }
 .glass-dock {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow:
     0 8px 26px rgba(0, 0, 0, 0.22),
@@ -272,7 +278,7 @@
 
 /* Glass input - inputs can't use pseudo-elements, inline liquid glass */
 .glass-input {
-  background: rgba(255, 255, 255, 0.05);
+  background-color: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px) saturate(150%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:

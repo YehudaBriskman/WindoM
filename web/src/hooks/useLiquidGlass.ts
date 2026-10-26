@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Spring } from '../lib/liquid-glass';
-import { type GlassKey } from '../lib/glass-registry';
+import { registerGlassSurface, type GlassKey } from '../lib/glass-registry';
+import { fieldFor } from '../components/GlassFilters';
+import { rimMaskFor } from '../lib/glass-registry';
 
 /**
  * Makes an element a pane of liquid glass.
@@ -99,6 +101,40 @@ function paint(): void {
     const edgeY = Math.max(rect.top - lightY.value, 0, lightY.value - rect.bottom);
     pane.proximity.target = 1 - Math.min(1, Math.hypot(edgeX, edgeY) / reach);
     el.style.setProperty('--glass-prox', pane.proximity.value.toFixed(3));
+
+    // Align this pane's copy of the wallpaper with the real one.
+    //
+    // `backdrop-filter` will not refract - a displacement map fed by feImage
+    // returns nothing there and the backdrop is erased rather than bent. So the
+    // rim displaces its own copy of the wallpaper with `filter:`, which does
+    // work, and the copy has to be positioned so it lines up with the original
+    // behind the pane. #bg-zoom-layer is fixed and covers the viewport, so
+    // offsetting the background by the pane's own origin is the whole alignment.
+    el.style.setProperty('--glass-wall-x', `${(-rect.left).toFixed(0)}px`);
+    el.style.setProperty('--glass-wall-y', `${(-rect.top).toFixed(0)}px`);
+  }
+}
+
+/**
+ * The wallpaper currently behind everything, as a CSS `url(...)`.
+ *
+ * Read from the live layer rather than from settings: it is the element that
+ * actually decides what is on screen, it already handles the default gradient
+ * and the local-upload case, and reading it cannot drift out of sync with what
+ * the viewer sees.
+ */
+function wallpaperImage(): string {
+  const layer = document.getElementById('bg-zoom-layer');
+  if (!layer) return 'none';
+  return getComputedStyle(layer).backgroundImage || 'none';
+}
+
+function publishWallpaper(): void {
+  const image = wallpaperImage();
+  const size = `${window.innerWidth}px ${window.innerHeight}px`;
+  for (const { el } of panes) {
+    el.style.setProperty('--glass-wall', image);
+    el.style.setProperty('--glass-wall-size', size);
   }
 }
 
@@ -185,15 +221,70 @@ export function useLiquidGlass<T extends HTMLElement>(
       pane.rect = el.getBoundingClientRect();
     };
 
-    measure();
-    paint();
+    /**
+     * Build the pane's displacement field and apply it, once it can be used.
+     *
+     * The decode is the whole point. `feImage` takes a data URL and decodes it
+     * asynchronously; a filter evaluated before that resolves produces nothing,
+     * and the pane does not refract its backdrop but erases it. Applying the
+     * filter only after `decode()` settles is what makes the difference between
+     * a lens and a flat grey rectangle.
+     */
+    let cancelled = false;
+    let settle = 0;
 
-    const observer = typeof ResizeObserver === 'function'
-      ? new ResizeObserver(() => {
-          measure();
+    const regenerate = (): void => {
+      const rect = el.getBoundingClientRect();
+      pane.rect = rect;
+      if (rect.width < 2 || rect.height < 2) return;
+
+      const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
+      const surface = registerGlassSurface(key, rect.width, rect.height, radius);
+      const field = fieldFor(surface, surface.id);
+      if (!field.href) return;
+
+      el.style.setProperty('--glass-rim', `url("${rimMaskFor(surface, surface.id)}")`);
+      publishWallpaper();
+
+      const img = new Image();
+      img.src = field.href;
+      void img
+        .decode()
+        .then(() => {
+          if (cancelled) return;
+          el.style.setProperty('--glass-refract', `url(#${surface.id})`);
           paint();
           start();
         })
+        .catch(() => {
+          // A field that will not decode is not worth retrying; the pane keeps
+          // its drawn edge and loses only the lensing.
+        });
+    };
+
+    /**
+     * Rasterise only once the element has stopped moving.
+     *
+     * A field is a pass over every pixel of the pane plus a PNG encode - about
+     * two million operations for a 520x680 panel. The settings panel opens by
+     * animating from a 42px button to a full sheet and a ResizeObserver fires
+     * on every frame of that, so generating per frame cost 519ms of script for
+     * a single open. Nothing needs a field mid-transition.
+     */
+    const scheduleRegenerate = (): void => {
+      measure();
+      paint();
+      window.clearTimeout(settle);
+      settle = window.setTimeout(regenerate, 140);
+    };
+
+    measure();
+    paint();
+
+    scheduleRegenerate();
+
+    const observer = typeof ResizeObserver === 'function'
+      ? new ResizeObserver(scheduleRegenerate)
       : null;
     observer?.observe(el);
 
@@ -204,6 +295,8 @@ export function useLiquidGlass<T extends HTMLElement>(
     window.addEventListener('resize', measure, { passive: true });
 
     return () => {
+      cancelled = true;
+      window.clearTimeout(settle);
       observer?.disconnect();
       window.removeEventListener('scroll', measure, { capture: true });
       window.removeEventListener('resize', measure);

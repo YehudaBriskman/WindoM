@@ -1,4 +1,4 @@
-import type { GlassSurface } from './liquid-glass';
+import { buildRimMask, rasterToDataURL, type GlassSurface } from './liquid-glass';
 
 /**
  * Which panes of glass currently exist, and how thick each one is.
@@ -94,4 +94,24 @@ export function registerGlassSurface(
   surfaces.set(id, surface);
   notify();
   return { ...surface, id };
+}
+
+/**
+ * An alpha mask confining a layer to the pane's bezel.
+ *
+ * The rim layer carries a full copy of the wallpaper; without this it would
+ * cover the whole pane and the backdrop blur underneath would be pointless.
+ */
+const maskCache = new Map<string, string>();
+
+export function rimMaskFor(surface: GlassSurface, id: string): string {
+  const hit = maskCache.get(id);
+  if (hit !== undefined) return hit;
+  const url = rasterToDataURL(
+    buildRimMask(surface),
+    Math.round(surface.width),
+    Math.round(surface.height),
+  );
+  maskCache.set(id, url);
+  return url;
 }
