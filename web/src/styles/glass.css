@@ -317,13 +317,30 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* The pane's own content sits above the backdrop and below the rim. */
+/* The pane's own content sits above the backdrop and below the rim.
+   z-index needs a positioned element, hence the `position` - but it must not
+   decide *which* positioning. Four direct children of these panes are
+   `absolute` (the settings gear, the sidebar icon, both close buttons), and a
+   plain `position: relative` here outranked all of them once glass.css started
+   loading last: the gear vanished and the sidebar icon left its corner.
+
+   `:where()` contributes no specificity, so this applies only to children that
+   have not positioned themselves, and the z-index lands either way. */
+:where(
+  .glass-panel > *,
+  .glass-sidebar > *,
+  .glass-quote > *,
+  .glass-credit > *,
+  .glass-dock > *
+) {
+  position: relative;
+}
+
 .glass-panel > *,
 .glass-sidebar > *,
 .glass-quote > *,
 .glass-credit > *,
 .glass-dock > * {
-  position: relative;
   z-index: 1;
 }
 
