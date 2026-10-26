@@ -1,14 +1,17 @@
 import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { GuideHe } from '../../pages/GuideHe';
+import { hydrateRoot } from 'react-dom/client';
+import { Guide } from '../../pages/he/Guide';
 import '../../styles/base.css';
 import '../../styles/pages.css';
+import '../../styles/docs.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root is missing from he/guide.html');
 
-createRoot(root).render(
+/** Hydrated rather than rendered, because this page is prerendered. See privacy.tsx. */
+hydrateRoot(
+  root,
   <StrictMode>
-    <GuideHe />
+    <Guide />
   </StrictMode>,
 );
