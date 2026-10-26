@@ -2,6 +2,9 @@
    Spring easing tokens - shared across all expanding elements
    ============================================================ */
 :root {
+  /* Overshoot. Reserved for small elements under direct manipulation - a
+     dropdown springing open reads as responsive, the same curve on a 520px
+     panel reads as wobble. Large surfaces use --ease-out below. */
   --spring:        cubic-bezier(0.34, 1.56, 0.64, 1);  /* full bounce   */
   --spring-gentle: cubic-bezier(0.34, 1.28, 0.64, 1);  /* subtle bounce */
   --snap-out:      cubic-bezier(0.4,  0,    0.6,  1);  /* crisp close   */
@@ -62,6 +65,34 @@
   --glass-blur: 5px;
   --glass-sat: 112%;
   --scrim-blur: 8px;
+
+  /* ── Motion ─────────────────────────────────────────────────────────────
+     Nineteen distinct durations existed, chosen per component.
+
+     Duration follows size, because size reads as mass: a toggle that takes as
+     long as a panel feels sluggish, and a panel that moves as fast as a toggle
+     feels weightless. */
+  --dur-sm: 160ms;   /* toggles, pills, small buttons */
+  --dur-md: 240ms;   /* dropdowns, popovers, cards */
+  --dur-lg: 360ms;   /* panels, sidebars, modals */
+
+  /* Leaving is quicker than arriving. An element on its way out has nothing
+     left to say, and matching the two makes dismissal feel reluctant. */
+  --dur-sm-out: 110ms;
+  --dur-md-out: 160ms;
+  --dur-lg-out: 240ms;
+
+  /* Arrives fast and settles slowly, the way something with weight comes to
+     rest. No overshoot: --spring below carries 1.56, which on a 520px panel is
+     a visible bounce rather than a settle. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  /* Leaves decisively. */
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+
+  /* Content appears once its container has most of the way there - earlier and
+     the interior is visibly being resized. */
+  --dur-content: 180ms;
+  --delay-content: 200ms;
 }
 
 /* ============================================================
@@ -855,9 +886,9 @@ input[type="file"]::file-selector-button:hover {
   z-index: 200;
   opacity: 0.45;
   transition:
-    width    0.42s var(--spring),
-    height   0.42s var(--spring),
-    border-radius 0.42s var(--spring),
+    width var(--dur-md) var(--ease-out),
+    height var(--dur-md) var(--ease-out),
+    border-radius var(--dur-md) var(--ease-out),
     opacity  0.25s ease;
 }
 .dock-expandable:hover:not(.expanded) {
@@ -1224,7 +1255,7 @@ input[type="file"]::file-selector-button:hover {
   position: relative;
   transform: scale(0.82);
   transform-origin: center center;
-  transition: transform 0.42s var(--spring);
+  transition: transform var(--dur-lg) var(--ease-out);
 }
 .search-overlay-backdrop.open .search-overlay-box {
   transform: scale(1);
@@ -1242,7 +1273,7 @@ input[type="file"]::file-selector-button:hover {
   box-shadow:
     0 8px 40px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  transition: border-radius 0.3s var(--spring), border-color 0.25s ease;
+  transition: border-radius var(--dur-md) var(--spring), border-color var(--dur-md) var(--ease-out);
 }
 
 .search-overlay-input-row:focus-within {
@@ -1261,7 +1292,7 @@ input[type="file"]::file-selector-button:hover {
   border-radius: 0 0 var(--r-card) var(--r-card);
   background: rgba(14, 14, 14, 0.65);
   transform-origin: top center;
-  animation: dropdown-spring-in 0.35s var(--spring) both;
+  animation: dropdown-spring-in var(--dur-md) var(--spring) both;
 }
 
 @keyframes dropdown-spring-in {
@@ -1384,7 +1415,7 @@ input[type="file"]::file-selector-button:hover {
   display: flex;
   flex-direction: column;
   padding: 12px 8px;
-  transition: transform 0.42s var(--spring);
+  transition: transform var(--dur-lg) var(--ease-out);
   border-radius: var(--r-card);
 }
 
@@ -1696,9 +1727,9 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   transition:
-    width        0.42s var(--spring),
-    height       0.4s  var(--spring-gentle),
-    border-radius 0.42s var(--spring);
+    width var(--dur-lg-out) var(--ease-in),
+    height var(--dur-lg-out) var(--ease-in),
+    border-radius var(--dur-lg-out) var(--ease-in);
 }
 .sidebar-container:not(.open):hover {
   background: rgba(255, 255, 255, 0.1);
@@ -1713,6 +1744,12 @@ input[type="file"]::file-selector-button:hover {
   height: var(--sidebar-h);
   border-radius: var(--r-card);
   cursor: default;
+
+  /* Entry: slower than exit, one curve for both axes. */
+  transition:
+    width var(--dur-lg) var(--ease-out),
+    height var(--dur-lg) var(--ease-out),
+    border-radius var(--dur-lg) var(--ease-out);
 }
 
 .sidebar-btn-icon {
@@ -1953,11 +1990,13 @@ input[type="file"]::file-selector-button:hover {
   align-items: center;
   justify-content: center;
   opacity: 0.8;
+  /* Closing. The target state owns the transition, so the base rule is what
+     runs on the way out - and out is quicker than in. */
   transition:
-    width        0.45s var(--spring),
-    height       0.4s  var(--spring-gentle),
-    border-radius 0.45s var(--spring),
-    opacity      0.3s  ease;
+    width var(--dur-lg-out) var(--ease-in),
+    height var(--dur-lg-out) var(--ease-in),
+    border-radius var(--dur-lg-out) var(--ease-in),
+    opacity var(--dur-sm-out) var(--ease-in);
 }
 .settings-container:not(.open):hover {
   opacity: 1;
@@ -1974,6 +2013,15 @@ input[type="file"]::file-selector-button:hover {
   border-radius: var(--r-card);
   opacity: 1;
   cursor: default;
+
+  /* Opening. Both axes on one duration and one curve: when width and height
+     disagree about how far along they are, the box distorts for the length of
+     the morph, which is most of why this never felt right. */
+  transition:
+    width var(--dur-lg) var(--ease-out),
+    height var(--dur-lg) var(--ease-out),
+    border-radius var(--dur-lg) var(--ease-out),
+    opacity var(--dur-sm) var(--ease-out);
 }
 
 .settings-icon {
@@ -2000,7 +2048,7 @@ input[type="file"]::file-selector-button:hover {
   flex-direction: row;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.25s ease 0.25s;
+  transition: opacity var(--dur-content) var(--ease-out) var(--delay-content);
 }
 .settings-container.open .settings-inner {
   opacity: 1;

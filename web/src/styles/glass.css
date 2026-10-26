@@ -340,9 +340,13 @@
   /* Reads as a recess in the pane rather than another sheet on top of it: a
      touch darker than the glass it sits in, with a bright upper rim. Tinting
      these lighter than their parent is what made the first version look like
-     stickers. */
+     stickers.
+
+     No backdrop-filter. Every one of these is a separate backdrop sample for
+     the compositor, there can be forty of them on an open panel, and at the
+     3px they were asking for nobody could see the difference. The pane behind
+     them is already blurred; a control only has to sit on it. */
   background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(3px) saturate(112%);
   border: 1px solid rgba(255, 255, 255, 0.2);
 
   /* The rim, lit from the same source as the pane. The first inset is the lit

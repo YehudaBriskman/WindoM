@@ -46,10 +46,15 @@ export function GlassFilters() {
           <filter
             key={id}
             id={id}
-            x="-20%"
-            y="-20%"
-            width="140%"
-            height="140%"
+            // Exactly the element, no bleed. The region was grown to 140% while
+            // chasing the theory that displaced pixels were being clipped at the
+            // edge; the displacement runs inward from the rim, so there was
+            // never anything to land outside - it was just filtering twice the
+            // area for nothing.
+            x="0"
+            y="0"
+            width="1"
+            height="1"
             filterUnits="objectBoundingBox"
             primitiveUnits="userSpaceOnUse"
             colorInterpolationFilters="sRGB"
