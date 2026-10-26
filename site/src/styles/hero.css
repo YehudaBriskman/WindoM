@@ -328,9 +328,12 @@ body.motion-paused .hero-cluster {
   width: 100%;
   margin: clamp(-3.5rem, -3vw, -2rem) 0 0;
   padding: 0;
-  /* So each card can lift out of the cluster's plane rather than sliding
-     along it. */
-  transform-style: preserve-3d;
+  /* Deliberately flat, not preserve-3d. Coplanar cards lifted on translateZ
+     inside a rotated 3D context make Blink's hit testing unreliable: probing
+     a grid of points across a card returned a speckle of hits and misses, and
+     a card could refuse to answer a hover entirely. A 2D lift reads the same
+     and is hit-tested against plain boxes. */
+  transform-style: flat;
 }
 
 .hero-facts li {
@@ -345,7 +348,6 @@ body.motion-paused .hero-cluster {
      is gone: the lean is what gives the cluster depth, and a cast shadow
      under a rotating object has to be faked to stay plausible. */
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transform: translateZ(0);
   transition:
     transform 240ms var(--ease),
     border-color 240ms var(--ease),
@@ -353,11 +355,13 @@ body.motion-paused .hero-cluster {
 }
 
 /* Each card floats up out of the screen behind it, on its own. Separate from
-   the cluster lean, so hovering one card does not disturb the other two. */
+   the cluster lean, so hovering one card does not disturb the other two. The
+   scale is what sells the rise: moving up alone reads as a slide, and moving
+   up while growing reads as coming toward you. */
 .hero-facts li:hover {
-  transform: translate3d(0, -0.5rem, 3.5rem);
+  transform: translateY(-0.5rem) scale(1.035);
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
