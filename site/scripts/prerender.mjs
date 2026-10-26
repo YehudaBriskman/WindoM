@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildSearchIndex } from './search-index.mjs';
 
 /**
  * Writes one static file per route from the single built shell.
@@ -74,4 +75,22 @@ if (failures.length) {
   process.exit(1);
 }
 
+// Built from the markup above rather than in a pass of its own, so the index
+// cannot describe a version of a page that is no longer what gets served.
+const index = buildSearchIndex(rendered);
+const sections = index.pages.reduce((n, page) => n + page.s.length, 0);
+if (!index.pages.length) {
+  console.error('prerender: the search index came out empty - no page had a content column');
+  process.exit(1);
+}
+const indexJson = JSON.stringify(index);
+writeFileSync(resolve(dist, 'search-index.json'), indexJson);
+
 console.log(`prerender: ${rendered.length} routes, ${written} files`);
+// Bytes, not characters: the Hebrew half of the index is two bytes per
+// character, so a length in characters understates the download by a quarter.
+const indexBytes = Buffer.byteLength(indexJson, 'utf8');
+console.log(
+  `prerender: search index ${index.pages.length} pages, ${sections} sections, ` +
+    `${(indexBytes / 1024).toFixed(1)} KB`,
+);

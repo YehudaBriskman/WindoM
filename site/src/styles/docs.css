@@ -497,3 +497,182 @@
     padding: 6px 16px;
   }
 }
+
+/* ── Documentation search ───────────────────────────────────────────── */
+/* The trigger sits at the far end of the breadcrumb bar, which is where the
+   documentation sites this follows put it, and is pushed there by the crumbs
+   rather than by a fixed width - so a long trail shortens the control instead
+   of overflowing the row. */
+
+.docs-search-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+  flex-shrink: 0;
+  padding: 5px 9px 5px 11px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.docs-search-trigger:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.docs-search-trigger kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* The label goes before the glyph does: an icon-only search control is still
+   understood, a key hint on its own is not. */
+@media (max-width: 860px) {
+  .docs-search-trigger kbd {
+    display: none;
+  }
+}
+
+@media (max-width: 620px) {
+  .docs-search-trigger-label {
+    display: none;
+  }
+
+  .docs-search-trigger {
+    padding: 5px 8px;
+  }
+}
+
+/* ── The dialog ─────────────────────────────────────────────────────── */
+
+.docs-search {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  /* Near the top rather than centred: the panel grows downwards as results
+     arrive, and a centred panel would move the field you are typing in. */
+  padding: clamp(60px, 12vh, 140px) 16px 16px;
+  background: rgba(4, 4, 10, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.docs-search-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 620px);
+  max-height: min(70vh, 560px);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+}
+
+.docs-search-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.docs-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 15px 0;
+  background: none;
+  border: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.docs-search-input:focus {
+  outline: none;
+}
+
+/* Chrome draws its own clear button on a search field and it lands on top of
+   the border. The Escape key and the overlay both already close this. */
+.docs-search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.docs-search-note {
+  margin: 0;
+  padding: 18px 16px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.docs-search-results {
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  list-style: none;
+  overscroll-behavior: contain;
+}
+
+.docs-search-result {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  padding: 9px 11px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.docs-search-result.is-active {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+
+.docs-search-crumb {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+}
+
+.docs-search-heading {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.docs-search-excerpt {
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  /* Two lines, so every row is the same height and the list does not jump as
+     you arrow through it. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.docs-search-excerpt mark {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--text);
+  border-radius: 3px;
+  padding: 0 1px;
+}

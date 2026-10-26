@@ -36,6 +36,11 @@ export interface Rendered {
   head: string;
   lang: string;
   dir: 'ltr' | 'rtl';
+  /** Route metadata, carried so the search index can be built from this pass. */
+  path: string;
+  title: string;
+  locale: string;
+  group?: string;
 }
 
 /** `/privacy` -> `privacy/index.html`, `/` -> `index.html`. */
@@ -143,6 +148,9 @@ function renderNotFound(): Rendered {
   return {
     files: ['404.html'],
     html: renderToString(<RouterProvider router={router} />),
+    path: '/not-found',
+    title: 'Page not found',
+    locale: 'en',
     head: [
       '    <title>Page not found - WindoM</title>',
       '    <meta name="robots" content="noindex" />',
@@ -172,6 +180,10 @@ export function renderAll(): Rendered[] {
       head: headFor(route),
       lang: route.locale,
       dir: route.locale === 'he' ? 'rtl' : 'ltr',
+      path: route.path,
+      title: route.title,
+      locale: route.locale,
+      group: route.group,
     };
   });
 

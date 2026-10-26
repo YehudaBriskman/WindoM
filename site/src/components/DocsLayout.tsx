@@ -17,6 +17,7 @@ import {
   type SiteRoute,
 } from '../lib/docs';
 import { SiteNav } from './SiteNav';
+import { DocsSearch } from './DocsSearch';
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -125,6 +126,8 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             <li aria-current="page">{current?.title ?? title}</li>
           </ol>
         </nav>
+
+        <DocsSearch locale={locale} />
       </div>
 
       <div className="docs-shell">
