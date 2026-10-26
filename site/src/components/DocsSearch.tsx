@@ -75,17 +75,47 @@ export function DocsSearch({ locale }: { locale: Locale }) {
   /** Whether this dialog is the reason focus left the trigger. See below. */
   const opened = useRef(false);
 
+  /**
+   * The index, fetched once - but retried as often as the reader asks.
+   *
+   * This used to refuse any status but `idle`, which made `failed` terminal:
+   * one 404 during a deploy, or one request dropped on a flaky connection, and
+   * search was unavailable for the rest of the session. The index is shared
+   * across routes on purpose, so the dead state was shared too and no amount of
+   * navigating recovered it.
+   *
+   * The guards are now about what is true rather than about what happened: a
+   * fetch already in flight, and an index already in hand. A failure leaves
+   * neither, so the next attempt simply tries again.
+   *
+   * A ref rather than the status for the in-flight guard, because two calls in
+   * the same tick - `/` while the trigger is being clicked - would both read
+   * the same pre-render status and fire the same request twice.
+   */
+  const inFlight = useRef(false);
+  const attempts = useRef(0);
+
   const load = useCallback(() => {
-    if (status !== 'idle') return;
+    if (inFlight.current || index) return;
+    inFlight.current = true;
+    attempts.current += 1;
     setStatus('loading');
-    fetch('/search-index.json')
+    fetch('/search-index.json', {
+      // A retry revalidates. The response we are retrying after may well be a
+      // 404 the browser has cached, and re-reading it from the cache would make
+      // the retry a no-op that reports the same failure.
+      cache: attempts.current > 1 ? 'reload' : 'default',
+    })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
       .then((data: SearchIndex) => {
         setIndex(data);
         setStatus('ready');
       })
-      .catch(() => setStatus('failed'));
-  }, [status]);
+      .catch(() => setStatus('failed'))
+      .finally(() => {
+        inFlight.current = false;
+      });
+  }, [index]);
 
   const show = useCallback(() => {
     load();
