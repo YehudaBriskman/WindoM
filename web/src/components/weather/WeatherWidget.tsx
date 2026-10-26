@@ -17,7 +17,7 @@ export function WeatherWidget() {
 
   if (state.status === 'placeholder' || state.status === 'error') {
     return (
-      <div className="weather-widget glass-dock text-shadow-sm">
+      <div ref={glassRef} className="weather-widget glass-dock text-shadow-sm">
         <div className="weather-circle">
           {state.status === 'error'
             ? <AlertTriangle size={18} style={{ opacity: 0.6 }} />
@@ -29,7 +29,7 @@ export function WeatherWidget() {
 
   if (state.status === 'loading') {
     return (
-      <div className="weather-widget glass-dock text-shadow-sm">
+      <div ref={glassRef} className="weather-widget glass-dock text-shadow-sm">
         <div className="weather-circle">
           <span className="weather-temp">…</span>
         </div>

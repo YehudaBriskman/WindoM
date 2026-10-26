@@ -185,8 +185,14 @@
   /* Driven by the hook: 0 while the pane is in motion or before a field
      exists, 1 once one has been built for the pane's current geometry. The
      mask and the alignment are both cut for one exact size, so showing this
-     at any other size paints an unmasked wallpaper across the screen. */
-  opacity: var(--glass-lens, 0);
+     at any other size paints an unmasked wallpaper across the screen.
+
+     Scaled well down from that. At full strength the rim is an unveiled,
+     unblurred copy of the wallpaper sitting inside a pane that is veiled, so
+     it came out brighter and sharper than its surroundings and framed every
+     panel with a bright band. A bend in glass is a distortion of what is
+     already there, not a window onto something clearer. */
+  opacity: calc(var(--glass-lens, 0) * 0.45);
   transition: opacity 0.18s ease-out;
 }
 
