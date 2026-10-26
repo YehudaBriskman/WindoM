@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { STAGES, currentStage, formatClock, clockForProgress, type Stage } from '../lib/day';
+import { useHydrated } from './useHydrated';
 
 /**
  * How far past a stage boundary the scroll must travel before the stage
@@ -47,10 +48,25 @@ export interface DayCycle {
  * Returns the real stage and never advances when motion is reduced or paused.
  */
 export function useDayCycle(enabled: boolean): DayCycle {
-  const [stage, setStage] = useState<Stage>(() => currentStage());
-  const [clock, setClock] = useState(() => formatClock(new Date()));
+  /**
+   * The page is prerendered, so the first render must not read the clock: the
+   * build's time would be written into the HTML and then disagree with the
+   * visitor's on hydration. `evening` is the extension's own default
+   * background, so the server renders the stage every visitor would see before
+   * their real hour is known.
+   */
+  const hydrated = useHydrated();
+  const [stage, setStage] = useState<Stage>('evening');
+  const [clock, setClock] = useState('');
   const [live, setLive] = useState(true);
   const liveRef = useRef(true);
+
+  // The visitor's real time, read once the component is mounted rather than
+  // during render - see the note above.
+  useEffect(() => {
+    setStage(currentStage());
+    setClock(formatClock(new Date()));
+  }, []);
 
   // Real clock. Kept running even after scroll takes over, so returning to the
   // top shows the true time again rather than a frozen one.
@@ -137,5 +153,7 @@ export function useDayCycle(enabled: boolean): DayCycle {
     };
   }, [enabled]);
 
-  return { stage, clock, live };
+  // `live` stays false until mounted, so nothing reads the clock as real
+  // before it has been read.
+  return { stage, clock, live: live && hydrated };
 }

@@ -8,7 +8,7 @@ import { EXAMPLE_ENV } from '../lib/env-reference';
  */
 export function LocalSetup() {
   return (
-    <DocsLayout href="/local-setup.html" eyebrow="Developer Guide" title="Running WindoM locally">
+    <DocsLayout path="/local-setup" eyebrow="Developer Guide" title="Running WindoM locally">
 <h2 id="extension-only">Option A - Extension Only <span className="badge">Recommended to start</span></h2>
           <p>
             This gets the extension running in Chrome with no backend needed.

@@ -11,7 +11,7 @@ import { DocsLayout } from '../../components/DocsLayout';
 export function Terms() {
   return (
     <DocsLayout
-      href="/he/terms.html"
+      path="/he/terms"
       eyebrow="משפטי"
       title="תנאי שימוש"
       subtitle="עודכן לאחרונה: 27 באפריל 2026"

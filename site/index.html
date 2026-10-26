@@ -3,23 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>WindoM - Your Space, Your Flow.</title>
-    <meta name="description" content="WindoM replaces the Chrome new tab with a personal dashboard: clock, weather, backgrounds, todos, calendar, Spotify, GitHub, finance and focus mode." />
-    <link rel="canonical" href="https://windom.app/" />
     <meta name="theme-color" content="#080810" />
     <meta name="color-scheme" content="dark" />
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="WindoM" />
-    <meta property="og:title" content="WindoM - Your Space, Your Flow." />
-    <meta property="og:description" content="WindoM replaces the Chrome new tab with a personal dashboard: clock, weather, backgrounds, todos, calendar, Spotify, GitHub, finance and focus mode." />
-    <meta property="og:url" content="https://windom.app/" />
-    <meta property="og:image" content="https://windom.app/images/banner.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="WindoM - Your Space, Your Flow." />
-    <meta name="twitter:description" content="WindoM replaces the Chrome new tab with a personal dashboard: clock, weather, backgrounds, todos, calendar, Spotify, GitHub, finance and focus mode." />
-    <meta name="twitter:image" content="https://windom.app/images/banner.png" />
-
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/icons/icon48.png" type="image/png" />
     <link rel="apple-touch-icon" href="/icons/icon128.png" />
 
@@ -29,52 +16,17 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Inter:wght@400;500;600;700&display=swap"
     />
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "WindoM",
-        "applicationCategory": "BrowserApplication",
-        "operatingSystem": "Chrome",
-        "url": "https://windom.app",
-        "description": "WindoM replaces the Chrome new tab page with a dashboard: calendar, weather, todos, markets and a focus timer, on a wallpaper that moves with the hour.",
-        "softwareVersion": "1.5.1",
-        "license": "https://opensource.org/licenses/MIT",
-        "isAccessibleForFree": true,
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "author": { "@type": "Person", "name": "Yehuda Briskman", "url": "https://yehudabriskman.com" },
-        "downloadUrl": "https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb",
-        "privacyPolicy": "https://windom.app/privacy.html"
-      }
-    </script>
+
+    <!--
+      Everything below is written per route by scripts/prerender.mjs: the title,
+      the description, the canonical, the hreflang pair and the structured data.
+      One shell, thirteen pages - the thirteen hand-maintained copies of this
+      head are what the route table replaced.
+    -->
+    <!--head-->
   </head>
   <body>
-    <div id="root">
-      <!--
-        The hero's static copy, so the page is not an empty shell to anything
-        that cannot run JavaScript. `createRoot` replaces the contents of this
-        container on mount, so the browser experience is unchanged.
-
-        Only the text that never changes lives here. The clock and the day
-        animation are deliberately absent: baking them would freeze one moment
-        of a moving page into the document.
-      -->
-      <section>
-        <p>Chrome extension</p>
-        <h1>Your new tab, actually useful</h1>
-        <p>
-          WindoM replaces the blank Chrome new tab with everything you were about to open
-          anyway - your calendar, the weather, what you meant to do today - on a wallpaper
-          that moves with the hour.
-        </p>
-        <p>
-          <a href="https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb">Add to Chrome</a>
-          &middot; <a href="/guide.html">User Guide</a>
-          &middot; <a href="/support.html">Support</a>
-          &middot; <a href="/privacy.html">Privacy</a>
-        </p>
-      </section>
-    </div>
-    <script type="module" src="/src/entries/index.tsx"></script>
+    <div id="root"><!--app--></div>
+    <script type="module" src="/src/entries/app.tsx"></script>
   </body>
 </html>

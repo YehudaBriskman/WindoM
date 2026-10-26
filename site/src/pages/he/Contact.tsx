@@ -5,7 +5,7 @@ import { GITHUB_URL, CONTACT_EMAIL, SITE } from '../../lib/site';
 export function Contact() {
   return (
     <DocsLayout
-      href="/he/contact.html"
+      path="/he/contact"
       eyebrow="עזרה"
       title="יצירת קשר"
       subtitle="אדם אחד, בדרך כלל תוך כמה ימים"

@@ -7,24 +7,21 @@ import {
   type ReactNode,
   type ReactElement,
 } from 'react';
+import { Link } from 'react-router';
 import { STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
 import {
-  DOCS_PAGES,
   docsGroups,
   docsNeighbours,
   headingId,
-  labelFor,
   localeOf,
-  translatedHref,
-  type DocsPage,
-  type Locale,
+  type SiteRoute,
 } from '../lib/docs';
 import { SiteNav } from './SiteNav';
 
 interface DocsLayoutProps {
   children: ReactNode;
-  /** This page's entry in DOCS_PAGES, used to mark the sidebar and find neighbours. */
-  href: string;
+  /** This page's own path, used to mark the sidebar and find neighbours. */
+  path: string;
   eyebrow?: string;
   title: string;
   subtitle?: ReactNode;
@@ -52,19 +49,18 @@ const UI = {
  * to keep in sync by hand, which is the only way a table of contents stays
  * correct across edits.
  */
-export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'ltr' }: DocsLayoutProps) {
-  const locale = localeOf(href);
-  // Hebrew pages live under /he/, but DOCS_PAGES is keyed by the English path.
-  const bare = href.replace(/^\/he\//, '/');
+export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'ltr' }: DocsLayoutProps) {
+  const locale = localeOf(path);
   const t = UI[locale];
 
   const { headings, content } = anchorHeadings(children);
-  const { prev, next } = docsNeighbours(bare);
-  const current = DOCS_PAGES.find((p) => p.href === bare);
+  const { prev, next } = docsNeighbours(path);
   /* The trail uses the sidebar title, not the page's h1: the guide's heading is
      "Using WindoM" and its group is "Using WindoM", which produced a crumb that
      said the same thing twice. */
-  const crumbLabel = current ? labelFor(current, locale) : undefined;
+  const current = docsGroups(locale)
+    .flatMap((g) => g.pages)
+    .find((pg) => pg.path === path);
 
   /**
    * Collapsed by choice, remembered.
@@ -100,7 +96,7 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
       </a>
       <div className="ambient" aria-hidden="true" />
 
-      <SiteNav current={bare} locale={locale} docsHref={href} />
+      <SiteNav current={path} locale={locale} />
 
       {/* The sidebar control sits at the head of the breadcrumb row, where the
           documentation sites this follows put it. */}
@@ -119,14 +115,14 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
         <nav className="docs-crumbs" aria-label="Breadcrumb">
           <ol>
             <li>
-              <a href="/">{t.home}</a>
+              <Link to="/">{t.home}</Link>
             </li>
-            {crumbLabel && (
+            {current?.group && (
               <li>
-                <span>{crumbLabel.group}</span>
+                <span>{current.group}</span>
               </li>
             )}
-            <li aria-current="page">{crumbLabel?.title ?? title}</li>
+            <li aria-current="page">{current?.title ?? title}</li>
           </ol>
         </nav>
       </div>
@@ -140,26 +136,23 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
             <details
               className="docs-nav-group"
               key={groupName}
-              open={pages.some((p) => p.href === bare)}
+              open={pages.some((pg) => pg.path === path)}
             >
               <summary className="docs-nav-heading">{groupName}</summary>
               <ul>
-                {pages.map((page) => {
-                  const label = labelFor(page, locale);
-                  const to = locale === 'he' ? translatedHref(page.href, 'he') : page.href;
-                  return (
-                    <li key={page.href}>
-                      <a
-                        href={to}
-                        className={page.href === bare ? 'is-current' : undefined}
-                        aria-current={page.href === bare ? 'page' : undefined}
-                      >
-                        {label.title}
-                        {label.blurb && <span className="docs-nav-blurb">{label.blurb}</span>}
-                      </a>
-                    </li>
-                  );
-                })}
+                {pages.map((page) => (
+                  <li key={page.path}>
+                    <Link
+                      to={page.path}
+                      className={page.path === path ? 'is-current' : undefined}
+                      aria-current={page.path === path ? 'page' : undefined}
+                      viewTransition
+                    >
+                      {page.title}
+                      {page.blurb && <span className="docs-nav-blurb">{page.blurb}</span>}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </details>
           ))}
@@ -176,8 +169,8 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
 
           {(prev || next) && (
             <nav className="docs-neighbours" aria-label={t.more}>
-              {prev ? <NeighbourLink page={prev} rel="prev" locale={locale} label={t.prev} /> : <span />}
-              {next ? <NeighbourLink page={next} rel="next" locale={locale} label={t.next} /> : <span />}
+              {prev ? <NeighbourLink page={prev} rel="prev" label={t.prev} /> : <span />}
+              {next ? <NeighbourLink page={next} rel="next" label={t.next} /> : <span />}
             </nav>
           )}
         </main>
@@ -200,12 +193,12 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
       <footer className="site-footer">
         <div className="wrap">
           <nav aria-label="Footer">
-            <a href="/">Home</a>
-            <a href="/guide.html">User Guide</a>
-            <a href="/support.html">Support</a>
-            <a href="/local-setup.html">Local Setup</a>
-            <a href="/privacy.html">Privacy</a>
-            <a href="/terms.html">Terms</a>
+            <Link to="/">Home</Link>
+            <Link to="/guide">User Guide</Link>
+            <Link to="/support">Support</Link>
+            <Link to="/local-setup">Local Setup</Link>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
             <a href={STORE_URL}>Chrome Web Store</a>
             <a href={GITHUB_URL}>GitHub</a>
           </nav>
@@ -231,20 +224,17 @@ function SidebarGlyph() {
 function NeighbourLink({
   page,
   rel,
-  locale,
   label,
 }: {
-  page: DocsPage;
+  page: SiteRoute;
   rel: 'prev' | 'next';
-  locale: Locale;
   label: string;
 }) {
-  const to = locale === 'he' ? translatedHref(page.href, 'he') : page.href;
   return (
-    <a className={`docs-neighbour is-${rel}`} href={to} rel={rel}>
+    <Link className={`docs-neighbour is-${rel}`} to={page.path} rel={rel} viewTransition>
       <span className="docs-neighbour-label">{label}</span>
-      <span className="docs-neighbour-title">{labelFor(page, locale).title}</span>
-    </a>
+      <span className="docs-neighbour-title">{page.title}</span>
+    </Link>
   );
 }
 

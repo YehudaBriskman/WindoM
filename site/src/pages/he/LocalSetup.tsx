@@ -13,7 +13,7 @@ import { EXAMPLE_ENV } from '../../lib/env-reference';
 export function LocalSetup() {
   return (
     <DocsLayout
-      href="/he/local-setup.html"
+      path="/he/local-setup"
       eyebrow="מדריך למפתחים"
       title="הרצת WindoM מקומית"
       dir="rtl"

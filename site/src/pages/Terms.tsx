@@ -9,7 +9,7 @@ import { DocsLayout } from '../components/DocsLayout';
  */
 export function Terms() {
   return (
-    <DocsLayout href="/terms.html" eyebrow="Legal" title="Terms of Use" subtitle="Last updated: April 27, 2026">
+    <DocsLayout path="/terms" eyebrow="Legal" title="Terms of Use" subtitle="Last updated: April 27, 2026">
         <div className="callout">
             <strong>Plain-English summary:</strong> WindoM is a free, open-source new tab extension. Use it for lawful personal productivity purposes, don't abuse it or try to break things, and understand that it comes without warranty. The full legal terms follow below.
           </div>

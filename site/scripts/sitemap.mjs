@@ -1,55 +1,45 @@
 import { writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PAGES } from '../vite.config.ts';
 
 /**
- * Writes dist/sitemap.xml from the same PAGES list the build uses.
+ * Writes dist/sitemap.xml from the route table.
  *
- * robots.txt has advertised `https://windom.app/sitemap.xml` all along and the
- * file did not exist - a 404 on a URL the site tells crawlers to fetch. Built
- * rather than hand-written so it cannot drift from the pages that actually
- * exist, which is how a hand-written sitemap ends up listing a page that was
- * renamed six months ago.
+ * Clean URLs only. The `.html` twins exist so the Chrome Web Store's registered
+ * links keep resolving, and each of them declares the clean URL as canonical -
+ * listing both here would ask a search engine to index two addresses for one
+ * page, which is the thing canonical exists to prevent.
  */
 
 const ORIGIN = 'https://windom.app';
 const here = dirname(fileURLToPath(import.meta.url));
-const out = resolve(here, '../dist/sitemap.xml');
+const { ROUTES } = await import(resolve(here, '../dist-prerender/prerender.js'));
 
-/** The home page is `/`, everything else keeps its `.html`. */
-const pathOf = (page) => (page === 'index' ? '/' : `/${page}.html`);
+const urls = ROUTES.map((route) => {
+  const loc = `${ORIGIN}${route.path}`;
 
-/** Pages that exist in both languages, so each can point at its twin. */
-const twins = new Set(
-  PAGES.filter((p) => p.startsWith('he/')).map((p) => p.slice(3)),
-);
-
-const urls = PAGES.map((page) => {
-  const loc = ORIGIN + pathOf(page);
-  const bare = page.replace(/^he\//, '');
-  const alternates = twins.has(bare)
+  const twins = route.twinOf ? ROUTES.filter((r) => r.twinOf === route.twinOf) : [];
+  const alternates = twins.length
     ? [
-        `    <xhtml:link rel="alternate" hreflang="en" href="${ORIGIN}${pathOf(bare)}" />`,
-        `    <xhtml:link rel="alternate" hreflang="he" href="${ORIGIN}${pathOf('he/' + bare)}" />`,
-        `    <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}${pathOf(bare)}" />`,
+        ...twins.map(
+          (r) => `    <xhtml:link rel="alternate" hreflang="${r.locale}" href="${ORIGIN}${r.path}" />`,
+        ),
+        `    <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}${
+          twins.find((r) => r.locale === 'en')?.path ?? route.path
+        }" />`,
       ].join('\n')
     : '';
 
-  // The home page is the entry point; the guide is the page people are sent to.
-  const priority = page === 'index' ? '1.0' : page === 'guide' ? '0.9' : '0.7';
+  // The home page is the entry point; the guide is where people are sent.
+  const priority = route.path === '/' ? '1.0' : route.path.endsWith('/guide') ? '0.9' : '0.7';
 
-  return [
-    '  <url>',
-    `    <loc>${loc}</loc>`,
-    alternates,
-    `    <priority>${priority}</priority>`,
-    '  </url>',
-  ].filter(Boolean).join('\n');
+  return ['  <url>', `    <loc>${loc}</loc>`, alternates, `    <priority>${priority}</priority>`, '  </url>']
+    .filter(Boolean)
+    .join('\n');
 });
 
 writeFileSync(
-  out,
+  out(),
   `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
@@ -58,4 +48,8 @@ ${urls.join('\n')}
 `,
 );
 
-console.log(`sitemap: ${PAGES.length} urls`);
+function out() {
+  return resolve(here, '../dist/sitemap.xml');
+}
+
+console.log(`sitemap: ${ROUTES.length} urls`);

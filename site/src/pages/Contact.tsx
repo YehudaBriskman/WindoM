@@ -10,7 +10,7 @@ import { GITHUB_URL, CONTACT_EMAIL, SITE } from '../lib/site';
  */
 export function Contact() {
   return (
-    <DocsLayout href="/contact.html" eyebrow="Help" title="Contact" subtitle="One person, usually within a few days">
+    <DocsLayout path="/contact" eyebrow="Help" title="Contact" subtitle="One person, usually within a few days">
       <p>
         {SITE.name} is built and maintained by Yehuda Briskman. There is no support team behind
         it, which is worth knowing before you write: replies usually take a few days, and
