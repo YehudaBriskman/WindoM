@@ -9,7 +9,18 @@ import { useHydrated } from './useHydrated';
  */
 const STAGE_COMMIT_MARGIN = 0.04;
 
-/** Whether the visitor has asked the OS for less motion. */
+/**
+ * Whether the visitor has asked the OS for less motion.
+ *
+ * `matchMedia` is read during render, which is the shape that caused the paused
+ * flag's hydration mismatch - and it is deliberate here. The media query is
+ * undefined while prerendering, so a `reduce` visitor's first client render
+ * does differ from the HTML, but only in the `is-animated` class: React
+ * reconciles a mismatched attribute silently and keeps the server's tree, where
+ * mismatched *text* - which is what the toggle's label is - makes it throw and
+ * rebuild. Deferring this to an effect would buy nothing and cost the one
+ * visitor who asked for no motion a frame of it.
+ */
 export function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(() =>
     typeof matchMedia === 'function'
