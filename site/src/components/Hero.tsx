@@ -1,5 +1,7 @@
 import { Stage } from './Stage';
+import { useTilt } from '../hooks/useTilt';
 import { STORE_URL } from '../lib/site';
+import { DAY } from '../lib/day';
 import type { DayCycle } from '../hooks/useDayCycle';
 
 interface HeroProps {
@@ -7,39 +9,59 @@ interface HeroProps {
   animated: boolean;
 }
 
-/** Short, concrete, and each one visible in the preview beside them. */
-const CHIPS = ['Weather', 'Calendar', 'Todos', 'Spotify', 'Markets', 'Focus timer'];
+/** The specification strip. Short enough to read as a row, not a list. */
+const CAPABILITIES = [
+  { glyph: '◴', label: 'Clock' },
+  { glyph: '☁', label: 'Weather' },
+  { glyph: '◷', label: 'Calendar' },
+  { glyph: '♪', label: 'Spotify' },
+  { glyph: '▦', label: 'Markets' },
+];
+
+/**
+ * What someone hesitates over before letting an extension own their new tab.
+ * Each is checkable rather than a claim: the licence is MIT, the privacy policy
+ * lists what is stored, and most of the product works signed out.
+ */
+const FACTS = [
+  { title: 'Free and open source', body: 'MIT licensed, every line on GitHub' },
+  { title: 'No tracking', body: 'No analytics, no telemetry, no ads' },
+  { title: 'No account needed', body: 'Sign in only for Calendar and Spotify' },
+];
 
 /**
  * The front door.
  *
- * The page used to open directly into the pinned tab, so a visitor arrived
- * mid-animation with no headline, no sentence saying what this is, and nothing
- * to click - and the document had no `h1` at all. This is that missing first
- * screen: what it is, why, and how to get it.
+ * The product bleeds off the right edge rather than sitting in a card, lit from
+ * behind by the same hour it is showing - the glow takes its colour from the
+ * active stage's own tint, so the page is lit by the time of day the preview
+ * depicts rather than by a fixed accent.
  *
- * The preview beside the copy is the real `Stage`, scaled down, rather than a
- * screenshot. It cannot go stale - which matters when every screenshot the site
- * owns predates the glass rebuild - and it is the product demonstrating itself
- * at the visitor's actual time of day.
+ * The preview is the real `Stage`, scaled. It cannot go stale, which matters
+ * while every screenshot the site owns predates the glass rebuild.
  */
 export function Hero({ cycle, animated }: HeroProps) {
+  const tint = DAY[cycle.stage].tint;
+  const tiltRef = useTilt<HTMLDivElement>();
+
   return (
     <section className="hero" aria-labelledby="hero-heading">
+      {/* The light source. Its colour is the stage's own, so the hero is lit by
+          the hour the preview is showing. */}
+      <div className="hero-glow" style={{ background: tint }} aria-hidden="true" />
+
       <div className="hero-inner">
         <div className="hero-copy">
           <span className="eyebrow">Chrome extension</span>
 
           <h1 id="hero-heading">
-            Your new tab,
-            <br />
-            <span className="gradient-text">actually useful</span>
+            <span className="hero-line-1">Your new tab,</span>
+            <span className="hero-line-2 gradient-text">actually useful</span>
           </h1>
 
           <p className="lede">
-            WindoM replaces the blank new tab with the things you were about to open anyway -
-            your calendar, the weather, what you meant to do today - on a wallpaper that moves
-            with the hour.
+            Everything you were about to open anyway - your calendar, the weather, what you
+            meant to do today - on a wallpaper that moves with the hour.
           </p>
 
           <div className="btn-row">
@@ -51,30 +73,46 @@ export function Hero({ cycle, animated }: HeroProps) {
             </a>
           </div>
 
-          <ul className="hero-chips">
-            {CHIPS.map((chip) => (
-              <li className="badge" key={chip}>
-                {chip}
+          {/* A specification strip rather than loose tags: bracketed, on one
+              line, read as a row of capabilities. */}
+          <ul className="hero-spec" aria-label="What it shows">
+            {CAPABILITIES.map((c) => (
+              <li key={c.label}>
+                <span className="hero-spec-glyph" aria-hidden="true">
+                  {c.glyph}
+                </span>
+                {c.label}
               </li>
             ))}
           </ul>
         </div>
 
         {/*
-          Its own stacking and transform context, so the scaled preview cannot
-          bleed into the pinned stage below it - the two render the same
-          component and would otherwise share a 3D space.
+          Its own stacking and transform context, so the scaled Stage cannot
+          share a 3D space with the pinned Stage further down - they are the
+          same component.
 
           aria-hidden because it is a picture of the product: every claim it
-          makes is also made in the copy beside it, and reading a mock dashboard
-          aloud would be noise.
+          makes is also made in the copy beside it.
         */}
-        <div className="hero-preview" aria-hidden="true">
-          <div className="hero-preview-frame">
-            <Stage cycle={cycle} animated={animated} />
+        <div className="hero-stage" aria-hidden="true">
+          <div className="hero-preview" ref={tiltRef}>
+            <div className="hero-preview-frame">
+              <Stage cycle={cycle} animated={animated} />
+            </div>
+            <span className="hero-preview-sheen" aria-hidden="true" />
           </div>
         </div>
       </div>
+
+      <ul className="hero-facts" aria-label="Key facts">
+        {FACTS.map((f) => (
+          <li key={f.title}>
+            <strong>{f.title}</strong>
+            <span>{f.body}</span>
+          </li>
+        ))}
+      </ul>
 
       <a className="hero-cue" href="#day-stage" aria-label="Skip to the demonstration">
         <span className="hero-cue-rail" aria-hidden="true" />
