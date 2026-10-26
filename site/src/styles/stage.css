@@ -23,17 +23,14 @@
    measured. */
 .day-stage {
   position: relative;
-  /* The length and the timeline name are the scene table's, not this file's.
-     Two descriptions of how long the day is would be one too many. */
+  height: 700vh;
+  view-timeline-name: --day-stage;
   view-timeline-axis: block;
 }
 
 .stage-pin {
-  /* Inside the card, which is the thing that moves. The stage used to pin
-     itself to the viewport; the card does that now, and this simply fills
-     it. */
-  position: absolute;
-  inset: 0;
+  position: sticky;
+  top: 0;
   /* `dvh`, not `vh`: on a phone `100vh` is the viewport with the browser chrome
      collapsed, which is not what is on screen while the URL bar is showing. The
      pin was therefore taller than the visible area and the tab sat cropped.
@@ -212,7 +209,7 @@
 /* Dim, not absent. At 0.42 these vanished entirely over the afternoon
    wallpaper, which is the brightest of the four - and a tab whose right-hand
    column disappears for a quarter of the day does not read as a whole
-   interface, which is the entire point of dimming rather than hiding. */
+   interface, which is the point of dimming rather than hiding. */
 .glass-pane.is-dim {
   opacity: 0.62;
   transform: scale(0.96);
@@ -338,6 +335,10 @@
 
 /* Resting positions. Deliberately uneven - a symmetric arrangement reads as a
    diagram rather than somebody's desktop. */
+/* The two late arrivals fill the gaps the original six left: one under the
+   weather pill on the left, one between the todos and the calendar. */
+.pane-gmail     { top: 28%;    right: 6%; }
+.pane-recent    { top: 62%;    left: 5%;  min-width: 196px; }
 
 /* ── Focus mode ─────────────────────────────────────────────────────── */
 /* The one widget that is not a pane, because in the product it is not one -
@@ -471,16 +472,39 @@
    constraint for a page whose entire audience installs Chrome extensions. */
 
 @supports (animation-timeline: view()) {
-  /* Only the keyframes live here; they are design. Which timeline drives
-     them, over what range, is declared in the scene table and written by the
-     engine - `contain 0% contain 100%` on the day scene, which spans exactly
-     the scroll that scene occupies.
+  .is-animated .stage-layer-back,
+  .is-animated .stage-layer-mid,
+  .is-animated .stage-layer-front {
+    /* Driven by the stage, not the document.
+       `scroll(root block)` with a range of `0% 60%` measured the whole page, so
+       the parallax finished 60% of the way down a document whose length has
+       nothing to do with the story - it was over long before the day was, and
+       it moved at a rate that changed whenever content was added below.
 
-     The timeline's name used to be written in this file, and it drifted the
-     moment the scenes were renamed: the animation stopped resolving, its
-     `both` fill applied the end keyframe, and every layer went to zero
-     opacity. A blank stage, with no error. A timeline name is the engine's to
-     know, not this file's. */
+       `contain` on a timeline taller than the viewport spans exactly the
+       element's own scroll travel: from its top meeting the top of the
+       viewport to its bottom meeting the bottom. That is the 600vh the stage
+       actually occupies, so the parallax now begins and ends with it and stays
+       correct if the height above changes. */
+    animation-timeline: --day-stage;
+    animation-range: contain 0% contain 100%;
+    animation-fill-mode: both;
+    /* Deliberately linear. A scroll-driven animation should track the input it
+       is bound to; easing it decouples the motion from the wheel and reads as
+       lag rather than polish. The rushed feeling was the range, fixed above. */
+    animation-timing-function: linear;
+  }
+
+  /* Each layer recedes at its own rate: that difference is the depth. */
+  .is-animated .stage-layer-back {
+    animation-name: layer-back;
+  }
+  .is-animated .stage-layer-mid {
+    animation-name: layer-mid;
+  }
+  .is-animated .stage-layer-front {
+    animation-name: layer-front;
+  }
 
   @keyframes layer-back {
     from {
@@ -745,6 +769,22 @@
    until it is actually released, which is exactly the moment the fade should
    start - no scroll offsets to keep in sync with the stage height. */
 
+@supports (animation-timeline: view()) {
+  body:not(.motion-paused) .stage-pin {
+    animation: stage-exit linear both;
+    animation-timeline: view();
+    animation-range: exit 0% exit 50%;
+  }
+
+  @keyframes stage-exit {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
 
 /* The reader should not meet the first heading while the tab is still on
    screen, whether or not the fade above is running. */
@@ -839,7 +879,6 @@
 
 .stage-focus-controls {
   position: relative;
-  pointer-events: auto;
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -936,10 +975,6 @@
     transform var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     opacity var(--dur) var(--ease);
-}
-
-.glass-pane {
-  pointer-events: auto;
 }
 
 .glass-pane:hover {
