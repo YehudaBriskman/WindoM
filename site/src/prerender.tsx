@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
+import { Support } from './pages/Support';
+import { Contact } from './pages/Contact';
 
 /**
  * Pages rendered to real HTML at build time.
@@ -25,4 +27,6 @@ import { Terms } from './pages/Terms';
 export const prerendered: Record<string, () => string> = {
   'privacy.html': () => renderToStaticMarkup(<Privacy />),
   'terms.html': () => renderToStaticMarkup(<Terms />),
+  'support.html': () => renderToStaticMarkup(<Support />),
+  'contact.html': () => renderToStaticMarkup(<Contact />),
 };

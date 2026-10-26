@@ -1,0 +1,17 @@
+import { StrictMode } from 'react';
+import { hydrateRoot } from 'react-dom/client';
+import { Contact } from '../pages/Contact';
+import '../styles/base.css';
+import '../styles/pages.css';
+import '../styles/docs.css';
+
+const root = document.getElementById('root');
+if (!root) throw new Error('#root is missing from contact.html');
+
+/** Hydrated rather than rendered, because this page is prerendered. See privacy.tsx. */
+hydrateRoot(
+  root,
+  <StrictMode>
+    <Contact />
+  </StrictMode>,
+);

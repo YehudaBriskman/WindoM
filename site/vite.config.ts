@@ -17,6 +17,8 @@ export const PAGES = [
   'privacy',
   'terms',
   'local-setup',
+  'support',
+  'contact',
   // Hebrew guide on its own URL. The previous site shipped both languages in
   // every response and hid one with CSS, so Hebrew was never indexable.
   'he/guide',
