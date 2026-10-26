@@ -313,16 +313,6 @@
   filter: blur(26px);
 }
 
-/* Below the width at which the wrap has margins to spare, the bloom's
-   horizontal overhang lands past the edge of the page. It is a decorative
-   blur, so nothing is lost by containing it - and a document that is wider
-   than the window because of a glow is still a document that is too wide. */
-@media (max-width: 1200px) {
-  .beat-splash {
-    inset: -16% 0;
-  }
-}
-
 .beat-frame {
   position: relative;
   z-index: 1;

@@ -1,4 +1,4 @@
-import { Scene } from './Choreography';
+import { Stage } from './Stage';
 import { useTilt } from '../hooks/useTilt';
 import { STORE_URL } from '../lib/site';
 import { DAY } from '../lib/day';
@@ -6,6 +6,7 @@ import type { DayCycle } from '../hooks/useDayCycle';
 
 interface HeroProps {
   cycle: DayCycle;
+  animated: boolean;
 }
 
 /** The specification strip. Short enough to read as a row, not a list. */
@@ -36,10 +37,10 @@ const FACTS = [
  * active stage's own tint, so the page is lit by the time of day the preview
  * depicts rather than by a fixed accent.
  *
- * The product itself is no longer rendered here. The page owns one card and
- * moves it; the hero holds the slot the card rests in while it is here.
+ * The preview is the real `Stage`, scaled. It cannot go stale, which matters
+ * while every screenshot the site owns predates the glass rebuild.
  */
-export function Hero({ cycle }: HeroProps) {
+export function Hero({ cycle, animated }: HeroProps) {
   const tint = DAY[cycle.stage].tint;
   const tiltRef = useTilt<HTMLDivElement>();
 
@@ -86,16 +87,32 @@ export function Hero({ cycle }: HeroProps) {
           </ul>
         </div>
 
-        {/* Its own stacking and perspective context: the fact cards lean
-            inside it, and the travelling card is positioned against the slot
-            it holds. */}
-        <div className="hero-stage">
-          {/* The fact cards still lean as a group; the product itself is no
-              longer inside this cluster. It is one card owned by the page,
-              and this slot is the box it occupies while it is here. */}
-          <Scene id="hero" className="hero-preview-slot" />
+        {/*
+          Its own stacking and transform context, so the scaled Stage cannot
+          share a 3D space with the pinned Stage further down - they are the
+          same component.
 
+          aria-hidden because it is a picture of the product: every claim it
+          makes is also made in the copy beside it.
+        */}
+        <div className="hero-stage">
+          {/* The preview and the cards lean as one object, so the tilt is
+              applied here rather than to the screen alone - cards that stayed
+              flat while the screen behind them turned never looked attached
+              to it. */}
           <div className="hero-cluster" ref={tiltRef}>
+            {/* Not `aria-hidden` as a whole any more. The Stage already hides
+                each decorative part of itself, and the hero's CSS removes the
+                narrative copy that would otherwise be read twice - which
+                leaves the focus control as the only thing exposed here, which
+                is exactly what should be. */}
+            <div className="hero-preview">
+              <div className="hero-preview-frame">
+                <Stage cycle={cycle} animated={animated} interactive />
+              </div>
+              <span className="hero-preview-sheen" aria-hidden="true" />
+            </div>
+
             {/* A row of three, sitting below the product and lapping over its
                 bottom edge, so the cards read as floating in front of the
                 image rather than captioning it. */}
@@ -112,7 +129,7 @@ export function Hero({ cycle }: HeroProps) {
         </div>
       </div>
 
-      <a className="hero-cue" href="#slot-day" aria-label="Skip to the demonstration">
+      <a className="hero-cue" href="#day-stage" aria-label="Skip to the demonstration">
         <span className="hero-cue-rail" aria-hidden="true" />
       </a>
     </section>
