@@ -223,8 +223,30 @@ export function emittedPaths(route: SiteRoute): string[] {
   return paths;
 }
 
-/** The route for a path, accepting either URL shape. */
+/**
+ * The route for a path, accepting every URL shape that reaches us.
+ *
+ * Four addresses lead to the guide and all four have to resolve here, because
+ * the caller that matters is `RouteChrome`: a path it cannot place is treated as
+ * a 404 and titles the document "Page not found" over a correctly rendered page,
+ * leaving `lang`, `dir`, the description and the canonical at the previous
+ * page's values - which on `/he/privacy/` means Hebrew laid out left to right.
+ *
+ *   /guide              the clean URL
+ *   /guide.html         the shape the Chrome Web Store has registered
+ *   /guide/             what React Router matches (it compiles an optional
+ *                       trailing slash into every path), and the shape of
+ *                       `guide/index.html` on disk
+ *   /guide/index.html   that file named outright
+ *
+ * The trailing slash is stripped first, so the extension is still at the end of
+ * the string when `.html` comes off.
+ */
 export function routeFor(path: string): SiteRoute | undefined {
-  const clean = path.replace(/\.html$/, '').replace(/\/index$/, '/') || '/';
+  const clean =
+    path
+      .replace(/\/+$/, '')
+      .replace(/\.html$/, '')
+      .replace(/\/index$/, '') || '/';
   return ROUTES.find((r) => r.path === clean);
 }
