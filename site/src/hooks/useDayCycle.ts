@@ -68,11 +68,27 @@ export function useDayCycle(enabled: boolean): DayCycle {
     setClock(formatClock(new Date()));
   }, []);
 
-  // Real clock. Kept running even after scroll takes over, so returning to the
-  // top shows the true time again rather than a frozen one.
+  /**
+   * Real clock. Kept running even after scroll takes over, so returning to the
+   * top shows the true time again rather than a frozen one.
+   *
+   * The stage is re-read from the same `Date` as the clock, not just the
+   * minutes. Ticking the clock alone meant a tab left open across an hour
+   * boundary showed 17:05 beside "Good afternoon" with the afternoon wallpaper
+   * still up, because the stage had only ever been read once on mount.
+   * Scrolling down and back up repaired it, which made it look intermittent.
+   *
+   * One `now` for both is the point: a clock and a greeting derived from
+   * separate reads could still straddle a boundary, and the hero's claim is
+   * that this is the visitor's real time of day - so the two must never be
+   * able to contradict each other on screen.
+   */
   useEffect(() => {
     const id = setInterval(() => {
-      if (liveRef.current) setClock(formatClock(new Date()));
+      if (!liveRef.current) return;
+      const now = new Date();
+      setClock(formatClock(now));
+      setStage(currentStage(now));
     }, 1000);
     return () => clearInterval(id);
   }, []);
