@@ -1,0 +1,148 @@
+import type { Pane } from './day';
+
+/**
+ * What each widget in the tab is showing.
+ *
+ * This used to live inline in `Stage.tsx` as literal JSX - the temperature, the
+ * three market rows, the todo list, the track title. That meant a pane could
+ * not be re-skinned, reordered or reused without editing the component, and the
+ * stage had no description of its own contents to read.
+ *
+ * It is deliberately a small vocabulary of shapes rather than one type per
+ * widget: a figure with a caption, a list, a set of rows, a track. Every pane
+ * the extension has fits one of them, which is what keeps adding a widget to
+ * the miniature a data change rather than a component.
+ */
+
+export interface PaneRow {
+  name: string;
+  value: string;
+  delta?: string;
+  up?: boolean;
+}
+
+export type PaneBody =
+  /** One large number with a caption or two beneath it. */
+  | { kind: 'figure'; figure: string; small?: boolean; lines: string[] }
+  /** A checklist. `done` renders struck through. */
+  | { kind: 'list'; items: { text: string; done?: boolean }[] }
+  /** Name / value / change, as the markets and GitHub panes use. */
+  | { kind: 'rows'; rows: PaneRow[] }
+  /** Title, subtitle and a progress bar. */
+  | { kind: 'track'; title: string; artist: string; progress: number };
+
+export interface PaneSpec {
+  id: Pane;
+  /** The label across the top of the pane. */
+  label: string;
+  /** Which depth layer it belongs to - back is ambient, mid is actionable. */
+  layer: 'back' | 'mid';
+  body: PaneBody;
+}
+
+/**
+ * The panes, in the order they are rendered within their layer.
+ *
+ * Content mirrors the extension closely enough to be recognisable and is
+ * deliberately not live: a marketing page that fetches someone's real calendar
+ * to decorate itself would be a much worse trade than a plausible mock.
+ */
+export const PANES: PaneSpec[] = [
+  {
+    id: 'weather',
+    label: 'Weather',
+    layer: 'back',
+    body: { kind: 'figure', figure: '18°', lines: ['Clear · Tel Aviv'] },
+  },
+  {
+    id: 'finance',
+    label: 'Markets',
+    layer: 'back',
+    body: {
+      kind: 'rows',
+      rows: [
+        { name: 'AAPL', value: '241.80', delta: '+1.2%', up: true },
+        { name: 'BTC', value: '98,412', delta: '+3.4%', up: true },
+        { name: 'NVDA', value: '183.05', delta: '−0.6%' },
+      ],
+    },
+  },
+  {
+    id: 'recent',
+    label: 'Recent',
+    layer: 'back',
+    body: {
+      kind: 'rows',
+      rows: [
+        { name: 'github.com', value: 'windom' },
+        { name: 'figma.com', value: 'Stage v3' },
+      ],
+    },
+  },
+  {
+    id: 'todos',
+    label: 'Today',
+    layer: 'mid',
+    body: {
+      kind: 'list',
+      items: [
+        { text: 'Ship the release notes' },
+        { text: 'Review the open PR' },
+        { text: 'Cut v1.4.1', done: true },
+      ],
+    },
+  },
+  {
+    id: 'calendar',
+    label: 'Up next',
+    layer: 'mid',
+    body: {
+      kind: 'figure',
+      figure: '14:30',
+      small: true,
+      lines: ['Design review', '17:00 · 1:1'],
+    },
+  },
+  {
+    id: 'github',
+    label: 'Pull requests',
+    layer: 'mid',
+    body: { kind: 'figure', figure: '3 open', small: true, lines: ['windom · release gate'] },
+  },
+  {
+    id: 'gmail',
+    label: 'Inbox',
+    layer: 'mid',
+    body: { kind: 'figure', figure: '2 new', small: true, lines: ['Unsplash · API limits'] },
+  },
+  {
+    id: 'spotify',
+    label: 'Now playing',
+    layer: 'mid',
+    body: { kind: 'track', title: 'Nightports', artist: 'Nikki Nair', progress: 38 },
+  },
+];
+
+export function panesInLayer(layer: PaneSpec['layer']): PaneSpec[] {
+  return PANES.filter((p) => p.layer === layer);
+}
+
+/** The quick-links row across the top of the tab. */
+export const DOCK = [
+  { label: 'Calendar', glyph: '◷' },
+  { label: 'GitHub', glyph: '⌥' },
+  { label: 'Drive', glyph: '△' },
+  { label: 'Spotify', glyph: '♪' },
+] as const;
+
+/**
+ * The quote at the foot of the tab, and the two corner controls.
+ *
+ * Small things, and most of what makes the miniature read as a tab someone
+ * uses rather than a poster of one: a real new tab always has the settings
+ * gear in one corner and the sidebar handle in the other.
+ */
+export const QUOTE = {
+  text: 'Simplicity is the ultimate sophistication.',
+  author: 'Leonardo da Vinci',
+};

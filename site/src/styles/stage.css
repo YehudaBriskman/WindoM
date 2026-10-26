@@ -337,6 +337,10 @@
 .pane-calendar  { top: 46%;    right: 7%; }
 .pane-github    { top: 40%;    left: 7%; }
 .pane-spotify   { bottom: 15%; right: 6%; min-width: 212px; }
+/* The two late arrivals fill the gaps the original six left: one under the
+   weather pill on the left, one between the todos and the calendar. */
+.pane-gmail     { top: 28%;    right: 6%; }
+.pane-recent    { top: 62%;    left: 5%;  min-width: 196px; }
 
 /* ── Focus mode ─────────────────────────────────────────────────────── */
 /* The one widget that is not a pane, because in the product it is not one -
@@ -794,5 +798,169 @@
   .stage-pin {
     animation: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* ── The corners ────────────────────────────────────────────────────────
+   The settings gear and the sidebar handle. Neither does anything here, and
+   both earn their place anyway: a real new tab always has them, and their
+   absence was most of what made the miniature read as a poster of a product
+   rather than a picture of one in use. */
+
+.stage-corner {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: var(--r-pill);
+  /* Small chrome is dark in the product, where the large panels are light -
+     a 42px pill has too little area for a light veil to read as glass. */
+  background: rgba(22, 22, 26, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 8px 26px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.72);
+  transition: opacity var(--dur) var(--ease);
+}
+
+.stage-corner-settings {
+  left: 2.5%;
+  bottom: 5%;
+}
+
+.stage-corner-sidebar {
+  right: 2.5%;
+  bottom: 5%;
+}
+
+.stage-focus.is-lit ~ .stage-corner,
+.stage-headline.is-focus ~ .stage-corner {
+  opacity: 0;
+}
+
+/* ── The quote ──────────────────────────────────────────────────────────
+   Bottom centre, where the product puts it. Goes away in focus mode with
+   everything else. */
+
+.stage-quote {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  z-index: 4;
+  translate: -50% 0;
+  max-width: 34ch;
+  margin: 0;
+  text-align: center;
+  font-size: 0.92rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: opacity var(--dur) var(--ease);
+}
+
+.stage-quote-author {
+  display: block;
+  margin-top: var(--s-1);
+  font-style: normal;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.stage-quote.is-away {
+  opacity: 0;
+}
+
+/* ── The focus control ──────────────────────────────────────────────────
+   The one part of this picture that is genuinely operable, so it is styled
+   as a control rather than as scenery: it has a visible focus ring and it
+   does not disappear under the scrim it raises. */
+
+.stage-focus-controls {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  margin-top: var(--s-5);
+}
+
+.stage-focus-hint {
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.stage-focus-presets {
+  display: inline-flex;
+  gap: var(--s-2);
+}
+
+.stage-focus-preset,
+.stage-focus-stop {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--r-pill);
+  color: rgba(255, 255, 255, 0.78);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.stage-focus-preset {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.95rem;
+}
+
+.stage-focus-stop {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+}
+
+.stage-focus-preset:hover,
+.stage-focus-stop:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.stage-focus-preset:focus-visible,
+.stage-focus-stop:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ── The wallpaper pushes in as focus engages ───────────────────────────
+   The extension scales its background to 1.12 across the full three seconds
+   of the transition. Copied rather than approximated: the slow push is most
+   of what makes entering focus feel like the room going quiet. */
+
+.stage-pin[data-focus='entering'] .stage-wallpaper,
+.stage-pin[data-focus='entering-overlay'] .stage-wallpaper,
+.stage-pin[data-focus='active'] .stage-wallpaper {
+  scale: 1.12;
+}
+
+.stage-wallpaper {
+  transition: scale 3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-wallpaper,
+  .stage-corner,
+  .stage-quote {
+    transition: none;
+  }
+
+  .stage-pin[data-focus] .stage-wallpaper {
+    scale: 1;
   }
 }
