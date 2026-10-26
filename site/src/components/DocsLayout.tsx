@@ -18,6 +18,7 @@ import {
 } from '../lib/docs';
 import { SiteNav } from './SiteNav';
 import { DocsSearch } from './DocsSearch';
+import { useActiveHeading } from '../hooks/useActiveHeading';
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -55,6 +56,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
   const t = UI[locale];
 
   const { headings, content } = anchorHeadings(children);
+  const active = useActiveHeading(headings.map((h) => h.id));
   const { prev, next } = docsNeighbours(path);
   /* The trail uses the sidebar title, not the page's h1: the guide's heading is
      "Using WindoM" and its group is "Using WindoM", which produced a crumb that
@@ -136,11 +138,12 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             /* `details` rather than a button and state: it collapses before
                JavaScript runs and survives the static prerender, and the group
                containing the current page is the one worth opening. */
-            <details
-              className="docs-nav-group"
-              key={groupName}
-              open={pages.some((pg) => pg.path === path)}
-            >
+            /* Open by default, every group. Only the current page's group
+               used to be, which left most of the column empty and the rest of
+               the site behind a disclosure - the sidebar is a map, and a map
+               that shows one region is not doing its job. They still collapse
+               if someone wants the room. */
+            <details className="docs-nav-group" key={groupName} open>
               <summary className="docs-nav-heading">{groupName}</summary>
               <ul>
                 {pages.map((page) => (
@@ -185,7 +188,16 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             <ul>
               {headings.map((h) => (
                 <li key={h.id} className={h.level === 3 ? 'is-sub' : undefined}>
-                  <a href={`#${h.id}`}>{h.text}</a>
+                  <a
+                    href={`#${h.id}`}
+                    className={h.id === active ? 'is-active' : undefined}
+                    /* Announced, not merely coloured: the mark is the only
+                       thing saying where you are, and a colour alone says it
+                       to no one using a screen reader. */
+                    aria-current={h.id === active ? 'location' : undefined}
+                  >
+                    {h.text}
+                  </a>
                 </li>
               ))}
             </ul>

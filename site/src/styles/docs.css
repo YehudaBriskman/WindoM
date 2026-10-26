@@ -37,7 +37,7 @@
 }
 
 .docs-nav-group + .docs-nav-group {
-  margin-top: 26px;
+  margin-top: var(--s-5);
 }
 
 .docs-nav-heading {
@@ -46,7 +46,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 10px;
+  margin: 0 0 var(--s-2);
 }
 
 .docs-nav ul,
@@ -58,8 +58,8 @@
 
 .docs-nav a {
   display: block;
-  padding: 7px 12px;
-  margin-left: -12px;
+  padding: var(--s-2) var(--s-3);
+  margin-left: calc(var(--s-3) * -1);
   border-radius: var(--r-sm);
   color: var(--muted-strong);
   text-decoration: none;
@@ -73,8 +73,11 @@
 
 /* The current page is marked by weight and a rule rather than by colour
    alone, so it survives being read without colour. */
+/* A bar and a brighter label rather than a filled panel. The box read as a
+   button sitting in a list of links, and at the width of the column it was
+   the heaviest thing on the page. */
 .docs-nav a.is-current {
-  background: var(--surface);
+  background: none;
   color: var(--text);
   font-weight: 600;
   box-shadow: inset 2px 0 0 var(--accent);
@@ -82,9 +85,10 @@
 
 .docs-nav-blurb {
   display: block;
-  margin-top: 2px;
-  font-size: 0.78rem;
+  margin-top: 1px;
+  font-size: 0.74rem;
   font-weight: 400;
+  line-height: 1.35;
   color: var(--muted);
 }
 
@@ -144,6 +148,38 @@
 
 .docs-rail a:hover {
   color: var(--text);
+}
+
+/**
+ * Where you are.
+ *
+ * The rail listed every section and marked none of them, so it said what the
+ * page contained but never where in it you were. The bar sits in the column's
+ * own rule rather than beside it, so the list does not shift as the mark
+ * moves down it.
+ */
+.docs-rail a.is-active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.docs-rail li {
+  position: relative;
+}
+
+.docs-rail a.is-active::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(var(--s-5) * -1 + 5px);
+  top: 0.15em;
+  bottom: 0.15em;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.docs-rail li.is-sub a.is-active::before {
+  inset-inline-start: calc(var(--s-5) * -1 + 5px - var(--s-3));
 }
 
 /* ── Previous / next ────────────────────────────────────────────────── */
@@ -245,11 +281,23 @@
 /* Mirrored for the Hebrew guide. */
 .docs[dir='rtl'] .docs-nav a {
   margin-left: 0;
-  margin-right: -12px;
+  margin-right: calc(var(--s-3) * -1);
 }
 
 .docs[dir='rtl'] .docs-nav a.is-current {
   box-shadow: inset -2px 0 0 var(--accent);
+}
+
+/* The blurb belongs under its title, not beside it. A coarse pointer turns
+   the link into a flex row for the 44px target, which laid the two out as
+   columns - invisible on a phone only because the blurb is hidden there, and
+   plainly wrong on a tablet between 761px and 1100px. */
+@media (pointer: coarse) {
+  .docs-nav a {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
 }
 
 .docs[dir='rtl'] .docs-rail {
@@ -298,7 +346,9 @@
 /* ── Nested contents ────────────────────────────────────────────────── */
 
 .docs-rail li.is-sub {
-  margin-left: 12px;
+  /* Logical, so the indent mirrors in Hebrew. `margin-left` put the h3
+     indent on the wrong side of an RTL page. */
+  margin-inline-start: var(--s-3);
   font-size: 0.97em;
 }
 
