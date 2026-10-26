@@ -75,9 +75,9 @@ jobs:
           test -f dist/CNAME || { echo "::error::dist/CNAME missing - the custom domain would be dropped."; missing=1; }
           exit $missing
 
-      - uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site/dist
 
@@ -91,7 +91,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       # Pages reports the deploy complete before its CDN has finished serving the
       # new files, so checking immediately reports a false failure - the first run
