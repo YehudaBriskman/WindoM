@@ -82,6 +82,32 @@ export function interpretPublish(body) {
   return { errors, notes };
 }
 
+/**
+ * Submits the uploaded draft for review.
+ *
+ * The upload action takes a `publish: true` flag, and it does not do the job:
+ * v1.5.0 uploaded cleanly and then sat in Draft with "Submit for review" still
+ * waiting to be clicked, while the step reported success and printed nothing at
+ * all. Making the call here means the response is read instead of discarded.
+ */
+export async function publishItem(id, token, fetchImpl = fetch) {
+  const res = await fetchImpl(`${API}/${id}/publish`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'x-goog-api-version': '2',
+      'Content-Length': '0',
+    },
+  });
+  const body = await res.json().catch(() => ({}));
+  // A publish failure can arrive as an HTTP error or as a status array on a 200,
+  // so neither alone is sufficient to call it success.
+  if (!res.ok && !body.status) {
+    return { errors: [`Publish call failed: HTTP ${res.status}`], notes: [] };
+  }
+  return interpretPublish(body);
+}
+
 async function accessToken(env) {
   const res = await fetch(TOKEN_URL, {
     method: 'POST',
@@ -134,6 +160,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
     const { errors, notes } = interpretItem(item, { expectedVersion });
     for (const note of notes) console.log(note);
+
+    // Opt-in, because reading the store's state has to stay safe to run at will.
+    if (env.SUBMIT_FOR_REVIEW === 'true') {
+      console.log('Submitting the draft for review...');
+      const submitted = await publishItem(id, token);
+      for (const note of submitted.notes) console.log(note);
+      errors.push(...submitted.errors);
+    }
+
     for (const error of errors) console.error(`::error::${error}`);
     process.exitCode = errors.length ? 1 : 0;
   } catch (err) {

@@ -7,7 +7,7 @@ name: Chrome Web Store Status
 # while the store went on serving 1.4.1, and there was no way to tell from CI
 # which had happened - the answer only existed in the Developer Dashboard.
 #
-# Read-only: it never uploads or publishes. Safe to run at any time.
+# Read-only by default: it never uploads, and only submits when explicitly asked.
 on:
   workflow_dispatch:
     inputs:
@@ -15,6 +15,15 @@ on:
         description: Version this check expects the draft to hold, e.g. 1.5.0. Optional.
         required: false
         type: string
+      submit:
+        # Submits the draft the store already holds, without re-uploading. This is
+        # the recovery path for a release whose package landed but was never
+        # submitted - re-running the whole publish would replace a pending
+        # submission and restart review for no reason.
+        description: Submit the existing draft for review. Leave unchecked to only report.
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -37,6 +46,7 @@ jobs:
       - name: Report what the store holds
         run: node .github/scripts/report-store-status.mjs
         env:
+          SUBMIT_FOR_REVIEW: ${{ inputs.submit }}
           RELEASE_TAG: ${{ inputs.version }}
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
