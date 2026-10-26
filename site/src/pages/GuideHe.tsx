@@ -12,9 +12,6 @@ export function GuideHe() {
   return (
     <Layout eyebrow="מדריך למשתמש" title="שימוש ב-WindoM" dir="rtl">
       <div className="wrap wrap-prose prose">
-        <p className="lang-switch">
-          <a href="/guide.html" lang="en" hrefLang="en">English</a>
-        </p>
         <div className="callout tip">
             <strong>רוב הפונקציות לא דורשות חשבון.</strong>
             שעון, מזג אוויר, משימות, רקעים, ציטוטים, קישורים מהירים וטיימר הפוקוס עובדים מיד ללא התחברות. חשבון נדרש רק לסנכרון Google Calendar ו-Spotify. תמיד אפשר להוסיף אחד מאוחר יותר.

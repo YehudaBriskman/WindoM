@@ -11,9 +11,6 @@ import { DocsLayout } from '../components/DocsLayout';
 export function Guide() {
   return (
     <DocsLayout href="/guide.html" eyebrow="User Guide" title="Using WindoM">
-        <p className="lang-switch">
-          <a href="/he/guide.html" lang="he" hrefLang="he">עברית</a>
-        </p>
         <div className="callout tip">
             <strong>No account required for most things.</strong>
             Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync and Spotify. You can always add one later.

@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { SITE, GITHUB_URL } from '../lib/site';
-import { NAV_LINKS } from '../lib/docs';
+import { NAV_LINKS, LOCALES, translatedHref, type Locale } from '../lib/docs';
 
 interface SiteNavProps {
   /** Marks the matching link as current. Pass the page's own path. */
   current?: string;
+  /** Which language this page is in. Drives the switcher and the link targets. */
+  locale?: Locale;
+  /**
+   * The page's real path including any `/he/` prefix. The switcher needs it to
+   * point at this page's twin rather than at the site root.
+   */
+  docsHref?: string;
 }
 
 /**
@@ -19,7 +26,7 @@ interface SiteNavProps {
  * and the links cannot drift apart between the marketing and documentation
  * sides of the site.
  */
-export function SiteNav({ current }: SiteNavProps) {
+export function SiteNav({ current, locale = 'en', docsHref }: SiteNavProps) {
   const [open, setOpen] = useState(false);
 
   /**
@@ -55,7 +62,9 @@ export function SiteNav({ current }: SiteNavProps) {
             <a
               key={link.href}
               className={`nav-link${link.href === current ? ' is-current' : ''}`}
-              href={link.href}
+              href={locale === 'he' && link.href.startsWith('/') && link.href.endsWith('.html')
+                ? translatedHref(link.href, 'he')
+                : link.href}
               aria-current={link.href === current ? 'page' : undefined}
               onClick={() => setOpen(false)}
             >
@@ -65,6 +74,10 @@ export function SiteNav({ current }: SiteNavProps) {
         </nav>
 
         <div className="site-nav-end">
+          {/* Only where there is a translation to switch to. A control that
+              offers a language the page does not have is worse than none. */}
+          {docsHref && <LocaleSwitch href={docsHref} locale={locale} />}
+
           <a
             className="site-nav-icon"
             href={GITHUB_URL}
@@ -87,6 +100,40 @@ export function SiteNav({ current }: SiteNavProps) {
         </div>
       </div>
     </header>
+  );
+}
+
+/**
+ * The language control.
+ *
+ * Points at this page's twin rather than at the other language's home, so
+ * switching keeps your place - which is the only version of this control that
+ * is actually useful mid-document.
+ */
+function LocaleSwitch({ href, locale }: { href: string; locale: Locale }) {
+  const other = LOCALES.find((l) => l.code !== locale);
+  if (!other) return null;
+
+  return (
+    <a
+      className="locale-switch"
+      href={translatedHref(href, other.code)}
+      lang={other.code}
+      hrefLang={other.code}
+    >
+      <GlobeGlyph />
+      <span>{other.label}</span>
+    </a>
+  );
+}
+
+function GlobeGlyph() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="6.3" stroke="currentColor" strokeWidth="1.2" />
+      <ellipse cx="8" cy="8" rx="2.7" ry="6.3" stroke="currentColor" strokeWidth="1.2" />
+      <line x1="1.8" y1="8" x2="14.2" y2="8" stroke="currentColor" strokeWidth="1.2" />
+    </svg>
   );
 }
 

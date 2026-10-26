@@ -307,3 +307,176 @@
 .docs-rail {
   top: 76px;
 }
+
+/* ── Breadcrumb bar ─────────────────────────────────────────────────────
+   Under the nav, with the sidebar control at its head - the arrangement the
+   documentation sites this follows all share. */
+
+.docs-bar {
+  position: sticky;
+  top: 48px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.docs-bar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.docs-bar-toggle:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.docs-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+/* The separator is drawn rather than typed, so it is not read aloud between
+   every crumb. */
+.docs-crumbs li + li::before {
+  content: '/';
+  margin-right: 8px;
+  color: var(--border-strong);
+}
+
+.docs[dir='rtl'] .docs-crumbs li + li::before {
+  margin-right: 0;
+  margin-left: 8px;
+}
+
+.docs-crumbs a {
+  color: var(--muted);
+}
+
+.docs-crumbs a:hover {
+  color: var(--text);
+}
+
+.docs-crumbs li[aria-current='page'] {
+  color: var(--text);
+  font-weight: 500;
+  /* The page title can be long; the trail should not force the bar to wrap
+     into two rows on a narrow screen. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 50vw;
+}
+
+/* ── Collapsed sidebar ──────────────────────────────────────────────── */
+
+.docs.is-collapsed .docs-nav {
+  display: none;
+}
+
+.docs.is-collapsed .docs-shell {
+  grid-template-columns: minmax(0, 1fr) 200px;
+}
+
+@media (max-width: 1100px) {
+  .docs.is-collapsed .docs-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── The sidebar scrolls on its own ─────────────────────────────────── */
+
+.docs-nav {
+  max-height: calc(100dvh - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* A thin scrollbar rather than the platform default, which is wide enough
+     here to steal a noticeable slice of a 200px column. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  padding-right: 6px;
+}
+
+/* ── Heading anchors ────────────────────────────────────────────────────
+   Visible on hover and whenever focused, so they are reachable by keyboard
+   rather than being a mouse-only affordance. */
+
+.prose .has-anchor {
+  position: relative;
+}
+
+.heading-anchor {
+  margin-left: 0.4em;
+  color: var(--muted);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+
+.docs[dir='rtl'] .heading-anchor {
+  margin-left: 0;
+  margin-right: 0.4em;
+}
+
+.has-anchor:hover .heading-anchor,
+.heading-anchor:focus-visible {
+  opacity: 1;
+}
+
+.heading-anchor:hover {
+  color: var(--accent);
+}
+
+/* ── Language control ───────────────────────────────────────────────── */
+
+.locale-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  font-size: 0.86rem;
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.locale-switch:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+@media (max-width: 560px) {
+  .locale-switch span {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .docs-bar {
+    top: 44px;
+    padding: 6px 16px;
+  }
+}

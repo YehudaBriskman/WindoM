@@ -1,6 +1,24 @@
-import { Children, cloneElement, isValidElement, type ReactNode, type ReactElement } from 'react';
+import {
+  Children,
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useState,
+  type ReactNode,
+  type ReactElement,
+} from 'react';
 import { STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
-import { docsGroups, docsNeighbours, headingId, type DocsPage } from '../lib/docs';
+import {
+  DOCS_PAGES,
+  docsGroups,
+  docsNeighbours,
+  headingId,
+  labelFor,
+  localeOf,
+  translatedHref,
+  type DocsPage,
+  type Locale,
+} from '../lib/docs';
 import { SiteNav } from './SiteNav';
 
 interface DocsLayoutProps {
@@ -13,56 +31,135 @@ interface DocsLayoutProps {
   dir?: 'ltr' | 'rtl';
 }
 
+const SIDEBAR_KEY = 'windom-docs-sidebar';
+
+/** The handful of strings the shell itself contributes, in both languages. */
+const UI = {
+  en: { home: 'Home', onPage: 'On this page', more: 'More documentation', prev: 'Previous', next: 'Next', toggle: 'Toggle navigation' },
+  he: { home: 'דף הבית', onPage: 'בעמוד הזה', more: 'תיעוד נוסף', prev: 'הקודם', next: 'הבא', toggle: 'הצגה או הסתרה של הניווט' },
+} as const;
+
 /**
  * The shell for documentation, as opposed to the marketing pages.
  *
- * The legal pages, the guide and the setup notes were four single columns of
- * prose with no way to get from any one of them to another. They are
- * documentation and were not laid out like it.
+ * Shaped after the public documentation sites people already know: a breadcrumb
+ * trail with the sidebar control at its head, a sidebar that collapses and
+ * scrolls on its own, headings that can be linked to, and a language control.
  *
- * Everything navigational is derived rather than authored: the sidebar and the
- * previous/next links come from DOCS_PAGES, and the contents rail is built from
- * the headings in `children`. There is nothing to keep in sync by hand, which
- * is the only way a table of contents stays correct across edits.
+ * Everything navigational is derived rather than authored. The sidebar, the
+ * breadcrumbs and the neighbour links all come from DOCS_PAGES, and the
+ * contents rail is built from the headings in `children` - so there is nothing
+ * to keep in sync by hand, which is the only way a table of contents stays
+ * correct across edits.
  */
 export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'ltr' }: DocsLayoutProps) {
+  const locale = localeOf(href);
+  // Hebrew pages live under /he/, but DOCS_PAGES is keyed by the English path.
+  const bare = href.replace(/^\/he\//, '/');
+  const t = UI[locale];
+
   const { headings, content } = anchorHeadings(children);
-  const { prev, next } = docsNeighbours(href);
+  const { prev, next } = docsNeighbours(bare);
+  const current = DOCS_PAGES.find((p) => p.href === bare);
+  /* The trail uses the sidebar title, not the page's h1: the guide's heading is
+     "Using WindoM" and its group is "Using WindoM", which produced a crumb that
+     said the same thing twice. */
+  const crumbLabel = current ? labelFor(current, locale) : undefined;
+
+  /**
+   * Collapsed by choice, remembered.
+   *
+   * Starts expanded rather than reading storage during render: the first paint
+   * is prerendered HTML, and a value read from localStorage would disagree with
+   * it on any load where the sidebar had been closed.
+   */
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(SIDEBAR_KEY) === 'collapsed') setCollapsed(true);
+    } catch {
+      // Private mode, or storage disabled. The sidebar simply stays open.
+    }
+  }, []);
+
+  const toggleSidebar = () => {
+    setCollapsed((was) => {
+      const next = !was;
+      try {
+        localStorage.setItem(SIDEBAR_KEY, next ? 'collapsed' : 'open');
+      } catch { /* not worth failing the click over */ }
+      return next;
+    });
+  };
 
   return (
-    <div dir={dir} className="docs">
+    <div dir={dir} className={`docs${collapsed ? ' is-collapsed' : ''}`}>
       <a className="skip-link" href="#content">
         Skip to content
       </a>
       <div className="ambient" aria-hidden="true" />
 
-      <SiteNav current={href} />
+      <SiteNav current={bare} locale={locale} docsHref={href} />
+
+      {/* The sidebar control sits at the head of the breadcrumb row, where the
+          documentation sites this follows put it. */}
+      <div className="docs-bar">
+        <button
+          type="button"
+          className="docs-bar-toggle"
+          onClick={toggleSidebar}
+          aria-expanded={!collapsed}
+          aria-controls="docs-nav"
+          aria-label={t.toggle}
+        >
+          <SidebarGlyph />
+        </button>
+
+        <nav className="docs-crumbs" aria-label="Breadcrumb">
+          <ol>
+            <li>
+              <a href="/">{t.home}</a>
+            </li>
+            {crumbLabel && (
+              <li>
+                <span>{crumbLabel.group}</span>
+              </li>
+            )}
+            <li aria-current="page">{crumbLabel?.title ?? title}</li>
+          </ol>
+        </nav>
+      </div>
 
       <div className="docs-shell">
-        <nav className="docs-nav" aria-label="Documentation">
-          {docsGroups().map(({ group, pages }) => (
+        <nav className="docs-nav" id="docs-nav" aria-label="Documentation">
+          {docsGroups(locale).map(({ group: groupName, pages }) => (
             /* `details` rather than a button and state: it collapses before
                JavaScript runs and survives the static prerender, and the group
                containing the current page is the one worth opening. */
             <details
               className="docs-nav-group"
-              key={group}
-              open={pages.some((p) => p.href === href)}
+              key={groupName}
+              open={pages.some((p) => p.href === bare)}
             >
-              <summary className="docs-nav-heading">{group}</summary>
+              <summary className="docs-nav-heading">{groupName}</summary>
               <ul>
-                {pages.map((page) => (
-                  <li key={page.href}>
-                    <a
-                      href={page.href}
-                      className={page.href === href ? 'is-current' : undefined}
-                      aria-current={page.href === href ? 'page' : undefined}
-                    >
-                      {page.title}
-                      {page.blurb && <span className="docs-nav-blurb">{page.blurb}</span>}
-                    </a>
-                  </li>
-                ))}
+                {pages.map((page) => {
+                  const label = labelFor(page, locale);
+                  const to = locale === 'he' ? translatedHref(page.href, 'he') : page.href;
+                  return (
+                    <li key={page.href}>
+                      <a
+                        href={to}
+                        className={page.href === bare ? 'is-current' : undefined}
+                        aria-current={page.href === bare ? 'page' : undefined}
+                      >
+                        {label.title}
+                        {label.blurb && <span className="docs-nav-blurb">{label.blurb}</span>}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </details>
           ))}
@@ -78,17 +175,17 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
           <div className="prose">{content}</div>
 
           {(prev || next) && (
-            <nav className="docs-neighbours" aria-label="More documentation">
-              {prev ? <NeighbourLink page={prev} rel="prev" /> : <span />}
-              {next ? <NeighbourLink page={next} rel="next" /> : <span />}
+            <nav className="docs-neighbours" aria-label={t.more}>
+              {prev ? <NeighbourLink page={prev} rel="prev" locale={locale} label={t.prev} /> : <span />}
+              {next ? <NeighbourLink page={next} rel="next" locale={locale} label={t.next} /> : <span />}
             </nav>
           )}
         </main>
 
         {/* Only worth the column when there is something to list. */}
         {headings.length > 1 && (
-          <aside className="docs-rail" aria-label="On this page">
-            <h2 className="docs-rail-heading">On this page</h2>
+          <aside className="docs-rail" aria-label={t.onPage}>
+            <h2 className="docs-rail-heading">{t.onPage}</h2>
             <ul>
               {headings.map((h) => (
                 <li key={h.id} className={h.level === 3 ? 'is-sub' : undefined}>
@@ -122,11 +219,31 @@ export function DocsLayout({ children, href, eyebrow, title, subtitle, dir = 'lt
   );
 }
 
-function NeighbourLink({ page, rel }: { page: DocsPage; rel: 'prev' | 'next' }) {
+function SidebarGlyph() {
   return (
-    <a className={`docs-neighbour is-${rel}`} href={page.href} rel={rel}>
-      <span className="docs-neighbour-label">{rel === 'prev' ? 'Previous' : 'Next'}</span>
-      <span className="docs-neighbour-title">{page.title}</span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="1" y="2.5" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.3" />
+      <line x1="6" y1="2.5" x2="6" y2="13.5" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+function NeighbourLink({
+  page,
+  rel,
+  locale,
+  label,
+}: {
+  page: DocsPage;
+  rel: 'prev' | 'next';
+  locale: Locale;
+  label: string;
+}) {
+  const to = locale === 'he' ? translatedHref(page.href, 'he') : page.href;
+  return (
+    <a className={`docs-neighbour is-${rel}`} href={to} rel={rel}>
+      <span className="docs-neighbour-label">{label}</span>
+      <span className="docs-neighbour-title">{labelFor(page, locale).title}</span>
     </a>
   );
 }
@@ -145,8 +262,8 @@ interface Heading {
  * the static prerender too, so the anchors exist in the HTML a reader gets with
  * no JavaScript - which is the whole point of prerendering these pages.
  *
- * A heading that already carries an id keeps it, so a page can pin an anchor
- * that is linked from elsewhere and must not move.
+ * Each heading also gains a link to itself, which is how someone cites one
+ * clause of the privacy policy without describing where to scroll.
  */
 function anchorHeadings(children: ReactNode): { headings: Heading[]; content: ReactNode } {
   const headings: Heading[] = [];
@@ -178,7 +295,17 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
     seen.add(id);
     headings.push({ id, text, level: level as 2 | 3 });
 
-    return cloneElement(walked as ReactElement<{ id?: string }>, { id });
+    const inner = (walked as ReactElement<{ children?: ReactNode }>).props.children;
+    return cloneElement(
+      walked as ReactElement<{ id?: string; className?: string; children?: ReactNode }>,
+      { id, className: 'has-anchor' },
+      <>
+        {inner}
+        <a className="heading-anchor" href={`#${id}`} aria-label={`Link to ${text}`}>
+          #
+        </a>
+      </>,
+    );
   };
 
   return { headings, content: walk(children) };
