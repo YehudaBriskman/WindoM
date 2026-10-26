@@ -22,6 +22,11 @@ export const PAGES = [
   // Hebrew guide on its own URL. The previous site shipped both languages in
   // every response and hid one with CSS, so Hebrew was never indexable.
   'he/guide',
+  'he/privacy',
+  'he/terms',
+  'he/support',
+  'he/contact',
+  'he/local-setup',
 ] as const;
 
 export default defineConfig({
