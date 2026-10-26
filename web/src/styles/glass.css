@@ -4,43 +4,146 @@
    ============================================================ */
 
 /* ============================================================
-   Liquid Glass Utilities (iOS-style with SVG distortion)
+   Liquid glass
+   ============================================================
+
+   The material is four layers, and the order matters:
+
+     ::after   the backdrop, refracted and optically thickened   (z -1)
+     element   the body tint                                     (z  0)
+     ::before  the specular rim and inner sheen                  (z  2)
+     content   whatever the pane is actually for                 (z  1)
+
+   The refraction comes from a generated displacement field - see
+   lib/liquid-glass.ts - delivered through the --glass-refract custom property,
+   because a filter URL cannot be written in a stylesheet for an element whose
+   size is not known until it is measured. Where no field has been generated
+   yet, the property is empty and the pane is simply blurred: correct, just not
+   yet curved.
+
+   No -webkit- prefix anywhere below. Blink treats -webkit-backdrop-filter as a
+   true alias rather than a fallback, so a prefixed declaration after the real
+   one replaces it - and the minifier, seeing two declarations of one property,
+   kept the prefixed one and discarded the refraction with it. The extension is
+   Chromium-only, so the prefix was only ever a way to lose the effect.
+
+   Optical density is the other half. The previous material tinted at 3% white,
+   which over a dark photograph is nothing, so a bright widget behind a panel
+   stayed legible through it and collided with the text in front. Glass does not
+   work that way: a thick pane dims and desaturates whatever is behind it until
+   it reads as texture. `brightness()` in the backdrop filter is what does that
+   here, and it is why the content on the pane now wins.
    ============================================================ */
 
-/* Shared base - positioning + stacking context for pseudo-elements */
+/* Zero specificity on purpose.
+   The pseudo-elements need a positioned ancestor, but half of these panes set
+   their own position - the settings container is `fixed`, and with glass.css
+   now loading last a plain `position: relative` here silently beat it and
+   dropped the panel into the flow. `:where()` contributes nothing to
+   specificity, so any component rule wins and this only applies to panes that
+   have not said otherwise. */
+:where(
+  .glass-panel,
+  .glass-sidebar,
+  .glass-quote,
+  .glass-credit,
+  .glass-dock
+) {
+  position: relative;
+}
+
 .glass-panel,
 .glass-sidebar,
-.glass-settings,
 .glass-quote,
 .glass-credit,
 .glass-dock {
-  position: relative;
   isolation: isolate;
-  background: rgba(255, 255, 255, 0.03);
-}
 
-/* Inner glow layer - liquid highlight edges */
-.glass-panel::before,
-.glass-sidebar::before,
-.glass-settings::before,
-.glass-quote::before,
-.glass-credit::before,
-.glass-dock::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  /* Lit from the upper left until the pointer says otherwise, so the material
+     is never flat on first paint. */
+  --glass-lx: 30%;
+  --glass-ly: -10%;
+  --glass-lit: 0.8;
+  /* 0 when the light is far from this pane, 1 when it is on it. Sprung in the
+     hook, so it arrives late and settles. */
+  --glass-prox: 0;
+
+  /* Everything that moves does so on one curve, and it is not a linear one.
+     Glass has mass: it starts slowly, carries, and arrives without a bounce
+     it has not earned. */
+
+  /* The specular, carried on the element's own background rather than a
+     pseudo-element: ::before is the refracted rim and ::after is the backdrop,
+     and both are spoken for.
+
+     Two highlights from one light. The broad sheen is the face of the pane
+     catching it; the tight core is the pointer's own reflection, which only
+     appears as the light comes near - that is what --glass-prox gates. The core
+     tightens as it approaches, so the material reads as gathering toward the
+     cursor rather than just brightening under it. */
+  background-image:
+    radial-gradient(
+      calc(28% - 10% * var(--glass-prox)) calc(26% - 9% * var(--glass-prox))
+        at var(--glass-lx) var(--glass-ly),
+      rgba(255, 255, 255, calc(0.3 * var(--glass-prox) * var(--glass-lit))) 0%,
+      rgba(255, 255, 255, calc(0.08 * var(--glass-prox) * var(--glass-lit))) 55%,
+      transparent 100%
+    ),
+    radial-gradient(
+      130% 100% at var(--glass-lx) var(--glass-ly),
+      rgba(255, 255, 255, calc(0.2 * var(--glass-lit))) 0%,
+      rgba(255, 255, 255, calc(0.05 * var(--glass-lit))) 38%,
+      transparent 72%
+    );
+
+  /* The compressed band at the edge. Four inset shadows rather than one ring,
+     so the lit side reads brighter than the shaded one and the edge has a
+     direction instead of being an outline. */
   box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.7),
-    inset 0 0 3px 1px rgba(255, 255, 255, 0.5);
-  pointer-events: none;
-  z-index: 2;
+    inset 0 1px 0 0 rgba(255, 255, 255, calc(0.75 * var(--glass-lit))),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 14px 22px -16px rgba(255, 255, 255, calc(0.5 * var(--glass-lit))),
+    inset 0 -14px 22px -16px rgba(255, 255, 255, 0.14),
+    inset 14px 0 22px -16px rgba(255, 255, 255, calc(0.32 * var(--glass-lit))),
+    inset -14px 0 22px -16px rgba(255, 255, 255, 0.12);
 }
 
-/* Backdrop distortion layer - shared base */
+/* `transition` is a single property: any declaration replaces the whole
+   shorthand rather than merging with it. Declared plainly here, this wiped
+   width, height and border-radius out of the settings panel's own transition
+   on close - the open state outranked it at (0,2,0) and so animated, while
+   the closed state tied at (0,1,0) and lost to this file's later position.
+   That is the entire reason panels opened smoothly and vanished instantly.
+
+   Only discrete state changes belong here anyway; the continuous light values
+   are sprung in the hook. */
+:where(
+  .glass-panel,
+  .glass-sidebar,
+  .glass-quote,
+  .glass-credit,
+  .glass-dock
+) {
+  transition:
+    border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── The backdrop ─────────────────────────────────────────────────────────
+
+   No blur, and therefore no backdrop-filter at all.
+
+   The pane used to blur at 4-5px while also carrying a ground under its text,
+   and the two fought: the wallpaper came out neither crisply visible nor
+   properly hidden, just murky. Legibility is the grounds' job now, so the
+   blur has nothing left to do - and a `backdrop-filter` that only saturates
+   still costs the compositor a full backdrop sample on every pane, thirteen
+   of them, for a nudge nobody would miss.
+
+   What remains on this layer is the refracted rim, which measurement says is
+   free: disabling it moved dropped frames from 24 to 23. */
 .glass-panel::after,
 .glass-sidebar::after,
-.glass-settings::after,
 .glass-quote::after,
 .glass-credit::after,
 .glass-dock::after {
@@ -52,72 +155,226 @@
   z-index: -1;
 }
 
-/* Per-element blur + distortion filter */
+/* ── The refracted rim ────────────────────────────────────────────────────
+
+   The band where the pane bends what is behind it.
+
+   This cannot be done with `backdrop-filter`. A displacement map fed by
+   `feImage` returns nothing there: the pane does not refract its backdrop, it
+   erases it and goes flat grey. Verified by capturing one frame twice over a
+   striped backdrop, with the filter and with `--glass-refract: none`, and again
+   after preloading the map and growing the filter region - the stripes vanish
+   every time.
+
+   `filter:` on an ordinary element does work. So the rim paints its own copy of
+   the wallpaper, offset to line up with the real one behind the pane, displaces
+   that with the generated field, and is masked to the bezel so the flat middle
+   of the pane is left to the blur underneath.
+
+   It shows the wallpaper rather than everything behind the pane, which for a
+   rim band is what you would see anyway.
+   ───────────────────────────────────────────────────────────────────────── */
+.glass-panel::before,
+.glass-sidebar::before,
+.glass-quote::before,
+.glass-credit::before,
+.glass-dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+
+  background-image: var(--glass-wall, none);
+  background-size: var(--glass-wall-size, cover);
+  background-position: var(--glass-wall-x, 0) var(--glass-wall-y, 0);
+  background-repeat: no-repeat;
+
+  filter: var(--glass-refract, none);
+
+  -webkit-mask-image: var(--glass-rim, none);
+  mask-image: var(--glass-rim, none);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+
+  /* Driven by the hook: 0 while the pane is in motion or before a field
+     exists, 1 once one has been built for the pane's current geometry. The
+     mask and the alignment are both cut for one exact size, so showing this
+     at any other size paints an unmasked wallpaper across the screen.
+
+     Scaled well down from that. At full strength the rim is an unveiled,
+     unblurred copy of the wallpaper sitting inside a pane that is veiled, so
+     it came out brighter and sharper than its surroundings and framed every
+     panel with a bright band. A bend in glass is a distortion of what is
+     already there, not a window onto something clearer. */
+  opacity: calc(var(--glass-lens, 0) * 0.45);
+  transition: opacity 0.18s ease-out;
+}
+
+/* ── Per-material depth ───────────────────────────────────────────────────
+
+   Glass is a light material. Every previous attempt here got that backwards.
+
+   Look at what real liquid glass does over a photograph: you can still read
+   what is behind it. The terraces, the trees, the colour - all still there,
+   stretched and softened but present. The pane is brighter than its backdrop,
+   not darker, and the effect comes from *distortion* rather than occlusion.
+
+   Both earlier passes reached for the same wrong lever. First a dark tint,
+   then a brightness cut, then a 56px blur - each one hiding the backdrop a
+   little more thoroughly, and each one taking the pane further from glass and
+   closer to a card with a photo vaguely behind it.
+
+   So: a light veil rather than a dark one, blur low enough that the backdrop
+   survives it, and a lift in brightness rather than a cut. White text stays
+   legible on it the way it does in the reference - through the shadow it
+   already carries, not by drowning everything underneath.
+   ───────────────────────────────────────────────────────────────────────── */
+
 .glass-panel::after {
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  filter: url(#glass-distort);
 }
 .glass-panel {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 .glass-sidebar::after {
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  filter: url(#glass-distort);
 }
 .glass-sidebar {
-  border-left: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.08);
+  background-color: rgba(255, 255, 255, 0.09);
+  border-left: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: -10px 0 34px rgba(0, 0, 0, 0.22);
 }
 
-.glass-settings::after {
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  filter: url(#glass-distort);
-}
-.glass-settings {
-  border-right: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.08);
-}
 
 .glass-quote::after {
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  filter: url(#glass-distort-sm);
 }
 .glass-quote {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
 }
 
 .glass-credit::after {
-  backdrop-filter: blur(16px) saturate(160%);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  filter: url(#glass-distort-sm);
 }
 .glass-credit {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
 }
 
 .glass-dock::after {
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  filter: url(#glass-distort-sm);
 }
 .glass-dock {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  /* Small chrome needs more material than a panel does.
+     A 52px pill has almost no area for a lens to read in: the rim is most of
+     it, and a fill tuned for a 520px panel disappears. So the dock tier gets a
+     denser ground and a brighter rim, and reads as a solid little object
+     rather than a faint ring. */
+  background-color: rgba(22, 22, 26, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  box-shadow:
+    0 8px 26px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+/* ── Legibility ───────────────────────────────────────────────────────────
+
+   A pane is a lens, and a lens is a terrible thing to write on.
+
+   The material is deliberately light and barely blurred so the wallpaper
+   reads through it. Over a dark photograph that is fine. Over a bright one -
+   sun on water, snow, a blown-out sky - white text lands on white and
+   disappears, which is exactly what happened to the settings nav.
+
+   Two layers of defence, because one is not enough on its own:
+
+   A doubled shadow. The tight one gives the glyph an edge against anything
+   immediately behind it; the wide soft one darkens a halo around the whole
+   word so it keeps a ground even over a sun glint. Cheap, and it costs no
+   compositing.
+
+   And `--glass-ink`, below: regions that carry a lot of text get their own
+   ground rather than sitting on bare glass. The pane stays a lens; the
+   writing gets paper. That is what the reference does too - its sidebar is
+   glass, but the items on it have fills of their own. */
+.glass-panel,
+.glass-sidebar,
+.glass-quote,
+.glass-credit,
+.glass-dock {
+  /* For text sitting directly on the lens: a tight pass for the glyph edge
+     and a wide soft one for a halo, so a word keeps a ground even across a
+     sun glint. */
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.75),
+    0 2px 10px rgba(0, 0, 0, 0.5);
+
+  /* The ground for text-heavy regions inside a pane. Neutral, not blue: a
+     tinted scrim over warm light is what turned an earlier version brown. */
+  /* The pane is clear now, so these are the only thing between white text and
+     a sun glint. They have to be properly solid rather than a hint - a 30%
+     scrim was never going to survive sun-on-water. Neutral grey, because a
+     tinted scrim over warm light is what turned an earlier version brown. */
+  --glass-ink: rgba(20, 20, 23, 0.62);
+  --glass-ink-strong: rgba(14, 14, 17, 0.72);
+}
+
+/* Text on a card already has a ground, so the halo meant for bare glass only
+   makes it muddy. The tight pass stays; the wide one goes. */
+.settings-group,
+.visibility-table,
+.glass-control {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* The pane's own content sits above the backdrop and below the rim.
+   z-index needs a positioned element, hence the `position` - but it must not
+   decide *which* positioning. Four direct children of these panes are
+   `absolute` (the settings gear, the sidebar icon, both close buttons), and a
+   plain `position: relative` here outranked all of them once glass.css started
+   loading last: the gear vanished and the sidebar icon left its corner.
+
+   `:where()` contributes no specificity, so this applies only to children that
+   have not positioned themselves, and the z-index lands either way. */
+:where(
+  .glass-panel > *,
+  .glass-sidebar > *,
+  .glass-quote > *,
+  .glass-credit > *,
+  .glass-dock > *
+) {
+  position: relative;
+}
+
+.glass-panel > *,
+.glass-sidebar > *,
+.glass-quote > *,
+.glass-credit > *,
+.glass-dock > * {
+  z-index: 1;
+}
+
+/* Reduced motion keeps the material and stops the light. The highlight is
+   pinned by the hook; this guards the transitions. */
+@media (prefers-reduced-motion: reduce) {
+  .glass-panel,
+  .glass-sidebar,
+    .glass-quote,
+  .glass-credit,
+  .glass-dock {
+    transition: none !important;
+  }
 }
 
 /* Glass input - inputs can't use pseudo-elements, inline liquid glass */
 .glass-input {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px) saturate(150%);
-  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  background-color: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
     inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
@@ -134,59 +391,127 @@
 }
 
 /* ============================================================
-   Shared element glass - grouped by identical values
+   Controls
+   ============================================================
+
+   Everything small: inputs, selects, buttons, rows, cards.
+
+   These get the light but not the lens. A displacement field is generated per
+   element geometry, and on a 36 pixel control the bezel would be two pixels
+   wide - refraction nobody can see, paid for with a rasterised field each. The
+   light is the opposite: it is the part you notice, and it costs nothing here
+   because --glass-lx, --glass-ly and --glass-prox inherit from whichever pane
+   the control sits on.
+
+   Inheriting means every control on a panel is lit by the same moving source
+   and they sweep together, which is what a large light actually does to a tray
+   of objects. A control lit independently of the panel it sits on looks like a
+   sticker on it.
    ============================================================ */
 
-/* Standard field glass: bg 0.05 · border 0.1 · inset shadow 0.4/0.15 */
+.glass-control,
 .settings-input,
 .settings-select,
+.settings-file-input,
+.settings-close,
+.settings-reset-btn,
 .todo-input,
 .todo-item,
 .calendar-date,
 .event-item,
-.settings-close {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.integration-card,
+.auth-user-card,
+.visibility-table {
+  /* Reads as a recess in the pane rather than another sheet on top of it: a
+     touch darker than the glass it sits in, with a bright upper rim. Tinting
+     these lighter than their parent is what made the first version look like
+     stickers.
+
+     No backdrop-filter. Every one of these is a separate backdrop sample for
+     the compositor, there can be forty of them on an open panel, and at the
+     3px they were asking for nobody could see the difference. The pane behind
+     them is already blurred; a control only has to sit on it. */
+  /* Darker than the pane, not lighter. A translucent white fill on a light
+     lens over a bright wallpaper is invisible - which is what happened to the
+     email and password fields. A recess has to be darker than what surrounds
+     it to read as a recess at all. */
+  background: var(--glass-ink-strong);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+
+  /* The rim, lit from the same source as the pane. The first inset is the lit
+     edge and the second the shaded one; keeping the shaded edge constant is
+     what stops a control from looking like it is glowing on both sides. */
   box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.4),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.15);
+    inset 0 1px 0 0 rgba(255, 255, 255, calc(0.5 * var(--glass-lit, 0.8))),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.18),
+    inset 0 3px 10px -4px rgba(0, 0, 0, 0.55);
+
+  transition:
+    background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Standard field focus glass */
+/* The sheen. A separate layer because these elements carry their own content
+   and several of them are inputs, which cannot host pseudo-elements - so this
+   rides on the background instead, as a gradient layered under the tint. */
+.glass-control,
+.settings-close,
+.settings-reset-btn,
+.todo-item,
+.calendar-date,
+.event-item,
+.integration-card,
+.auth-user-card {
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, calc(0.10 * var(--glass-lit, 0.8))) 0%,
+    rgba(255, 255, 255, 0.02) 42%,
+    transparent 75%
+  );
+}
+
+/* Hover lifts the material toward the light rather than just tinting it. */
+.glass-control:hover,
+.settings-close:hover,
+.settings-reset-btn:hover,
+.todo-item:hover,
+.calendar-date:hover,
+.event-item:hover,
+.integration-card:hover {
+  background-color: rgba(28, 28, 32, 0.5);
+  border-color: rgba(255, 255, 255, 0.34);
+  box-shadow:
+    inset 1px 1px 0 -0.5px rgba(255, 255, 255, calc(0.62 * var(--glass-lit, 0.8))),
+    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.09),
+    inset 0 0 12px -2px rgba(255, 255, 255, calc(0.26 * var(--glass-lit, 0.8)));
+}
+
+/* Focus is a state the keyboard has to be able to see, so it reads as a ring
+   rather than a brightness change. */
 .settings-input:focus,
 .settings-select:focus,
-.todo-input:focus {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+.todo-input:focus,
+.glass-control:focus-visible,
+.glass-input:focus {
+  background-color: rgba(28, 28, 32, 0.55);
+  border-color: rgba(255, 255, 255, 0.45);
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.06),
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.6),
-    inset 0 0 3px 1px rgba(255, 255, 255, 0.25);
+    0 0 0 3px rgba(255, 255, 255, 0.08),
+    inset 1px 1px 0 -0.5px rgba(255, 255, 255, 0.7),
+    inset 0 0 12px -2px rgba(255, 255, 255, 0.3);
+  outline: none;
 }
 
-/* Dim card glass: bg 0.04 · border 0.1 · inset shadow 0.35/0.12 */
-.settings-file-input,
-.auth-user-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Pressing: fast down, slow back. */
+.glass-control:active,
+.settings-close:active,
+.settings-reset-btn:active,
+.todo-item:active,
+.calendar-date:active {
+  background-color: rgba(10, 10, 12, 0.6);
   box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.35),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+    inset 2px 2px 6px -2px rgba(0, 0, 0, 0.5),
+    inset -1px -1px 0 -0.5px rgba(255, 255, 255, 0.1);
+  transition-duration: 0.07s;
 }
 
-/* Subtle card glass: bg 0.04 · border 0.1 · inset shadow 0.3/0.1 */
-.integration-card,
-.visibility-table {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow:
-    inset 2px 2px 0px -2px rgba(255, 255, 255, 0.3),
-    inset 0 0 2px 1px rgba(255, 255, 255, 0.1);
-}
-
-/* Muted hover glass: bg 0.1 · border-color 0.22 */
-.settings-close:hover,
-.settings-reset-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.22);
-}
