@@ -63,6 +63,44 @@ export async function purgeLegacyRefreshToken(): Promise<void> {
 // ── Refresh ─────────────────────────────────────────────────────────────────
 
 const REFRESH_LOCK_KEY = 'windom_refresh_lock';
+
+/**
+ * Why the last refresh attempt failed, when it did.
+ *
+ * A failed refresh used to mean one thing: the session is over, log out. A 429
+ * is not that. `/auth/refresh` allows 5 attempts per 15 minutes, and once that
+ * budget is spent every further call returns 429 - so treating it as an expired
+ * session logged the user out at exactly the moment they were being throttled,
+ * which is how signing in succeeded and then immediately undid itself.
+ *
+ * Read only straight after awaiting `refreshAccessToken`: the single-flight
+ * promise means the value still describes the attempt just awaited.
+ */
+let lastRefreshRateLimited = false;
+
+/** True when the last refresh failed because the endpoint was rate limiting us. */
+export function refreshWasRateLimited(): boolean {
+  return lastRefreshRateLimited;
+}
+
+/**
+ * Routes whose 401 belongs to a third-party token rather than to our session.
+ *
+ * These call Google, Spotify and GitHub on the user's behalf, so a 401 from one
+ * means that provider's grant needs reconnecting - `/calendar/events` says so
+ * outright: "Could not refresh Google token. Please reconnect." Rotating our
+ * own session cannot help, and attempting it is what exhausted the refresh
+ * budget and produced the logout-on-sign-in.
+ *
+ * `/oauth/*` is deliberately absent: those run under our session, so a 401
+ * there is genuinely ours.
+ */
+const PROVIDER_ROUTES = ['/calendar', '/spotify', '/gmail', '/github'];
+
+export function isProviderRoute(path: string): boolean {
+  const route = path.split('?')[0] ?? '';
+  return PROVIDER_ROUTES.some((p) => route === p || route.startsWith(`${p}/`));
+}
 export const REFRESH_LOCK_TTL_MS = 45_000; // tolerate slow provider/network responses across tabs
 
 let refreshPromise: Promise<string | null> | null = null;
@@ -87,6 +125,9 @@ async function releaseRefreshLock(): Promise<void> {
 }
 
 async function doRefresh(): Promise<string | null> {
+  // Describes this attempt only, so it is cleared before the attempt begins.
+  lastRefreshRateLimited = false;
+
   // ── Cross-tab lock ──────────────────────────────────────────────────────
   // chrome.storage.local is shared across all tabs. If another tab is already
   // refreshing, wait for it to finish and use its token instead.
@@ -120,6 +161,15 @@ async function doRefresh(): Promise<string | null> {
 
     if (!res.ok) {
       console.warn(`[auth:refresh] Failed with HTTP ${res.status}`);
+
+      // Being throttled says nothing about whether the session is still good, so
+      // it must not raise session-expired. Returning null still fails this
+      // attempt - callers simply must not read that as "log out".
+      if (res.status === 429) {
+        lastRefreshRateLimited = true;
+        console.warn('[auth:refresh] Rate limited - keeping the session and backing off');
+        return null;
+      }
 
       // Another tab may have won a concurrent refresh (cookie already rotated).
       // Wait briefly then check storage for the fresh token it stored.
@@ -205,12 +255,39 @@ export async function apiFetch(path: string, options: RequestInit = {}, _retry =
   }
 
   if (res.status === 401 && _retry) {
+    // A 401 does not always mean our session died. The integration routes return
+    // one when the *provider's* token cannot be refreshed - /calendar/events
+    // answers "Could not refresh Google token. Please reconnect." - and no
+    // amount of refreshing our own session fixes that.
+    //
+    // Refreshing anyway was self-defeating. Calendar, Spotify and Gmail each
+    // 401 independently, each 401 drove another refresh, and five of those
+    // exhausted the endpoint's 15-minute budget within seconds. The resulting
+    // 429 was then read as an expired session, so a successful sign-in ended in
+    // an immediate logout.
+    //
+    // Discriminated by route rather than by whether our own token looks valid:
+    // a session revoked server-side still parses as valid, and that case must
+    // keep its refresh-then-logout path.
+    if (isProviderRoute(path)) {
+      console.warn(`[auth] 401 on ${path} - provider token, not a session problem`);
+      return res;
+    }
+
     console.warn(`[auth] 401 on ${path} - attempting token refresh`);
     const newToken = await refreshAccessToken();
     if (newToken) {
       console.log(`[auth] Refresh succeeded - retrying ${path}`);
       return apiFetch(path, options, false);
     }
+
+    // Throttled is not expired. Logging out here would end the session over a
+    // limit that clears on its own.
+    if (refreshWasRateLimited()) {
+      console.warn('[auth] Refresh is rate limited - keeping the session');
+      return res;
+    }
+
     console.warn(`[auth] Refresh failed - triggering logout`);
     triggerLogout();
   }
