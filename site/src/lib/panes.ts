@@ -37,6 +37,20 @@ export interface PaneSpec {
   label: string;
   /** Which depth layer it belongs to - back is ambient, mid is actionable. */
   layer: 'back' | 'mid';
+  /**
+   * How far the pane rises when you hover it, in rem.
+   *
+   * Deliberately different for every pane. A uniform lift makes eight panes
+   * look like one sheet with a hover state; varying it makes each read as its
+   * own object sitting at its own height above the glass. The back layer
+   * lifts less than the mid layer, so the depth the parallax already implies
+   * is not contradicted by the hover.
+   *
+   * The numbers are in the card's own coordinates, which the hero shows at
+   * roughly a third scale - so the smallest of them has to be large enough to
+   * still be visible once divided by three.
+   */
+  lift: number;
   body: PaneBody;
 }
 
@@ -52,12 +66,14 @@ export const PANES: PaneSpec[] = [
     id: 'weather',
     label: 'Weather',
     layer: 'back',
+    lift: 0.75,
     body: { kind: 'figure', figure: '18°', lines: ['Clear · Tel Aviv'] },
   },
   {
     id: 'finance',
     label: 'Markets',
     layer: 'back',
+    lift: 1.1,
     body: {
       kind: 'rows',
       rows: [
@@ -71,6 +87,7 @@ export const PANES: PaneSpec[] = [
     id: 'recent',
     label: 'Recent',
     layer: 'back',
+    lift: 0.6,
     body: {
       kind: 'rows',
       rows: [
@@ -83,6 +100,7 @@ export const PANES: PaneSpec[] = [
     id: 'todos',
     label: 'Today',
     layer: 'mid',
+    lift: 1.65,
     body: {
       kind: 'list',
       items: [
@@ -96,6 +114,7 @@ export const PANES: PaneSpec[] = [
     id: 'calendar',
     label: 'Up next',
     layer: 'mid',
+    lift: 1.35,
     body: {
       kind: 'figure',
       figure: '14:30',
@@ -107,18 +126,21 @@ export const PANES: PaneSpec[] = [
     id: 'github',
     label: 'Pull requests',
     layer: 'mid',
+    lift: 1.9,
     body: { kind: 'figure', figure: '3 open', small: true, lines: ['windom · release gate'] },
   },
   {
     id: 'gmail',
     label: 'Inbox',
     layer: 'mid',
+    lift: 1.0,
     body: { kind: 'figure', figure: '2 new', small: true, lines: ['Unsplash · API limits'] },
   },
   {
     id: 'spotify',
     label: 'Now playing',
     layer: 'mid',
+    lift: 1.5,
     body: { kind: 'track', title: 'Nightports', artist: 'Nikki Nair', progress: 38 },
   },
 ];

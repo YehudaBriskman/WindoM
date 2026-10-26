@@ -273,7 +273,10 @@ body.motion-paused .hero-cluster {
   pointer-events: none;
 }
 
-.hero-preview .stage-focus-controls {
+.hero-preview .stage-focus-controls,
+/* The panes take the pointer back too, so each can rise under it. Everything
+   else in the picture stays inert. */
+.hero-preview .glass-pane {
   pointer-events: auto;
 }
 
