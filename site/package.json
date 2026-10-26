@@ -9,11 +9,12 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && npm run prerender",
     "preview": "vite preview",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit",
+    "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",
