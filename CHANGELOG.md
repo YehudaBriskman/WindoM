@@ -7,6 +7,54 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.5.1] - 2026-10-26
+
+A fix release. Signing in with Google succeeded and then immediately undid
+itself, which also took Spotify and Calendar with it - one fault, several
+symptoms.
+
+### Fixed
+- **Signing in logged you straight back out.** The sign-in itself always
+  worked; what followed did not. Calendar, Spotify and Gmail each return 401
+  when their own provider grant is stale, every one of those was treated as
+  an expired session and drove a token refresh, and five of them exhausted
+  the refresh endpoint's budget of five per fifteen minutes within seconds.
+  The resulting 429 was then read as a dead session and logged the user out,
+  so the more integrations someone had connected, the faster it happened. A
+  401 from a provider route is now that provider's to report, and being
+  throttled is no longer mistaken for being signed out.
+- **Connecting an app closed the settings panel.** The app centre is drawn
+  above the settings panel but lives outside it, so clicking Connect counted
+  as a click away from the panel and dismissed it - along with the component
+  that was in the middle of talking to Google or Spotify. Escape now closes
+  the app centre first rather than the panel underneath it.
+- **Spotify ignored the first press of a button.** Play, pause, next and
+  previous all took effect at Spotify and then reported the state from
+  before the command for up to fifteen seconds, because the cached answer
+  was left in place. Next showed the previous track, pause came back
+  playing, and the progress bar kept advancing over it - so the control
+  looked ignored rather than slow, and pressing again appeared to fix it.
+- **Focus mode had one way out, and the guide named two that did not exist.**
+  Clicking anywhere and pressing Escape both leave focus mode now, as the
+  guide has always said they would. Neither interrupts the exit animation
+  once it has started.
+- The Gmail widget stopped polling a service the server no longer offers.
+  It had been asking once every forty-five seconds, forever, on the strength
+  of a setting saved before the widget was withdrawn.
+
+### Changed
+- A release now confirms what the Chrome Web Store did with it. The upload
+  step reports success without saying anything, which is how 1.5.0 reached
+  the store and sat there as an unsubmitted draft while CI showed green. The
+  submission is made explicitly and its answer is read, and a release fails
+  if the store rejected the package.
+- Dependency majors: `@crxjs/vite-plugin` 3, `@fastify/rate-limit` 11,
+  `dotenv` 18, `jsdom` 30, and the GitHub Pages actions. The first of those
+  closes a real gap - the plugin was a major behind the bundler it hooks
+  into.
+
+---
+
 ## [1.5.0] - 2026-10-26
 
 The glass is computed optics now rather than a stack of CSS tricks, the Gmail
