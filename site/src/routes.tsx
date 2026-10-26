@@ -200,6 +200,12 @@ export const ROUTES: SiteRoute[] = [
   },
 ];
 
+/** Whether two paths are the same page in different languages. */
+export function areTwins(a: string, b: string): boolean {
+  const left = routeFor(a)?.twinOf;
+  return left !== undefined && left === routeFor(b)?.twinOf;
+}
+
 /** `<title>` for a route: the home page carries the suffix already. */
 export function titleFor(route: SiteRoute): string {
   return route.path === '/' ? route.title : `${route.title} - WindoM`;

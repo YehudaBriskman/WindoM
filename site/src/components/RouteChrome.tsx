@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router';
-import { LOCALES, routeFor, titleFor } from '../routes';
+import { useEffect, useRef } from 'react';
+import { Outlet, useLocation, useNavigationType } from 'react-router';
+import { areTwins, LOCALES, routeFor, titleFor } from '../routes';
 
 /**
  * Keeps the document itself in step with the active route.
@@ -16,7 +16,9 @@ import { LOCALES, routeFor, titleFor } from '../routes';
  * it. It renders no markup of its own, so the prerendered output is unchanged.
  */
 export function RouteChrome() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  const navigationType = useNavigationType();
+  const previousPath = useRef<string | null>(null);
 
   useEffect(() => {
     const route = routeFor(pathname);
@@ -36,6 +38,45 @@ export function RouteChrome() {
     const canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) canonical.setAttribute('href', `https://windom.app${route.path}`);
   }, [pathname]);
+
+  /**
+   * Where a navigation leaves you vertically.
+   *
+   * A page load always started at the top; a route change does not, so without
+   * this you click a sidebar link from halfway down the privacy policy and land
+   * halfway down the terms. Three cases, in order:
+   *
+   * - A hash goes to its heading, which is how a search result or a shared link
+   *   to one clause arrives at the clause rather than at the page.
+   * - Back and forward are left alone, because the browser already restores the
+   *   position it remembers and overriding it loses your place.
+   * - Switching language on the same page keeps your place too. That is the
+   *   whole reason the control is a route change rather than a link.
+   *
+   * Explicitly instant: the document sets `scroll-behavior: smooth` for
+   * in-page anchors, and inheriting it here animates a 2000px scroll on every
+   * page change.
+   */
+  useEffect(() => {
+    const from = previousPath.current;
+    previousPath.current = pathname;
+
+    // The first pass is hydration - the browser is already where it should be.
+    if (from === null) return;
+    if (navigationType === 'POP') return;
+
+    if (hash) {
+      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (target) {
+        target.scrollIntoView({ behavior: 'instant', block: 'start' });
+        return;
+      }
+    }
+
+    if (from !== pathname && areTwins(from, pathname)) return;
+
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname, hash, navigationType]);
 
   return <Outlet />;
 }
