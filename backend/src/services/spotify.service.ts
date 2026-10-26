@@ -204,7 +204,18 @@ export async function sendPlaybackCommand(
 
   const res = await fetchWithTimeout(url, { method, headers: { Authorization: `Bearer ${token}` } });
 
-  if (res.status === 204 || res.status === 200) return { ok: true, data: undefined };
+  if (res.status === 204 || res.status === 200) {
+    // The command just made every cached answer wrong.
+    //
+    // now-playing is cached for 15 seconds and the extension refetches 400ms
+    // after a control, so without this the refetch was served the state from
+    // before the command: pressing Next showed the previous track, and Pause
+    // came back playing, for up to fifteen seconds. The local progress ticker
+    // kept advancing over that stale track, which made it read as the control
+    // having been ignored rather than as a delay.
+    invalidateNowPlayingCache(userId);
+    return { ok: true, data: undefined };
+  }
   if (res.status === 403) return { ok: false, error: 'FORBIDDEN' };
   return { ok: false, error: 'API_ERROR' };
 }

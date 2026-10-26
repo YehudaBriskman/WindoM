@@ -223,3 +223,92 @@ describe('sendPlaybackCommand', () => {
     if (!result.ok) expect(result.error).toBe('API_ERROR');
   });
 });
+
+// ── Control commands invalidate the now-playing cache ──────────────────────
+
+describe('a playback command and the now-playing cache', () => {
+  /**
+   * The reported "Spotify sometimes does not work". now-playing is cached for
+   * 15 seconds and the extension refetches 400ms after a control, so a command
+   * that leaves the cache in place is served the state from before it: Next
+   * showed the previous track and Pause came back playing.
+   */
+  /**
+   * Longest key first, because these paths nest: `/me/player/next` contains
+   * `/me/player`, and matching the shorter one would answer the command with
+   * player state.
+   */
+  function respond(handlers: Record<string, () => Response>): void {
+    const keys = Object.keys(handlers).sort((a, b) => b.length - a.length);
+    vi.stubGlobal('fetch', vi.fn((url: string) => {
+      const key = keys.find((k) => url.includes(k));
+      const handler = key ? handlers[key] : undefined;
+      if (!handler) throw new Error(`unexpected fetch: ${url}`);
+      return Promise.resolve(handler());
+    }));
+  }
+
+  /** Device resolution precedes every command; this is the shortest valid path. */
+  const activeDevice = () =>
+    new Response(JSON.stringify({ device: { id: 'dev-1' } }), { status: 200 });
+
+  const playingBody = (name: string) =>
+    new Response(JSON.stringify({ is_playing: true, progress_ms: 1000, item: { ...rawTrack, name } }), { status: 200 });
+
+  beforeEach(() => {
+    dbReturnsAccount({ accessToken: 'enc', refreshToken: 'enc', expiresAt: new Date(Date.now() + 3_600_000) });
+    mockGetToken.mockResolvedValue({ ok: true, data: 'spotify-access-token' });
+  });
+
+  it('serves a fresh track after next, rather than the cached previous one', async () => {
+    let current = 'First Song';
+    respond({
+      'currently-playing': () => playingBody(current),
+      'me/player': activeDevice,
+      'me/player/next': () => { current = 'Second Song'; return new Response(null, { status: 204 }); },
+    });
+
+    const before = await getNowPlaying('user-1');
+    expect(before.ok && before.data.track?.name).toBe('First Song');
+
+    const command = await sendPlaybackCommand('user-1', 'next');
+    expect(command.ok).toBe(true);
+
+    // Well inside the 15s TTL - only invalidation can make this correct.
+    const after = await getNowPlaying('user-1');
+    expect(after.ok && after.data.track?.name).toBe('Second Song');
+  });
+
+  it('reflects a pause immediately instead of reporting still playing', async () => {
+    let playing = true;
+    respond({
+      'currently-playing': () =>
+        new Response(JSON.stringify({ is_playing: playing, progress_ms: 0, item: rawTrack }), { status: 200 }),
+      'me/player': activeDevice,
+      'me/player/pause': () => { playing = false; return new Response(null, { status: 204 }); },
+    });
+
+    const before = await getNowPlaying('user-1');
+    expect(before.ok && before.data.isPlaying).toBe(true);
+
+    await sendPlaybackCommand('user-1', 'pause');
+
+    const after = await getNowPlaying('user-1');
+    expect(after.ok && after.data.isPlaying).toBe(false);
+  });
+
+  it('keeps the cache when the command failed, so a no-op costs no extra calls', async () => {
+    respond({
+      'currently-playing': () => playingBody('First Song'),
+      // No active device and an empty device list - the NO_DEVICE path.
+      'me/player': () => new Response(null, { status: 204 }),
+      'me/player/devices': () => new Response(JSON.stringify({ devices: [] }), { status: 200 }),
+    });
+
+    await getNowPlaying('user-1');
+    const command = await sendPlaybackCommand('user-1', 'next');
+
+    expect(command.ok).toBe(false);
+    if (!command.ok) expect(command.error).toBe('NO_DEVICE');
+  });
+});
