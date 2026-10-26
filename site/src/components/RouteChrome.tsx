@@ -47,7 +47,8 @@ export function RouteChrome() {
    * halfway down the terms. Three cases, in order:
    *
    * - A hash goes to its heading, which is how a search result or a shared link
-   *   to one clause arrives at the clause rather than at the page.
+   *   to one clause arrives at the clause rather than at the page - including a
+   *   heading whose section has not rendered yet, see below.
    * - Back and forward are left alone, because the browser already restores the
    *   position it remembers and overriding it loses your place.
    * - Switching language on the same page keeps your place too. That is the
@@ -66,11 +67,46 @@ export function RouteChrome() {
     if (navigationType === 'POP') return;
 
     if (hash) {
-      const target = document.getElementById(decodeURIComponent(hash.slice(1)));
-      if (target) {
+      const id = decodeURIComponent(hash.slice(1));
+      const reachTarget = (): boolean => {
+        const target = document.getElementById(id);
+        if (!target) return false;
         target.scrollIntoView({ behavior: 'instant', block: 'start' });
-        return;
-      }
+        return true;
+      };
+
+      if (reachTarget()) return;
+
+      /**
+       * A hash target can mount after this effect runs, and one on the home
+       * page does: `Updates` - the section the nav's own "Changelog" item links
+       * to - renders null until its feed request resolves, so arriving at
+       * /#updates from a docs page finds nothing to scroll to. Falling through
+       * to scroll-to-top was the whole of the bug: from halfway down the home
+       * page, clicking "Changelog" scrolled you away from the changelog.
+       *
+       * So watch for the element instead of giving up. Only the cross-page case
+       * takes the top first, because a new document has to start somewhere and
+       * keeping the previous page's offset is the thing the scroll below
+       * prevents; a hash change on the page you are already reading leaves your
+       * place alone until there is somewhere better to be.
+       *
+       * Bounded, because a hash naming something that will never exist - a
+       * stale deep link to a renamed heading - must not leave an observer
+       * watching every mutation for the rest of the session.
+       */
+      if (from !== pathname) window.scrollTo({ top: 0, behavior: 'instant' });
+
+      const observer = new MutationObserver(() => {
+        if (reachTarget()) observer.disconnect();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+      const stopWaiting = window.setTimeout(() => observer.disconnect(), 4000);
+
+      return () => {
+        observer.disconnect();
+        window.clearTimeout(stopWaiting);
+      };
     }
 
     if (from !== pathname && areTwins(from, pathname)) return;

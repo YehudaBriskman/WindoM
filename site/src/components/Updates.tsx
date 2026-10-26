@@ -24,7 +24,13 @@ export function Updates() {
   if (result === null) return null;
 
   return (
-    <section className="section" aria-labelledby="updates-heading">
+    /* `id="updates"` is what the nav's "Changelog" item points at, and nothing
+       on the page carried it: the section was only labelled by its heading,
+       which names it for a screen reader but is not somewhere a URL can land.
+       So `/#updates` resolved to nothing and the link was a dead anchor that
+       dropped you at the top of the home page. The id goes on the section
+       rather than on the heading, so the eyebrow above it is not scrolled past. */
+    <section className="section" id="updates" aria-labelledby="updates-heading">
       <div className="wrap">
         <span className="eyebrow">Latest</span>
         <h2 id="updates-heading">
