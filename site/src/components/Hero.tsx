@@ -12,7 +12,7 @@ interface HeroProps {
 /** The specification strip. Short enough to read as a row, not a list. */
 const CAPABILITIES = [
   { glyph: '◴', label: 'Clock' },
-  { glyph: '☁', label: 'Weather' },
+  { glyph: '◌', label: 'Weather' },
   { glyph: '◷', label: 'Calendar' },
   { glyph: '♪', label: 'Spotify' },
   { glyph: '▦', label: 'Markets' },
