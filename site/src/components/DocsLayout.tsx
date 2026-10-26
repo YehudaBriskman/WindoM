@@ -190,7 +190,11 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
           ))}
         </nav>
 
-        <main id="content" className="docs-main">
+        {/* `tabIndex={-1}` for the same reason as in `Layout`: Safari and some
+            assistive technology move focus to a fragment target only when it
+            can hold focus, so without it the skip link moves the viewport and
+            the next Tab lands back in the nav it was meant to skip. */}
+        <main id="content" className="docs-main" tabIndex={-1}>
           <div className="docs-head">
             {eyebrow && <span className="eyebrow">{eyebrow}</span>}
             <h1>{title}</h1>
