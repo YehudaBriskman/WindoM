@@ -1,4 +1,4 @@
-import { Layout } from '../components/Layout';
+import { DocsLayout } from '../components/DocsLayout';
 
 /**
  * Terms governing the hosted service and the published extension.
@@ -9,8 +9,7 @@ import { Layout } from '../components/Layout';
  */
 export function Terms() {
   return (
-    <Layout eyebrow="Legal" title="Terms of Use" subtitle="Last updated: April 27, 2026">
-      <div className="wrap wrap-prose prose">
+    <DocsLayout href="/terms.html" eyebrow="Legal" title="Terms of Use" subtitle="Last updated: April 27, 2026">
         <div className="callout">
             <strong>Plain-English summary:</strong> WindoM is a free, open-source new tab extension. Use it for lawful personal productivity purposes, don't abuse it or try to break things, and understand that it comes without warranty. The full legal terms follow below.
           </div>
@@ -153,7 +152,6 @@ export function Terms() {
             If you have questions about these Terms, please contact us at
             <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a>.
           </p>
-      </div>
-    </Layout>
+    </DocsLayout>
   );
 }

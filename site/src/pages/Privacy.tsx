@@ -1,4 +1,4 @@
-import { Layout } from '../components/Layout';
+import { DocsLayout } from '../components/DocsLayout';
 
 /**
  * What WindoM stores and what never leaves the device.
@@ -9,8 +9,7 @@ import { Layout } from '../components/Layout';
  */
 export function Privacy() {
   return (
-    <Layout eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: April 27, 2026">
-      <div className="wrap wrap-prose prose">
+    <DocsLayout href="/privacy.html" eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: April 27, 2026">
         <p>
             WindoM is a Chrome extension that replaces your new tab page with a personal productivity dashboard.
             This policy explains exactly what data we collect, what stays entirely on your device, and how we use it.
@@ -209,7 +208,6 @@ export function Privacy() {
             If you have any questions about this policy or want to request data deletion, reach out at
             <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a>.
           </p>
-      </div>
-    </Layout>
+    </DocsLayout>
   );
 }

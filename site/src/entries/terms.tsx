@@ -3,6 +3,7 @@ import { hydrateRoot } from 'react-dom/client';
 import { Terms } from '../pages/Terms';
 import '../styles/base.css';
 import '../styles/pages.css';
+import '../styles/docs.css';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('#root is missing from terms.html');

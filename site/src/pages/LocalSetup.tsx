@@ -1,4 +1,4 @@
-import { Layout } from '../components/Layout';
+import { DocsLayout } from '../components/DocsLayout';
 /**
  * Developer setup. Ported from the previous hand-written page; the environment
  * reference table is the authoritative list of what the backend needs to boot,
@@ -6,8 +6,7 @@ import { Layout } from '../components/Layout';
  */
 export function LocalSetup() {
   return (
-    <Layout eyebrow="Developer Guide" title="Running WindoM locally">
-      <div className="wrap wrap-prose prose">
+    <DocsLayout href="/local-setup.html" eyebrow="Developer Guide" title="Running WindoM locally">
 <h2 id="extension-only">Option A - Extension Only <span className="badge">Recommended to start</span></h2>
           <p>
             This gets the extension running in Chrome with no backend needed.
@@ -273,7 +272,6 @@ export function LocalSetup() {
         # SMTP_PASS=your-16-char-app-password
         # FROM_EMAIL=noreply@windom.app
         # APP_URL=http://localhost:8080</code></pre>
-      </div>
-    </Layout>
+    </DocsLayout>
   );
 }
