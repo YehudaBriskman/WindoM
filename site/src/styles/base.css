@@ -12,19 +12,55 @@
 
 html {
   scroll-behavior: smooth;
+
+  /* A backstop, not a fix. Anything that genuinely overflows is corrected where
+     it overflows - see the table rule in pages.css. This only stops a future
+     mistake becoming a sideways-scrolling page before anyone notices.
+     `clip` rather than `hidden` on purpose: `hidden` makes the element a scroll
+     container, which breaks `position: sticky` in its descendants, and both the
+     pinned stage and the docs sidebar depend on sticky. */
+  overflow-x: clip;
+
+  /* Stop iOS inflating text in landscape, which reflows a laid-out page. */
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  /* Contains the fixed ambient layer without the sticky-breaking side effect of
-     `overflow-x: hidden`. */
   max-width: 100%;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.7;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* ── Touch ──────────────────────────────────────────────────────────────
+   The grey flash on tap is a mobile-browser default that reads as a bug on a
+   dark page, and `manipulation` drops the 300ms double-tap-to-zoom delay that
+   otherwise makes every control feel late. */
+
+a,
+button,
+summary,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* A target small enough to miss is a target that gets missed. Applied only
+   where a pointer is coarse, so it does not inflate a dense mouse-driven
+   layout. */
+@media (pointer: coarse) {
+  .site-footer nav a,
+  .docs-nav a,
+  .docs-rail a,
+  .nav-link,
+  .nav-toggle {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
 }
 
 img {

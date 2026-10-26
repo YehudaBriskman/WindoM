@@ -163,6 +163,9 @@
 }
 
 .prose code {
+  /* A long unbroken token - a URL, a flag, a hash - must wrap rather than push
+     the column wider than the screen. */
+  overflow-wrap: anywhere;
   background: var(--surface-strong);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
@@ -185,11 +188,28 @@
   padding: 0;
 }
 
+/* A table scrolls inside itself rather than widening the page.
+   `width: 100%` does not stop cell content forcing a larger min-content width,
+   which is how the privacy policy came to overflow a 360px screen by 169px and
+   local-setup by 355px. `display: block` gives the element its own scroll
+   context; the row group keeps table layout. */
 .prose table {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
   margin: 24px 0;
   font-size: 0.92rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Cells stay on one line and scroll, rather than being crushed into columns a
+   word wide - which is what makes a narrow table unreadable rather than just
+   narrow. */
+.prose th,
+.prose td {
+  white-space: nowrap;
 }
 
 .prose th,

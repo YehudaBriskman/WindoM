@@ -31,7 +31,12 @@
 .stage-pin {
   position: sticky;
   top: 0;
+  /* `dvh`, not `vh`: on a phone `100vh` is the viewport with the browser chrome
+     collapsed, which is not what is on screen while the URL bar is showing. The
+     pin was therefore taller than the visible area and the tab sat cropped.
+     `vh` is kept as the fallback for anything that does not know `dvh`. */
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   perspective: 1200px;
   perspective-origin: 50% 45%;
@@ -579,6 +584,7 @@
 @media (prefers-reduced-motion: reduce) {
   .day-stage {
     height: 100vh;
+    height: 100dvh;
   }
 
   .stage-wallpaper,
