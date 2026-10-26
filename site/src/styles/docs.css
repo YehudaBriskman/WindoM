@@ -1,0 +1,245 @@
+/* ── Documentation shell ────────────────────────────────────────────────
+   Three columns: navigation between pages, the page, and the contents of
+   the page. Both side columns are navigation, so both collapse before the
+   prose does - a narrow screen keeps the document and loses the chrome.
+
+   Everything here is additive. The marketing pages still use .page-header
+   and .wrap from base.css; nothing below touches them. */
+
+.docs-top {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 28px 24px 0;
+}
+
+.docs-shell {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 24px 72px;
+  display: grid;
+  gap: 48px;
+  /* Prose first in source order, so it is what a reader meets. */
+  grid-template-columns: 220px minmax(0, 1fr) 200px;
+  align-items: start;
+}
+
+/* ── Between pages ──────────────────────────────────────────────────── */
+
+.docs-nav {
+  position: sticky;
+  top: 24px;
+  font-size: 0.9rem;
+}
+
+.docs-nav-group + .docs-nav-group {
+  margin-top: 26px;
+}
+
+.docs-nav-heading {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.docs-nav ul,
+.docs-rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.docs-nav a {
+  display: block;
+  padding: 7px 12px;
+  margin-left: -12px;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  text-decoration: none;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.docs-nav a:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* The current page is marked by weight and a rule rather than by colour
+   alone, so it survives being read without colour. */
+.docs-nav a.is-current {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.docs-nav-blurb {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+/* ── The page ───────────────────────────────────────────────────────── */
+
+.docs-main {
+  min-width: 0;
+}
+
+.docs-head {
+  padding: 8px 0 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.docs-head h1 {
+  margin: 0 0 8px;
+}
+
+/* Anchored headings sit clear of the top when jumped to. */
+.docs-main .prose h2 {
+  scroll-margin-top: 24px;
+}
+
+/* ── Contents of this page ──────────────────────────────────────────── */
+
+.docs-rail {
+  position: sticky;
+  top: 24px;
+  font-size: 0.84rem;
+  border-left: 1px solid var(--border);
+  padding-left: 18px;
+}
+
+.docs-rail-heading {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.docs-rail li + li {
+  margin-top: 8px;
+}
+
+.docs-rail a {
+  color: var(--muted);
+  text-decoration: none;
+  line-height: 1.4;
+  display: block;
+}
+
+.docs-rail a:hover {
+  color: var(--text);
+}
+
+/* ── Previous / next ────────────────────────────────────────────────── */
+
+.docs-neighbours {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 56px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+
+.docs-neighbour {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  max-width: 48%;
+  transition: border-color var(--dur-fast) var(--ease);
+}
+
+.docs-neighbour:hover {
+  border-color: var(--border-strong);
+}
+
+.docs-neighbour.is-next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.docs-neighbour-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.docs-neighbour-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Narrow ─────────────────────────────────────────────────────────── */
+
+/* The rail goes first: it duplicates headings the reader can already see by
+   scrolling, so it is the least costly thing to lose. */
+@media (max-width: 1100px) {
+  .docs-shell {
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .docs-rail {
+    display: none;
+  }
+}
+
+/* Below this the sidebar becomes a list above the page rather than vanishing -
+   losing it entirely would leave no way between documents, which is the
+   problem this layout exists to solve. */
+@media (max-width: 760px) {
+  .docs-shell {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+  }
+
+  .docs-nav {
+    position: static;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 20px;
+  }
+
+  .docs-nav-group {
+    margin-top: 0;
+  }
+
+  .docs-nav-group + .docs-nav-group {
+    margin-top: 18px;
+  }
+
+  .docs-nav-blurb {
+    display: none;
+  }
+}
+
+/* Mirrored for the Hebrew guide. */
+.docs[dir='rtl'] .docs-nav a {
+  margin-left: 0;
+  margin-right: -12px;
+}
+
+.docs[dir='rtl'] .docs-nav a.is-current {
+  box-shadow: inset -2px 0 0 var(--accent);
+}
+
+.docs[dir='rtl'] .docs-rail {
+  border-left: 0;
+  border-right: 1px solid var(--border);
+  padding-left: 0;
+  padding-right: 18px;
+}

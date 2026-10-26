@@ -1,4 +1,4 @@
-import { Layout } from '../components/Layout';
+import { DocsLayout } from '../components/DocsLayout';
 
 /**
  * The English user guide.
@@ -10,8 +10,7 @@ import { Layout } from '../components/Layout';
  */
 export function Guide() {
   return (
-    <Layout eyebrow="User Guide" title="Using WindoM">
-      <div className="wrap wrap-prose prose">
+    <DocsLayout href="/guide.html" eyebrow="User Guide" title="Using WindoM">
         <p className="lang-switch">
           <a href="/he/guide.html" lang="he" hrefLang="he">עברית</a>
         </p>
@@ -414,7 +413,6 @@ export function Guide() {
             <li><strong>Style</strong> - plain digits or a more styled variant</li>
           </ul>
           <p>All options are in Settings → <strong>Clock</strong> tab.</p>
-      </div>
-    </Layout>
+    </DocsLayout>
   );
 }
