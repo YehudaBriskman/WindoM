@@ -37,7 +37,6 @@
 
 .glass-panel,
 .glass-sidebar,
-.glass-settings,
 .glass-quote,
 .glass-credit,
 .glass-dock {
@@ -104,7 +103,6 @@
    unreadable. */
 .glass-panel::after,
 .glass-sidebar::after,
-.glass-settings::after,
 .glass-quote::after,
 .glass-credit::after,
 .glass-dock::after {
@@ -137,7 +135,6 @@
    ───────────────────────────────────────────────────────────────────────── */
 .glass-panel::before,
 .glass-sidebar::before,
-.glass-settings::before,
 .glass-quote::before,
 .glass-credit::before,
 .glass-dock::before {
@@ -208,14 +205,6 @@
   box-shadow: -10px 0 34px rgba(0, 0, 0, 0.22);
 }
 
-.glass-settings::after {
-  backdrop-filter: blur(5px) saturate(112%) brightness(1.04);
-}
-.glass-settings {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-right: 1px solid rgba(255, 255, 255, 0.28);
-  box-shadow: 10px 0 34px rgba(0, 0, 0, 0.22);
-}
 
 .glass-quote::after {
   backdrop-filter: blur(4px) saturate(110%) brightness(1.03);
@@ -274,7 +263,6 @@
    glass, but the items on it have fills of their own. */
 .glass-panel,
 .glass-sidebar,
-.glass-settings,
 .glass-quote,
 .glass-credit,
 .glass-dock {
@@ -291,7 +279,6 @@
 /* The pane's own content sits above the backdrop and below the rim. */
 .glass-panel > *,
 .glass-sidebar > *,
-.glass-settings > *,
 .glass-quote > *,
 .glass-credit > *,
 .glass-dock > * {
@@ -304,8 +291,7 @@
 @media (prefers-reduced-motion: reduce) {
   .glass-panel,
   .glass-sidebar,
-  .glass-settings,
-  .glass-quote,
+    .glass-quote,
   .glass-credit,
   .glass-dock {
     transition: none !important;
