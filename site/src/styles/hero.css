@@ -1,0 +1,228 @@
+/* ── Hero ───────────────────────────────────────────────────────────────
+   The first screen. Copy on the left, a live scaled-down dashboard on the
+   right, and a cue that the page continues. */
+
+.hero {
+  position: relative;
+  min-height: calc(100vh - 57px);
+  min-height: calc(100dvh - 57px); /* less the sticky nav */
+  display: flex;
+  align-items: center;
+  padding: 56px 0 96px;
+}
+
+.hero-inner {
+  width: 100%;
+  max-width: var(--wrap);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: grid;
+  /* `auto` so the preview occupies exactly its own scaled width rather than
+     a fraction that clips it. */
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 56px;
+  align-items: center;
+}
+
+.hero-copy {
+  /* Stated rather than inherited: the previous site centred its hero, and a
+     long measure centred is harder to read than the same measure ranged left. */
+  text-align: left;
+}
+
+.hero-copy h1 {
+  margin-bottom: 20px;
+  /* Smaller than the global h1, which tops out at 5.4rem - a size that cannot
+     fit beside the preview and broke "actually useful" across two lines. */
+  font-size: clamp(2.3rem, 4vw, 3.5rem);
+  text-wrap: balance;
+}
+
+.hero-copy .lede {
+  margin-bottom: 28px;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+}
+
+/* ── The preview ────────────────────────────────────────────────────────
+   `isolation` and a transform together establish a stacking and containing
+   block of their own, so the scaled Stage in here cannot share a 3D space
+   with the pinned Stage further down the page - they are the same component
+   and would otherwise interleave. */
+
+/* The Stage is built to fill a viewport, so it is rendered at a nominal
+   1440x900 and scaled down. The box is derived *from* the scale rather than the
+   other way round - `scale()` needs a unitless number, and there is no way to
+   get one from a container-query length, so sizing the box to match is what
+   makes the two agree exactly at every breakpoint. */
+.hero-preview {
+  --preview-w: 1440;
+  --preview-h: 900;
+  --preview-scale: 0.4;
+
+  position: relative;
+  isolation: isolate;
+  width: calc(var(--preview-w) * 1px * var(--preview-scale));
+  height: calc(var(--preview-h) * 1px * var(--preview-scale));
+  max-width: 100%;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 30px 80px -40px rgba(0, 0, 0, 0.9);
+  transform: translateZ(0);
+}
+
+.hero-preview-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(var(--preview-w) * 1px);
+  height: calc(var(--preview-h) * 1px);
+  transform-origin: top left;
+  transform: scale(var(--preview-scale));
+  pointer-events: none;
+}
+
+/* The stage must not pin inside the preview - it is a picture, not a scroll
+   story. `inset: 0` matters as much as the position: an absolutely positioned
+   box with no inset shrink-wraps its contents, and the contents are themselves
+   absolutely positioned, so the whole stage collapsed to zero width. */
+.hero-preview .stage-pin {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The parallax is driven by a `view-timeline` published by `.day-stage`, which
+   is not an ancestor here. An animation whose timeline does not resolve still
+   applies its fill, so all three layers sat at the end keyframe - opacity 0,
+   scaled up - and the preview showed wallpaper and nothing else. The preview is
+   a still; it has no scroll of its own to be driven by.
+
+   `.is-animated` is in the selector to outrank the original, which is written
+   as `.is-animated .stage-layer-back` - equal specificity would lose on source
+   order, because stage.css is imported after this file. */
+.hero-preview .is-animated .stage-layer-back,
+.hero-preview .is-animated .stage-layer-mid,
+.hero-preview .is-animated .stage-layer-front {
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+/* The narration belongs to the scroll story, not to a product shot. In the
+   preview it lands across the dashboard and reads as part of the interface,
+   which is the opposite of what a picture of the product should show. */
+.hero-preview .story-headline,
+.hero-preview .story-body,
+.hero-preview .scroll-cue {
+  display: none;
+}
+
+/* Same reason: the exit fade is driven by the pin's own view-timeline. */
+.hero-preview .stage-pin {
+  animation: none;
+  opacity: 1;
+}
+
+/* ── Scroll cue ─────────────────────────────────────────────────────── */
+
+.hero-cue {
+  position: absolute;
+  left: 50%;
+  bottom: calc(28px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: 26px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+}
+
+.hero-cue-rail {
+  width: 2px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--muted-strong);
+  animation: hero-cue-drift 1.8s var(--ease) infinite;
+}
+
+@keyframes hero-cue-drift {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(10px); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cue-rail {
+    animation: none;
+  }
+}
+
+/* ── Narrow ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1200px) {
+  .hero-preview {
+    --preview-scale: 0.38;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    min-height: 0;
+    padding: 40px 0 72px;
+  }
+
+  /* The scale ladder below keeps the frame narrower than the box at every
+     width. The box has max-width: 100% and clips, so a scale that is too large
+     for the viewport does not overflow the page - it silently crops the
+     dashboard, which looks like a rendering fault rather than a small picture. */
+  .hero-preview {
+    --preview-scale: 0.42;
+  }
+
+  .hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+  }
+
+  /* The preview goes under the copy: on a phone the words are what matters,
+     and a 16:10 dashboard shrunk to 360px wide shows nothing legible anyway. */
+  .hero-preview {
+    order: 2;
+  }
+
+  .hero-cue {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero-preview {
+    --preview-scale: 0.34;
+  }
+}
+
+@media (max-width: 560px) {
+  .hero-inner {
+    padding: 0 16px;
+  }
+
+  .hero-preview {
+    --preview-scale: 0.22;
+  }
+
+  .hero-chips {
+    margin-top: 24px;
+  }
+}

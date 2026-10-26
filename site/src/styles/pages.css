@@ -1,36 +1,5 @@
 /* Page-level composition. Everything reusable lives in base.css. */
 
-/* ── Hero ───────────────────────────────────────────────────────────── */
-
-.hero {
-  padding-top: 112px;
-  text-align: center;
-}
-
-.hero .badge {
-  margin-bottom: 24px;
-}
-
-.hero .lede {
-  margin: 0 auto 32px;
-}
-
-.hero .btn-row {
-  justify-content: center;
-}
-
-.hero-compat {
-  margin-top: 20px;
-  font-size: 0.88rem;
-}
-
-.shot {
-  width: 100%;
-  border-radius: var(--r-lg);
-  border: 1px solid var(--border);
-  display: block;
-}
-
 /* ── Feature grid ───────────────────────────────────────────────────── */
 
 .feature-grid,
