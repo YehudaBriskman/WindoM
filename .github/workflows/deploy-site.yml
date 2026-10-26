@@ -56,23 +56,29 @@ jobs:
       - name: Build
         run: npm run build
 
-      # These filenames are the contract with the published extension and the
-      # store listing. guide.html is compiled into the extension itself, so
-      # losing it would need a store release to repair - and GitHub Pages has no
-      # redirects to soften that. Failing here is far cheaper.
+      # Every route is emitted at two addresses: the clean URL we want, and the
+      # .html one already registered somewhere we do not control - the store
+      # listing, and the guide link compiled into the extension, which would
+      # need a store release to repair. Both shapes are asserted, because the
+      # way a generated pair regresses is one half of it quietly going missing.
       - name: Verify every public URL still exists
         run: |
           missing=0
-          for f in index guide privacy terms local-setup he/guide; do
-            if [ -f "dist/$f.html" ]; then
-              echo "  ok       $f.html"
-            else
-              echo "::error::dist/$f.html is missing - this URL is referenced by the"
-              echo "::error::published extension or the store listing and cannot move."
-              missing=1
-            fi
+          for f in guide privacy terms support contact local-setup \
+                   he/guide he/privacy he/terms he/support he/contact he/local-setup; do
+            for shape in "$f.html" "$f/index.html"; do
+              if [ -f "dist/$shape" ]; then
+                echo "  ok       $shape"
+              else
+                echo "::error::dist/$shape is missing - this URL is referenced by the"
+                echo "::error::published extension or the store listing and cannot move."
+                missing=1
+              fi
+            done
           done
-          test -f dist/CNAME || { echo "::error::dist/CNAME missing - the custom domain would be dropped."; missing=1; }
+          for f in index.html 404.html sitemap.xml CNAME; do
+            test -f "dist/$f" || { echo "::error::dist/$f is missing."; missing=1; }
+          done
           exit $missing
 
       - uses: actions/configure-pages@v6
@@ -98,9 +104,24 @@ jobs:
       # of this step failed on a URL that was serving correctly less than a minute
       # later. Retry rather than either trusting the deploy blindly or sleeping a
       # fixed amount and hoping.
+      # The list is read from the deployed sitemap rather than written out here,
+      # so adding a page or a language cannot leave this check behind. The
+      # sitemap carries the clean URLs; each one's .html twin is derived, which
+      # is how the store's registered address gets checked too.
       - name: Verify the live URLs the extension depends on
         run: |
-          paths="/ /guide.html /privacy.html /terms.html /local-setup.html /support.html /contact.html /he/guide.html /he/privacy.html /he/terms.html /he/support.html /he/contact.html /he/local-setup.html"
+          clean=$(curl -s --retry 6 --retry-delay 15 --retry-all-errors --max-time 20 \
+                    https://windom.app/sitemap.xml \
+                  | grep -o '<loc>[^<]*</loc>' | sed -e 's#</\?loc>##g' -e 's#https://windom.app##')
+          if [ -z "$clean" ]; then
+            echo "::error::sitemap.xml served no URLs - the deploy or the sitemap build is broken."
+            exit 1
+          fi
+          paths="$clean"
+          for path in $clean; do
+            [ "$path" = "/" ] || paths="$paths $path.html"
+          done
+          echo "  checking $(printf '%s\n' $paths | wc -l) URLs across both shapes"
           failed=0
           for path in $paths; do
             code=000
@@ -128,21 +149,25 @@ jobs:
       # the status code.
       - name: The privacy policy is readable without JavaScript
         run: |
-          body=$(curl -s --max-time 20 https://windom.app/privacy.html)
           failed=0
-          for phrase in "Limited Use" "calendar.readonly" "Google API Services" "User Data Policy"; do
-            if printf '%s' "$body" | grep -qi "$phrase"; then
-              printf '  found: %s\n' "$phrase"
-            else
-              echo "::error::privacy.html does not contain \"$phrase\" without JavaScript."
+          # Both addresses, because the reviewer may hold either: the store
+          # listing still points at the .html one.
+          for url in https://windom.app/privacy https://windom.app/privacy.html; do
+            body=$(curl -s --max-time 20 "$url")
+            for phrase in "Limited Use" "calendar.readonly" "Google API Services" "User Data Policy"; do
+              if printf '%s' "$body" | grep -qi "$phrase"; then
+                printf '  found in %-32s %s\n' "$url" "$phrase"
+              else
+                echo "::error::$url does not contain \"$phrase\" without JavaScript."
+                failed=1
+              fi
+            done
+            size=$(printf '%s' "$body" | wc -c)
+            echo "  $url served $size bytes"
+            # The pre-fix shell was ~2.2KB. Anything near that is the shell again.
+            if [ "$size" -lt 6000 ]; then
+              echo "::error::$url is only $size bytes - the prerender did not run."
               failed=1
             fi
           done
-          size=$(printf '%s' "$body" | wc -c)
-          echo "  served $size bytes"
-          # The pre-fix shell was ~2.2KB. Anything near that is the shell again.
-          if [ "$size" -lt 6000 ]; then
-            echo "::error::privacy.html is only $size bytes - the prerender did not run."
-            failed=1
-          fi
           exit $failed
