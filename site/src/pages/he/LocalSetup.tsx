@@ -1,6 +1,7 @@
 import { DocsLayout } from '../../components/DocsLayout';
 import { EnvTable } from '../../components/EnvTable';
 import { EXAMPLE_ENV } from '../../lib/env-reference';
+import { NODE_MIN_VERSION } from '../../lib/site';
 
 /**
  * Hebrew developer setup. Translated from `pages/LocalSetup.tsx`.
@@ -30,7 +31,7 @@ export function LocalSetup() {
       <h3>דרישות מוקדמות</h3>
       <ul>
         <li>
-          <a href="https://nodejs.org">Node.js 18 ומעלה</a>
+          <a href="https://nodejs.org">Node.js {NODE_MIN_VERSION} ומעלה</a> - הבנייה נכשלת בגרסאות מוקדמות יותר
         </li>
         <li>Google Chrome</li>
         <li>Git</li>

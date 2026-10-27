@@ -21,6 +21,14 @@ export const ISSUES_URL = `${GITHUB_URL}/issues`;
 export const CONTACT_EMAIL = 'yehudabriskman@windom.app';
 
 /**
+ * The lowest Node the build runs on, quoted by both Local Setup pages so the
+ * English and Hebrew copies cannot disagree. It tracks the `engines.node`
+ * field in `web/package.json`, `backend/package.json` and `site/package.json`,
+ * all three of which declare `>=22`; raise it here when they are raised.
+ */
+export const NODE_MIN_VERSION = 22;
+
+/**
  * The canonical project page on the personal site. Under the hybrid topology,
  * that page is the authoritative description of what WindoM is; windom.app is
  * the product surface - install it, learn it, read the legal terms.

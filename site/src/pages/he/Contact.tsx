@@ -1,5 +1,6 @@
 import { DocsLayout } from '../../components/DocsLayout';
 import { GITHUB_URL, CONTACT_EMAIL, SITE } from '../../lib/site';
+import { Link } from 'react-router';
 
 /** Hebrew contact page. Translated from `pages/Contact.tsx`. */
 export function Contact() {
@@ -20,7 +21,7 @@ export function Contact() {
       <p>
         <a href={`${GITHUB_URL}/issues`}>GitHub issues</a> הוא המקום הנכון, וגם המהיר
         ביותר. הדיווחים שם פומביים וניתנים לחיפוש, וייתכן שמישהו כבר נתקל באותו דבר -{' '}
-        <a href="/he/support.html">עמוד התמיכה</a> מכסה את התקלות הנפוצות.
+        <Link to="/he/support">עמוד התמיכה</Link> מכסה את התקלות הנפוצות.
       </p>
       <p>
         לפני פתיחת דיווח, כדאי לבדוק באיזו גרסה אתה נמצא בכתובת{' '}
@@ -46,7 +47,7 @@ export function Contact() {
       <p>
         לקבלת גישה לנתונים שמוחזקים בחשבון האופציונלי או למחיקתם, יש לשלוח מייל לכתובת
         שלמעלה מאותה כתובת שבה החשבון משתמש - כך הבקשה מאומתת. מה נשמר ומה לעולם לא עוזב
-        את המכשיר שלך מפורט ב<a href="/he/privacy.html">מדיניות הפרטיות</a>; רוב מה
+        את המכשיר שלך מפורט ב<Link to="/he/privacy">מדיניות הפרטיות</Link>; רוב מה
         ש-WindoM שומר כלל לא מגיע לשרת, ולכן לרוב יש פחות לייצא ממה שמצפים.
       </p>
 
@@ -54,7 +55,7 @@ export function Contact() {
       <p>
         WindoM הוא קוד פתוח תחת רישיון MIT בכתובת{' '}
         <a href={GITHUB_URL}>github.com/YehudaBriskman/WindoM</a>. Pull requests מתקבלים
-        בברכה, ו<a href="/he/local-setup.html">הרצה מקומית</a> מסבירה איך להריץ את כל
+        בברכה, ו<Link to="/he/local-setup">הרצה מקומית</Link> מסבירה איך להריץ את כל
         המערכת - תוסף, שרת ובסיס נתונים - על המחשב שלך.
       </p>
     </DocsLayout>

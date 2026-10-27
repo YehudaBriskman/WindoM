@@ -54,12 +54,19 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
             const to = link.path.startsWith('/#')
               ? link.path
               : (locale === 'he' ? translatedPath(link.path, 'he') : undefined) ?? link.path;
+            /* Against `to`, not `link.path`. `current` is the page's real path,
+               so on /he/guide the untranslated /guide could never match it and
+               no item was marked at all: a screen-reader user on the Hebrew
+               site was told nothing about where they were, and the highlight
+               was missing too. The hash item never matches either way, which is
+               right - /#updates is a section of the home page, not a page. */
+            const isCurrent = to === current;
             return (
               <Link
                 key={link.path}
-                className={`nav-link${link.path === current ? ' is-current' : ''}`}
+                className={`nav-link${isCurrent ? ' is-current' : ''}`}
                 to={to}
-                aria-current={link.path === current ? 'page' : undefined}
+                aria-current={isCurrent ? 'page' : undefined}
                 onClick={() => setOpen(false)}
                 viewTransition
               >

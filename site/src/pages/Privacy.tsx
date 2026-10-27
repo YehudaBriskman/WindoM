@@ -70,10 +70,21 @@ export function Privacy() {
             Disconnecting Google from <strong>Settings → Apps</strong> immediately revokes our stored token and deletes all cached data.
           </p>
           <p>
-            <strong>Gmail is no longer part of WindoM.</strong> Earlier versions could show an unread count and the
-            subject lines of recent mail, which required Google's restricted <code>gmail.readonly</code> scope. That
-            scope is no longer requested and the widget is no longer offered, so no mail data of any kind reaches our
-            servers. Tokens granted under the old consent lose the Gmail permission the next time you reconnect.
+            <strong>Gmail is switched off.</strong> Earlier versions could show an unread count and the
+            subject lines of recent mail, which required Google's restricted <code>gmail.readonly</code> scope.
+            The code for that widget is still in the extension and the server, but it is gated on a server-side
+            setting (<code>GMAIL_ENABLED</code>) that is <strong>off</strong> on the server WindoM ships against.
+            While it is off the scope is never added to the consent screen, the server refuses every mail request,
+            and the Gmail card does not appear in <strong>Settings → Apps</strong>. No mail data of any kind reaches
+            our servers, and tokens granted under the old consent lose the Gmail permission the next time you
+            reconnect.
+          </p>
+          <p>
+            Turning that setting on would mean requesting a restricted scope, which Google only permits after an
+            annual third-party security assessment. If it is ever turned on for the hosted service, this policy will
+            be updated to describe what is read before the change ships. Anyone running their own WindoM server can
+            enable it for themselves, in which case the mail data goes to their server and this policy does not
+            apply to it.
           </p>
           <h2>Spotify integration (optional)</h2>
           <p>
@@ -82,6 +93,29 @@ export function Privacy() {
           <p>
             Your Spotify OAuth token is stored encrypted on our servers and is used only to fetch your currently-playing track (artist, title, album art, playback state). We do not access your library, playlists, listening history, or follower data.
             Disconnecting Spotify immediately deletes the stored token.
+          </p>
+          <h2>GitHub integration (optional)</h2>
+          <p>
+            The GitHub widget shows three counts in the sidebar: unread notifications, open pull requests waiting on
+            your review, and open issues assigned to you. Connecting it means creating a GitHub <strong>classic
+            personal access token</strong> with the <code>notifications</code> and <code>repo</code> scopes and
+            pasting it into <strong>Settings → Apps → GitHub</strong>. It requires a WindoM account.
+          </p>
+          <p>
+            That token is sent to our server over HTTPS and stored <strong>encrypted at rest</strong> using
+            AES-256-GCM, alongside your GitHub username. Our server - not your browser - calls{' '}
+            <code>api.github.com</code> with it, and returns only those three numbers and the username to the
+            extension. Nothing about the notifications, pull requests or issues themselves is stored: no titles, no
+            repository names, no contents. The counts are held in memory on the server for one minute to stay inside
+            GitHub's rate limits, and are never written to disk.
+          </p>
+          <p>
+            The <code>repo</code> scope is broad - on a classic token it covers read and write access to the
+            repositories you can reach. WindoM only ever issues the three read requests described above, but the
+            token itself carries everything GitHub granted it, so treat it as a credential. Disconnecting from{' '}
+            <strong>Settings → Apps</strong> deletes it from our database immediately, and you can revoke it at any
+            time from your{' '}
+            <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer">GitHub token settings</a>.
           </p>
           <h2>Browser permissions</h2>
           <p>WindoM requests the following Chrome permissions and uses them as described:</p>
@@ -110,7 +144,10 @@ export function Privacy() {
           </table>
           <h2>Third-party APIs called directly by the extension</h2>
           <p>
-            The following services are contacted directly from your browser. WindoM's servers are not involved in these requests, and we do not share personal data with these services.
+            The following services are contacted when a feature that needs them is switched on. Every one except
+            GitHub is called directly from your browser, with WindoM's servers not involved; GitHub is called by our
+            server, because that is where the access token is held. Nothing is sent to any of them beyond what its
+            row below lists.
           </p>
           <table>
             <thead>
@@ -158,6 +195,11 @@ export function Privacy() {
                 <td>Fetch real-time cryptocurrency prices</td>
               </tr>
               <tr>
+                <td><strong>GitHub</strong> (<code>api.github.com</code>)</td>
+                <td>Your personal access token - sent by our server, not by your browser</td>
+                <td>Count unread notifications, review requests and assigned issues for the GitHub widget. See the GitHub section above for where the token is stored.</td>
+              </tr>
+              <tr>
                 <td><strong>Google Favicons</strong> (<code>google.com/s2/favicons</code>)</td>
                 <td>Domain name</td>
                 <td>Fetch favicon icons for quick links</td>
@@ -178,7 +220,7 @@ export function Privacy() {
             <li>We do not read the content of pages you visit</li>
             <li>We do not collect keystrokes or form input from other websites</li>
             <li>We do not share or sell any data to third parties</li>
-            <li>We do not access your email - no mail scope is requested and no mail data reaches our servers</li>
+            <li>We do not access your email - the mail scope is disabled on the hosted service, as described above, and no mail data reaches our servers</li>
           </ul>
           <h2>Data sharing</h2>
           <p>
@@ -188,7 +230,7 @@ export function Privacy() {
           <h2>Security</h2>
           <p>
             All communication between the extension and our servers uses HTTPS.
-            OAuth tokens (Google, Spotify) are encrypted at rest using AES-256-GCM with a server-side key.
+            Service credentials - Google and Spotify OAuth tokens, and the GitHub personal access token - are encrypted at rest using AES-256-GCM with a server-side key.
             Passwords are hashed with bcrypt (cost factor 12).
             Authentication uses short-lived JWT access tokens (15-minute TTL) and rotating refresh tokens stored as <code>HttpOnly; Secure; SameSite=None</code> cookies.
             Refresh token reuse is detected and triggers automatic session revocation.

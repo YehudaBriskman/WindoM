@@ -148,19 +148,19 @@ const SECTIONS: GuideSection[] = [
   {
     id: 'weather',
     title: 'Weather Widget',
-    summary: 'Live temperature in the top bar. Needs a free OpenWeatherMap key.',
+    summary: 'Live temperature in the top bar. No API key, no account.',
     blocks: [
       {
         type: 'steps',
         content: [
-          'Create a free account at openweathermap.org and copy your API key.',
-          'Open Settings → Weather tab. Paste the key and set your city name.',
-          'Choose °C or °F and save.',
+          'Open Settings → Weather tab.',
+          'Choose °C or °F under Temperature Unit.',
+          'Start typing a city under Location and pick it from the list - or leave it empty to use the location your browser reports.',
         ],
       },
       {
         type: 'note',
-        content: 'New OpenWeatherMap keys can take up to 2 hours to activate.',
+        content: 'Weather comes from Open-Meteo, which needs no API key and no account. Readings are cached for 30 minutes, and there is no Save button - a change applies as soon as you make it.',
       },
     ],
   },

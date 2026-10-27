@@ -1,5 +1,6 @@
 import { DocsLayout } from '../components/DocsLayout';
 import { GITHUB_URL, CONTACT_EMAIL, STORE_URL } from '../lib/site';
+import { Link } from 'react-router';
 
 /**
  * Where someone goes when WindoM is not behaving.
@@ -51,16 +52,22 @@ export function Support() {
         Expected, and safe. WindoM's verification with Google is in review. Until it completes,
         Google shows that warning for applications it has not finished reviewing. You can
         continue past it, and the extension only ever asks to <em>read</em> your calendar - the
-        exact permissions are listed in the <a href="/privacy.html">privacy policy</a>.
+        exact permissions are listed in the <Link to="/privacy">privacy policy</Link>.
       </p>
 
       <h2>The Gmail widget has gone</h2>
       <p>
-        Removed deliberately in <strong>1.5.0</strong>. Reading mail needed a Google permission
+        Switched off in <strong>1.5.0</strong>. Reading mail needed a Google permission
         class that carries a mandatory annual third-party security assessment costing several
         hundred to several thousand dollars a year. That is not sustainable for a free
         extension, so the widget was withdrawn rather than funded by changing what WindoM does
         with your data.
+      </p>
+      <p>
+        The code is still in the repository behind a server-side setting that is off on the
+        server the published extension talks to, which is why you may still find Gmail in the
+        source. On that server the scope is never requested and the card never appears. If you
+        run your own backend you can turn it on for yourself.
       </p>
 
       <h2>Weather shows the wrong place</h2>
@@ -72,9 +79,19 @@ export function Support() {
 
       <h2>Settings did not follow me to another computer</h2>
       <p>
-        Settings sync through your Chrome profile, so both machines need to be signed in to the
-        same Chrome account with sync enabled. Background images, cached weather and tab history
-        are deliberately excluded - they are large, and they stay on the device that made them.
+        Settings follow your WindoM account. Sign in from <strong>Settings → Account</strong> on
+        both machines and your clock format, background choice, widget layout and quick links
+        arrive on the second one. If you are signed in on one machine and not the other, there is
+        nothing linking them.
+      </p>
+      <p>
+        Without an account, Chrome's own profile sync carries them instead, which needs both
+        machines signed in to the same Chrome account with sync enabled - and it stops at the
+        boundary of that profile, so a different browser or a work profile will not see them.
+      </p>
+      <p>
+        Either way, background images, cached weather and tab history are deliberately excluded.
+        They are large, and they stay on the device that made them.
       </p>
 
       <h2>Reporting something else</h2>

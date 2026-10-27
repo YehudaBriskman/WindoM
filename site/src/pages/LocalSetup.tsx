@@ -1,6 +1,7 @@
 import { DocsLayout } from '../components/DocsLayout';
 import { EnvTable } from '../components/EnvTable';
 import { EXAMPLE_ENV } from '../lib/env-reference';
+import { NODE_MIN_VERSION } from '../lib/site';
 /**
  * Developer setup. Ported from the previous hand-written page; the environment
  * reference table is the authoritative list of what the backend needs to boot,
@@ -17,7 +18,7 @@ export function LocalSetup() {
           </p>
           <h3>Prerequisites</h3>
           <ul>
-            <li><a href="https://nodejs.org">Node.js 18 or higher</a></li>
+            <li><a href="https://nodejs.org">Node.js {NODE_MIN_VERSION} or higher</a> - the build fails on older releases</li>
             <li>Google Chrome</li>
             <li>Git</li>
           </ul>

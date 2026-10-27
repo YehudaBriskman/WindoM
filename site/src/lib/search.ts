@@ -66,9 +66,21 @@ const PREFIX_BONUS = 6;
  * translations of each other, so an unscoped search returns every answer twice
  * and half of them in a language the reader may not have.
  *
- * Every token must appear somewhere in the section, so adding a word narrows
- * the results rather than widening them - which is what typing more words is
- * for.
+ * Every token must appear in the section's own heading or body, so adding a
+ * word narrows the results rather than widening them - which is what typing
+ * more words is for.
+ *
+ * The page title deliberately does not satisfy that test; it only adds score.
+ * It used to satisfy it, and because the title is identical for every section
+ * of a page, a single hit on it qualified the entire page: searching `guide`
+ * matched all eighteen sections of "User Guide" at the same score, document
+ * order broke every tie, and the eight rows were eight consecutive guide
+ * sections while the real answers elsewhere never got one. The same held for
+ * `support`, `privacy`, `terms` and `contact` - every page whose name is also
+ * a word a reader would type.
+ *
+ * Searching a page by its name still works: `pageResult` gives such a page
+ * exactly one row instead of all of them.
  */
 export function search(
   index: SearchIndex,
@@ -85,6 +97,7 @@ export function search(
   for (const page of index.pages) {
     if (page.l !== locale) continue;
     const title = page.t.toLowerCase();
+    let matchedSections = 0;
 
     for (const section of page.s) {
       const heading = section.h.toLowerCase();
@@ -95,19 +108,22 @@ export function search(
 
       for (const token of tokens) {
         const inHeading = heading.includes(token);
-        const inTitle = title.includes(token);
         const inBody = body.includes(token);
-        if (!inHeading && !inTitle && !inBody) {
+        if (!inHeading && !inBody) {
           matchedAll = false;
           break;
         }
         if (inHeading) score += HEADING_HIT;
-        if (inTitle) score += TITLE_HIT;
         if (inBody) score += BODY_HIT;
+        // Scored but never qualifying: a page named after the word you typed
+        // holds the better of two otherwise equal sections, which is not the
+        // same thing as holding every section worth returning.
+        if (title.includes(token)) score += TITLE_HIT;
       }
 
       if (!matchedAll) continue;
       if (heading.startsWith(first)) score += PREFIX_BONUS;
+      matchedSections += 1;
 
       results.push({
         to: section.id ? `${page.p}#${section.id}` : page.p,
@@ -118,11 +134,75 @@ export function search(
         score,
       });
     }
+
+    // Guarded on `matchedSections` so a page is either represented by the
+    // sections that answered or by its own name, never by both.
+    if (!matchedSections && tokens.every((token) => title.includes(token))) {
+      const whole = pageResult(page, title, tokens.length, first);
+      if (whole) results.push(whole);
+    }
   }
 
   // Ties broken by document order, which the index is already in, so the
   // earlier of two equally good sections wins. `sort` is stable.
   return results.sort((a, b) => b.score - a.score).slice(0, limit);
+}
+
+/**
+ * One row standing for a whole page, for a query that only its title matched.
+ *
+ * It points at the top of the page rather than at a heading, because a title
+ * match says nothing about which part of the page the reader wants. Scored from
+ * the title alone, which keeps it under any section that matched its own text:
+ * a section about what you typed is a better answer than a page merely named
+ * after it.
+ *
+ * Null for a page the index recorded with no sections at all - it has no
+ * excerpt to show, and a row with an empty body reads as a broken result.
+ */
+function pageResult(
+  page: IndexedPage,
+  title: string,
+  tokenCount: number,
+  first: string,
+): Result | null {
+  const [intro] = page.s;
+  if (!intro) return null;
+
+  return {
+    to: page.p,
+    page,
+    section: intro,
+    heading: page.t,
+    excerpt: intro.x,
+    score: tokenCount * TITLE_HIT + (title.startsWith(first) ? PREFIX_BONUS : 0),
+  };
+}
+
+/**
+ * `text` lowercased without changing its length.
+ *
+ * `toLowerCase()` is not length-preserving: `İ` (U+0130) lowercases to two code
+ * units, `ẚ` to three. `highlight` searches the lowercased copy and then slices
+ * the original at the index it found, so one such character anywhere before the
+ * match slides every later offset and the `<mark>` lands on the wrong word - or
+ * past the end of a short excerpt, highlighting nothing. The Hebrew pages have
+ * no case at all and the English ones are ordinary prose, which is exactly why
+ * this would have surfaced as a one-off bug report from a single page rather
+ * than as something anyone could reproduce.
+ *
+ * Characters that would change length keep their original form instead. They
+ * then only match case-sensitively, which costs a highlight on a word nobody
+ * has searched for yet and keeps every offset honest.
+ */
+function lowerKeepingLength(text: string): string {
+  let out = '';
+  // By code point, so a surrogate pair is weighed as the one character it is.
+  for (const char of text) {
+    const lower = char.toLowerCase();
+    out += lower.length === char.length ? lower : char;
+  }
+  return out;
 }
 
 /**
@@ -133,7 +213,7 @@ export function search(
  * contain it and the result looks wrong.
  */
 export function highlight(text: string, tokens: string[], width = 150): [string, string, string] {
-  const lower = text.toLowerCase();
+  const lower = lowerKeepingLength(text);
   let at = -1;
   let token = '';
   for (const candidate of tokens) {
@@ -150,6 +230,10 @@ export function highlight(text: string, tokens: string[], width = 150): [string,
   const slice = text.slice(start, start + width);
   const prefix = start > 0 ? '…' : '';
   const offset = at - start;
+
+  // `token.length` measures the match in the original too: the lowercased copy
+  // is the same length, and a token that grew while being lowercased could not
+  // have matched the character that stayed its original length.
 
   return [
     prefix + slice.slice(0, offset),

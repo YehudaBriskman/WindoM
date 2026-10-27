@@ -105,3 +105,48 @@ export function buildSearchIndex(rendered) {
 
   return { v: 1, pages };
 }
+
+/** Where the dialog fetches the index from, in every environment. */
+const INDEX_URL = '/search-index.json';
+
+/**
+ * Serves the index under `vite dev`.
+ *
+ * Only the prerender wrote `search-index.json`, and the prerender only runs in
+ * a production build - so `vite dev` served a 404 and the dialog said "Search
+ * is unavailable" on every local run. That is the same message a real outage
+ * produces, which made a broken search indistinguishable from a search nobody
+ * had built the index for, and left the whole feature unexercisable in the one
+ * environment where it is being worked on.
+ *
+ * It renders the routes on demand through the dev server's own module graph
+ * rather than reading a file, so the index describes the pages as they are
+ * right now, including the edit you made a second ago. The cost is a render of
+ * every route per request, which is why `apply: 'serve'` keeps this out of the
+ * build and why nothing is cached: the one request happens when a developer
+ * opens the dialog.
+ */
+export function searchIndexDevPlugin() {
+  return {
+    name: 'windom:search-index-dev',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(INDEX_URL, async (_req, res, next) => {
+        try {
+          // The same entry the prerender builds from, loaded through Vite so
+          // the TSX and its imports resolve the way they do for the browser.
+          const { renderAll } = await server.ssrLoadModule('/src/prerender.tsx');
+          const body = JSON.stringify(buildSearchIndex(renderAll()));
+          res.setHeader('Content-Type', 'application/json');
+          // Development only, and the pages change under it constantly.
+          res.setHeader('Cache-Control', 'no-store');
+          res.end(body);
+        } catch (error) {
+          // Handed to Vite's error overlay rather than swallowed into a 404,
+          // which is what sent us looking for a bug in the dialog last time.
+          next(error);
+        }
+      });
+    },
+  };
+}

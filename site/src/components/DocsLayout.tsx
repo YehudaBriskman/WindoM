@@ -14,6 +14,7 @@ import {
   docsNeighbours,
   headingId,
   localeOf,
+  translatedPath,
   type SiteRoute,
 } from '../lib/docs';
 import { SiteNav } from './SiteNav';
@@ -32,10 +33,23 @@ interface DocsLayoutProps {
 
 const SIDEBAR_KEY = 'windom-docs-sidebar';
 
-/** The handful of strings the shell itself contributes, in both languages. */
+/**
+ * The handful of strings the shell itself contributes, in both languages.
+ *
+ * The footer labels live here with the rest rather than inline, because they
+ * were the one set that did not: six English words inside an RTL document.
+ * `home` is shared with the breadcrumb, which says the same word for the same
+ * destination. "Chrome Web Store" and "GitHub" are names and stay as they are.
+ */
 const UI = {
-  en: { home: 'Home', onPage: 'On this page', more: 'More documentation', prev: 'Previous', next: 'Next', toggle: 'Toggle navigation' },
-  he: { home: 'דף הבית', onPage: 'בעמוד הזה', more: 'תיעוד נוסף', prev: 'הקודם', next: 'הבא', toggle: 'הצגה או הסתרה של הניווט' },
+  en: {
+    home: 'Home', onPage: 'On this page', more: 'More documentation', prev: 'Previous', next: 'Next', toggle: 'Toggle navigation',
+    guide: 'User Guide', support: 'Support', localSetup: 'Local Setup', privacy: 'Privacy', terms: 'Terms',
+  },
+  he: {
+    home: 'דף הבית', onPage: 'בעמוד הזה', more: 'תיעוד נוסף', prev: 'הקודם', next: 'הבא', toggle: 'הצגה או הסתרה של הניווט',
+    guide: 'מדריך למשתמש', support: 'תמיכה', localSetup: 'הרצה מקומית', privacy: 'פרטיות', terms: 'תנאים',
+  },
 } as const;
 
 /**
@@ -54,6 +68,18 @@ const UI = {
 export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'ltr' }: DocsLayoutProps) {
   const locale = localeOf(path);
   const t = UI[locale];
+
+  /**
+   * This page's language, kept across a footer link.
+   *
+   * The footer used to hold the English paths outright, so clicking "Terms" on
+   * /he/privacy landed on /terms, and `RouteChrome` then flipped the document to
+   * lang="en" dir="ltr" - the footer silently removing a reader from the Hebrew
+   * site, and undoing the care `LocaleSwitch` takes to keep your page when you
+   * change language on purpose. Falls back to the path itself for the home page,
+   * which has no Hebrew twin to send anyone to.
+   */
+  const inThisLanguage = (to: string): string => translatedPath(to, locale) ?? to;
 
   const { headings, content } = anchorHeadings(children);
   const active = useActiveHeading(headings.map((h) => h.id));
@@ -164,7 +190,11 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
           ))}
         </nav>
 
-        <main id="content" className="docs-main">
+        {/* `tabIndex={-1}` for the same reason as in `Layout`: Safari and some
+            assistive technology move focus to a fragment target only when it
+            can hold focus, so without it the skip link moves the viewport and
+            the next Tab lands back in the nav it was meant to skip. */}
+        <main id="content" className="docs-main" tabIndex={-1}>
           <div className="docs-head">
             {eyebrow && <span className="eyebrow">{eyebrow}</span>}
             <h1>{title}</h1>
@@ -208,12 +238,12 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
       <footer className="site-footer">
         <div className="wrap">
           <nav aria-label="Footer">
-            <Link to="/">Home</Link>
-            <Link to="/guide">User Guide</Link>
-            <Link to="/support">Support</Link>
-            <Link to="/local-setup">Local Setup</Link>
-            <Link to="/privacy">Privacy</Link>
-            <Link to="/terms">Terms</Link>
+            <Link to={inThisLanguage('/')}>{t.home}</Link>
+            <Link to={inThisLanguage('/guide')}>{t.guide}</Link>
+            <Link to={inThisLanguage('/support')}>{t.support}</Link>
+            <Link to={inThisLanguage('/local-setup')}>{t.localSetup}</Link>
+            <Link to={inThisLanguage('/privacy')}>{t.privacy}</Link>
+            <Link to={inThisLanguage('/terms')}>{t.terms}</Link>
             <a href={STORE_URL}>Chrome Web Store</a>
             <a href={GITHUB_URL}>GitHub</a>
           </nav>

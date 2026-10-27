@@ -12,11 +12,12 @@ import { useDayCycle, usePrefersReducedMotion } from '../hooks/useDayCycle';
 import { DAY } from '../lib/day';
 import { FEATURES } from '../data/features';
 import { SITE, STORE_URL, GITHUB_URL, PROJECT_PAGE } from '../lib/site';
+import { Link } from 'react-router';
 
 const FAQ = [
   {
     q: 'Do I need an account?',
-    a: 'No. The clock, backgrounds, weather, todos, quick links, quotes, search and focus mode all work with no account at all. An account is only needed for Google Calendar and Spotify, because those have to authenticate with their own providers.',
+    a: 'No. The clock, backgrounds, weather, todos, quick links, quotes, search and focus mode all work with no account at all. An account is only needed for Google Calendar, Spotify and GitHub, because those have to authenticate with their own providers.',
   },
   {
     q: 'Does it work offline?',
@@ -111,12 +112,12 @@ export function Home() {
             <a className="btn btn-primary" href={STORE_URL}>
               Add to Chrome
             </a>
-            <a className="btn btn-secondary" href="/guide.html">
+            <Link className="btn btn-secondary" to="/guide">
               User Guide
-            </a>
-            <a className="btn btn-secondary" href="/local-setup.html">
+            </Link>
+            <Link className="btn btn-secondary" to="/local-setup">
               Run it locally
-            </a>
+            </Link>
             <a className="btn btn-secondary" href={GITHUB_URL}>
               GitHub
             </a>
