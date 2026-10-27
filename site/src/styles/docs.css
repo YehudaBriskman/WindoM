@@ -625,6 +625,22 @@
 
 /* ── The dialog ─────────────────────────────────────────────────────── */
 
+/* The page held still while the dialog is open. Scrolling the document under a
+   modal moves the thing you will go back to and, on a trackpad, happens by
+   accident while you read the results.
+
+   On the root rather than on `body`, which is where this is usually done: the
+   root sets `overflow-x: clip`, and the body's own overflow only propagates to
+   the viewport while the root's is `visible`. `overflow-y` alone, so the other
+   axis keeps `clip` instead of becoming `hidden` and turning the root into a
+   scroll container that would break the sticky sidebar behind the scrim.
+   `scrollbar-gutter` holds the space the scrollbar had, so the page behind does
+   not jump a scrollbar's width wider as it locks. */
+html.docs-search-open {
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
 .docs-search {
   position: fixed;
   inset: 0;
@@ -695,18 +711,16 @@
   overscroll-behavior: contain;
 }
 
+/* A listbox option, not a button: the rows are selected by the input's
+   `aria-activedescendant` and are not tab stops, so none of the usual button
+   resets apply to them any more. */
 .docs-search-result {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  width: 100%;
   padding: 0.5625rem 0.6875rem;
-  background: none;
   border: 1px solid transparent;
   border-radius: var(--r-sm);
-  color: inherit;
-  font: inherit;
-  text-align: start;
   cursor: pointer;
 }
 
