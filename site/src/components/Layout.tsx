@@ -50,7 +50,16 @@ export function Layout({
         </header>
       )}
 
-      <main id="content">{children}</main>
+      {/* `tabIndex={-1}` is what makes the skip link above actually skip.
+          Chrome and Firefox move the sequential-focus starting point to a
+          fragment target either way, but Safari and some assistive technology
+          only do it for a focusable element: without this, focus stays on the
+          skip link and the next Tab goes to the nav's brand link - straight
+          back into the chrome the user just asked to skip past. Negative, so it
+          takes focus from the fragment without joining the tab order itself. */}
+      <main id="content" tabIndex={-1}>
+        {children}
+      </main>
 
       <footer className="site-footer">
         <div className="wrap">
