@@ -128,7 +128,18 @@ jobs:
           fi
           paths="$clean"
           for path in $clean; do
-            [ "$path" = "/" ] || paths="$paths $path.html"
+            # The root's legacy shape is /index.html, not /.html, and skipping
+            # the root left the one URL of the previous multi-page site that
+            # people still have bookmarked unchecked by anything. A status code
+            # is all this can assert - /index.html served the home page and then
+            # hydrated into "Page not found" with a 200 throughout, so the
+            # router-side half of that is guarded in src/entries/app.tsx rather
+            # than here - but an address no step names at all is worse.
+            if [ "$path" = "/" ]; then
+              paths="$paths /index.html"
+            else
+              paths="$paths $path.html"
+            fi
           done
           echo "  checking $(printf '%s\n' $paths | wc -l) URLs across both shapes"
           failed=0
