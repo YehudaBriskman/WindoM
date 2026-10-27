@@ -1,5 +1,6 @@
 import { DocsLayout } from '../components/DocsLayout';
 import { GITHUB_URL, CONTACT_EMAIL, SITE } from '../lib/site';
+import { Link } from 'react-router';
 
 /**
  * How to reach a person, and what to expect when you do.
@@ -21,7 +22,7 @@ export function Contact() {
       <p>
         <a href={`${GITHUB_URL}/issues`}>GitHub issues</a> is the right place, and the fastest.
         Issues are public, searchable, and someone may have hit the same thing already - the{' '}
-        <a href="/support.html">support page</a> covers the problems that come up most.
+        <Link to="/support">support page</Link> covers the problems that come up most.
       </p>
       <p>
         Before opening one, please check the version you are on at{' '}
@@ -48,7 +49,7 @@ export function Contact() {
         For access to or deletion of data held by the optional account, email the address above
         from the address the account uses - that is how the request gets verified. What is held,
         and what never leaves your device, is set out in the{' '}
-        <a href="/privacy.html">privacy policy</a>; most of what WindoM stores never reaches a
+        <Link to="/privacy">privacy policy</Link>; most of what WindoM stores never reaches a
         server at all, so there is often less to export than people expect.
       </p>
 
@@ -56,7 +57,7 @@ export function Contact() {
       <p>
         WindoM is open source under the MIT licence at{' '}
         <a href={GITHUB_URL}>github.com/YehudaBriskman/WindoM</a>. Pull requests are welcome, and{' '}
-        <a href="/local-setup.html">Local Setup</a> covers running the whole stack - extension,
+        <Link to="/local-setup">Local Setup</Link> covers running the whole stack - extension,
         backend and database - on your own machine.
       </p>
     </DocsLayout>

@@ -12,7 +12,7 @@ export function Guide() {
   return (
     <DocsLayout path="/guide" eyebrow="User Guide" title="Using WindoM">
         <div className="callout tip">
-            <strong>No account required for most things.</strong> Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync and Spotify. You can always add one later.
+            <strong>No account required for most things.</strong> Clock, weather, todos, backgrounds, quotes, quick links, and the focus timer all work instantly with no sign-in. An account is only needed for Google Calendar sync, Spotify and GitHub. You can always add one later.
           </div>
           <div className="feature-grid">
             <div className="feature-card">
@@ -21,7 +21,7 @@ export function Guide() {
             </div>
             <div className="feature-card">
               <div className="feature-card-title">Weather</div>
-              <div className="feature-card-desc">Live temperature and conditions. Needs a free OpenWeatherMap API key.</div>
+              <div className="feature-card-desc">Live temperature and conditions. No API key, no account.</div>
             </div>
             <div className="feature-card">
               <div className="feature-card-title">Background</div>
@@ -44,6 +44,10 @@ export function Guide() {
               <div className="feature-card-desc">Now-playing in the top dock. Needs an account + a free Spotify Developer app.</div>
             </div>
             <div className="feature-card">
+              <div className="feature-card-title">GitHub</div>
+              <div className="feature-card-desc">Notifications, review requests and assigned issues. Needs an account + a GitHub token.</div>
+            </div>
+            <div className="feature-card">
               <div className="feature-card-title">Google Calendar</div>
               <div className="feature-card-desc">Upcoming events in the right sidebar. Needs an account + Google authorization.</div>
             </div>
@@ -52,7 +56,7 @@ export function Guide() {
             Create a WindoM Account
             <span className="badge optional">Optional</span>
           </h2>
-          <p>A WindoM account syncs your settings across devices and is required to connect Google Calendar or Spotify. Registration is free and takes under a minute.
+          <p>A WindoM account syncs your settings across devices and is required to connect Google Calendar, Spotify or GitHub. Registration is free and takes under a minute.
           </p>
           <div className="step">
             <div className="step-num">1</div>
@@ -208,6 +212,39 @@ export function Guide() {
             <strong>Look-ahead window</strong> -
             by default events for the next 7 days are shown. You can change this to 14 or 30 days in Settings → <strong>Calendar</strong>.
           </div>
+          <h2 id="github">
+            Connect GitHub
+          </h2>
+          <p>The GitHub widget puts three numbers in the right sidebar: unread notifications, pull requests waiting on your review, and open issues assigned to you. Each row links straight to the matching page on GitHub. It needs a WindoM account and a personal access token you create yourself.
+          </p>
+          <div className="step">
+            <div className="step-num">1</div>
+            <div className="step-body">
+              <p>Make sure you have a WindoM account and are signed in (Settings → Account tab).</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">2</div>
+            <div className="step-body">
+                <p>Go to <a href="https://github.com/settings/tokens/new?scopes=notifications,repo&description=WindoM" target="_blank" rel="noreferrer">github.com/settings/tokens/new</a>. The link preselects the two scopes WindoM needs - <code>notifications</code> and <code>repo</code> - so check they are ticked, set an expiry you are happy with, and click <strong>Generate token</strong>.</p>
+                <p>Copy the token straight away. It starts with <code>ghp_</code> and GitHub shows it only once.</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">3</div>
+            <div className="step-body">
+              <p>Open Settings → <strong>Apps hub</strong> → click the <strong>GitHub</strong> card. Paste the token into <strong>Personal Access Token</strong> and click <strong>Connect</strong>.</p>
+            </div>
+          </div>
+          <div className="step">
+            <div className="step-num">4</div>
+            <div className="step-body">
+              <p>The counts appear in the right sidebar and refresh on their own. <strong>Show GitHub in sidebar</strong> on the same card hides the widget without disconnecting.</p>
+            </div>
+          </div>
+          <div className="callout warning">
+            <strong>Why the repo scope?</strong> The review-request and assigned-issue counts come from GitHub's search API, which only includes private repositories for a token that carries <code>repo</code>. On a classic token that scope also grants write access, which WindoM never uses - so treat the token like a password, and revoke it from <a href="https://github.com/settings/tokens" target="_blank" rel="noreferrer">your token settings</a> if you stop using the widget.
+          </div>
           <h2 id="finance">
             Finance Dashboard
           </h2>
@@ -311,41 +348,40 @@ export function Guide() {
           </div>
           <h2 id="weather">
             Weather Widget
-            <span className="badge optional">Needs API Key</span>
           </h2>
-          <p>The weather widget shows live temperature and conditions in the top bar. It uses OpenWeatherMap's free tier - you need your own API key.
+          <p>The weather widget shows live temperature and conditions in the top bar. It reads from Open-Meteo, which needs no API key and no account - there is nothing to sign up for and nothing to paste in.
           </p>
           <div className="step">
             <div className="step-num">1</div>
             <div className="step-body">
-              <p>Go to <a href="https://openweathermap.org" target="_blank" rel="noreferrer">openweathermap.org</a> and create a free account.</p>
+              <p>Open WindoM Settings → <strong>Weather</strong> tab.</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">2</div>
             <div className="step-body">
-              <p>In your account dashboard, go to <strong>API Keys</strong> and copy your default key (or create a new one labelled something like <em>WindoM</em>).
-              </p>
+              <p>Set <strong>Temperature Unit</strong> to Celsius (°C) or Fahrenheit (°F).</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">3</div>
             <div className="step-body">
-              <p>Open WindoM Settings → <strong>Weather</strong> tab. Paste your API key and enter your city name (e.g. <code>Tel Aviv</code> or <code>New York</code>). Choose °C or °F and click <strong>Save</strong>.</p>
+                <p>Start typing a city in the <strong>Location</strong> field (e.g. <code>Tel Aviv</code> or <code>New York</code>). Matching cities appear below the field with their region and country - click the one you mean.</p>
+                <p>Leave the field empty and WindoM asks the browser for your location instead.</p>
             </div>
           </div>
           <div className="step">
             <div className="step-num">4</div>
             <div className="step-body">
-              <p>The weather widget appears in the top-left of your new tab.</p>
+              <p>The weather widget appears in the top-left of your new tab. There is no Save button - the change applies as soon as you pick it.</p>
             </div>
           </div>
           <div className="callout">
-            <strong>New API key not working?</strong> OpenWeatherMap free keys can take up to 2 hours to activate after creation. If you get an error right after creating the key, wait a bit and try again.
+            <strong>Showing the wrong place?</strong> With the Location field empty, WindoM falls back to a rough lookup from your IP address when the browser will not give coordinates, which can be a long way out on a VPN or a mobile connection. Type a city by hand to pin it.
           </div>
           <div className="callout tip">
-            <strong>Free tier limits</strong> -
-            OpenWeatherMap's free plan allows 1,000 API calls per day. WindoM caches the weather for 10 minutes per new tab, so you'll never come close to that limit.
+            <strong>Refreshed every 30 minutes</strong> -
+            the last reading is cached, so the widget is already filled in when a new tab opens and updates once the fresh reading arrives.
           </div>
           <h2 id="links">
             Quick Links &amp; Dock Bar

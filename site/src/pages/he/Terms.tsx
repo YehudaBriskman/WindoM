@@ -1,10 +1,11 @@
 import { DocsLayout } from '../../components/DocsLayout';
+import { Link } from 'react-router';
 
 /**
  * Hebrew terms of use.
  *
  * A translation for convenience, not a second contract. The English text at
- * /terms.html is the authoritative one and this page says so in its first
+ * /terms is the authoritative one and this page says so in its first
  * paragraph - two versions of an agreement can only ever be as aligned as the
  * translation between them, so one of them has to govern.
  */
@@ -19,7 +20,7 @@ export function Terms() {
     >
       <div className="callout">
         <strong>הנוסח המחייב הוא האנגלי.</strong> תרגום זה ניתן לנוחות הקריאה בלבד. במקרה
-        של סתירה או אי-בהירות, <a href="/terms.html">הנוסח האנגלי</a> הוא הקובע.
+        של סתירה או אי-בהירות, <Link to="/terms">הנוסח האנגלי</Link> הוא הקובע.
       </div>
 
       <h2>1. קבלת התנאים</h2>
@@ -49,6 +50,7 @@ export function Terms() {
           "מתנגן כעת" של Spotify
         </li>
         <li>ווידג'ט פיננסי עם מעקב אחר מחירי מניות ומטבעות קריפטוגרפיים</li>
+        <li>ווידג'ט GitHub המציג התראות שלא נקראו, בקשות לסקירה ו-issues שהוקצו לך</li>
       </ul>
       <p>
         התכונות ניתנות כמות שהן, ועשויות להשתנות, להיות מוסרות או מוחלפות בכל עת. נעשה כמיטב
@@ -106,6 +108,23 @@ export function Terms() {
           .
         </li>
         <li>
+          <strong>GitHub:</strong> ווידג'ט GitHub משתמש ב-classic personal access token שאתה
+          יוצר בעצמך, עם ההרשאות <code>notifications</code> ו-<code>repo</code>. השימוש
+          בממשק של GitHub כפוף ל
+          <a
+            href="https://docs.github.com/site-policy/github-terms/github-terms-of-service"
+            target="_blank"
+            rel="noopener"
+          >
+            תנאי השימוש של GitHub
+          </a>
+          . האחריות על האסימון שיצרת היא שלך, ואפשר לבטל אותו בכל עת דרך{' '}
+          <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">
+            הגדרות האסימונים שלך ב-GitHub
+          </a>
+          .
+        </li>
+        <li>
           <strong>Unsplash:</strong> תמונות הרקע מסופקות תחת{' '}
           <a href="https://unsplash.com/license" target="_blank" rel="noopener">
             רישיון Unsplash
@@ -137,7 +156,7 @@ export function Terms() {
         </li>
         <li>
           להשתמש ב-WindoM כדי לעקוף, לנצל או לבחון את האבטחה של שירותי צד שלישי מחוברים
-          (Google, Spotify) מעבר לשימוש רגיל
+          (Google, Spotify, GitHub) מעבר לשימוש רגיל
         </li>
       </ul>
 
@@ -220,7 +239,7 @@ export function Terms() {
 
       <h2>11. פרטיות</h2>
       <p>
-        השימוש שלך ב-WindoM כפוף גם ל<a href="/he/privacy.html">מדיניות הפרטיות</a> שלנו,
+        השימוש שלך ב-WindoM כפוף גם ל<Link to="/he/privacy">מדיניות הפרטיות</Link> שלנו,
         המסבירה אילו נתונים נאספים, כיצד נעשה בהם שימוש, ומהן זכויותיך לגביהם. בשימוש
         ב-WindoM אתה מסכים למדיניות הפרטיות.
       </p>
