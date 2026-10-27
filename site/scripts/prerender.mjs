@@ -33,7 +33,19 @@ if (!existsSync(shellPath)) {
 }
 
 const shell = readFileSync(shellPath, 'utf8');
-for (const marker of ['<!--app-->', '<!--head-->']) {
+
+/**
+ * Every pattern the shell is expected to contain.
+ *
+ * The opening `<html>` tag belongs in this list as much as the two comment
+ * markers do. `String.replace` with a string pattern that does not match is a
+ * silent no-op: adding an attribute to that tag, or reformatting it across
+ * lines, would leave all six Hebrew pages shipping as `lang="en"` with no
+ * `dir` - laid out left to right and announced as English - with a green
+ * build, a green deploy check and every URL still returning 200.
+ */
+const LANG_TAG = '<html lang="en">';
+for (const marker of ['<!--app-->', '<!--head-->', LANG_TAG]) {
   if (!shell.includes(marker)) {
     console.error(`prerender: the shell has no ${marker} to fill`);
     process.exit(1);
@@ -55,10 +67,19 @@ for (const page of rendered) {
     continue;
   }
 
+  /**
+   * Replacer functions, not strings.
+   *
+   * A string replacement treats `$&`, `` $` ``, `$'` and `$$` in the
+   * *replacement* as substitution patterns. No page contains a `$` today, but
+   * a price, a shell snippet or an environment-variable example would be
+   * silently corrupted - `$'` splices the whole remainder of the shell into
+   * the body. The function form has no such syntax.
+   */
   const html = shell
-    .replace('<!--head-->', page.head)
-    .replace('<!--app-->', page.html)
-    .replace('<html lang="en">', `<html lang="${page.lang}" dir="${page.dir}">`);
+    .replace('<!--head-->', () => page.head)
+    .replace('<!--app-->', () => page.html)
+    .replace(LANG_TAG, () => `<html lang="${page.lang}" dir="${page.dir}">`);
 
   for (const file of page.files) {
     const target = resolve(dist, file);
