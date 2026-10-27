@@ -1,71 +1,58 @@
 <div align="center">
 
-<img src=".github/assets/banner.png" alt="WindoM - Your Space, Your Flow" width="100%" style="border-radius:12px;" />
-
-<br />
-<br />
-
-# WindoM
-
-**Your Space, Your Flow · Made to Fit You**
-
-A Chrome extension that turns every new tab into a personal productivity dashboard -
-clock, weather, todos, Google Calendar, Spotify, GitHub, live stock & crypto prices,
-quick links, focus timer, and more. All the essentials in one new tab, built with a clean glassmorphism design.
+<img src=".github/assets/banner.webp" alt="WindoM" width="100%" />
 
 <br />
 
-<!-- Install & Web -->
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
-[![Website](https://img.shields.io/badge/windom.app-Visit-6366f1?style=for-the-badge&logo=googlechrome&logoColor=white)](https://windom.app)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-WindoM-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/windom-app/)
-<!-- Community & Stats -->
-[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/comcnbccalbfcegbmaemancbhgpijkpb?style=for-the-badge&label=Users&color=22c55e&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
-[![GitHub Stars](https://img.shields.io/github/stars/YehudaBriskman/WindoM?style=for-the-badge&color=a78bfa&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/stargazers)
-[![Contributors](https://img.shields.io/github/contributors/YehudaBriskman/WindoM?style=for-the-badge&color=f97316&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/graphs/contributors)
-[![Forks](https://img.shields.io/github/forks/YehudaBriskman/WindoM?style=for-the-badge&color=06b6d4&logo=github&logoColor=white)](https://github.com/YehudaBriskman/WindoM/network/members)
-<!-- Meta -->
-[![Version](https://img.shields.io/badge/version-1.4.1-7b9ef5?style=for-the-badge)](CHANGELOG.md)
-[![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=for-the-badge)](LICENSE)
-[![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-22c55e?style=for-the-badge)](CONTRIBUTING.md)
-[![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=for-the-badge&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
-<!-- Tech Stack -->
-![React](https://img.shields.io/badge/React_19-20232A?style=flat-square&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-![Fastify](https://img.shields.io/badge/Fastify-000000?style=flat-square&logo=fastify&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)
-![Drizzle](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black)
-![Fly.io](https://img.shields.io/badge/Fly.io-8B5CF6?style=flat-square&logo=flydotio&logoColor=white)
-![Manifest V3](https://img.shields.io/badge/Manifest_V3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
+**A Chrome new tab that is actually worth opening.**
+
+Your clock, the weather, today's tasks, your calendar, what's playing, the pull
+requests waiting on you and live market prices — on a background that changes
+with the hour. Most of it works the moment you install it, with no account.
+
+[![Install from the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
+[![windom.app](https://img.shields.io/badge/windom.app-Visit-6366f1?style=for-the-badge)](https://windom.app)
+
+[![Version](https://img.shields.io/badge/version-1.5.1-7b9ef5?style=flat-square)](CHANGELOG.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=flat-square)](LICENSE)
+[![Users](https://img.shields.io/chrome-web-store/users/comcnbccalbfcegbmaemancbhgpijkpb?style=flat-square&label=users&color=22c55e)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
+[![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=flat-square&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
 
 <br />
-<br />
 
-<img src=".github/assets/preview.png" alt="WindoM dashboard" width="100%" style="border-radius:12px;" />
+<img src=".github/assets/preview.webp" alt="The WindoM new tab: clock, greeting, focus prompt, quick links and the daily quote over a full-bleed wallpaper" width="100%" />
 
 </div>
 
 ---
 
-WindoM redefines the new tab experience. Instead of an empty page, every new tab opens to a thoughtfully designed personal productivity dashboard that gives you everything you need to start your day with clarity and intention.
+## What you get
 
-Built around a clean glassmorphism aesthetic, WindoM feels as good as it looks - smooth, minimal, and always out of the way when you need it to be.
+Everything below works with no account and no API keys.
 
-At a glance you see the time, the weather, your upcoming calendar events, what's playing on Spotify, the pull requests waiting on you, live stock and crypto prices, and your tasks for the day. Everything you actually care about, nothing you don't.
+| Feature | What it does |
+|---|---|
+| Clock and greeting | Your time, your name, and a greeting that follows the hour |
+| Weather | Current conditions from Open-Meteo. No key, no sign-up |
+| Backgrounds | Rotating Unsplash photography, or your own image |
+| Todos | A task list that lives in the sidebar |
+| Focus timer | Set an intention, pick 25m to 4h, and the tab dims until it ends |
+| Quick links | A dock of the sites you actually open |
+| Search | Straight to Google, Bing, DuckDuckGo or Brave |
+| Daily quote | One a day, clickable for another |
+| Tab sidebar | Your open tabs, from any page |
+| Recent | Where you have just been |
+| Layout templates | Preset arrangements — Minimal, Deep Focus, Dashboard and more |
+| Finance | Live stocks and crypto from Yahoo Finance and CoinGecko |
 
----
+These need a free WindoM account:
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=YehudaBriskman%2FWindoM&type=timeline&logscale=&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=YehudaBriskman/WindoM&type=timeline&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=YehudaBriskman/WindoM&type=timeline&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=YehudaBriskman/WindoM&type=timeline&legend=top-left" />
- </picture>
-</a>
+| Feature | What it does |
+|---|---|
+| Google Calendar | Today and what's coming, read-only |
+| Spotify | Now playing, playback controls, and your top tracks |
+| GitHub | Notifications, review requests and assigned issues |
+| Settings sync | Your setup follows you to any browser you sign in to |
 
 ---
 
@@ -74,23 +61,13 @@ At a glance you see the time, the weather, your upcoming calendar events, what's
 <div align="center">
 <table>
 <tr>
-<td align="center" width="33%">
-<img src=".github/assets/preview.png" alt="Main dashboard" width="100%" style="border-radius:8px;" /><br/>
-<sub><b>Main Dashboard</b></sub>
+<td width="50%">
+<img src=".github/assets/preview-sidebar.webp" alt="The sidebar open, showing today's tasks and the calendar" width="100%" /><br/>
+<sub><b>Tasks and calendar, in one sidebar</b></sub>
 </td>
-<td align="center" width="33%">
-<img src=".github/assets/preview-settings.png" alt="Settings panel" width="100%" style="border-radius:8px;" /><br/>
-<sub><b>Settings Panel</b></sub>
-</td>
-<td align="center" width="33%">
-<img src=".github/assets/preview-sidebar.png" alt="Sidebar" width="100%" style="border-radius:8px;" /><br/>
-<sub><b>Sidebar</b></sub>
-</td>
-</tr>
-<tr>
-<td align="center" colspan="3">
-<img src=".github/assets/preview-account.png" alt="Account" width="60%" style="border-radius:8px;" /><br/>
-<sub><b>Account & Integrations</b></sub>
+<td width="50%">
+<img src=".github/assets/preview-settings.webp" alt="The settings panel open on the General section, showing widget visibility toggles" width="100%" /><br/>
+<sub><b>Every widget is optional</b></sub>
 </td>
 </tr>
 </table>
@@ -98,151 +75,79 @@ At a glance you see the time, the weather, your upcoming calendar events, what's
 
 ---
 
-## Why WindoM?
-
-Most new tab extensions do one thing. WindoM does everything - and does it beautifully.
-A clean new tab dashboard built for focus, customization, and your daily flow.
-
-| Pain point | WindoM's answer |
-|---|---|
-| Blank new tab wastes a micro-moment | Instant glance at time, weather, todos, calendar |
-| Widget apps clutter your taskbar | Lives exactly where you already look - the new tab |
-| Glassmorphism dashboards feel heavy | Sub-second load, zero network calls for the core UI |
-| Integrations break after OAuth expires | Silent automatic token refresh, cross-tab sync |
-| "Productivity" apps demand attention | Focus Mode hides everything and lets you just work |
-| Your background gets stale | Rotating Unsplash images or your own photos |
-
----
-
-## Features
-
-| | Feature | Detail |
-|---|---|---|
-| ⏰ | Clock & Greeting | Personalized, adapts to the time of day |
-| 🌤️ | Weather | Real-time via Open-Meteo, no API key needed |
-| 🖼️ | Backgrounds | Unsplash rotation or your own uploaded image |
-| 📅 | Google Calendar | Upcoming events synced to the sidebar |
-| 🎵 | Spotify | Now-playing widget + playback controls + top tracks |
-| 📈 | Finance Dashboard | Live stocks & crypto - Yahoo Finance + CoinGecko, no API key needed |
-| 🐙 | GitHub | Open pull requests and issues for your repositories |
-| ✅ | Todos | Local task list, always in the sidebar |
-| 🕰️ | Tab History | Recent browsing history in the sidebar |
-| ⏱️ | Focus Mode | Distraction-free countdown timer |
-| 🔗 | Quick Links & Dock | Pinned shortcuts on every tab |
-| 💬 | Daily Quotes | A new one every day |
-| 🔍 | Search Bar | Google, Bing, DuckDuckGo, or Brave |
-| 🔒 | Auth System | Optional account - Google Sign-in or email, JWT + refresh token rotation |
-| ⚙️ | Apps Hub | Unified settings panel - one card per integration |
-
----
-
 ## Install
 
-**From the Chrome Web Store** (recommended):
+**From the Chrome Web Store** — [install WindoM](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb).
 
-[![Install from Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install%20WindoM-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
-
-**Run locally:**
-
-See the [Local Setup Guide](https://windom.app/local-setup.html).
-
-**Browser support:**
+**From source** — see the [local setup guide](https://windom.app/local-setup). You
+will need Node 22 or newer, and Docker if you want the backend.
 
 | Browser | Status |
 |---|---|
-| Chrome 112+ | Fully supported |
-| Edge (Chromium) | Fully supported |
-| Brave | Fully supported |
-| Firefox | Not supported (Manifest V3 differences) |
+| Chrome | Supported |
+| Edge, Brave, and other Chromium browsers | Supported |
+| Firefox | Not supported — its Manifest V3 differs |
 
 ---
 
-## Tech Stack
+## How it is built
 
-### Extension
-
-| Layer | Technology |
+| | |
 |---|---|
-| UI | React 19 + TypeScript |
-| Bundler | Vite + CRXJS |
-| Styling | Tailwind CSS v4 + custom glassmorphism |
-| Extension API | Chrome Manifest V3 |
-| State persistence | `chrome.storage.sync` / `chrome.storage.local` |
-
-### Backend
-
-| Layer | Technology |
-|---|---|
-| Server | Fastify v5 (TypeScript ESM) |
-| ORM | Drizzle ORM |
-| Database | PostgreSQL 16 |
-| Auth | JWT + refresh token rotation, AES-GCM encryption |
-| Hosting | Fly.io |
-| CI/CD | GitHub Actions |
-
----
-
-## Project Structure
+| **Extension** | React 19, TypeScript, Vite 8, Chrome Manifest V3 |
+| **Styling** | Hand-written CSS — no framework. The glass is a real SVG displacement filter, not a blur |
+| **State** | `chrome.storage.sync` for settings, `chrome.storage.local` for tokens and caches |
+| **Backend** | Fastify 5, Drizzle ORM, PostgreSQL 17, hosted on Fly.io |
+| **Auth** | JWT with refresh-token rotation; third-party tokens encrypted at rest with AES-256-GCM |
+| **Site** | React Router, prerendered to static HTML, deployed to GitHub Pages |
 
 ```
 WindoM/
-├── web/                # Chrome extension (React + Vite)
-│   ├── src/
-│   │   ├── components/ # UI - grouped by feature domain
-│   │   ├── contexts/   # Global state (settings, auth, background, focus)
-│   │   ├── hooks/      # Per-feature data hooks
-│   │   ├── lib/        # Chrome storage wrappers, API client
-│   │   └── types/      # Shared TypeScript types
-│   └── manifest.json
-├── backend/            # Fastify API server
-├── site/               # windom.app - Vite + React, deployed by workflow
-└── .github/workflows/  # Auto-deploy and auto-publish pipelines
+├── web/        Chrome extension
+├── backend/    Fastify API
+├── site/       windom.app
+└── .github/    CI, release and deploy workflows
 ```
-
----
-
-## Contributing
-
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-[![Contributors](https://contrib.rocks/image?repo=YehudaBriskman/WindoM)](https://github.com/YehudaBriskman/WindoM/graphs/contributors)
-
-Ways to contribute:
-- Report a bug via [Issues](https://github.com/YehudaBriskman/WindoM/issues)
-- Suggest a feature via [Discussions](https://github.com/YehudaBriskman/WindoM/discussions)
-- Submit a pull request - see [CONTRIBUTING.md](CONTRIBUTING.md)
-- Leave a review on the [Chrome Web Store](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
-
----
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for the full version history.
-
-Current version: **1.4.1**
 
 ---
 
 ## Privacy
 
-WindoM does not track you. All personal data stays in your browser. An account is optional and only needed for Google Calendar and Spotify features. Finance data is fetched directly from public APIs with no account required. Read the full [Privacy Policy](https://windom.app/privacy.html).
+WindoM has no analytics and no tracking of any kind.
+
+Your settings, tasks and quick links live in your browser. An account is
+optional and exists only to connect Calendar, Spotify and GitHub, and to sync
+your settings between browsers. Calendar is requested read-only. Weather,
+quotes and market prices come from public APIs that need no key and no
+identity.
+
+The full [privacy policy](https://windom.app/privacy) lists every service the
+extension contacts and what is sent to each.
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+- [Report a bug](https://github.com/YehudaBriskman/WindoM/issues)
+- [Suggest a feature](https://github.com/YehudaBriskman/WindoM/discussions)
+- [Review it on the Chrome Web Store](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
 
 ---
 
 ## Links
 
-| Description | Links |
+| | |
 |---|---|
 | Website | [windom.app](https://windom.app) |
-| Chrome Web Store | [Install WindoM](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb) |
-| LinkedIn | [WindoM on LinkedIn](https://www.linkedin.com/company/windom-app/) |
-| Privacy Policy | [Privacy Policy](https://windom.app/privacy.html) |
-| Local Setup | [Local Setup Guide](https://windom.app/local-setup.html) |
-| Issues | [GitHub Issues](https://github.com/YehudaBriskman/WindoM/issues) |
-| Discussions | [GitHub Discussions](https://github.com/YehudaBriskman/WindoM/discussions) |
+| User guide | [windom.app/guide](https://windom.app/guide) |
+| Support | [windom.app/support](https://windom.app/support) |
+| Local setup | [windom.app/local-setup](https://windom.app/local-setup) |
+| Privacy policy | [windom.app/privacy](https://windom.app/privacy) |
+| Changelog | [CHANGELOG.md](CHANGELOG.md) |
+| LinkedIn | [WindoM](https://www.linkedin.com/company/windom-app/) |
 
 ---
 
-## License
-
-MIT - see [LICENSE](LICENSE)
+MIT © [Yehuda Briskman](https://github.com/YehudaBriskman) — see [LICENSE](LICENSE).
