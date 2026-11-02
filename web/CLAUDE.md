@@ -85,7 +85,7 @@ web/                               (repo root for the extension)
 
 ## Publishing
 
-The `.github/workflows/publish-chrome.yml` workflow auto-publishes to Chrome Web Store when a git tag matching `v*` is pushed. Required secrets: `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`, and `VITE_BACKEND_URL`. The workflow also accepts a manual `workflow_dispatch` with a tag, for re-publishing an existing release.
+The `.github/workflows/release.yml` workflow publishes to the Chrome Web Store when a git tag matching `v*` is pushed, after the backend has deployed. It uploads the exact ZIP the release gate built and checked; it does not rebuild. Required secrets: `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`, and `VITE_BACKEND_URL`. The workflow also accepts a manual `workflow_dispatch` with a tag and `targets: extension`, for re-publishing an existing release without redeploying the backend.
 
 ## Content Script Match Scope (Issue #203 — Resolved as By Design)
 

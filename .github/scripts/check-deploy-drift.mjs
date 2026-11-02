@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
  * `origin/main` by more than a threshold, so production cannot again sit silently
  * stale the way it did before incident #307: release v30 deployed 25 Apr 2026 while
  * main accumulated 48 commits - including every security fix from Phases 10-13 - and
- * nothing alerted because `deploy-backend.yml` only triggers on a `v*` tag.
+ * nothing alerted because the backend deploys only on a `v*` tag (`release.yml`).
  *
  * The deployed image carries no embedded git SHA (backend/Dockerfile sets no
  * `org.opencontainers.image.revision` label, and `fly.toml` configures no build arg
@@ -124,7 +124,7 @@ export function buildSummary({ deployed, ageDays, commitsAhead, thresholdDays, t
       `**Drift threshold exceeded** - ${drift.reasons.join('; ')}.`,
       '',
       'Production has not shipped recent main. Cut a release: tag `vX.Y.Z` on `main` ' +
-        '(see `deploy-backend.yml`) once the next version bump is ready.',
+        '(see `release.yml`) once the next version bump is ready.',
     );
   } else {
     lines.push('Production is within the allowed drift window. No action needed.');

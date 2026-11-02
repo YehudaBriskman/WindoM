@@ -1,7 +1,7 @@
 name: Backend Deploy Drift
 
 # Detects when the Fly deployment of windom-api has fallen behind `origin/main` by
-# more than a threshold. `deploy-backend.yml` triggers ONLY on a `v*` tag, so if
+# more than a threshold. `release.yml` deploys ONLY on a `v*` tag, so if
 # nobody tags, production rots silently - which is exactly what happened before
 # incident #307: production ran release v30 from 25 Apr 2026 while main accumulated
 # 48 commits, including every security fix from Phases 10-13, and nothing alerted on
@@ -54,7 +54,7 @@ jobs:
       - name: Test the drift checker itself
         run: node --test .github/scripts/check-deploy-drift.test.mjs
 
-      # Pinned to the same immutable commit deploy-backend.yml uses (release 1.6), so
+      # Pinned to the same immutable commit release.yml uses (release 1.6), so
       # this check and the real deploy always resolve flyctl identically.
       - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # 1.6
 

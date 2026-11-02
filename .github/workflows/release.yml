@@ -1,0 +1,290 @@
+name: Release
+
+# One release: the gate runs ONCE, then the backend deploys the image the gate
+# scanned, then the extension publishes the ZIP the gate checked.
+#
+# This replaces deploy-backend.yml and publish-chrome.yml. Both triggered on the
+# same tag and each called the gate, so every release ran the whole gate twice in
+# parallel. Then each rebuilt what the gate had just checked: Fly built the
+# Dockerfile again remotely, and the publish job ran `npm ci && npm run build` and
+# uploaded that. Neither shipped the thing that passed.
+#
+# Order matters now that there is one workflow. The extension publishes only
+# after the backend it talks to has deployed and passed readiness. Before, the
+# two raced, so a failed deploy could still put an extension that needs the new
+# API in front of users. That is irreversible in practice: users auto-update,
+# and the store refuses a re-upload of a version it already holds.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+  # Re-runs part of an existing release without inventing a new version. A
+  # publish can fail for reasons unrelated to the code (an expired store
+  # credential, a listing still under review), and by then the backend is
+  # already correct. `extension` republishes without redeploying. The gate still
+  # runs in full, against the tag's own commit.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to release, e.g. v1.5.1. Must already exist on main.
+        required: true
+        type: string
+      targets:
+        description: What to release from that tag.
+        required: true
+        type: choice
+        default: extension
+        options:
+          - extension
+          - backend
+          - both
+
+permissions:
+  contents: read
+
+# One release of a tag at a time, and never cancelled: a cancelled deploy can
+# stop between the backup and the migration.
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  gate:
+    name: Release gate
+    uses: ./.github/workflows/release-gate.yml
+    with:
+      tag: ${{ inputs.tag || github.ref_name }}
+    secrets: inherit
+
+  # ── Backend ────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy backend
+    needs: gate
+    # A tag push releases everything; a manual run only what it names.
+    if: github.event_name == 'push' || inputs.targets != 'extension'
+    runs-on: ubuntu-latest
+    # backup + push + migration + deploy + health check
+    timeout-minutes: 25
+    env:
+      SHA: ${{ needs.gate.outputs.sha }}
+      FLY_APP: windom-api
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+    steps:
+      # fly.toml (release_command, services, VM size) from the gate's commit.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+
+      # The release scripts from the ref this workflow runs from, so that
+      # redeploying a tag cut before a script existed still works.
+      - uses: actions/checkout@v7
+        with:
+          path: release-tools
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # Pin the action to the immutable commit behind release 1.6.
+      - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # 1.6
+
+      - name: Download the image the gate scanned
+        uses: actions/download-artifact@v7
+        with:
+          name: release-image-${{ needs.gate.outputs.sha }}
+          path: release-image
+
+      - name: The loaded image is the one the gate scanned
+        run: |
+          docker load --input release-image/image.tar.gz
+          WANT=$(cat release-image/image-id)
+          GOT=$(docker image inspect --format '{{.Id}}' "windom-api:$SHA")
+          echo "gate scanned $WANT / loaded $GOT"
+          if [ "$GOT" != "$WANT" ]; then
+            echo "::error::The image artifact does not match the image the gate scanned."
+            exit 1
+          fi
+
+      # Pushed BEFORE the backup, so a registry or credential problem fails the
+      # release before anything about production has changed. The tag is unique
+      # per commit; the digest the registry assigns is what gets verified, here and
+      # again after the deploy.
+      - name: Push the image to Fly's registry and confirm the digest
+        id: push
+        run: |
+          REF="registry.fly.io/$FLY_APP:release-$SHA"
+          flyctl auth docker
+          docker tag "windom-api:$SHA" "$REF"
+          docker push "$REF" | tee push.log
+          PUSHED=$(grep -oE 'digest: sha256:[0-9a-f]{64}' push.log | tail -1 | cut -d' ' -f2)
+          REMOTE=$(docker buildx imagetools inspect "$REF" | awk '/^Digest:/ {print $2; exit}')
+          echo "pushed $PUSHED / registry resolves $REF to $REMOTE"
+          if [ -z "$PUSHED" ] || [ "$PUSHED" != "$REMOTE" ]; then
+            echo "::error::Could not confirm the pushed image in registry.fly.io. Nothing has been changed."
+            exit 1
+          fi
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "digest=$PUSHED" >> "$GITHUB_OUTPUT"
+
+      # ── Pre-deploy database backup ──────────────────────────────────────────
+      # Before ANY schema change runs. No backup means no safe rollback, so the
+      # deploy is aborted if this fails.
+      - name: Create pre-deploy database backup
+        id: backup
+        run: |
+          echo "Creating pre-deploy database backup"
+          flyctl postgres backup create --app "$FLY_POSTGRES_APP"
+          echo "timestamp=$(date -u '+%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+        env:
+          FLY_POSTGRES_APP: ${{ secrets.FLY_POSTGRES_APP }}
+
+      # release_command in fly.toml runs the migrations in a short-lived machine
+      # from this same image before the new release goes live. Fly's rolling
+      # strategy keeps the old machine serving until the new one is healthy.
+      - name: Deploy the scanned image
+        working-directory: backend
+        run: flyctl deploy --app "$FLY_APP" --image "$IMAGE" --wait-timeout 300
+        env:
+          IMAGE: ${{ steps.push.outputs.ref }}
+
+      # READINESS, not liveness: /health stays 200 while the database is read-only,
+      # which is how incident #307 ran undetected for four months.
+      - name: Verify production readiness
+        run: |
+          echo "Verifying https://windom-api.fly.dev/health/ready ..."
+          for i in 1 2 3 4 5 6; do
+            STATUS=$(curl -s -o /tmp/ready.json -w "%{http_code}" --max-time 10 https://windom-api.fly.dev/health/ready || true)
+            if [ "$STATUS" = "200" ]; then
+              echo "Readiness check passed (attempt $i)."
+              cat /tmp/ready.json
+              exit 0
+            fi
+            echo "Attempt $i: got HTTP $STATUS, retrying in 10s..."
+            cat /tmp/ready.json 2>/dev/null || true
+            sleep 10
+          done
+          echo "::error::Readiness check failed after 60s - the API is up but its database"
+          echo "::error::is unreachable or read-only. Run: flyctl rollback -a windom-api"
+          exit 1
+
+      - name: Production runs the image the gate scanned
+        run: |
+          flyctl machine list --app "$FLY_APP" --json > machines.json
+          node release-tools/.github/scripts/check-deployed-image.mjs machines.json
+        env:
+          EXPECTED_DIGEST: ${{ steps.push.outputs.digest }}
+
+      - name: Deployment summary
+        run: |
+          echo "===== Deployment complete ====="
+          echo "Tag:        $RELEASE_TAG"
+          echo "Commit:     $SHA"
+          echo "Image:      $IMAGE@$DIGEST"
+          echo "Backup at:  $BACKUP_AT"
+          echo ""
+          echo "To roll back code only:  flyctl rollback -a windom-api"
+          echo "To roll back database:   see Windom/runbooks/deploy-rollback.md"
+        env:
+          IMAGE: ${{ steps.push.outputs.ref }}
+          DIGEST: ${{ steps.push.outputs.digest }}
+          BACKUP_AT: ${{ steps.backup.outputs.timestamp }}
+
+  # ── Extension ──────────────────────────────────────────────────────────────
+  publish:
+    name: Publish extension
+    needs: [gate, deploy]
+    # Runs only after a SUCCESSFUL deploy, or when this run releases the extension
+    # alone (deploy skipped by its own `if`). A failed or cancelled deploy
+    # blocks the publish; so does a failed gate, because `deploy` then never ran.
+    if: >-
+      always() && needs.gate.result == 'success' && inputs.targets != 'backend' &&
+      (needs.deploy.result == 'success' ||
+       (needs.deploy.result == 'skipped' && inputs.targets == 'extension'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # Reviewer approval and tag rules for the store live on this environment.
+    environment: chrome-store
+
+    env:
+      RELEASE_SHA: ${{ needs.gate.outputs.sha }}
+
+    steps:
+      # Only the release scripts, from the ref this workflow runs from. Nothing is
+      # built here any more, so the tagged source is not needed - and this way a
+      # tag cut before a script existed can still be republished.
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Validate required publish secrets
+        run: node .github/scripts/validate-publish-env.mjs
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+
+      - name: Download the package the gate checked
+        uses: actions/download-artifact@v7
+        with:
+          name: release-extension-${{ needs.gate.outputs.sha }}
+          path: release-package
+
+      - name: The package is the gate's, for this tag, commit and backend
+        run: node .github/scripts/release-package.mjs release-package/extension.zip release-package/release-info.json
+        env:
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
+
+      - name: Upload to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v7.0.0
+        with:
+          file-path: release-package/extension.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          # Required since v7 of this action (#287 bumped it silently; it surfaced
+          # mid-release six months later). Publisher > Settings in the dashboard.
+          publisher-id: ${{ secrets.CHROME_PUBLISHER_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          # Deliberately false: this flag does not submit the item. v1.5.0 uploaded
+          # with publish: true, went green, and sat in Draft. The submission is made
+          # explicitly below, where its response is read.
+          publish: false
+
+      # Runs even when the upload fails, because a rejected package is exactly
+      # when the reason matters. Read-only.
+      - name: Confirm what the store accepted
+        if: always()
+        run: node .github/scripts/report-store-status.mjs
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      # Only on a clean upload - submitting a draft the store rejected would just
+      # queue a known-bad package for review.
+      - name: Submit for review
+        run: node .github/scripts/report-store-status.mjs
+        env:
+          SUBMIT_FOR_REVIEW: 'true'
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}

@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
  *
  * Every job in release-gate.yml used to check out the triggering ref. On a tag
  * push that is the tag, but on a manual publish (`workflow_dispatch` with
- * `inputs.tag`) it is the branch the dispatch ran from - while publish-chrome
+ * `inputs.tag`) it is the branch the dispatch ran from - while the publish job
  * checked out `inputs.tag` and uploaded THAT. The gate could pass on main's
  * code and the store receive a different commit. The version check did not
  * catch it: main and the tag usually declare the same version, and a version
