@@ -18,6 +18,17 @@ on:
         description: The release tag being validated (defaults to the triggering ref).
         required: false
         type: string
+      release:
+        # Callers are real releases. Left unset only by a direct dispatch of this
+        # workflow (a rehearsal), where `inputs.release` is null - see `resolve`.
+        description: A real release (the tag must exist and be on main), not a rehearsal.
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      sha:
+        description: The one commit every gate job checked. Deploy and publish check out this.
+        value: ${{ jobs.resolve.outputs.sha }}
     secrets:
       VITE_BACKEND_URL:
         description: Backend origin the extension is built against.
@@ -40,43 +51,61 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
-  # ── Release metadata ───────────────────────────────────────────────────────
-  # Deliberately first and dependency-free: these checks are deterministic and cost
-  # seconds, so a mistyped tag fails before any expensive job starts.
-  metadata:
-    name: Release metadata
+  # ── Resolve the release to one commit ──────────────────────────────────────
+  # Every job below used to check out the triggering ref. On a manual publish that
+  # is the branch the dispatch ran from, while publish-chrome uploaded the TAG - so
+  # the gate could pass on main's code and the store receive a different commit.
+  # Now the tag is turned into a SHA once, here, and every checkout in the gate,
+  # the deploy and the publish uses that SHA.
+  #
+  # A tag can be created on ANY commit, including one on an unmerged branch, so a
+  # real release must also point at history on main, where review applies. That
+  # check used to be skipped for every manual run - the one path that publishes an
+  # arbitrary tag. It is now skipped only for a rehearsal (a direct dispatch of this
+  # workflow), which never deploys or publishes anything.
+  resolve:
+    name: Resolve release commit
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
-          # Full history so the tagged commit's ancestry can be tested against main.
+          # Full history and tags so the tag can be resolved and its ancestry tested.
           fetch-depth: 0
+          fetch-tags: true
 
       - uses: actions/setup-node@v7
         with:
           node-version: 22
 
-      # A tag can be created on ANY commit, including one on an unmerged branch or a
-      # commit that was force-pushed away. `needs: gate` guarantees the checks passed,
-      # but says nothing about where the tagged code came from - so without this, a tag
-      # on an unreviewed branch would deploy to production and publish to the store.
-      # Releases must come from history that is on main, where branch protection and
-      # required reviews apply.
-      #
-      # Skipped for manual dry runs, which legitimately run from a feature branch.
-      - name: Tagged commit must be on main
-        if: github.ref_type == 'tag'
+      - name: Tag exists, is on main, and is the commit that triggered the run
+        id: resolve
         run: |
-          git fetch --no-tags --quiet origin main
-          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "Tagged commit $GITHUB_SHA is on main."
-          else
-            echo "::error::Tagged commit $GITHUB_SHA is not an ancestor of origin/main."
-            echo "::error::Release tags must point at reviewed history that has been merged"
-            echo "::error::to main. Merge the work first, then tag the resulting commit."
-            exit 1
-          fi
+          git fetch --no-tags --quiet origin +refs/heads/main:refs/remotes/origin/main
+          node .github/scripts/resolve-release-ref.mjs
+        env:
+          # `inputs.release` is true from both callers and null on a direct
+          # dispatch; null == true is false, so a rehearsal never requires the tag.
+          REQUIRE_TAG: ${{ inputs.release == true }}
+
+  # ── Release metadata ───────────────────────────────────────────────────────
+  # These checks are deterministic and cost seconds, so a mistyped tag fails
+  # before any expensive job starts.
+  metadata:
+    name: Release metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: resolve
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
 
       - name: Test the validators themselves
         run: node --test .github/scripts/*.test.mjs
@@ -95,6 +124,7 @@ jobs:
   backend:
     name: Backend
     runs-on: ubuntu-latest
+    needs: resolve
     timeout-minutes: 15
 
     services:
@@ -123,6 +153,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
 
       - uses: actions/setup-node@v7
         with:
@@ -172,13 +204,12 @@ jobs:
         # Regenerates migrations from schema.ts; any new file means schema.ts changed
         # without a committed migration, which would deploy code expecting columns the
         # database will not have.
+        #
+        # `git diff` only sees tracked files, so the usual shape of drift - a new,
+        # untracked NNNN_name.sql - passed. The script reads `git status` instead.
         run: |
           npx drizzle-kit generate
-          if ! git diff --exit-code -- drizzle; then
-            echo "::error::schema.ts has changes with no committed migration."
-            echo "::error::Run 'npx drizzle-kit generate' in backend/ and commit the result."
-            exit 1
-          fi
+          node ../.github/scripts/check-migration-drift.mjs drizzle
 
       - name: Migrate test database
         run: npx drizzle-kit migrate
@@ -190,6 +221,7 @@ jobs:
   web:
     name: Web extension
     runs-on: ubuntu-latest
+    needs: resolve
     timeout-minutes: 15
 
     defaults:
@@ -198,6 +230,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
 
       - uses: actions/setup-node@v7
         with:
@@ -243,7 +277,7 @@ jobs:
       - name: Preserve the exact artifact the gate validated
         uses: actions/upload-artifact@v7
         with:
-          name: release-gate-extension-${{ github.sha }}
+          name: release-gate-extension-${{ needs.resolve.outputs.sha }}
           path: web/dist/
           if-no-files-found: error
           retention-days: 5
@@ -252,18 +286,21 @@ jobs:
   container:
     name: Container image
     runs-on: ubuntu-latest
+    needs: resolve
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
 
       - name: Build the image Fly will deploy
-        run: docker build --tag windom-api:${{ github.sha }} backend
+        run: docker build --tag windom-api:${{ needs.resolve.outputs.sha }} backend
 
       # release_command in fly.toml runs this path; a rename would otherwise fail the
       # deploy only after the pre-deploy backup had already been taken.
       - name: Verify the release command exists in the image
         run: |
-          docker run --rm --entrypoint sh windom-api:${{ github.sha }} -c \
+          docker run --rm --entrypoint sh windom-api:${{ needs.resolve.outputs.sha }} -c \
             'test -f dist/db/migrate.js && test -d drizzle && test -f dist/index.js'
           echo "Image contains the migration entrypoint and migration files."
 
@@ -271,7 +308,7 @@ jobs:
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: windom-api:${{ github.sha }}
+          image-ref: windom-api:${{ needs.resolve.outputs.sha }}
           format: table
           severity: CRITICAL,HIGH
           exit-code: '1'
@@ -282,9 +319,12 @@ jobs:
   preflight:
     name: Infrastructure preflight
     runs-on: ubuntu-latest
+    needs: resolve
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
 
       - name: Backend origin resolves in DNS
         # Issue #302: the extension was built against a hostname with no DNS record, so
@@ -330,23 +370,24 @@ jobs:
           esac
 
   # ── Single status for callers to depend on ─────────────────────────────────
+  # Every job must have SUCCEEDED. This used to fail only on `failure` or
+  # `cancelled`, so a `skipped` job - evidence of nothing - let the release through.
   summary:
     name: Gate summary
     runs-on: ubuntu-latest
-    needs: [metadata, backend, web, container, preflight]
+    timeout-minutes: 5
+    needs: [resolve, metadata, backend, web, container, preflight]
     if: always()
     steps:
-      - name: Report
-        run: |
-          printf '%-28s %s\n' \
-            "Release metadata" "${{ needs.metadata.result }}" \
-            "Backend" "${{ needs.backend.result }}" \
-            "Web extension" "${{ needs.web.result }}" \
-            "Container image" "${{ needs.container.result }}" \
-            "Infrastructure preflight" "${{ needs.preflight.result }}"
+      # Only the verdict script, from the triggering ref rather than the resolved
+      # commit, which does not exist when `resolve` is the job that failed.
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
 
-      - name: Fail if any check did not pass
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: |
-          echo "::error::Release gate failed - nothing will be deployed or published."
-          exit 1
+      - name: Every gate job succeeded
+        run: node .github/scripts/check-gate-results.mjs
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+          REQUIRED_JOBS: resolve metadata backend web container preflight
