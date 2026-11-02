@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+# The gate and the deploy only read the repository; Fly is reached with its own token.
+permissions:
+  contents: read
+
 jobs:
   # The full pre-release gate: metadata, backend, web, container image, and
   # infrastructure preflight. This replaced a lighter inline test job that ran neither
@@ -24,7 +28,10 @@ jobs:
     needs: gate
 
     steps:
+      # The commit the gate checked, not whatever the tag points at by now.
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
 
       # Pin the action to the immutable commit behind release 1.6.
       # This prevents an upstream tag or branch change from altering deploy code.
