@@ -58,11 +58,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v7
         with:
-          # Builds the tagged commit rather than the branch the dispatch ran from, so
-          # what reaches the store is exactly the released code. The workflow file
-          # itself still comes from the dispatch ref, which is how a fix to this file
-          # can republish an older tag.
-          ref: ${{ inputs.tag || github.ref }}
+          # The exact commit the gate resolved and checked - the tag's commit, not
+          # the branch a dispatch ran from. Before, the gate checked the dispatch
+          # branch while this step built the tag, so the two could differ. The
+          # workflow file itself still comes from the dispatch ref, which is how a
+          # fix to this file can republish an older tag.
+          ref: ${{ needs.gate.outputs.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v7
@@ -95,7 +96,7 @@ jobs:
       - name: Preserve release package
         uses: actions/upload-artifact@v7
         with:
-          name: chrome-extension-${{ github.sha }}
+          name: chrome-extension-${{ needs.gate.outputs.sha }}
           path: extension.zip
           if-no-files-found: error
           retention-days: 5
