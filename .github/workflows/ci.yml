@@ -9,10 +9,48 @@ on:
 permissions:
   contents: read
 
+# A new push to a pull request cancels that PR's older run - it is about to be
+# superseded anyway. Pushes to main are keyed by commit and never cancelled:
+# GitHub drops a PENDING run in a shared group even with cancel-in-progress off,
+# which would leave a merged commit with no CI result at all.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # ── What changed ─────────────────────────────────────────────────────────
+  # Each suite below runs only when its tree changed. Anything under .github/
+  # runs all of them, and if the diff cannot be computed every suite runs - see
+  # .github/scripts/changed-components.mjs. A skipped job counts as passing for a
+  # required check, so the required checks still gate every PR.
+  changes:
+    name: Changed components
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      backend: ${{ steps.diff.outputs.backend }}
+      web: ${{ steps.diff.outputs.web }}
+      site: ${{ steps.diff.outputs.site }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The merge base has to be present to diff against it. The repository
+          # is ~19 MB, so full history costs seconds.
+          fetch-depth: 0
+
+      - id: diff
+        run: node .github/scripts/changed-components.mjs
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+
   # ── Backend ──────────────────────────────────────────────────────────────
   ci-backend:
     name: Backend - lint / typecheck / test
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -87,6 +125,8 @@ jobs:
   # ── Web extension ─────────────────────────────────────────────────────────
   ci-web:
     name: Web - lint / typecheck / build
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -136,8 +176,14 @@ jobs:
   # ── Marketing site ────────────────────────────────────────────────────────
   # The site previously had no CI at all: nothing in .github referenced it, so a
   # broken page merged straight through to windom.app.
+  #
+  # Pull requests only. On main, deploy-site.yml runs the same checks on the build
+  # it uploads to Pages, so running them here as well built the site twice per
+  # merge for no added safety.
   ci-site:
     name: Site - lint / typecheck / build
+    needs: changes
+    if: github.event_name == 'pull_request' && needs.changes.outputs.site == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -172,12 +218,4 @@ jobs:
         run: npm run build
 
       - name: Verify every public URL still exists
-        run: |
-          missing=0
-          for f in index guide privacy terms local-setup he/guide; do
-            [ -f "dist/$f.html" ] && echo "  ok       $f.html" || {
-              echo "::error::dist/$f.html is missing - that URL is baked into the"
-              echo "::error::published extension or the store listing and cannot move."
-              missing=1; }
-          done
-          exit $missing
+        run: bash scripts/verify-dist.sh

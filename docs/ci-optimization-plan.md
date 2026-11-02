@@ -6,8 +6,8 @@ SHA it resolves.
 | PR | Purpose | Status |
 |---|---|---|
 | W1 | The release gate checks the exact commit it ships, and fails closed | merged (#425) |
-| W2 | One release orchestrator: the gate runs once; the ZIP and the image are built, validated and checksummed once, then deployed and published by digest | this branch |
-| W3 | Component path filters, cancelling superseded PR runs, scoped caches and timeouts; one site validation on main | planned |
+| W2 | One release orchestrator: the gate runs once; the ZIP and the image are built, validated and checksummed once, then deployed and published by digest | merged (#426) |
+| W3 | Component path filters, cancelling superseded PR runs, scoped caches and timeouts; one site validation on main | this branch |
 
 ## W1 - what was wrong
 
@@ -160,3 +160,75 @@ digest on the running machines afterwards.**
    artifacts.
 2. Tag the release. If the first push to registry.fly.io fails on access, the
    run stops before the backup.
+
+## W3 - what was wrong
+
+Measured on main `36ff884` (2026-11-03):
+
+1. **Every change ran every suite.** Of main's last 120 commits, 68 touched
+   exactly one of `backend/`, `web/`, `site/`. All 120 still ran the backend
+   suite, which starts Postgres.
+2. **No PR run was ever cancelled.** `ci.yml` had no `concurrency`, so every
+   push to a PR queued a full run behind the previous one.
+3. **The site was validated twice on main, against two different lists.**
+   `ci.yml`'s site job and `deploy-site.yml`'s build both built the site on
+   every merge that touched it.
+   - CI checked 6 `.html` files.
+   - The deploy checked 13 routes at both addresses, plus the search index.
+
+   So a PR could go green and the deploy then fail on main.
+
+## W3 - what changed
+
+- **`changes` job** (`.github/scripts/changed-components.mjs`): decides which
+  of backend, web and site the PR or push touched. Each suite runs only for
+  its own tree.
+  - **Leans towards running.** Anything under `.github/` runs everything,
+    except `.github/assets/` (README images). That covers the workflows, and
+    the release scripts whose tests run in the backend job.
+  - **Backend extras:** `docker-compose.yml` and `.env.example` count as
+    backend.
+  - **Fails open.** No usable range (a new branch, a force push) or a git
+    error runs everything.
+  - **Root docs select nothing:** README, CHANGELOG, `docs/` and LICENSE. No
+    build reads a file outside its own directory (checked with `rg`).
+  - **Required checks still gate.** A skipped job counts as passing for a
+    required check, so "Backend" and "Web" still gate every PR.
+- **PR runs cancel their predecessor.** Pushes to main are keyed by SHA and
+  never cancelled, because GitHub drops a pending run in a shared group even
+  with `cancel-in-progress: false`.
+- **One site validation per merge.**
+  - `ci.yml`'s site job runs on pull requests only.
+  - On main, `deploy-site.yml` builds the site once. It gains `npm audit` and
+    the type check, so it checks everything CI did, and uploads that same
+    build to Pages.
+  - Both use one URL list, `site/scripts/verify-dist.sh`, the stronger of the
+    two.
+- **Caches and timeouts:** already scoped. Every `setup-node` cache is keyed
+  to its own lock file, and every job has a timeout. No change.
+
+**Projected on the same 120 commits:**
+- Suite runs: 360 → 202.
+- Backend runs: 120 → 73.
+- Docs-only changes: 10 → 0.
+
+The repo is public, so this saves queue time and wall-clock rather than
+minutes.
+
+**Verified:**
+
+| Case | Result |
+|---|---|
+| `node --test .github/scripts/*.test.mjs` | 155 pass (12 new) |
+| Classifier on real ranges: #424 (backend deps) | backend only |
+| Classifier on real ranges: #426 (workflows) | everything |
+| Classifier on real ranges: #420 (README + images) | nothing |
+| Classifier on a new-branch push, or an unknown SHA | everything, with a notice |
+| `npm ci && npm run build` in `site/`, then `verify-dist.sh` | passes (26 addresses, 146 search sections) |
+| actionlint | 4 findings, all pre-existing (5 on main) |
+
+## Found, not changed
+
+- **CI tests the backend against `postgres:16-alpine`; production runs 17**
+  (README, #420). Matching it is a one-line change but a behaviour change, so
+  it belongs in its own PR.
