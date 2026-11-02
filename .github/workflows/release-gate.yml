@@ -9,7 +9,8 @@ name: Release Gate
 # the manifest does not permit. Both tag workflows now depend on this gate, so a tag
 # either passes every check or nothing is released.
 #
-# Called via `uses:` - see deploy-backend.yml and publish-chrome.yml.
+# Called once per release via `uses:` from release.yml, which deploys the image and
+# publishes the ZIP this gate produced - not rebuilds of them.
 
 on:
   workflow_call:
@@ -53,7 +54,7 @@ env:
 jobs:
   # ── Resolve the release to one commit ──────────────────────────────────────
   # Every job below used to check out the triggering ref. On a manual publish that
-  # is the branch the dispatch ran from, while publish-chrome uploaded the TAG - so
+  # is the branch the dispatch ran from, while the publish uploaded the TAG - so
   # the gate could pass on main's code and the store receive a different commit.
   # Now the tag is turned into a SHA once, here, and every checkout in the gate,
   # the deploy and the publish uses that SHA.
@@ -274,11 +275,31 @@ jobs:
             exit 1
           fi
 
-      - name: Preserve the exact artifact the gate validated
+      # The ZIP is made HERE, from the dist the steps above checked, and the publish
+      # job uploads this file - it no longer rebuilds. release-info.json records
+      # what the publish must re-verify before uploading (release-package.mjs).
+      # Written with jq rather than a repo script so that republishing a tag cut
+      # before this file existed still works.
+      - name: Package the checked build once, with its checksum
+        run: |
+          mkdir -p ../release-package
+          (cd dist && zip -X -q -r ../../release-package/extension.zip .)
+          SUM=$(sha256sum ../release-package/extension.zip | cut -d' ' -f1)
+          VERSION=$(node -p "require('./dist/manifest.json').version")
+          jq -n --arg tag "$RELEASE_TAG" --arg sha "$SHA" --arg sum "$SUM" \
+                --arg version "$VERSION" --arg origin "$VITE_BACKEND_URL" \
+            '{tag: $tag, sha: $sha, sha256: $sum, manifestVersion: $version, backendOrigin: $origin}' \
+            > ../release-package/release-info.json
+          cat ../release-package/release-info.json
+        env:
+          SHA: ${{ needs.resolve.outputs.sha }}
+          VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL || 'https://windom-api.fly.dev' }}
+
+      - name: Preserve the exact package the gate validated
         uses: actions/upload-artifact@v7
         with:
-          name: release-gate-extension-${{ needs.resolve.outputs.sha }}
-          path: web/dist/
+          name: release-extension-${{ needs.resolve.outputs.sha }}
+          path: release-package/
           if-no-files-found: error
           retention-days: 5
 
@@ -312,6 +333,29 @@ jobs:
           format: table
           severity: CRITICAL,HIGH
           exit-code: '1'
+
+      # The deploy ships THIS image - the one built, entrypoint-checked and scanned
+      # above - instead of letting Fly build the Dockerfile again remotely. The ID
+      # is a content hash of the image config, so the deploy can prove that what it
+      # loaded is what was scanned.
+      - name: Save the scanned image for the deploy
+        run: |
+          mkdir -p release-image
+          docker image inspect --format '{{.Id}}' "windom-api:$SHA" > release-image/image-id
+          docker save "windom-api:$SHA" | gzip -1 > release-image/image.tar.gz
+          echo "image $(cat release-image/image-id), $(du -h release-image/image.tar.gz | cut -f1) compressed"
+        env:
+          SHA: ${{ needs.resolve.outputs.sha }}
+
+      - name: Preserve the exact image the gate scanned
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-image-${{ needs.resolve.outputs.sha }}
+          path: release-image/
+          if-no-files-found: error
+          retention-days: 3
+          # Already gzipped; compressing again only costs time.
+          compression-level: 0
 
   # ── Infrastructure preflight ───────────────────────────────────────────────
   # Checks the world outside the repo, which is where the 2026-10 outage lived: the
