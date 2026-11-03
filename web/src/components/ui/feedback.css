@@ -1,0 +1,126 @@
+/* ============================================================
+   Feedback - widget error fallback, inline save status, empty states.
+
+   Lives beside the components that use it rather than in globals.css so
+   it ships with them. It only reads the :root tokens globals.css defines
+   (--ink-*, --text-*, --space-*, --r-*, --dur-*), so it inherits any
+   retune of those without being edited.
+
+   Every class here is deliberately quiet: tertiary ink, small type, no
+   tinted surfaces. A crashed or empty widget should not be the loudest
+   thing on a new-tab page.
+   ============================================================ */
+
+/* ── Widget error fallback (ErrorBoundary) ── */
+.widget-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--ink-tertiary);
+  text-align: center;
+}
+
+.widget-error-retry {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--ink-secondary);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.widget-error-retry:hover {
+  color: var(--ink-primary);
+}
+.widget-error-retry:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+/* ── Inline save status (EditableName, FocusInput) ──
+   The live region is always mounted so a screen reader hears the change;
+   only its text comes and goes. Absolutely placed under its anchor so the
+   message never reflows the greeting or the focus line. */
+.save-status-anchor {
+  position: relative;
+  display: inline-block;
+}
+
+.save-status {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-body);
+  color: var(--ink-tertiary);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--dur-sm-out) ease;
+}
+.save-status.visible {
+  opacity: 1;
+  transition-duration: var(--dur-sm);
+}
+.save-status.error {
+  color: rgba(248, 113, 113, 0.95);
+}
+
+/* Zero-height rail under the focus line: the status hangs off it, so the
+   presets below never move when it appears. */
+.focus-save-status {
+  position: relative;
+  height: 0;
+}
+.focus-save-status .save-status {
+  top: var(--space-2);
+}
+
+/* ── Empty states ── */
+.todo-empty,
+.dock-empty {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--ink-tertiary);
+  text-align: center;
+}
+
+.todo-empty {
+  padding: var(--space-3) 0;
+  font-style: italic;
+}
+
+.dock-empty {
+  display: flex;
+  align-items: center;
+  height: 44px; /* one dock row, matching .dock-rows */
+  padding: 0 var(--space-4);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+/* ── Pending (in-flight) controls ── */
+.todo-item[aria-busy='true'],
+.photo-thumb[aria-busy='true'] {
+  opacity: 0.6;
+}
+.todo-item-remove:disabled,
+.todo-add-btn:disabled,
+.photo-like-btn:disabled,
+.photo-delete-btn:disabled {
+  cursor: progress;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .save-status,
+  .save-status.visible {
+    transition: none;
+  }
+}
