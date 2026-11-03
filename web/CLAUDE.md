@@ -80,6 +80,7 @@ web/                               (repo root for the extension)
 
 - Settings changes trigger re-renders through `SettingsContext` - no manual DOM manipulation
 - Cross-tab sync happens automatically via `chrome.storage.onChanged` listener in `SettingsContext`
+- Backend sync (#251) decides conflicts by the server's revision (`updatedAt` on GET/PUT `/settings`), compared for equality, never against `Date.now()`. See `src/lib/settings-sync.ts`; per-device state lives in `chrome.storage.local` (`windom_settings_server_rev`, `windom_settings_dirty`)
 - Weather/background data cached in `chrome.storage.local` (larger quota) rather than sync storage
 - Focus timer uses `body.focus-active` CSS class to hide all UI except the overlay
 - `SettingsContext` exposes `get()`, `update()`, `updateMultiple()`, and `reset()` methods
