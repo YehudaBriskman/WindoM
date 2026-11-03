@@ -1,11 +1,13 @@
 import type { ReactElement } from 'react';
 import { Home } from './pages/Home';
+import { Install } from './pages/Install';
 import { Guide } from './pages/Guide';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Support } from './pages/Support';
 import { Contact } from './pages/Contact';
 import { LocalSetup } from './pages/LocalSetup';
+import { Install as InstallHe } from './pages/he/Install';
 import { Guide as GuideHe } from './pages/he/Guide';
 import { Privacy as PrivacyHe } from './pages/he/Privacy';
 import { Terms as TermsHe } from './pages/he/Terms';
@@ -54,7 +56,11 @@ export interface SiteRoute {
   legacyHtml?: boolean;
   /** Sidebar grouping. Absent for pages that are not documentation. */
   group?: string;
-  /** Short line under the title in the sidebar, where it earns its space. */
+  /**
+   * Short line under the title in the sidebar. Every documentation page has
+   * one: a column where some entries carry a second line and their neighbours
+   * do not reads as ragged, and as though the bare ones were unfinished.
+   */
   blurb?: string;
 }
 
@@ -68,8 +74,19 @@ export const ROUTES: SiteRoute[] = [
       'WindoM replaces the Chrome new tab with your calendar, the weather, todos and markets, on a wallpaper that moves with the hour.',
   },
   {
+    path: '/install',
+    group: 'Get started',
+    blurb: 'Add it to Chrome, find your way round',
+    element: <Install />,
+    locale: 'en',
+    title: 'Install',
+    description:
+      'Install WindoM from the Chrome Web Store, what works straight away with no account, and where everything is.',
+    twinOf: '/install',
+  },
+  {
     path: '/guide',
-    group: 'Using WindoM',
+    group: 'Get started',
     blurb: 'Every panel, and what it does',
     element: <Guide />,
     locale: 'en',
@@ -80,7 +97,7 @@ export const ROUTES: SiteRoute[] = [
   },
   {
     path: '/support',
-    group: 'Using WindoM',
+    group: 'Help',
     blurb: 'Fixes for the common problems',
     element: <Support />,
     locale: 'en',
@@ -92,7 +109,8 @@ export const ROUTES: SiteRoute[] = [
   },
   {
     path: '/contact',
-    group: 'Using WindoM',
+    group: 'Help',
+    blurb: 'Reach the developer, and when to expect a reply',
     element: <Contact />,
     locale: 'en',
     title: 'Contact',
@@ -114,6 +132,7 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/privacy',
     group: 'Legal',
+    blurb: 'What is stored, and where',
     element: <Privacy />,
     locale: 'en',
     title: 'Privacy Policy',
@@ -125,6 +144,7 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/terms',
     group: 'Legal',
+    blurb: 'The rules for using the service',
     element: <Terms />,
     locale: 'en',
     title: 'Terms of Use',
@@ -136,8 +156,19 @@ export const ROUTES: SiteRoute[] = [
 
   // ── Hebrew ──────────────────────────────────────────────────────────────
   {
+    path: '/he/install',
+    group: 'תחילת עבודה',
+    blurb: 'הוספה ל-Chrome, והתמצאות ראשונה',
+    element: <InstallHe />,
+    locale: 'he',
+    title: 'התקנה',
+    description:
+      'התקנת WindoM מחנות האינטרנט של Chrome, מה עובד מיד בלי חשבון, ואיפה נמצא כל דבר.',
+    twinOf: '/install',
+  },
+  {
     path: '/he/guide',
-    group: 'שימוש ב-WindoM',
+    group: 'תחילת עבודה',
     blurb: 'כל פאנל, ומה הוא עושה',
     element: <GuideHe />,
     locale: 'he',
@@ -148,7 +179,7 @@ export const ROUTES: SiteRoute[] = [
   },
   {
     path: '/he/support',
-    group: 'שימוש ב-WindoM',
+    group: 'עזרה',
     blurb: 'פתרונות לתקלות הנפוצות',
     element: <SupportHe />,
     locale: 'he',
@@ -159,7 +190,8 @@ export const ROUTES: SiteRoute[] = [
   },
   {
     path: '/he/contact',
-    group: 'שימוש ב-WindoM',
+    group: 'עזרה',
+    blurb: 'פנייה למפתח, ומתי לצפות לתשובה',
     element: <ContactHe />,
     locale: 'he',
     title: 'יצירת קשר',
@@ -181,6 +213,7 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/he/privacy',
     group: 'משפטי',
+    blurb: 'מה נשמר, ואיפה',
     element: <PrivacyHe />,
     locale: 'he',
     title: 'מדיניות פרטיות',
@@ -191,6 +224,7 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/he/terms',
     group: 'משפטי',
+    blurb: 'הכללים לשימוש בשירות',
     element: <TermsHe />,
     locale: 'he',
     title: 'תנאי שימוש',

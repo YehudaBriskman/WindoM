@@ -75,11 +75,15 @@ export interface NavLink {
  *
  * `/#updates` is the release feed on the home page - honest but thin until the
  * feed itself is fixed, which is issue #374.
+ *
+ * "Docs" lands on the first documentation page, Install. It used to point at
+ * Local Setup, so the item a newcomer reads as "documentation" opened on
+ * Docker and Postgres; developers reach that page from the sidebar and footer.
  */
 export const NAV_LINKS: NavLink[] = [
   { path: '/guide', label: 'Guide' },
   { path: '/support', label: 'Support' },
-  { path: '/local-setup', label: 'Docs' },
+  { path: '/install', label: 'Docs' },
   { path: '/#updates', label: 'Changelog' },
 ];
 
