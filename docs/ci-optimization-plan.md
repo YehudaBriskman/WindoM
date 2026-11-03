@@ -115,6 +115,9 @@ the gate once, then:
   5. Check readiness (unchanged).
   6. Check that every started app machine runs the pushed digest
      (`check-deployed-image.mjs`, reading `fly machine list --json`).
+  7. Added later (#228): if 4-6 fail, redeploy the image recorded just before
+     step 4 and fail the job anyway (`deploy-rollback.mjs`; see
+     [deployment-runbook.md](deployment-runbook.md)).
 - **Publish extension**
   - It runs only after a **successful** deploy, or on a manual
     `targets: extension` run.

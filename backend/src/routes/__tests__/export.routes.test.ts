@@ -83,7 +83,7 @@ describe('GET /me/export', () => {
     const sessions = body['sessions'] as Record<string, unknown>[];
     expect(sessions).toHaveLength(1);
     expect(Object.keys(sessions[0] ?? {}).sort()).toEqual(
-      ['id', 'createdAt', 'expiresAt', 'revokedAt', 'renewalCount', 'deviceId'].sort(),
+      ['id', 'createdAt', 'expiresAt', 'revokedAt', 'renewalCount', 'deviceLabel', 'deviceId'].sort(),
     );
     expect(sessions[0]?.['deviceId']).toBe('abcdef012345');
 
