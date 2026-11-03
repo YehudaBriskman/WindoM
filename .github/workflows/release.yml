@@ -274,6 +274,8 @@ jobs:
         run: node .github/scripts/report-store-status.mjs
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          # The published version is read through the v2 API, whose paths name the publisher.
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
@@ -285,6 +287,8 @@ jobs:
         env:
           SUBMIT_FOR_REVIEW: 'true'
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          # The published version is read through the v2 API, whose paths name the publisher.
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
