@@ -8,6 +8,7 @@ import {
   SUGGESTIONS_DEBOUNCE_MS,
   SEARCH_API_TIMEOUT_MS,
 } from '../../lib/timing-constants';
+import { hasHistoryPermission } from '../../lib/history-permission';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -176,9 +177,12 @@ async function getTabSuggestions(q: string): Promise<Suggestion[]> {
   }
 }
 
-async function getHistorySuggestions(q: string, tabUrls: Set<string>): Promise<Suggestion[]> {
+async function getHistorySuggestions(q: string, tabUrls: Set<string>, enabled: boolean): Promise<Suggestion[]> {
   try {
-    if (!hasChromeApi || !chrome.history?.search) return [];
+    // `history` is an optional permission (#256): only the History app's
+    // toggle grants it, and it can be revoked at any time. Check it per query
+    // rather than trusting the synced setting or the presence of chrome.history.
+    if (!enabled || !hasChromeApi || !(await hasHistoryPermission()) || !chrome.history?.search) return [];
     const items = await chrome.history.search({ text: q, maxResults: 10 });
     return items
       .filter(item => item.url && !tabUrls.has(item.url))
@@ -220,6 +224,7 @@ async function getSearchSuggestions(q: string): Promise<Suggestion[]> {
 
 export function SearchOverlay() {
   const { settings, update } = useSettings();
+  const historyEnabled = settings.general.showHistory;
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -315,7 +320,7 @@ export function SearchOverlay() {
       const tabs = await getTabSuggestions(value);
       const tabUrls = new Set(tabs.map(t => t.url ?? '').filter(Boolean));
       const [history, searches] = await Promise.all([
-        getHistorySuggestions(value, tabUrls),
+        getHistorySuggestions(value, tabUrls, historyEnabled),
         getSearchSuggestions(value),
       ]);
       setSuggestions([...tabs, ...history, ...searches]);
@@ -324,7 +329,7 @@ export function SearchOverlay() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [value, isCommandMode]);
+  }, [value, isCommandMode, historyEnabled]);
 
   const go = useCallback(
     (overrideText?: string, suggestion?: Suggestion) => {

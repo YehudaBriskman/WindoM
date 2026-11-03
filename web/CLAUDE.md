@@ -74,6 +74,7 @@ web/                               (repo root for the extension)
 - **Liquid glass**: plain classes (`glass-panel`, `glass-sidebar`, `glass-dock`, ...) in `glass.css`. Each pane blurs its backdrop lightly and refracts the wallpaper through a generated displacement field along its rim - `src/lib/liquid-glass.ts` computes the optics, `useLiquidGlass` measures panes and drives the light. The refraction is applied with `filter:` to a copy of the wallpaper, *not* `backdrop-filter`, which silently erases the backdrop when given a displacement map.
 - **Chrome APIs**: Typed wrappers in `src/lib/chrome-storage.ts` for async get/set/onChange on both sync and local storage.
 - **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, Open-Meteo, Quotable, Yahoo Finance, CoinGecko, GitHub).
+- **`history` is an optional permission** (#256): requested from the History app's toggle, given back when it is turned off. Gate every `chrome.history` call on `hasHistoryPermission()` (`src/lib/history-permission.ts`), not on `showHistory` (it syncs across devices) or on `chrome.history` existing (Chrome leaves the binding in place after a revoke).
 
 ## Key Patterns
 

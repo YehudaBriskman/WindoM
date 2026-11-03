@@ -213,7 +213,7 @@ export function Guide() {
           <p>לחיצה על <bdi><kbd>Ctrl</kbd> + <kbd>Win</kbd> + <kbd>H</kbd></bdi> - או <bdi><kbd>Ctrl</kbd> + <kbd>Cmd</kbd> + <kbd>H</kbd></bdi> ב-Mac - פותחת תיבת חיפוש מעל הדף שבו נמצאים. היא עובדת בלשונית החדשה ובאתרים רגילים; תוספים לא יכולים לפעול בדפים של Chrome עצמו, ולכן שם היא לא נפתחת. אותם מקשים סוגרים אותה, וגם <strong>Escape</strong>.
           </p>
           <ul>
-            <li><strong>מקלידים כל דבר</strong> - ההצעות מגיעות מהלשוניות הפתוחות, אחר כך מההיסטוריה, ואחר כך מהאינטרנט. בחירה בלשונית עוברת אליה במקום לפתוח אותה שוב.</li>
+            <li><strong>מקלידים כל דבר</strong> - ההצעות מגיעות מהלשוניות הפתוחות, אחר כך מההיסטוריה (בלשונית החדשה, אחרי שמפעילים את <Link to="/he/guide#history">היסטוריית הגלישה</Link>), ואחר כך מהאינטרנט. בחירה בלשונית עוברת אליה במקום לפתוח אותה שוב.</li>
             <li><strong>מקלידים כתובת</strong> - כמו <code>github.com</code>, ו-<strong>Enter</strong> עובר אליה ישירות.</li>
             <li><strong>בוחרים מנוע חיפוש</strong> - הכפתור שליד התיבה עובר בין Google, Bing, DuckDuckGo ו-Brave. ברירת המחדל היא Google.</li>
             <li><strong>מתחילים ב-<code>&gt;</code></strong> - לפקודות: New Tab, Close Tab, Reload Page, Duplicate Tab ו-Pin / Unpin Tab. כל טקסט אחר אחרי <code>&gt;</code> נפתח בלשונית חדשה.</li>
@@ -238,7 +238,7 @@ export function Guide() {
           <div className="step">
             <div className="step-num">1</div>
             <div className="step-body">
-              <p>פותחים את Settings → <strong>Apps</strong> → <strong>History</strong> ומפעילים את <strong>Show in sidebar</strong>.</p>
+              <p>פותחים את Settings → <strong>Apps</strong> → <strong>History</strong> ומפעילים את <strong>Show in sidebar and search</strong>. Chrome שואל אם לאפשר ל-WindoM לקרוא את היסטוריית הגלישה - לוחצים על <strong>Allow</strong>. אם מסרבים, המתג נשאר כבוי ושום דבר אחר לא משתנה.</p>
             </div>
           </div>
           <div className="step">
@@ -247,7 +247,8 @@ export function Guide() {
               <p>פותחים את סרגל הצד מסמל הרשימה בפינה הימנית התחתונה. לחיצה על פריט פותחת אותו בלשונית חדשה.</p>
             </div>
           </div>
-          <p>הרשימה נקראת מההיסטוריה של Chrome עצמו, על המכשיר שלך; שום דבר ממנה לא נשלח לשום מקום.</p>
+          <p>הרשימה נקראת מההיסטוריה של Chrome עצמו, על המכשיר שלך; שום דבר ממנה לא נשלח לשום מקום. אותו מתג מוסיף דפים שביקרת בהם להצעות ה<Link to="/he/guide#search">חיפוש</Link> בלשונית החדשה.</p>
+          <p>WindoM לא מבקש גישה להיסטוריה בהתקנה - רק כשמפעילים את האפשרות הזו. כיבוי שלה מחזיר את ההרשאה ל-Chrome. אם מסירים את ההרשאה בעצמך ב-<code>chrome://extensions</code>, הרשימה <strong>Recent</strong> מציגה כפתור <strong>Allow access</strong> במקום ההיסטוריה.</p>
 
           <h2 id="weather">
             ווידג'ט מזג אוויר

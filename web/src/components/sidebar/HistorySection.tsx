@@ -7,9 +7,31 @@ const FAVICON = (hostname: string) =>
 
 export function HistorySection() {
   const { settings } = useSettings();
-  const items = useHistory(settings.general.showHistory);
+  const { items, granted, request } = useHistory(settings.general.showHistory);
 
-  if (!settings.general.showHistory || items.length === 0) return null;
+  if (!settings.general.showHistory || granted === null) return null;
+
+  // The setting is on but Chrome has no `history` permission for this
+  // install: it was revoked, or the setting synced from another device.
+  // Offer the grant here rather than silently showing nothing.
+  if (granted === false) {
+    return (
+      <div className="sidebar-section">
+        <div className="sidebar-section-header">
+          <Clock size={14} strokeWidth={1.8} />
+          <span>Recent</span>
+        </div>
+        <div className="calendar-empty">
+          <p style={{ margin: '0 0 10px' }}>Recent sites need access to your browsing history.</p>
+          <button type="button" className="integration-connect-btn" onClick={() => void request()}>
+            Allow access
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (items.length === 0) return null;
 
   return (
     <div className="sidebar-section">

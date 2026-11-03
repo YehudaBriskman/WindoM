@@ -117,10 +117,14 @@ export function Support() {
       <p>שאר ההרשאות ש-Chrome מציג משמשות ל:</p>
       <ul>
         <li><strong>Tabs</strong> - סרגל הלשוניות, ולשוניות פתוחות כהצעות חיפוש</li>
-        <li><strong>History</strong> - רשימת היסטוריית הגלישה, והיסטוריה כהצעות חיפוש</li>
         <li><strong>Identity</strong> - חלונות ההתחברות של Google ושל Spotify</li>
         <li><strong>Storage</strong> - ההגדרות, המשימות והתמונות שלך, על המכשיר</li>
       </ul>
+      <p>
+        <strong>History</strong> לא מתבקשת בהתקנה. Chrome מבקש אותה רק כשמפעילים את{' '}
+        <Link to="/he/guide#history">היסטוריית הגלישה</Link>, לרשימת Recent ולהיסטוריה כהצעות
+        חיפוש; כיבוי היסטוריית הגלישה מחזיר אותה.
+      </p>
       <p>
         הרשימה המלאה של מה שנשמר ושל כל שירות ש-WindoM פונה אליו נמצאת ב
         <Link to="/he/privacy">מדיניות הפרטיות</Link>.
