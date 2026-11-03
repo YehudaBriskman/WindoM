@@ -6,30 +6,38 @@ const security = [{ bearerAuth: [] }];
 const errorResponse = { $ref: 'Error#' };
 
 export function settingsRoutes(app: FastifyInstance): void {
-  app.get('/settings', {
-    preHandler: authenticate,
-    schema: {
-      tags: ['Settings'],
-      summary: 'Get synced extension settings',
-      security,
-      response: {
-        200: { type: 'object', additionalProperties: true },
-        401: errorResponse,
+  app.get(
+    '/settings',
+    {
+      preHandler: authenticate,
+      schema: {
+        tags: ['Settings'],
+        summary: 'Get synced extension settings',
+        security,
+        response: {
+          200: { type: 'object', additionalProperties: true },
+          401: errorResponse,
+        },
       },
     },
-  }, getSettingsController);
+    getSettingsController,
+  );
 
-  app.put('/settings', {
-    preHandler: authenticate,
-    schema: {
-      tags: ['Settings'],
-      summary: 'Merge validated settings sections; quick links require HTTP(S) URLs',
-      security,
-      response: {
-        200: { type: 'object', additionalProperties: true },
-        400: errorResponse,
-        401: errorResponse,
+  app.put(
+    '/settings',
+    {
+      preHandler: authenticate,
+      schema: {
+        tags: ['Settings'],
+        summary: 'Merge validated settings sections; quick links require HTTP(S) URLs',
+        security,
+        response: {
+          200: { type: 'object', additionalProperties: true },
+          400: errorResponse,
+          401: errorResponse,
+        },
       },
     },
-  }, putSettingsController);
+    putSettingsController,
+  );
 }

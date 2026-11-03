@@ -81,7 +81,7 @@ export const PANES: PaneSpec[] = [
     label: 'Weather',
     layer: 'back',
     lift: 0.75,
-    place: { top: '11%', side: 'left',  inset: '5%' },
+    place: { top: '11%', side: 'left', inset: '5%' },
     body: { kind: 'figure', figure: '18°', lines: ['Clear · Tel Aviv'] },
   },
   {
@@ -89,7 +89,7 @@ export const PANES: PaneSpec[] = [
     label: 'Markets',
     layer: 'back',
     lift: 1.1,
-    place: { top: '77%', side: 'left',  inset: '6%' },
+    place: { top: '77%', side: 'left', inset: '6%' },
     body: {
       kind: 'rows',
       rows: [
@@ -104,7 +104,7 @@ export const PANES: PaneSpec[] = [
     label: 'Recent',
     layer: 'back',
     lift: 0.6,
-    place: { top: '55%', side: 'left',  inset: '5%' },
+    place: { top: '55%', side: 'left', inset: '5%' },
     body: {
       kind: 'rows',
       rows: [
@@ -121,11 +121,7 @@ export const PANES: PaneSpec[] = [
     place: { top: '11%', side: 'right', inset: '5%' },
     body: {
       kind: 'list',
-      items: [
-        { text: 'Ship the release notes' },
-        { text: 'Review the open PR' },
-        { text: 'Cut v1.4.1', done: true },
-      ],
+      items: [{ text: 'Ship the release notes' }, { text: 'Review the open PR' }, { text: 'Cut v1.4.1', done: true }],
     },
   },
   {
@@ -146,7 +142,7 @@ export const PANES: PaneSpec[] = [
     label: 'Pull requests',
     layer: 'mid',
     lift: 1.9,
-    place: { top: '33%', side: 'left',  inset: '7%' },
+    place: { top: '33%', side: 'left', inset: '7%' },
     body: { kind: 'figure', figure: '3 open', small: true, lines: ['windom · release gate'] },
   },
   {

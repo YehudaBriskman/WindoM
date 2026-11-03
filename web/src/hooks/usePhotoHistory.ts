@@ -26,9 +26,9 @@ export function usePhotoHistory() {
       const h = await ls.get<PhotoRecord[]>(HISTORY_KEY, []);
       const loc = await ls.get<PhotoRecord[]>(LOCAL_HISTORY_KEY, []);
       const l = await ls.get<PhotoRecord[]>(LIKED_KEY, []);
-      setUnsplashHistory(h.map((p) => ({ ...p, source: p.source ?? 'unsplash' } as PhotoRecord)));
-      setLocalHistory(loc.map((p) => ({ ...p, source: 'local' } as PhotoRecord)));
-      setLiked(l.map((p) => ({ ...p, source: p.source ?? 'unsplash' } as PhotoRecord)));
+      setUnsplashHistory(h.map((p) => ({ ...p, source: p.source ?? 'unsplash' }) as PhotoRecord));
+      setLocalHistory(loc.map((p) => ({ ...p, source: 'local' }) as PhotoRecord));
+      setLiked(l.map((p) => ({ ...p, source: p.source ?? 'unsplash' }) as PhotoRecord));
     })();
   }, []);
 

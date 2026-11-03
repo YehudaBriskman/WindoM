@@ -17,7 +17,9 @@
     "test": "node --test \"src/**/*.test.ts\"",
     "audit:overflow": "node scripts/overflow-audit.mjs",
     "screenshots": "node scripts/screenshots.mjs",
-    "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs && node scripts/sitemap.mjs"
+    "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs && node scripts/sitemap.mjs",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
   },
   "dependencies": {
     "react": "^19.3.1",
@@ -31,9 +33,11 @@
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^17.13.0",
     "playwright": "1.64.1",
+    "prettier": "^3.9.10",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.4"

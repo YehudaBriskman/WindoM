@@ -18,14 +18,24 @@ export async function savePatController(req: FastifyRequest, reply: FastifyReply
   const result = await githubService.storePat(req.user.sub, parsed.data.pat);
   if (!result.ok) {
     if (result.error === 'INVALID_PAT') {
-      void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Invalid PAT. Check that the token has the notifications and repo scopes.' });
+      void reply.status(400).send({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Invalid PAT. Check that the token has the notifications and repo scopes.',
+      });
     } else {
-      void reply.status(503).send({ statusCode: 503, error: 'Service Unavailable', message: 'Could not reach GitHub. Please try again.' });
+      void reply
+        .status(503)
+        .send({ statusCode: 503, error: 'Service Unavailable', message: 'Could not reach GitHub. Please try again.' });
     }
     return;
   }
 
-  await recordAudit('integration_connected_github', { userId: req.user.sub, sessionId: req.user.sid, meta: extractSessionMeta(req) });
+  await recordAudit('integration_connected_github', {
+    userId: req.user.sub,
+    sessionId: req.user.sid,
+    meta: extractSessionMeta(req),
+  });
   void reply.send({ connected: true, username: result.data.username });
 }
 
@@ -36,9 +46,15 @@ export async function getGithubSummaryController(req: FastifyRequest, reply: Fas
     if (result.error === 'NOT_CONNECTED') {
       void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'GitHub not connected' });
     } else if (result.error === 'INVALID_PAT') {
-      void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'GitHub PAT is invalid or expired. Please reconnect.' });
+      void reply.status(401).send({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message: 'GitHub PAT is invalid or expired. Please reconnect.',
+      });
     } else {
-      void reply.status(503).send({ statusCode: 503, error: 'Service Unavailable', message: 'Could not reach GitHub. Please try again.' });
+      void reply
+        .status(503)
+        .send({ statusCode: 503, error: 'Service Unavailable', message: 'Could not reach GitHub. Please try again.' });
     }
     return;
   }

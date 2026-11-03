@@ -5,12 +5,7 @@ import { db } from '../db/client.js';
 import { oauthStates, oauthAccounts } from '../db/schema.js';
 import { encryptToken } from '../lib/crypto.js';
 import { config } from '../config.js';
-import {
-  OAUTH_STATE_TTL_MS,
-  GOOGLE_TOKEN_URL,
-  GOOGLE_USERINFO_URL,
-  SPOTIFY_TOKEN_URL,
-} from '../types/constants.js';
+import { OAUTH_STATE_TTL_MS, GOOGLE_TOKEN_URL, GOOGLE_USERINFO_URL, SPOTIFY_TOKEN_URL } from '../types/constants.js';
 import type { OAuthProvider, OAuthPurpose, OAuthStateRecord, OAuthTokenSet, OAuthError } from '../types/oauth.types.js';
 import type { Result } from '../types/auth.types.js';
 import { fetchWithTimeout } from '../lib/external-fetch.js';
@@ -26,7 +21,9 @@ export async function createOAuthState(
 ): Promise<string> {
   const state = crypto.randomBytes(24).toString('base64url');
   const expiresAt = new Date(Date.now() + OAUTH_STATE_TTL_MS);
-  await db.insert(oauthStates).values({ state, provider, purpose, userId: userId ?? null, clientId: clientId ?? null, expiresAt });
+  await db
+    .insert(oauthStates)
+    .values({ state, provider, purpose, userId: userId ?? null, clientId: clientId ?? null, expiresAt });
   return state;
 }
 
@@ -66,11 +63,7 @@ export async function verifyAndConsumeOAuthState(
 // ── Token storage ─────────────────────────────────────────────────────────
 
 /** Encrypt and upsert OAuth tokens for a user+provider in the DB. */
-export async function storeOAuthTokens(
-  userId: string,
-  provider: OAuthProvider,
-  tokens: OAuthTokenSet,
-): Promise<void> {
+export async function storeOAuthTokens(userId: string, provider: OAuthProvider, tokens: OAuthTokenSet): Promise<void> {
   const accessTokenEnc = await encryptToken(tokens.accessToken);
   const refreshTokenEnc = tokens.refreshToken ? await encryptToken(tokens.refreshToken) : null;
   const tokenExpiresAt = new Date(Date.now() + tokens.expiresIn * 1000);
@@ -79,7 +72,16 @@ export async function storeOAuthTokens(
 
   await db
     .insert(oauthAccounts)
-    .values({ userId, provider, providerUserId: tokens.providerUserId, accessTokenEnc, refreshTokenEnc, tokenExpiresAt, scopes, providerClientId })
+    .values({
+      userId,
+      provider,
+      providerUserId: tokens.providerUserId,
+      accessTokenEnc,
+      refreshTokenEnc,
+      tokenExpiresAt,
+      scopes,
+      providerClientId,
+    })
     .onConflictDoUpdate({
       target: [oauthAccounts.provider, oauthAccounts.providerUserId],
       set: {
@@ -187,7 +189,9 @@ export async function exchangeGoogleCode(
 
   let userInfo: GoogleUserInfo;
   try {
-    const infoRes = await fetchWithTimeout(GOOGLE_USERINFO_URL, { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+    const infoRes = await fetchWithTimeout(GOOGLE_USERINFO_URL, {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
     const userInfoParsed = googleUserInfoSchema.safeParse(await infoRes.json());
     if (!userInfoParsed.success) return { ok: false, error: 'USERINFO_FAILED' };
     userInfo = userInfoParsed.data;
@@ -254,7 +258,9 @@ export async function exchangeSpotifyCode(
 
   let providerUserId: string;
   try {
-    const meRes = await fetchWithTimeout('https://api.spotify.com/v1/me', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+    const meRes = await fetchWithTimeout('https://api.spotify.com/v1/me', {
+      headers: { Authorization: `Bearer ${tokens.access_token}` },
+    });
     const meParsed = spotifyMeSchema.safeParse(await meRes.json());
     if (!meParsed.success) return { ok: false, error: 'USERINFO_FAILED' };
     providerUserId = meParsed.data.id;

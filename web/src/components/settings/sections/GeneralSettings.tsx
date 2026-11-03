@@ -15,31 +15,41 @@ export function GeneralSettings({ onReset }: Props) {
       label: 'Weather',
       Icon: Cloud,
       checked: settings.weather.show,
-      onChange: (v) => { void update('weather', { show: v }); },
+      onChange: (v) => {
+        void update('weather', { show: v });
+      },
     },
     {
       label: 'Quotes',
       Icon: Quote,
       checked: settings.widgets.showQuotes,
-      onChange: (v) => { void update('widgets', { showQuotes: v }); },
+      onChange: (v) => {
+        void update('widgets', { showQuotes: v });
+      },
     },
     {
       label: 'Quick Links',
       Icon: Link2,
       checked: settings.widgets.showLinks,
-      onChange: (v) => { void update('widgets', { showLinks: v }); },
+      onChange: (v) => {
+        void update('widgets', { showLinks: v });
+      },
     },
     {
       label: 'Center Bar',
       Icon: Target,
       checked: settings.widgets.showFocus,
-      onChange: (v) => { void update('widgets', { showFocus: v }); },
+      onChange: (v) => {
+        void update('widgets', { showFocus: v });
+      },
     },
     {
       label: 'Greeting',
       Icon: User,
       checked: settings.general.showGreeting,
-      onChange: (v) => { void update('general', { showGreeting: v }); },
+      onChange: (v) => {
+        void update('general', { showGreeting: v });
+      },
     },
   ];
 
@@ -59,9 +69,7 @@ export function GeneralSettings({ onReset }: Props) {
       )}
 
       <div className="settings-group">
-        <label className="settings-section-heading settings-label">
-          Widget Visibility
-        </label>
+        <label className="settings-section-heading settings-label">Widget Visibility</label>
         <div className="visibility-table">
           {widgets.map(({ label, Icon, checked, onChange }) => (
             <label key={label} className="visibility-row">
@@ -70,12 +78,10 @@ export function GeneralSettings({ onReset }: Props) {
               </span>
               <span className="visibility-row-label">{label}</span>
               <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={(e) => onChange(e.target.checked)}
-                />
-                <span className="toggle-track"><span className="toggle-knob" /></span>
+                <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+                <span className="toggle-track">
+                  <span className="toggle-knob" />
+                </span>
               </label>
             </label>
           ))}
@@ -83,9 +89,7 @@ export function GeneralSettings({ onReset }: Props) {
       </div>
 
       <div className="settings-group">
-        <label className="settings-section-heading settings-label">
-          Tab Sidebar
-        </label>
+        <label className="settings-section-heading settings-label">Tab Sidebar</label>
         <div className="segmented-control">
           <button
             className={`segmented-btn${settings.general.sidebarSide === 'left' ? ' active' : ''}`}

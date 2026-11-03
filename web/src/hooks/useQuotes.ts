@@ -8,8 +8,16 @@ import type { Quote, DailyQuoteCache } from '../types/quotes';
 const FALLBACK_QUOTES: Quote[] = [
   { text: 'The only way to do great work is to love what you do.', author: 'Steve Jobs', category: 'motivation' },
   { text: 'Innovation distinguishes between a leader and a follower.', author: 'Steve Jobs', category: 'innovation' },
-  { text: 'The future belongs to those who believe in the beauty of their dreams.', author: 'Eleanor Roosevelt', category: 'motivation' },
-  { text: 'Success is not final, failure is not fatal: it is the courage to continue that counts.', author: 'Winston Churchill', category: 'perseverance' },
+  {
+    text: 'The future belongs to those who believe in the beauty of their dreams.',
+    author: 'Eleanor Roosevelt',
+    category: 'motivation',
+  },
+  {
+    text: 'Success is not final, failure is not fatal: it is the courage to continue that counts.',
+    author: 'Winston Churchill',
+    category: 'perseverance',
+  },
   { text: "Believe you can and you're halfway there.", author: 'Theodore Roosevelt', category: 'motivation' },
 ];
 

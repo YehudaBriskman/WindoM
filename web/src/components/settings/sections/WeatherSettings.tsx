@@ -12,7 +12,7 @@ import {
 // button below (#449); a typed city never needs it.
 const LOCATION_HINT: Record<'denied' | 'unavailable' | 'unsupported', string> = {
   denied:
-    'Location access is blocked for WindoM. Type a city above instead - or allow location for this extension in Chrome\'s site settings and try again.',
+    "Location access is blocked for WindoM. Type a city above instead - or allow location for this extension in Chrome's site settings and try again.",
   unavailable: 'Could not get your location just now. Type a city above instead, or try again.',
   unsupported: 'This browser cannot share your location. Type a city above instead.',
 };
@@ -40,10 +40,17 @@ export function WeatherSettings() {
 
   useEffect(() => {
     let alive = true;
-    const read = () => { void geolocationPermission().then((p) => { if (alive) setPermission(p); }); };
+    const read = () => {
+      void geolocationPermission().then((p) => {
+        if (alive) setPermission(p);
+      });
+    };
     read();
     const unwatch = watchGeolocationPermission(read);
-    return () => { alive = false; unwatch(); };
+    return () => {
+      alive = false;
+      unwatch();
+    };
   }, []);
 
   // A user gesture: this is the only place WindoM asks the browser for location.
@@ -82,7 +89,7 @@ export function WeatherSettings() {
     setSearching(true);
     try {
       const res = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&count=6&language=en&format=json`
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(value)}&count=6&language=en&format=json`,
       );
       const data = await res.json();
       setResults(data.results ?? []);
@@ -125,7 +132,9 @@ export function WeatherSettings() {
   return (
     <div>
       <div className="settings-group">
-        <span id={unitLabelId} className="settings-label">Temperature Unit:</span>
+        <span id={unitLabelId} className="settings-label">
+          Temperature Unit:
+        </span>
         <GlassSelect
           labelledBy={unitLabelId}
           value={settings.weather.unit}
@@ -137,7 +146,9 @@ export function WeatherSettings() {
         />
       </div>
       <div className="settings-group" ref={containerRef} style={{ position: 'relative' }}>
-        <label htmlFor={locationInputId} className="settings-label">Location:</label>
+        <label htmlFor={locationInputId} className="settings-label">
+          Location:
+        </label>
         <input
           id={locationInputId}
           type="text"
@@ -172,12 +183,13 @@ export function WeatherSettings() {
               <button
                 key={`${r.name}-${r.admin1 ?? ''}-${r.country}`}
                 className="city-dropdown-item"
-                onMouseDown={(e) => { e.preventDefault(); handleSelect(r); }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  handleSelect(r);
+                }}
               >
                 <span className="city-dropdown-name">{r.name}</span>
-                <span className="city-dropdown-region">
-                  {[r.admin1, r.country].filter(Boolean).join(', ')}
-                </span>
+                <span className="city-dropdown-region">{[r.admin1, r.country].filter(Boolean).join(', ')}</span>
               </button>
             ))}
           </div>

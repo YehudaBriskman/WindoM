@@ -88,7 +88,10 @@ async function getSpotifyToken(userId: string): Promise<Result<string, SpotifyEr
   // Legacy mode: use the shared app's Basic auth header.
   const strategy = account.providerClientId
     ? spotifyPkceRefreshStrategy(account.providerClientId)
-    : spotifySharedAppRefreshStrategy({ clientId: config.SPOTIFY_CLIENT_ID, clientSecret: config.SPOTIFY_CLIENT_SECRET });
+    : spotifySharedAppRefreshStrategy({
+        clientId: config.SPOTIFY_CLIENT_ID,
+        clientSecret: config.SPOTIFY_CLIENT_SECRET,
+      });
   const tokenResult = await getValidAccessToken(account, strategy);
 
   if (!tokenResult.ok) return { ok: false, error: tokenResult.error };

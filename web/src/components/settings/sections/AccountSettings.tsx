@@ -35,14 +35,8 @@ function EmailVerificationBanner() {
 
   return (
     <div className="verification-banner">
-      <span className="verification-banner-text">
-        Please verify your email address. Check your inbox for a link.
-      </span>
-      <button
-        className="verification-resend-btn"
-        disabled={sending || sent}
-        onClick={resend}
-      >
+      <span className="verification-banner-text">Please verify your email address. Check your inbox for a link.</span>
+      <button className="verification-resend-btn" disabled={sending || sent} onClick={resend}>
         {sent ? 'Sent!' : sending ? '…' : 'Resend'}
       </button>
     </div>
@@ -87,7 +81,9 @@ function PasswordChangeForm() {
 
   return (
     <div className="settings-section-mt" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      <label className="settings-hint" style={{ marginBottom: '2px' }}>Change password</label>
+      <label className="settings-hint" style={{ marginBottom: '2px' }}>
+        Change password
+      </label>
       <input
         type="password"
         placeholder="Current password"
@@ -114,11 +110,7 @@ function PasswordChangeForm() {
       />
       {pw.error && <p className="auth-field-error">{pw.error}</p>}
       {pw.message && <p className="auth-field-success">{pw.message}</p>}
-      <button
-        className="settings-save-btn"
-        disabled={!pw.canSubmit}
-        onClick={pw.save}
-      >
+      <button className="settings-save-btn" disabled={!pw.canSubmit} onClick={pw.save}>
         {pw.saving ? 'Updating…' : 'Update password'}
       </button>
     </div>
@@ -151,7 +143,8 @@ function DangerZone() {
       ) : (
         <div className="danger-confirm-panel">
           <p className="danger-confirm-warning">
-            This will permanently delete your account and all data, including Calendar and Spotify connections. This cannot be undone.
+            This will permanently delete your account and all data, including Calendar and Spotify connections. This
+            cannot be undone.
           </p>
           {d.needsPassword && (
             <input
@@ -181,7 +174,12 @@ function DangerZone() {
 
 function initialsOf(user: { name: string; email: string | null } | null): string {
   return user?.name
-    ? user.name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase()
+    ? user.name
+        .split(' ')
+        .map((w) => w[0])
+        .slice(0, 2)
+        .join('')
+        .toUpperCase()
     : (user?.email?.[0] ?? '?').toUpperCase();
 }
 
@@ -220,7 +218,11 @@ export function AccountSettings() {
   const { user, authLoading, sessionLimitReached } = useAuth();
 
   if (authLoading) {
-    return <p className="settings-label" style={{ opacity: 0.5 }}>Loading…</p>;
+    return (
+      <p className="settings-label" style={{ opacity: 0.5 }}>
+        Loading…
+      </p>
+    );
   }
 
   if (sessionLimitReached) {

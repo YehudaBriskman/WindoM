@@ -18,7 +18,13 @@ vi.mock('../../config.js', () => ({
 }));
 
 import { db } from '../../db/client.js';
-import { createOAuthState, verifyAndConsumeOAuthState, storeOAuthTokens, exchangeGoogleCode, exchangeSpotifyCode } from '../oauth.service.js';
+import {
+  createOAuthState,
+  verifyAndConsumeOAuthState,
+  storeOAuthTokens,
+  exchangeGoogleCode,
+  exchangeSpotifyCode,
+} from '../oauth.service.js';
 
 const mockDb = db as unknown as {
   insert: ReturnType<typeof vi.fn>;
@@ -63,7 +69,9 @@ describe('createOAuthState', () => {
 
 describe('verifyAndConsumeOAuthState', () => {
   it('returns STATE_INVALID when no row is found', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }),
+    });
 
     const result = await verifyAndConsumeOAuthState('bad-state', 'google', 'login');
 
@@ -81,7 +89,11 @@ describe('verifyAndConsumeOAuthState', () => {
       userId: null,
       expiresAt: new Date(Date.now() - 1000), // expired
     };
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([expiredRow]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi
+        .fn()
+        .mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([expiredRow]) }) }),
+    });
 
     const result = await verifyAndConsumeOAuthState('abc', 'google', 'login');
 
@@ -99,7 +111,9 @@ describe('verifyAndConsumeOAuthState', () => {
       userId: null,
       expiresAt: new Date(Date.now() + 60_000),
     };
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([row]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([row]) }) }),
+    });
 
     const result = await verifyAndConsumeOAuthState('abc', 'google', 'login');
 
@@ -117,7 +131,9 @@ describe('verifyAndConsumeOAuthState', () => {
       userId: 'user-1',
       expiresAt: new Date(Date.now() + 60_000),
     };
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([row]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([row]) }) }),
+    });
 
     const whereMock = vi.fn().mockResolvedValue(undefined);
     mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: whereMock }) });
@@ -182,10 +198,13 @@ describe('exchangeGoogleCode', () => {
   });
 
   it('returns TOKEN_EXCHANGE_FAILED when token response has no access_token', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ error: 'invalid_grant' }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ error: 'invalid_grant' }),
+      }),
+    );
 
     const result = await exchangeGoogleCode('code', 'http://redirect', 'id', 'secret');
 
@@ -194,8 +213,12 @@ describe('exchangeGoogleCode', () => {
   });
 
   it('returns USERINFO_FAILED when userinfo fetch throws', async () => {
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ access_token: 'at', expires_in: 3600, scope: '' }) })
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ access_token: 'at', expires_in: 3600, scope: '' }),
+      })
       .mockRejectedValueOnce(new Error('userinfo error'));
     vi.stubGlobal('fetch', mockFetch);
 
@@ -206,9 +229,16 @@ describe('exchangeGoogleCode', () => {
   });
 
   it('returns tokens and userInfo on success', async () => {
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ access_token: 'at', expires_in: 3600, scope: 'profile' }) })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ sub: 'g-uid', email: 'user@gmail.com', name: 'User' }) });
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ access_token: 'at', expires_in: 3600, scope: 'profile' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ sub: 'g-uid', email: 'user@gmail.com', name: 'User' }),
+      });
     vi.stubGlobal('fetch', mockFetch);
 
     const result = await exchangeGoogleCode('code', 'http://redirect', 'id', 'secret');
@@ -234,10 +264,13 @@ describe('exchangeSpotifyCode', () => {
   });
 
   it('returns TOKEN_EXCHANGE_FAILED when token response has no access_token', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ error: 'invalid_code' }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ error: 'invalid_code' }),
+      }),
+    );
 
     const result = await exchangeSpotifyCode('code', 'http://redirect');
 
@@ -246,8 +279,18 @@ describe('exchangeSpotifyCode', () => {
   });
 
   it('returns tokens and providerUserId on success', async () => {
-    const mockFetch = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ access_token: 'sat', refresh_token: 'srt', expires_in: 3600, scope: 'user-read-currently-playing' }) })
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            access_token: 'sat',
+            refresh_token: 'srt',
+            expires_in: 3600,
+            scope: 'user-read-currently-playing',
+          }),
+      })
       .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({ id: 'spotify-uid' }) });
     vi.stubGlobal('fetch', mockFetch);
 

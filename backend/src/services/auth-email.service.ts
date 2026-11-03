@@ -8,11 +8,7 @@ import { hashPassword } from '../lib/password.js';
 import { revokeAllUserSessions } from './session.service.js';
 import { recordAudit } from './audit.service.js';
 import type { SessionMeta } from '../types/auth.types.js';
-import {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-  sendGoogleOnlyResetEmail,
-} from '../lib/email.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendGoogleOnlyResetEmail } from '../lib/email.js';
 
 type TokenType = 'verify_email' | 'password_reset';
 
@@ -32,7 +28,7 @@ async function createToken(userId: string, type: TokenType, ttlMs: number): Prom
 
   await db.insert(emailTokens).values({
     userId,
-    token: tokenHash,   // store bcrypt hash, not plaintext
+    token: tokenHash, // store bcrypt hash, not plaintext
     tokenHash,
     tokenLookup,
     type,

@@ -73,7 +73,10 @@ export async function startGoogleOAuthController(req: FastifyRequest, reply: Fas
 
   // Validate redirect URI before creating state (fail fast - avoids orphaned state rows)
   if (!isAllowedRedirectUri(effectiveUri, config.GOOGLE_OAUTH_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
-    void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Google Calendar. Contact support.' });
+    void reply.status(400).send({
+      error: 'Redirect URI not allowed',
+      message: 'This extension ID is not registered for Google Calendar. Contact support.',
+    });
     return;
   }
 
@@ -102,7 +105,9 @@ export async function exchangeGoogleOAuthController(req: FastifyRequest, reply: 
     return;
   }
 
-  if (!isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_OAUTH_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)) {
+  if (
+    !isAllowedRedirectUri(parsed.data.redirectUri, config.GOOGLE_OAUTH_REDIRECT_URI, config.EXTENSION_REDIRECT_BASE)
+  ) {
     void reply.status(400).send({ error: 'Redirect URI not allowed' });
     return;
   }
@@ -113,7 +118,13 @@ export async function exchangeGoogleOAuthController(req: FastifyRequest, reply: 
     return;
   }
 
-  await handleGoogleOAuthExchange(stateResult.data.userId, parsed.data.code, parsed.data.redirectUri, reply, parsed.data.codeVerifier);
+  await handleGoogleOAuthExchange(
+    stateResult.data.userId,
+    parsed.data.code,
+    parsed.data.redirectUri,
+    reply,
+    parsed.data.codeVerifier,
+  );
 }
 
 export async function callbackGoogleOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {

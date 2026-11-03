@@ -71,14 +71,14 @@
    * Hairline borders stay in px deliberately. A 1px rule is a device pixel,
    * not a measure of type, and scaling it only makes it blurry.
    */
-  --s-1: 0.25rem;  /*  4px */
-  --s-2: 0.5rem;   /*  8px */
-  --s-3: 0.75rem;  /* 12px */
-  --s-4: 1rem;     /* 16px */
-  --s-5: 1.5rem;   /* 24px */
-  --s-6: 2rem;     /* 32px */
-  --s-7: 3rem;     /* 48px */
-  --s-8: 4.5rem;   /* 72px */
+  --s-1: 0.25rem; /*  4px */
+  --s-2: 0.5rem; /*  8px */
+  --s-3: 0.75rem; /* 12px */
+  --s-4: 1rem; /* 16px */
+  --s-5: 1.5rem; /* 24px */
+  --s-6: 2rem; /* 32px */
+  --s-7: 3rem; /* 48px */
+  --s-8: 4.5rem; /* 72px */
 
   /**
    * The sticky chrome, measured once.

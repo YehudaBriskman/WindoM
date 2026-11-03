@@ -49,10 +49,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
 
   // Per-user storage key: isolates each account's local background on this device.
   // Falls back to the global key when no user is signed in.
-  const bgImageKey = useMemo(
-    () => (user?.id ? `localBackgroundImage_${user.id}` : 'localBackgroundImage'),
-    [user?.id],
-  );
+  const bgImageKey = useMemo(() => (user?.id ? `localBackgroundImage_${user.id}` : 'localBackgroundImage'), [user?.id]);
 
   // Destructure stable callbacks to avoid recreating loadUnsplash on every photoHistory render
   const { addPhoto } = photoHistory;
@@ -77,52 +74,61 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const setFromPhoto = useCallback(async (photo: PhotoRecord) => {
-    if (photo.source === 'local') {
-      const fullUrl = await ls.get<string | null>(`localPhoto-${photo.id}`, null);
-      const url = fullUrl ?? photo.imageUrl;
-      await ls.set(bgImageKey, url);
-      applyBackground(url);
-      setPhotographer(null);
-    } else if (photo.source === 'bundled') {
-      await ls.set(bgImageKey, photo.imageUrl);
-      applyBackground(photo.imageUrl);
-      setPhotographer(null);
-    } else {
-      await ls.set('unsplashCache', {
-        imageUrl: photo.imageUrl,
-        thumbUrl: photo.thumbUrl,
-        photographer: photo.photographer,
-        photographerUrl: photo.photographerUrl,
-        photoId: photo.id,
-        timestamp: Date.now(),
-      });
-      applyBackground(photo.imageUrl);
-      setPhotographer({ name: photo.photographer, url: photo.photographerUrl });
-    }
-    setCurrentPhotoId(photo.id);
-    setCurrentPhotoSource(photo.source ?? 'unsplash');
-    document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.CLOSE));
-  }, [bgImageKey, applyBackground]);
+  const setFromPhoto = useCallback(
+    async (photo: PhotoRecord) => {
+      if (photo.source === 'local') {
+        const fullUrl = await ls.get<string | null>(`localPhoto-${photo.id}`, null);
+        const url = fullUrl ?? photo.imageUrl;
+        await ls.set(bgImageKey, url);
+        applyBackground(url);
+        setPhotographer(null);
+      } else if (photo.source === 'bundled') {
+        await ls.set(bgImageKey, photo.imageUrl);
+        applyBackground(photo.imageUrl);
+        setPhotographer(null);
+      } else {
+        await ls.set('unsplashCache', {
+          imageUrl: photo.imageUrl,
+          thumbUrl: photo.thumbUrl,
+          photographer: photo.photographer,
+          photographerUrl: photo.photographerUrl,
+          photoId: photo.id,
+          timestamp: Date.now(),
+        });
+        applyBackground(photo.imageUrl);
+        setPhotographer({ name: photo.photographer, url: photo.photographerUrl });
+      }
+      setCurrentPhotoId(photo.id);
+      setCurrentPhotoSource(photo.source ?? 'unsplash');
+      document.dispatchEvent(new CustomEvent(SETTINGS_EVENT.CLOSE));
+    },
+    [bgImageKey, applyBackground],
+  );
 
-  const setFromLocalPhoto = useCallback(async (id: string) => {
-    const fullUrl = await ls.get<string | null>(`localPhoto-${id}`, null);
-    if (!fullUrl) return;
-    await ls.set(bgImageKey, fullUrl);
-    applyBackground(fullUrl);
-    setPhotographer(null);
-    setCurrentPhotoId(id);
-    setCurrentPhotoSource('local');
-  }, [bgImageKey, applyBackground]);
+  const setFromLocalPhoto = useCallback(
+    async (id: string) => {
+      const fullUrl = await ls.get<string | null>(`localPhoto-${id}`, null);
+      if (!fullUrl) return;
+      await ls.set(bgImageKey, fullUrl);
+      applyBackground(fullUrl);
+      setPhotographer(null);
+      setCurrentPhotoId(id);
+      setCurrentPhotoSource('local');
+    },
+    [bgImageKey, applyBackground],
+  );
 
   // Used by BackgroundSettings upload handler - writes to the correct per-user key.
-  const setUploadedBackground = useCallback(async (dataUrl: string) => {
-    await ls.set(bgImageKey, dataUrl);
-    applyBackground(dataUrl);
-    setPhotographer(null);
-    setCurrentPhotoId(null);
-    setCurrentPhotoSource('local');
-  }, [bgImageKey, applyBackground]);
+  const setUploadedBackground = useCallback(
+    async (dataUrl: string) => {
+      await ls.set(bgImageKey, dataUrl);
+      applyBackground(dataUrl);
+      setPhotographer(null);
+      setCurrentPhotoId(null);
+      setCurrentPhotoSource('local');
+    },
+    [bgImageKey, applyBackground],
+  );
 
   const loadUnsplash = useCallback(async () => {
     setUnsplashError(null);
@@ -160,7 +166,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       if (res.status === 403) throw new Error('Unsplash rate limit reached. Try again later.');
       if (!res.ok) throw new Error(`Unsplash API error ${res.status}`);
 
-      const data = await res.json() as {
+      const data = (await res.json()) as {
         id: string;
         urls: { regular: string; small: string };
         user: { name: string; links: { html: string } };
@@ -196,7 +202,7 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
       setCurrentPhotoSource(null);
       setUnsplashError(msg);
     }
-  // addPhoto is a stable useCallback - safe dep; do NOT add photoHistory here
+    // addPhoto is a stable useCallback - safe dep; do NOT add photoHistory here
   }, [settings.background.unsplashApiKey, settings.background.unsplashCollectionId, applyBackground, addPhoto]);
 
   const loadLocal = useCallback(async () => {
@@ -244,19 +250,21 @@ export function BackgroundProvider({ children }: { children: ReactNode }) {
   }, [settings.background.source, loadUnsplash]);
 
   return (
-    <BackgroundContext.Provider value={{
-      backgroundReady,
-      photographer,
-      currentPhotoId,
-      currentPhotoSource,
-      unsplashError,
-      refresh,
-      setFromPhoto,
-      setFromLocalPhoto,
-      setUploadedBackground,
-      addLocalPhoto: photoHistory.addLocalPhoto,
-      photoHistory,
-    }}>
+    <BackgroundContext.Provider
+      value={{
+        backgroundReady,
+        photographer,
+        currentPhotoId,
+        currentPhotoSource,
+        unsplashError,
+        refresh,
+        setFromPhoto,
+        setFromLocalPhoto,
+        setUploadedBackground,
+        addLocalPhoto: photoHistory.addLocalPhoto,
+        photoHistory,
+      }}
+    >
       {children}
     </BackgroundContext.Provider>
   );

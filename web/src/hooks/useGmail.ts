@@ -62,7 +62,9 @@ export function useGmail() {
 
     setLoading(true);
     void fetchSummary();
-    pollRef.current = setInterval(() => { void fetchSummary(); }, GMAIL_POLL_INTERVAL_MS);
+    pollRef.current = setInterval(() => {
+      void fetchSummary();
+    }, GMAIL_POLL_INTERVAL_MS);
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);

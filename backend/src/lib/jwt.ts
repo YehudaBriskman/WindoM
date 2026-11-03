@@ -14,7 +14,11 @@ export interface AccessTokenPayload {
 }
 
 export async function signAccessToken(payload: AccessTokenPayload): Promise<string> {
-  const claims: Record<string, unknown> = { email: payload.email, name: payload.name, emailVerified: payload.emailVerified };
+  const claims: Record<string, unknown> = {
+    email: payload.email,
+    name: payload.name,
+    emailVerified: payload.emailVerified,
+  };
   if (payload.sid) claims['sid'] = payload.sid;
   return new SignJWT(claims)
     .setProtectedHeader({ alg: 'HS256' })

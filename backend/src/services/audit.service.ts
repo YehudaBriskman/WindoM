@@ -88,4 +88,3 @@ export async function listUserActivity(userId: string, limit: number): Promise<A
     .orderBy(desc(auditLogs.createdAt))
     .limit(limit);
 }
-

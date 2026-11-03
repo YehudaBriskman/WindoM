@@ -12,15 +12,8 @@ interface TodoItemProps {
 export function TodoItem({ todo, pending = false, onToggle, onRemove }: TodoItemProps) {
   return (
     <div className="todo-item" aria-busy={pending || undefined}>
-      <input
-        type="checkbox"
-        checked={todo.completed}
-        disabled={pending}
-        onChange={() => onToggle(todo.id)}
-      />
-      <span className={`todo-item-text ${todo.completed ? 'completed' : ''}`}>
-        {todo.text}
-      </span>
+      <input type="checkbox" checked={todo.completed} disabled={pending} onChange={() => onToggle(todo.id)} />
+      <span className={`todo-item-text ${todo.completed ? 'completed' : ''}`}>{todo.text}</span>
       <button
         type="button"
         onClick={() => onRemove(todo.id)}

@@ -56,9 +56,7 @@ export async function storePat(userId: string, rawPat: string): Promise<Result<{
   const accessTokenEnc = await encryptToken(rawPat);
 
   // Upsert: delete existing then insert (avoids unique constraint issues)
-  await db
-    .delete(oauthAccounts)
-    .where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, 'github')));
+  await db.delete(oauthAccounts).where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, 'github')));
 
   await db.insert(oauthAccounts).values({
     userId,

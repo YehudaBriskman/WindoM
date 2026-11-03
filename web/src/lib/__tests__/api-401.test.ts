@@ -22,13 +22,12 @@ beforeEach(() => {
 
 describe('isProviderRoute', () => {
   it.each(['/calendar/events', '/spotify/now-playing', '/gmail/summary', '/github/prs'])(
-    'treats %s as the provider\'s own',
+    "treats %s as the provider's own",
     (p) => expect(isProviderRoute(p)).toBe(true),
   );
 
-  it.each(['/me', '/settings', '/auth/refresh', '/integrations', '/oauth/google/start'])(
-    'treats %s as ours',
-    (p) => expect(isProviderRoute(p)).toBe(false),
+  it.each(['/me', '/settings', '/auth/refresh', '/integrations', '/oauth/google/start'])('treats %s as ours', (p) =>
+    expect(isProviderRoute(p)).toBe(false),
   );
 
   it('ignores the query string', () => {

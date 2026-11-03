@@ -48,10 +48,18 @@ export function SpotifyWidget() {
 
 function MusicIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round">
-      <path d="M9 18V5l12-2v13"/>
-      <circle cx="6" cy="18" r="3"/>
-      <circle cx="18" cy="16" r="3"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="rgba(255,255,255,0.4)"
+      strokeWidth="2"
+      strokeLinecap="round"
+    >
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
     </svg>
   );
 }

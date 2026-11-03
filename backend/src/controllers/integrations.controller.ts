@@ -23,6 +23,10 @@ export async function deleteIntegrationController(req: FastifyRequest, reply: Fa
   }
 
   await integrationsService.unlinkProvider(req.user.sub, parsed.data);
-  await recordAudit(`integration_disconnected_${parsed.data}`, { userId: req.user.sub, sessionId: req.user.sid, meta: extractSessionMeta(req) });
+  await recordAudit(`integration_disconnected_${parsed.data}`, {
+    userId: req.user.sub,
+    sessionId: req.user.sid,
+    meta: extractSessionMeta(req),
+  });
   void reply.send({ success: true });
 }

@@ -1,4 +1,13 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, useSyncExternalStore, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useSyncExternalStore,
+  type ReactNode,
+} from 'react';
 import { syncStorage, localStore } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { loadLocalSettings } from '../lib/settings-load';
@@ -44,7 +53,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
   const settingsRef = useRef<Settings>({ ...defaultSettings });
-  useEffect(() => { settingsRef.current = settings; }, [settings]);
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   const { syncWithBackend, queuePush, markUnsynced } = useSettingsBackendSync(setSettings, settingsRef);
   const { loadStamps, stamp, clearStamps } = useSettingsCrossTab(setSettings);
@@ -59,7 +70,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       const isFirstInstall = await syncStorage.get('isFirstInstall', true);
       if (isFirstInstall) {
-        await syncStorage.setMultiple({ ...defaultSettings, isFirstInstall: false } as unknown as Record<string, unknown>);
+        await syncStorage.setMultiple({ ...defaultSettings, isFirstInstall: false } as unknown as Record<
+          string,
+          unknown
+        >);
       }
 
       setLoaded(true);
@@ -67,17 +81,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     })();
   }, [syncWithBackend, setSettings, loadStamps]);
 
-  const get = useCallback(
-    <S extends keyof Settings>(section: S): Settings[S] => settings[section],
-    [settings],
-  );
+  const get = useCallback(<S extends keyof Settings>(section: S): Settings[S] => settings[section], [settings]);
 
   const update = useCallback(
     async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>): Promise<boolean> => {
       // Focus is device-local - store in chrome.storage.local only, never sync or backend
       if (section === 'focus') {
         const next = { ...(settingsRef.current.focus as object), ...(patch as object) } as Settings['focus'];
-        setSettings(prev => ({ ...prev, focus: next }));
+        setSettings((prev) => ({ ...prev, focus: next }));
         return localStore.set('windom_focus', next);
       }
 
@@ -113,7 +124,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         for (const [k, v] of Object.entries(patches)) {
           if (v && typeof v === 'object') {
             (next as Record<string, unknown>)[k] = {
-              ...((prev as unknown as Record<string, object>)[k]),
+              ...(prev as unknown as Record<string, object>)[k],
               ...(v as object),
             };
           }
@@ -127,7 +138,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       for (const [k, v] of Object.entries(patches)) {
         if (v && typeof v === 'object') {
           storageUpdate[k] = {
-            ...((settingsRef.current as unknown as Record<string, object>)[k]),
+            ...(settingsRef.current as unknown as Record<string, object>)[k],
             ...(v as object),
           };
         }
@@ -135,10 +146,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       queuePush(patches);
 
-      const [saved] = await Promise.all([
-        syncStorage.setMultiple(storageUpdate),
-        markUnsynced(Object.keys(patches)),
-      ]);
+      const [saved] = await Promise.all([syncStorage.setMultiple(storageUpdate), markUnsynced(Object.keys(patches))]);
       return saved;
     },
     [queuePush, markUnsynced, stamp, setSettings],
@@ -173,8 +181,5 @@ export function useSettings() {
  * Use instead of `useSettings().settings[section]` in performance-sensitive components.
  */
 export function useSettingsSection<S extends keyof Settings>(section: S): Settings[S] {
-  return useSyncExternalStore(
-    subscribeToStore,
-    () => getStoreSnapshot()[section],
-  );
+  return useSyncExternalStore(subscribeToStore, () => getStoreSnapshot()[section]);
 }

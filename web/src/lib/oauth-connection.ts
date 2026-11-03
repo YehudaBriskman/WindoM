@@ -103,7 +103,8 @@ export async function disconnectIntegration(id: OAuthFlow, failedMessage: string
 export function mapIntegrationError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
   if (/already.linked|account already linked/i.test(msg)) return 'This account is already linked to a different user.';
-  if (/network|fetch|connection|failed to fetch/i.test(msg)) return 'Connection failed. Check your internet and try again.';
+  if (/network|fetch|connection|failed to fetch/i.test(msg))
+    return 'Connection failed. Check your internet and try again.';
   if (msg === 'access_denied' || msg.includes('access_denied')) return mapOAuthError(msg);
   if (msg && msg !== 'Failed') return msg;
   return 'Something went wrong. Please try again.';

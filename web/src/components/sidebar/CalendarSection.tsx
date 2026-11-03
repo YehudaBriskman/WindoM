@@ -25,9 +25,7 @@ export function CalendarSection() {
   return (
     <div>
       <h3 className="calendar-title">Calendar</h3>
-      <div className="calendar-date">
-        {dateStr}
-      </div>
+      <div className="calendar-date">{dateStr}</div>
       <div>
         <h4 className="calendar-upcoming-title">Upcoming</h4>
         <div className="calendar-upcoming">

@@ -13,8 +13,7 @@ export const hasChromeApi = typeof chrome !== 'undefined';
  * extension's own pages (the new tab). Content scripts cannot use chrome.tabs.*
  * in MV3, so tab commands from there go through the background worker.
  */
-export const isContentScript =
-  typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
+export const isContentScript = typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
 
 /** Absolute URL of a file packaged with the extension; `/<path>` outside it. */
 export function extensionUrl(path: string): string {

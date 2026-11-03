@@ -79,9 +79,13 @@ describe('ActiveSessions', () => {
     await renderExpanded();
     const rows = bodyRows();
     // The row header also carries the narrow-layout "Expires …" line (CSS picks one of the two).
-    expect(rows.map((row) => within(row).getByRole('rowheader').textContent?.replace(/Expires.*$/, ''))).toEqual([
-      'Chrome · WindowsThis device', 'Unknown device', 'Firefox · Linux',
-    ]);
+    expect(
+      rows.map((row) =>
+        within(row)
+          .getByRole('rowheader')
+          .textContent?.replace(/Expires.*$/, ''),
+      ),
+    ).toEqual(['Chrome · WindowsThis device', 'Unknown device', 'Firefox · Linux']);
     expect(within(rows[0]!).queryByRole('button')).toBeNull();
     expect(within(rows[1]!).getByRole('button', { name: /Revoke unknown device session/ })).toBeTruthy();
     // Dates are relative, with the absolute value on hover.
@@ -102,7 +106,11 @@ describe('ActiveSessions', () => {
 
   it('shows the first five rows, then all on request', async () => {
     const many = Array.from({ length: 7 }, (_, i) => ({
-      id: `s${i}`, device: `Chrome · Device ${i}`, current: i === 0, lastUsedAt: ago(i), expiresAt: ahead(24),
+      id: `s${i}`,
+      device: `Chrome · Device ${i}`,
+      current: i === 0,
+      lastUsedAt: ago(i),
+      expiresAt: ahead(24),
     }));
     vi.mocked(apiGet).mockResolvedValue({ sessions: many });
     render(<ActiveSessions />);
@@ -165,7 +173,11 @@ describe('ActiveSessions', () => {
 
   it('blocks duplicate revocations while one is pending', async () => {
     let resolve!: (response: Response) => void;
-    vi.mocked(apiFetch).mockReturnValue(new Promise((done) => { resolve = done; }));
+    vi.mocked(apiFetch).mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
     await renderExpanded();
     const button = revokeButton('Firefox · Linux');
     fireEvent.click(button);
@@ -198,7 +210,11 @@ describe('ActiveSessions', () => {
 
   it('ignores a response after unmount', async () => {
     let resolve!: (result: { sessions: Session[] }) => void;
-    vi.mocked(apiGet).mockReturnValueOnce(new Promise((done) => { resolve = done; }));
+    vi.mocked(apiGet).mockReturnValueOnce(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
     const view = render(<ActiveSessions />);
     view.unmount();
     render(<ActiveSessions />);

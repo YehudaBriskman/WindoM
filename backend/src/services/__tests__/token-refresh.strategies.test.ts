@@ -10,8 +10,9 @@ import { GOOGLE_TOKEN_URL, SPOTIFY_TOKEN_URL } from '../../types/constants.js';
 
 describe('parseStandardTokenResponse', () => {
   it('reads access_token and expires_in', () => {
-    expect(parseStandardTokenResponse({ access_token: 'a', expires_in: 3600, scope: 'x', token_type: 'Bearer' }))
-      .toEqual({ accessToken: 'a', expiresInSec: 3600 });
+    expect(
+      parseStandardTokenResponse({ access_token: 'a', expires_in: 3600, scope: 'x', token_type: 'Bearer' }),
+    ).toEqual({ accessToken: 'a', expiresInSec: 3600 });
   });
 
   it.each([
@@ -40,13 +41,16 @@ describe('googleRefreshStrategy', () => {
 
   it('sends client credentials in the body, no extra headers', () => {
     expect(s.buildHeaders()).toEqual({});
-    expect(s.buildBody('rt').toString())
-      .toBe('grant_type=refresh_token&refresh_token=rt&client_id=gid&client_secret=gsecret');
+    expect(s.buildBody('rt').toString()).toBe(
+      'grant_type=refresh_token&refresh_token=rt&client_id=gid&client_secret=gsecret',
+    );
   });
 
   it('keeps empty credentials as empty fields', () => {
     const empty = googleRefreshStrategy({ clientId: '', clientSecret: '' });
-    expect(empty.buildBody('rt').toString()).toBe('grant_type=refresh_token&refresh_token=rt&client_id=&client_secret=');
+    expect(empty.buildBody('rt').toString()).toBe(
+      'grant_type=refresh_token&refresh_token=rt&client_id=&client_secret=',
+    );
   });
 
   it('uses the standard response parser', () => {
@@ -71,7 +75,9 @@ describe('spotifySharedAppRefreshStrategy', () => {
 
   it('interpolates unset credentials as before the refactor', () => {
     const unset = spotifySharedAppRefreshStrategy({ clientId: undefined, clientSecret: undefined });
-    expect(unset.buildHeaders()).toEqual({ Authorization: `Basic ${Buffer.from('undefined:undefined').toString('base64')}` });
+    expect(unset.buildHeaders()).toEqual({
+      Authorization: `Basic ${Buffer.from('undefined:undefined').toString('base64')}`,
+    });
   });
 
   it('uses the standard response parser', () => {

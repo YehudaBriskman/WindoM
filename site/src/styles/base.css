@@ -28,7 +28,13 @@ html {
 body {
   margin: 0;
   max-width: 100%;
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.7;
@@ -438,7 +444,9 @@ body.stage-owns-view .site-nav:focus-within {
   color: var(--muted-strong);
   text-decoration: none;
   font-size: 0.92rem;
-  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
 }
 
 .nav-link:hover {
@@ -467,7 +475,9 @@ body.stage-owns-view .site-nav:focus-within {
   height: 2.25rem;
   border-radius: var(--r-sm);
   color: var(--muted-strong);
-  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
 }
 
 .site-nav-icon:hover {
@@ -496,7 +506,9 @@ body.stage-owns-view .site-nav:focus-within {
   width: var(--s-4);
   height: 1.5px;
   background: currentColor;
-  transition: transform var(--dur-fast) var(--ease), opacity var(--dur-fast) var(--ease);
+  transition:
+    transform var(--dur-fast) var(--ease),
+    opacity var(--dur-fast) var(--ease);
 }
 
 .nav-toggle-bars::before,

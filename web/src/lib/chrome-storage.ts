@@ -6,7 +6,7 @@ export const syncStorage = {
    * decide what an unreadable store means (empty, or defaults).
    */
   async getAll(): Promise<Record<string, unknown>> {
-    return await chrome.storage.sync.get(null) as Record<string, unknown>;
+    return (await chrome.storage.sync.get(null)) as Record<string, unknown>;
   },
 
   async get<T>(key: string, defaultValue: T): Promise<T> {

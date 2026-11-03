@@ -9,12 +9,7 @@
  */
 export function Ambient() {
   return (
-    <svg
-      className="ambient-svg"
-      viewBox="0 0 1440 900"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
+    <svg className="ambient-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <radialGradient id="orb-blue">
           <stop offset="0%" stopColor="#7b9ef5" stopOpacity="0.38" />

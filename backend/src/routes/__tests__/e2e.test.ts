@@ -22,13 +22,7 @@ import { eq, and } from 'drizzle-orm';
 import { buildTestApp } from '../../test-utils/app.js';
 import { truncateAll, closeDb } from '../../test-utils/db.js';
 import { db } from '../../db/client.js';
-import {
-  users,
-  emailTokens,
-  oauthAccounts,
-  refreshSessions,
-  userSettings,
-} from '../../db/schema.js';
+import { users, emailTokens, oauthAccounts, refreshSessions, userSettings } from '../../db/schema.js';
 import { encryptToken } from '../../lib/crypto.js';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../../lib/email.js';
 
@@ -57,11 +51,7 @@ afterAll(async () => {
 
 type InjectResult = Awaited<ReturnType<typeof app.inject>>;
 
-async function register(
-  email = 'user@e2e.test',
-  password = 'Password123!',
-  name = 'E2E User',
-): Promise<InjectResult> {
+async function register(email = 'user@e2e.test', password = 'Password123!', name = 'E2E User'): Promise<InjectResult> {
   return app.inject({ method: 'POST', url: '/auth/register', payload: { email, password, name } });
 }
 
@@ -99,11 +89,7 @@ async function getLatestEmailToken(userId: string, type: 'verify_email' | 'passw
  * Required after register(): the verification token is written by a fire-and-forget
  * promise that may not have resolved before the test reads the DB on slow CI runners.
  */
-async function waitForEmailToken(
-  userId: string,
-  type: 'verify_email' | 'password_reset',
-  maxMs = 1000,
-) {
+async function waitForEmailToken(userId: string, type: 'verify_email' | 'password_reset', maxMs = 1000) {
   const deadline = Date.now() + maxMs;
   while (Date.now() < deadline) {
     const token = await getLatestEmailToken(userId, type);
@@ -157,7 +143,8 @@ describe('Journey 1 - auth lifecycle', () => {
 
     // Refresh returns a new access token
     const refreshRes = await app.inject({
-      method: 'POST', url: '/auth/refresh',
+      method: 'POST',
+      url: '/auth/refresh',
       cookies: { windom_refresh: cookie },
     });
     expect(refreshRes.statusCode).toBe(200);
@@ -171,14 +158,16 @@ describe('Journey 1 - auth lifecycle', () => {
 
     // Logout with new cookie
     const logoutRes = await app.inject({
-      method: 'POST', url: '/auth/logout',
+      method: 'POST',
+      url: '/auth/logout',
       cookies: { windom_refresh: newCookie },
     });
     expect(logoutRes.statusCode).toBe(200);
 
     // After logout, refresh fails
     const afterLogout = await app.inject({
-      method: 'POST', url: '/auth/refresh',
+      method: 'POST',
+      url: '/auth/refresh',
       cookies: { windom_refresh: newCookie },
     });
     expect(afterLogout.statusCode).toBe(401);
@@ -227,8 +216,9 @@ describe('Journey 2 - email verification', () => {
     const { accessToken } = await fullRegister();
 
     // Unverified by default
-    const me1 = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) }))
-      .json<{ emailVerified: boolean }>();
+    const me1 = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) })).json<{
+      emailVerified: boolean;
+    }>();
     expect(me1.emailVerified).toBe(false);
 
     // Token written to DB (fire-and-forget from register - poll until it appears)
@@ -254,8 +244,9 @@ describe('Journey 2 - email verification', () => {
     // Refresh access token - new token carries emailVerified=true
     const newLoginRes = await login();
     const newToken = newLoginRes.json<{ accessToken: string }>().accessToken;
-    const me2 = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(newToken) }))
-      .json<{ emailVerified: boolean }>();
+    const me2 = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(newToken) })).json<{
+      emailVerified: boolean;
+    }>();
     expect(me2.emailVerified).toBe(true);
   });
 
@@ -265,12 +256,14 @@ describe('Journey 2 - email verification', () => {
     const emailToken = await waitForEmailToken(user.id, 'verify_email');
 
     // Expire the token directly in DB
-    await db.update(emailTokens)
+    await db
+      .update(emailTokens)
       .set({ expiresAt: new Date(Date.now() - 1000) })
       .where(eq(emailTokens.id, emailToken!.id));
 
     const res = await app.inject({
-      method: 'GET', url: `/auth/verify-email?token=${lastSentVerifyToken()}`,
+      method: 'GET',
+      url: `/auth/verify-email?token=${lastSentVerifyToken()}`,
     });
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain('invalid');
@@ -301,7 +294,8 @@ describe('Journey 2 - email verification', () => {
     const firstToken = await waitForEmailToken(user.id, 'verify_email');
 
     const resendRes = await app.inject({
-      method: 'POST', url: '/auth/resend-verification',
+      method: 'POST',
+      url: '/auth/resend-verification',
       headers: authHeader(accessToken),
     });
     expect(resendRes.statusCode).toBe(200);
@@ -322,7 +316,8 @@ describe('Journey 2 - email verification', () => {
     const newToken = (await login()).json<{ accessToken: string }>().accessToken;
 
     const res = await app.inject({
-      method: 'POST', url: '/auth/resend-verification',
+      method: 'POST',
+      url: '/auth/resend-verification',
       headers: authHeader(newToken),
     });
     expect(res.statusCode).toBe(400);
@@ -341,7 +336,8 @@ describe('Journey 3 - password reset', () => {
 
     // Request reset (always 200 - no user enumeration)
     const forgotRes = await app.inject({
-      method: 'POST', url: '/auth/forgot-password',
+      method: 'POST',
+      url: '/auth/forgot-password',
       payload: { email: 'user@e2e.test' },
     });
     expect(forgotRes.statusCode).toBe(200);
@@ -353,7 +349,8 @@ describe('Journey 3 - password reset', () => {
 
     // GET reset page renders HTML form
     const pageRes = await app.inject({
-      method: 'GET', url: `/auth/reset-password?token=${lastSentResetToken()}`,
+      method: 'GET',
+      url: `/auth/reset-password?token=${lastSentResetToken()}`,
     });
     expect(pageRes.statusCode).toBe(200);
     expect(pageRes.headers['content-type']).toContain('text/html');
@@ -362,7 +359,8 @@ describe('Journey 3 - password reset', () => {
     // POST form with new password
     const newPassword = 'NewSecure456!';
     const resetRes = await app.inject({
-      method: 'POST', url: '/auth/reset-password',
+      method: 'POST',
+      url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: `token=${lastSentResetToken()}&newPassword=${newPassword}`,
     });
@@ -385,7 +383,8 @@ describe('Journey 3 - password reset', () => {
 
   it('forgot password for unknown email still returns 200 (no enumeration)', async () => {
     const res = await app.inject({
-      method: 'POST', url: '/auth/forgot-password',
+      method: 'POST',
+      url: '/auth/forgot-password',
       payload: { email: 'nobody@nowhere.test' },
     });
     expect(res.statusCode).toBe(200);
@@ -402,14 +401,16 @@ describe('Journey 3 - password reset', () => {
     const resetTokenValue = lastSentResetToken();
 
     await app.inject({
-      method: 'POST', url: '/auth/reset-password',
+      method: 'POST',
+      url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: `token=${resetTokenValue}&newPassword=FirstReset123!`,
     });
 
     // Replay
     const replayRes = await app.inject({
-      method: 'POST', url: '/auth/reset-password',
+      method: 'POST',
+      url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: `token=${resetTokenValue}&newPassword=HackAttempt999!`,
     });
@@ -427,12 +428,14 @@ describe('Journey 3 - password reset', () => {
     const resetToken = await getLatestEmailToken(user.id, 'password_reset');
     const resetTokenValue = lastSentResetToken();
 
-    await db.update(emailTokens)
+    await db
+      .update(emailTokens)
       .set({ expiresAt: new Date(Date.now() - 1000) })
       .where(eq(emailTokens.id, resetToken!.id));
 
     const res = await app.inject({
-      method: 'POST', url: '/auth/reset-password',
+      method: 'POST',
+      url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: `token=${resetTokenValue}&newPassword=ShouldNotWork1!`,
     });
@@ -449,7 +452,8 @@ describe('Journey 3 - password reset', () => {
     await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'user@e2e.test' } });
     await getLatestEmailToken(user.id, 'password_reset');
     await app.inject({
-      method: 'POST', url: '/auth/reset-password',
+      method: 'POST',
+      url: '/auth/reset-password',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: `token=${lastSentResetToken()}&newPassword=AfterReset123!`,
     });
@@ -471,14 +475,16 @@ describe('Journey 4 - profile management', () => {
     const { accessToken } = await fullRegister();
 
     const patchRes = await app.inject({
-      method: 'PATCH', url: '/me',
+      method: 'PATCH',
+      url: '/me',
       headers: authHeader(accessToken),
       payload: { name: 'Updated Name' },
     });
     expect(patchRes.statusCode).toBe(200);
 
-    const me = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) }))
-      .json<{ name: string }>();
+    const me = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) })).json<{
+      name: string;
+    }>();
     expect(me.name).toBe('Updated Name');
   });
 
@@ -486,7 +492,8 @@ describe('Journey 4 - profile management', () => {
     const { accessToken } = await fullRegister();
 
     const patchRes = await app.inject({
-      method: 'PATCH', url: '/me',
+      method: 'PATCH',
+      url: '/me',
       headers: authHeader(accessToken),
       payload: { currentPassword: 'Password123!', newPassword: 'BrandNew456!' },
     });
@@ -500,7 +507,8 @@ describe('Journey 4 - profile management', () => {
     const { accessToken } = await fullRegister();
 
     const res = await app.inject({
-      method: 'PATCH', url: '/me',
+      method: 'PATCH',
+      url: '/me',
       headers: authHeader(accessToken),
       payload: { currentPassword: 'WRONG_PASSWORD', newPassword: 'NewPass456!' },
     });
@@ -511,16 +519,21 @@ describe('Journey 4 - profile management', () => {
     const { accessToken } = await fullRegister();
 
     await app.inject({
-      method: 'PATCH', url: '/me', headers: authHeader(accessToken),
+      method: 'PATCH',
+      url: '/me',
+      headers: authHeader(accessToken),
       payload: { name: 'New Name' },
     });
     await app.inject({
-      method: 'PATCH', url: '/me', headers: authHeader(accessToken),
+      method: 'PATCH',
+      url: '/me',
+      headers: authHeader(accessToken),
       payload: { currentPassword: 'Password123!', newPassword: 'New456Pass!' },
     });
 
-    const me = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) }))
-      .json<{ name: string }>();
+    const me = (await app.inject({ method: 'GET', url: '/me', headers: authHeader(accessToken) })).json<{
+      name: string;
+    }>();
     expect(me.name).toBe('New Name');
     expect((await login('user@e2e.test', 'New456Pass!')).statusCode).toBe(200);
   });
@@ -555,8 +568,18 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
   it('PUT deep-merges sections without erasing unrelated sections', async () => {
     const { accessToken } = await fullRegister();
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'First' }, clock: { showSeconds: false } } });
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'Override' } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(accessToken),
+      payload: { general: { userName: 'First' }, clock: { showSeconds: false } },
+    });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(accessToken),
+      payload: { general: { userName: 'Override' } },
+    });
 
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(accessToken) });
     const data = res.json<{ data: Record<string, Record<string, unknown>> }>().data;
@@ -570,7 +593,12 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
     const a = await fullRegister('a@e2e.test');
     const b = await fullRegister('b@e2e.test');
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(a.accessToken), payload: { general: { userName: 'user-a-data' } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(a.accessToken),
+      payload: { general: { userName: 'user-a-data' } },
+    });
 
     const bRes = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(b.accessToken) });
     expect(bRes.json<{ data: null }>().data).toBeNull();
@@ -578,21 +606,34 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
 
   it('settings survive a logout + login cycle', async () => {
     const { accessToken: tok1, cookie } = await fullRegister();
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(tok1), payload: { integrations: { spotify: { connected: true } } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(tok1),
+      payload: { integrations: { spotify: { connected: true } } },
+    });
 
     // Logout then log back in
     await app.inject({ method: 'POST', url: '/auth/logout', cookies: { windom_refresh: cookie } });
     const newToken = (await login()).json<{ accessToken: string }>().accessToken;
 
     const res = await app.inject({ method: 'GET', url: '/settings', headers: authHeader(newToken) });
-    expect(res.json<{ data: { integrations: { spotify: { connected: boolean } } } }>().data?.integrations?.spotify?.connected).toBe(true);
+    expect(
+      res.json<{ data: { integrations: { spotify: { connected: boolean } } } }>().data?.integrations?.spotify
+        ?.connected,
+    ).toBe(true);
   });
 
   it('settings row is written to DB with correct userId', async () => {
     const { accessToken } = await fullRegister();
     const user = await getUserByEmail('user@e2e.test');
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'val' } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(accessToken),
+      payload: { general: { userName: 'val' } },
+    });
 
     const rows = await db.select().from(userSettings).where(eq(userSettings.userId, user.id));
     expect(rows).toHaveLength(1);
@@ -601,7 +642,11 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
 });
 
 describe('Journey 5b - server-assigned settings revisions (#251)', () => {
-  type Rev = { data: Record<string, Record<string, unknown>> | null; updatedAt: number | null; previousUpdatedAt?: number | null };
+  type Rev = {
+    data: Record<string, Record<string, unknown>> | null;
+    updatedAt: number | null;
+    previousUpdatedAt?: number | null;
+  };
   async function put(token: string, payload: object): Promise<Rev> {
     const res = await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(token), payload });
     expect(res.statusCode).toBe(200);
@@ -675,12 +720,18 @@ describe('Journey 6 - account deletion', () => {
     const user = await getUserByEmail('user@e2e.test');
 
     // Create some related data
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'to-be-deleted' } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(accessToken),
+      payload: { general: { userName: 'to-be-deleted' } },
+    });
     await app.inject({ method: 'POST', url: '/auth/forgot-password', payload: { email: 'user@e2e.test' } });
 
     // Delete account
     const deleteRes = await app.inject({
-      method: 'DELETE', url: '/me',
+      method: 'DELETE',
+      url: '/me',
       headers: authHeader(accessToken),
       payload: { password: 'Password123!' },
     });
@@ -716,7 +767,8 @@ describe('Journey 6 - account deletion', () => {
     const { accessToken } = await fullRegister();
 
     const res = await app.inject({
-      method: 'DELETE', url: '/me',
+      method: 'DELETE',
+      url: '/me',
       headers: authHeader(accessToken),
       payload: { password: 'WRONG_PASS' },
     });
@@ -738,7 +790,8 @@ describe('Journey 7 - refresh token reuse detection', () => {
 
     // Use the original token once - this rotates it (revokes original, issues new)
     const firstRefresh = await app.inject({
-      method: 'POST', url: '/auth/refresh',
+      method: 'POST',
+      url: '/auth/refresh',
       cookies: { windom_refresh: originalCookie },
     });
     expect(firstRefresh.statusCode).toBe(200);
@@ -746,14 +799,16 @@ describe('Journey 7 - refresh token reuse detection', () => {
 
     // Attacker replays the ORIGINAL (now stale/revoked) token - must be rejected
     const replayRes = await app.inject({
-      method: 'POST', url: '/auth/refresh',
+      method: 'POST',
+      url: '/auth/refresh',
       cookies: { windom_refresh: originalCookie },
     });
     expect(replayRes.statusCode).toBe(401);
 
     // The legitimately-rotated token remains valid - sequential replay doesn't nuke the family
     const legitimateRes = await app.inject({
-      method: 'POST', url: '/auth/refresh',
+      method: 'POST',
+      url: '/auth/refresh',
       cookies: { windom_refresh: rotatedCookie },
     });
     expect(legitimateRes.statusCode).toBe(200);
@@ -799,10 +854,14 @@ describe('Journey 8 - multi-session management', () => {
     await app.inject({ method: 'POST', url: '/auth/logout', cookies: { windom_refresh: s1 } });
 
     // Session 1 is revoked
-    expect((await app.inject({ method: 'POST', url: '/auth/refresh', cookies: { windom_refresh: s1 } })).statusCode).toBe(401);
+    expect(
+      (await app.inject({ method: 'POST', url: '/auth/refresh', cookies: { windom_refresh: s1 } })).statusCode,
+    ).toBe(401);
 
     // Session 2 still works
-    expect((await app.inject({ method: 'POST', url: '/auth/refresh', cookies: { windom_refresh: s2 } })).statusCode).toBe(200);
+    expect(
+      (await app.inject({ method: 'POST', url: '/auth/refresh', cookies: { windom_refresh: s2 } })).statusCode,
+    ).toBe(200);
   });
 
   it('three sessions all tracked in DB separately', async () => {
@@ -812,8 +871,7 @@ describe('Journey 8 - multi-session management', () => {
     await login();
 
     const user = await getUserByEmail('user@e2e.test');
-    const sessions = await db.select().from(refreshSessions)
-      .where(eq(refreshSessions.userId, user.id));
+    const sessions = await db.select().from(refreshSessions).where(eq(refreshSessions.userId, user.id));
     // At least 3 sessions (register also creates one)
     expect(sessions.length).toBeGreaterThanOrEqual(3);
   });
@@ -877,11 +935,17 @@ describe('Journey 9 - integration lifecycle', () => {
     expect(before.json<{ spotify: { connected: boolean } }>().spotify.connected).toBe(true);
 
     // Disconnect
-    const deleteRes = await app.inject({ method: 'DELETE', url: '/integrations/spotify', headers: authHeader(accessToken) });
+    const deleteRes = await app.inject({
+      method: 'DELETE',
+      url: '/integrations/spotify',
+      headers: authHeader(accessToken),
+    });
     expect(deleteRes.statusCode).toBe(200);
 
     // Verify removed from DB
-    const rows = await db.select().from(oauthAccounts)
+    const rows = await db
+      .select()
+      .from(oauthAccounts)
       .where(and(eq(oauthAccounts.userId, user.id), eq(oauthAccounts.provider, 'spotify')));
     expect(rows).toHaveLength(0);
 
@@ -943,11 +1007,18 @@ describe('Journey 10 - cross-service interactions', () => {
     const { accessToken } = await fullRegister();
 
     // Save settings
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(accessToken), payload: { general: { userName: 'persisted-name' } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(accessToken),
+      payload: { general: { userName: 'persisted-name' } },
+    });
 
     // Change password
     await app.inject({
-      method: 'PATCH', url: '/me', headers: authHeader(accessToken),
+      method: 'PATCH',
+      url: '/me',
+      headers: authHeader(accessToken),
       payload: { currentPassword: 'Password123!', newPassword: 'Updated456!' },
     });
 
@@ -970,7 +1041,9 @@ describe('Journey 10 - cross-service interactions', () => {
     });
 
     await app.inject({
-      method: 'DELETE', url: '/me', headers: authHeader(accessToken),
+      method: 'DELETE',
+      url: '/me',
+      headers: authHeader(accessToken),
       payload: { password: 'Password123!' },
     });
 
@@ -982,13 +1055,25 @@ describe('Journey 10 - cross-service interactions', () => {
     const a = await fullRegister('a@same.test', 'Password123!', 'Alex');
     const b = await fullRegister('b@same.test', 'Password123!', 'Alex');
 
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(a.accessToken), payload: { general: { userName: 'focus-a' } } });
-    await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(b.accessToken), payload: { general: { userName: 'focus-b' } } });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(a.accessToken),
+      payload: { general: { userName: 'focus-a' } },
+    });
+    await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: authHeader(b.accessToken),
+      payload: { general: { userName: 'focus-b' } },
+    });
 
-    const aSettings = (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(a.accessToken) }))
-      .json<{ data: { general: { userName: string } } }>().data;
-    const bSettings = (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(b.accessToken) }))
-      .json<{ data: { general: { userName: string } } }>().data;
+    const aSettings = (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(a.accessToken) })).json<{
+      data: { general: { userName: string } };
+    }>().data;
+    const bSettings = (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(b.accessToken) })).json<{
+      data: { general: { userName: string } };
+    }>().data;
 
     expect(aSettings?.general?.userName).toBe('focus-a');
     expect(bSettings?.general?.userName).toBe('focus-b');
@@ -999,7 +1084,9 @@ describe('Journey 10 - cross-service interactions', () => {
     const user = await getUserByEmail('user@e2e.test');
 
     await app.inject({
-      method: 'PATCH', url: '/me', headers: authHeader(accessToken),
+      method: 'PATCH',
+      url: '/me',
+      headers: authHeader(accessToken),
       payload: { name: 'DB Persisted' },
     });
 

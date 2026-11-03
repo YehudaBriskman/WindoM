@@ -4,12 +4,7 @@ import { db } from '../db/client.js';
 import { users } from '../db/schema.js';
 import { hashPassword, verifyPassword } from '../lib/password.js';
 import { signAccessToken } from '../lib/jwt.js';
-import {
-  createSession,
-  findSessionByToken,
-  revokeSession,
-  rotateSessionAtomically,
-} from './session.service.js';
+import { createSession, findSessionByToken, revokeSession, rotateSessionAtomically } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
 import { captureTokenReuse } from '../lib/sentry.js';
@@ -31,10 +26,12 @@ export async function register(
 
   const sessionId = crypto.randomUUID();
   const [emailSent, accessToken, rawRefreshToken] = await Promise.all([
-    sendVerification(user.id).then(() => true).catch((err: unknown) => {
-      logger.error({ err, userId: user.id }, 'register: verification email failed');
-      return false;
-    }),
+    sendVerification(user.id)
+      .then(() => true)
+      .catch((err: unknown) => {
+        logger.error({ err, userId: user.id }, 'register: verification email failed');
+        return false;
+      }),
     signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false, sid: sessionId }),
     createSession(user.id, meta, undefined, 0, sessionId),
   ]);
@@ -44,11 +41,7 @@ export async function register(
 }
 
 /** Authenticate with email + password. Returns TOKEN_PAIR or INVALID_CREDENTIALS. */
-export async function login(
-  email: string,
-  password: string,
-  meta: SessionMeta,
-): Promise<Result<TokenPair, AuthError>> {
+export async function login(email: string, password: string, meta: SessionMeta): Promise<Result<TokenPair, AuthError>> {
   const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
   // Constant-time rejection - prevents timing attacks that reveal whether email exists
@@ -67,7 +60,13 @@ export async function login(
   }
 
   const sessionId = crypto.randomUUID();
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified, sid: sessionId });
+  const accessToken = await signAccessToken({
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    emailVerified: user.emailVerified,
+    sid: sessionId,
+  });
   const rawRefreshToken = await createSession(user.id, meta, undefined, 0, sessionId);
   await recordAudit('sign_in', { userId: user.id, sessionId, meta });
   return { ok: true, data: { accessToken, rawRefreshToken } };
@@ -77,10 +76,7 @@ export async function login(
  * Rotate a refresh token and issue a new access token.
  * Detects reuse and enforces the renewal cap.
  */
-export async function refresh(
-  rawToken: string,
-  meta: SessionMeta,
-): Promise<Result<TokenPair, AuthError>> {
+export async function refresh(rawToken: string, meta: SessionMeta): Promise<Result<TokenPair, AuthError>> {
   const session = await findSessionByToken(rawToken);
   if (!session) {
     logger.warn('refresh: SESSION_NOT_FOUND - token revoked, expired, or invalid (may be a multi-tab race)');
@@ -99,16 +95,14 @@ export async function refresh(
   }
 
   logger.warn({ sessionId: session.id, renewal: session.renewalCount + 1 }, 'refresh: rotating session');
-  const rotation = await rotateSessionAtomically(
-    session.id,
-    session.userId,
-    meta,
-    session.renewalCount + 1,
-  );
+  const rotation = await rotateSessionAtomically(session.id, session.userId, meta, session.renewalCount + 1);
 
   if (!rotation.ok) {
     if (rotation.error === 'TOKEN_REUSE_DETECTED') {
-      logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
+      logger.error(
+        { sessionId: session.id, userId: session.userId },
+        'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user',
+      );
       captureTokenReuse({ userId: session.userId, sessionId: session.id });
       await recordAudit('token_reuse_detected', { userId: session.userId, sessionId: session.id, meta });
     } else {
@@ -117,7 +111,13 @@ export async function refresh(
     return rotation;
   }
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified, sid: rotation.sessionId });
+  const accessToken = await signAccessToken({
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    emailVerified: user.emailVerified,
+    sid: rotation.sessionId,
+  });
   logger.warn({ userId: user.id }, 'refresh: new session created');
   return { ok: true, data: { accessToken, rawRefreshToken: rotation.rawRefreshToken } };
 }
@@ -134,11 +134,7 @@ export async function logout(rawToken: string, meta?: SessionMeta): Promise<void
  * Upsert a user from a Google OAuth sign-in and create a session.
  * Always succeeds - Google has already authenticated the user.
  */
-export async function loginWithGoogle(
-  googleEmail: string,
-  googleName: string,
-  meta: SessionMeta,
-): Promise<TokenPair> {
+export async function loginWithGoogle(googleEmail: string, googleName: string, meta: SessionMeta): Promise<TokenPair> {
   // On conflict (existing account with same email): preserve the user's name if already set.
   // Only overwrite with Google name when the account has no name yet (empty string default).
   const [user] = await db
@@ -154,7 +150,13 @@ export async function loginWithGoogle(
     .returning();
 
   const sessionId = crypto.randomUUID();
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: true, sid: sessionId });
+  const accessToken = await signAccessToken({
+    sub: user.id,
+    email: user.email,
+    name: user.name,
+    emailVerified: true,
+    sid: sessionId,
+  });
   const rawRefreshToken = await createSession(user.id, meta, undefined, 0, sessionId);
   await recordAudit('sign_in_google', { userId: user.id, sessionId, meta });
   return { accessToken, rawRefreshToken };

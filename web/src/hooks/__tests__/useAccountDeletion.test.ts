@@ -16,8 +16,7 @@ const update = vi.fn();
 let hasPassword: boolean;
 let settings: Settings;
 
-const reply = (ok: boolean, body: unknown = {}) =>
-  ({ ok, json: () => Promise.resolve(body) }) as unknown as Response;
+const reply = (ok: boolean, body: unknown = {}) => ({ ok, json: () => Promise.resolve(body) }) as unknown as Response;
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -30,9 +29,7 @@ beforeEach(() => {
   vi.mocked(useAuth).mockImplementation(
     () => ({ user: { id: 'u1', hasPassword }, logout }) as unknown as ReturnType<typeof useAuth>,
   );
-  vi.mocked(useSettings).mockImplementation(
-    () => ({ settings, update }) as unknown as ReturnType<typeof useSettings>,
-  );
+  vi.mocked(useSettings).mockImplementation(() => ({ settings, update }) as unknown as ReturnType<typeof useSettings>);
 });
 
 describe('useAccountDeletion', () => {

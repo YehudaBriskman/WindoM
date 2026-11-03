@@ -9,7 +9,10 @@ import { fetchWithTimeout } from '../lib/external-fetch.js';
 import type { TokenRefreshStrategy } from './token-refresh.strategies.js';
 
 type OAuthAccountRow = typeof oauthAccounts.$inferSelect;
-type RefreshError = Extract<OAuthError, 'TOKEN_REFRESH_FAILED' | 'TOKEN_REFRESH_REVOKED' | 'TOKEN_REFRESH_NETWORK_ERROR'>;
+type RefreshError = Extract<
+  OAuthError,
+  'TOKEN_REFRESH_FAILED' | 'TOKEN_REFRESH_REVOKED' | 'TOKEN_REFRESH_NETWORK_ERROR'
+>;
 
 // Deduplicates concurrent refresh calls for the same account - the second caller
 // awaits the first refresh rather than triggering a parallel token rotation race.

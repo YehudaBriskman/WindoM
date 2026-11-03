@@ -19,9 +19,7 @@ let settings: Settings;
 let user: { id: string } | null;
 
 function mockContexts() {
-  vi.mocked(useAuth).mockImplementation(
-    () => ({ user, authLoading: false }) as unknown as ReturnType<typeof useAuth>,
-  );
+  vi.mocked(useAuth).mockImplementation(() => ({ user, authLoading: false }) as unknown as ReturnType<typeof useAuth>);
   vi.mocked(useSettings).mockImplementation(
     () => ({ settings, updateMultiple, loaded: true }) as unknown as ReturnType<typeof useSettings>,
   );
@@ -70,14 +68,20 @@ describe('useIntegrationSync', () => {
 
   it('merges into the integrations section current when the reply lands, not the one at mount', async () => {
     let resolve!: (v: typeof serverReply) => void;
-    vi.mocked(apiGet).mockReturnValue(new Promise((r) => { resolve = r; }));
+    vi.mocked(apiGet).mockReturnValue(
+      new Promise((r) => {
+        resolve = r;
+      }),
+    );
     const { rerender } = renderHook(() => useIntegrationSync());
 
     // The user changes a calendar preference while /integrations is in flight.
     settings = withIntegrations({ calendar: { ...settings.integrations.calendar, days: 14 } });
     rerender();
 
-    await act(async () => { resolve(serverReply); });
+    await act(async () => {
+      resolve(serverReply);
+    });
 
     const written = updateMultiple.mock.calls[0][0].integrations as Integrations;
     expect(written.calendar).toEqual({ days: 14, connected: true });

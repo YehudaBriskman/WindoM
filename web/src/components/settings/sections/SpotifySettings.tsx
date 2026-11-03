@@ -88,12 +88,21 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           type="text"
           placeholder="Spotify Client ID"
           value={clientIdInput}
-          onChange={(e) => { setClientIdInput(e.target.value); setError(''); }}
+          onChange={(e) => {
+            setClientIdInput(e.target.value);
+            setError('');
+          }}
           className="settings-input"
           style={{ marginBottom: '8px', fontFamily: 'monospace', fontSize: '13px' }}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveAndConnect(); }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSaveAndConnect();
+          }}
         />
-        {error && <p className="auth-field-error" style={{ marginBottom: '8px' }}>{error}</p>}
+        {error && (
+          <p className="auth-field-error" style={{ marginBottom: '8px' }}>
+            {error}
+          </p>
+        )}
         <button
           type="button"
           className="integration-connect-btn"
@@ -115,7 +124,15 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
 
 // ── State 2: Client ID saved but not connected ──────────────────────────────
 
-function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { clientId: string; onConnected: () => void; onChangeApp: () => void }) {
+function SavedNotConnectedState({
+  clientId,
+  onConnected,
+  onChangeApp,
+}: {
+  clientId: string;
+  onConnected: () => void;
+  onChangeApp: () => void;
+}) {
   const { busy, error, connect } = useSpotifyConnection({ afterConnect: onConnected });
 
   return (
@@ -140,14 +157,8 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
       </div>
       {error && <p className="integration-error">{error}</p>}
       <p className="settings-hint" style={{ marginTop: '8px' }}>
-        App: <code style={{ fontSize: '12px', opacity: 0.8 }}>{clientId.slice(0, 8)}…</code>
-        {' '}
-        <button
-          type="button"
-          className="auth-required-link"
-          onClick={onChangeApp}
-          style={{ fontSize: '12px' }}
-        >
+        App: <code style={{ fontSize: '12px', opacity: 0.8 }}>{clientId.slice(0, 8)}…</code>{' '}
+        <button type="button" className="auth-required-link" onClick={onChangeApp} style={{ fontSize: '12px' }}>
           Change app
         </button>
       </p>
@@ -173,12 +184,7 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
           <div className="integration-name">Spotify</div>
           <div className="integration-status connected">Connected</div>
         </div>
-        <button
-          type="button"
-          className="integration-disconnect-btn"
-          disabled={busy}
-          onClick={() => void disconnect()}
-        >
+        <button type="button" className="integration-disconnect-btn" disabled={busy} onClick={() => void disconnect()}>
           {busy ? '…' : 'Disconnect'}
         </button>
       </div>
@@ -195,9 +201,15 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
             <input
               type="checkbox"
               checked={showTopTracks}
-              onChange={(e) => void update('integrations', { spotify: { ...settings.integrations.spotify, showTopTracks: e.target.checked } })}
+              onChange={(e) =>
+                void update('integrations', {
+                  spotify: { ...settings.integrations.spotify, showTopTracks: e.target.checked },
+                })
+              }
             />
-            <span className="toggle-track"><span className="toggle-knob" /></span>
+            <span className="toggle-track">
+              <span className="toggle-knob" />
+            </span>
           </label>
         </label>
       </div>
@@ -211,7 +223,11 @@ export function SpotifySettings() {
   const { state: uiState, setState: setUiState, clientId: savedClientId, changeApp } = useSpotifySetup();
 
   if (uiState === 'loading') {
-    return <p className="settings-label" style={{ opacity: 0.5 }}>Loading…</p>;
+    return (
+      <p className="settings-label" style={{ opacity: 0.5 }}>
+        Loading…
+      </p>
+    );
   }
 
   if (uiState === 'no-client-id') {
@@ -228,10 +244,5 @@ export function SpotifySettings() {
     );
   }
 
-  return (
-    <ConnectedState
-      clientId={savedClientId}
-      onDisconnected={() => setUiState('no-client-id')}
-    />
-  );
+  return <ConnectedState clientId={savedClientId} onDisconnected={() => setUiState('no-client-id')} />;
 }

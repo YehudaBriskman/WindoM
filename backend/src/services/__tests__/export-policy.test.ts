@@ -55,7 +55,10 @@ describe('settings allowlist covers the settings validator', () => {
       const keys = Object.keys(inner.shape).sort();
       const exported = SETTINGS_EXPORTED[section] ?? [];
       const withheld = SETTINGS_WITHHELD[section] ?? [];
-      expect(exported.filter((k) => withheld.includes(k)), section).toEqual([]);
+      expect(
+        exported.filter((k) => withheld.includes(k)),
+        section,
+      ).toEqual([]);
       expect([...exported, ...withheld].sort(), section).toEqual(keys);
     }
   });

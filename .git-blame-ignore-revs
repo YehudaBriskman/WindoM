@@ -1,0 +1,14 @@
+# Commits that only reformatted code. `git blame` skips them and attributes each
+# line to the change before, so a mass reformat does not hide who wrote what.
+#
+# Use it locally once per clone:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# GitHub's blame view reads this file automatically.
+#
+# List the commit as it exists ON MAIN. Pull requests land as squash merges, so
+# the SHAs of commits inside a PR branch never reach main - record the squash
+# commit's SHA, after the merge, in a follow-up commit. One full 40-character SHA
+# per line, with a comment saying what it was.
+#
+# Prettier across backend/, web/ and site/ (#310) - squash SHA to be appended
+# after the PR merges.

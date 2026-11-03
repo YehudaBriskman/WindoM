@@ -40,14 +40,20 @@ export async function updateMeController(req: FastifyRequest, reply: FastifyRepl
   if (currentPassword !== undefined && newPassword !== undefined) {
     const result = await meService.updatePassword(req.user.sub, currentPassword, newPassword);
     if (result === 'no_password') {
-      void reply.status(400).send({ error: 'NO_PASSWORD_SET', message: 'This account uses Google sign-in and has no password to change' });
+      void reply
+        .status(400)
+        .send({ error: 'NO_PASSWORD_SET', message: 'This account uses Google sign-in and has no password to change' });
       return;
     }
     if (result === 'wrong_password') {
       void reply.status(403).send({ error: 'WRONG_PASSWORD', message: 'Current password is incorrect' });
       return;
     }
-    await recordAudit('password_changed', { userId: req.user.sub, sessionId: req.user.sid, meta: extractSessionMeta(req) });
+    await recordAudit('password_changed', {
+      userId: req.user.sub,
+      sessionId: req.user.sid,
+      meta: extractSessionMeta(req),
+    });
     void reply.send({ ok: true });
   }
 }
@@ -77,7 +83,9 @@ export async function deleteAccountController(req: FastifyRequest, reply: Fastif
   if (passwordHash !== null) {
     const provided = parsed.data.password;
     if (!provided) {
-      void reply.status(403).send({ statusCode: 403, error: 'Forbidden', message: 'Password required to delete account' });
+      void reply
+        .status(403)
+        .send({ statusCode: 403, error: 'Forbidden', message: 'Password required to delete account' });
       return;
     }
     const ok = await verifyPassword(provided, passwordHash);
@@ -114,7 +122,11 @@ export async function revokeSessionController(req: FastifyRequest, reply: Fastif
     void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'Active session not found' });
     return;
   }
-  await recordAudit('session_revoked', { userId: req.user.sub, sessionId: parsed.data.id, meta: extractSessionMeta(req) });
+  await recordAudit('session_revoked', {
+    userId: req.user.sub,
+    sessionId: parsed.data.id,
+    meta: extractSessionMeta(req),
+  });
   void reply.status(204).send();
 }
 
@@ -151,15 +163,23 @@ const revokeOthersQuerySchema = z.object({ others: z.literal('true') });
 export async function revokeOtherSessionsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Require the explicit flag so a bare DELETE /me/sessions can never mean "everything".
   if (!revokeOthersQuerySchema.safeParse(req.query).success) {
-    void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Pass others=true to revoke every other session' });
+    void reply
+      .status(400)
+      .send({ statusCode: 400, error: 'Bad Request', message: 'Pass others=true to revoke every other session' });
     return;
   }
   // Tokens issued before the session claim existed cannot say which session to keep.
   if (!req.user.sid) {
-    void reply.status(409).send({ statusCode: 409, error: 'Conflict', message: 'Current session unknown; sign in again and retry' });
+    void reply
+      .status(409)
+      .send({ statusCode: 409, error: 'Conflict', message: 'Current session unknown; sign in again and retry' });
     return;
   }
   const revoked = await revokeOtherSessions(req.user.sub, req.user.sid);
-  await recordAudit('sessions_revoked_others', { userId: req.user.sub, sessionId: req.user.sid, meta: extractSessionMeta(req) });
+  await recordAudit('sessions_revoked_others', {
+    userId: req.user.sub,
+    sessionId: req.user.sid,
+    meta: extractSessionMeta(req),
+  });
   void reply.send({ revoked });
 }

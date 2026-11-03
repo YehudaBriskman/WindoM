@@ -44,16 +44,12 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
 
         {/* Hidden from the accessibility tree when collapsed rather than merely
             off screen, so a screen reader is not offered links it cannot reach. */}
-        <nav
-          className={`site-nav-links${open ? ' is-open' : ''}`}
-          aria-label="Main"
-          id="site-nav-links"
-        >
+        <nav className={`site-nav-links${open ? ' is-open' : ''}`} aria-label="Main" id="site-nav-links">
           {NAV_LINKS.map((link) => {
             // A hash link stays on the home page; the rest follow the language.
             const to = link.path.startsWith('/#')
               ? link.path
-              : (locale === 'he' ? translatedPath(link.path, 'he') : undefined) ?? link.path;
+              : ((locale === 'he' ? translatedPath(link.path, 'he') : undefined) ?? link.path);
             /* Against `to`, not `link.path`. `current` is the page's real path,
                so on /he/guide the untranslated /guide could never match it and
                no item was marked at all: a screen-reader user on the Hebrew
@@ -79,12 +75,7 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
         <div className="site-nav-end">
           {current && <LocaleSwitch path={current} locale={locale} />}
 
-          <a
-            className="site-nav-icon"
-            href={GITHUB_URL}
-            aria-label={`${SITE.name} on GitHub`}
-            rel="noreferrer"
-          >
+          <a className="site-nav-icon" href={GITHUB_URL} aria-label={`${SITE.name} on GitHub`} rel="noreferrer">
             <GitHubMark />
           </a>
 

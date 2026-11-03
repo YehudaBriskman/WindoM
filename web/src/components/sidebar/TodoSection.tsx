@@ -49,19 +49,17 @@ export function TodoSection() {
     <div>
       <h3 className="todo-title">Today's Tasks</h3>
       <div className="todo-list">
-        {todos.length === 0 ? (
-          loaded && <p className="todo-empty">No tasks yet. Add one below.</p>
-        ) : (
-          todos.map((todo) => (
-            <TodoItem
-              key={todo.id}
-              todo={todo}
-              pending={pending.has(todo.id)}
-              onToggle={handleToggle}
-              onRemove={handleRemove}
-            />
-          ))
-        )}
+        {todos.length === 0
+          ? loaded && <p className="todo-empty">No tasks yet. Add one below.</p>
+          : todos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                pending={pending.has(todo.id)}
+                onToggle={handleToggle}
+                onRemove={handleRemove}
+              />
+            ))}
       </div>
       <div className="todo-input-row">
         <input

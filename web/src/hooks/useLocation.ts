@@ -23,11 +23,13 @@ const LOCATION_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 export type GeoPermission = 'granted' | 'denied' | 'prompt' | 'unsupported';
 
 export type LocationRequestResult =
-  | { ok: true; coords: LocationCoords }
-  | { ok: false; reason: 'denied' | 'unavailable' | 'unsupported' };
+  { ok: true; coords: LocationCoords } | { ok: false; reason: 'denied' | 'unavailable' | 'unsupported' };
 
 class GeoError extends Error {
-  constructor(readonly code: number, message: string) {
+  constructor(
+    readonly code: number,
+    message: string,
+  ) {
     super(message);
   }
 }

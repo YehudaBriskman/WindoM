@@ -59,7 +59,9 @@ export function FinanceSettings() {
       {/* ── Stocks ── */}
       <div className="settings-group">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <label className="settings-label" style={{ margin: 0 }}>Stocks</label>
+          <label className="settings-label" style={{ margin: 0 }}>
+            Stocks
+          </label>
           {finance.watchlistTickers.length > 0 && (
             <label className="settings-toggle-label" style={{ margin: 0 }}>
               <input
@@ -69,9 +71,7 @@ export function FinanceSettings() {
                 onChange={toggleShowStocks}
               />
               <span className="settings-toggle-track" />
-              <span style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)', marginLeft: '8px' }}>
-                Show
-              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)', marginLeft: '8px' }}>Show</span>
             </label>
           )}
         </div>
@@ -84,7 +84,9 @@ export function FinanceSettings() {
       {/* ── Crypto ── */}
       <div className="settings-group">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <label className="settings-label" style={{ margin: 0 }}>Crypto</label>
+          <label className="settings-label" style={{ margin: 0 }}>
+            Crypto
+          </label>
           {finance.cryptoWatchlist.length > 0 && (
             <label className="settings-toggle-label" style={{ margin: 0 }}>
               <input
@@ -94,9 +96,7 @@ export function FinanceSettings() {
                 onChange={toggleShowCrypto}
               />
               <span className="settings-toggle-track" />
-              <span style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)', marginLeft: '8px' }}>
-                Show
-              </span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)', marginLeft: '8px' }}>Show</span>
             </label>
           )}
         </div>
@@ -114,9 +114,7 @@ export function FinanceSettings() {
                   onChange={() => toggleCrypto(coin.id)}
                   style={{ display: 'none' }}
                 />
-                <span className={`finance-crypto-label${checked ? ' checked' : ''}`}>
-                  {coin.label}
-                </span>
+                <span className={`finance-crypto-label${checked ? ' checked' : ''}`}>{coin.label}</span>
               </label>
             );
           })}

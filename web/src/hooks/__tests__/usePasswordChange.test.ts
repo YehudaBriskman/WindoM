@@ -22,9 +22,14 @@ describe('usePasswordChange', () => {
   it('cannot submit until all three fields are filled', () => {
     const { result } = renderHook(() => usePasswordChange());
     expect(result.current.canSubmit).toBe(false);
-    act(() => { result.current.setCurrentPw('old'); result.current.setNewPw('newpassword'); });
+    act(() => {
+      result.current.setCurrentPw('old');
+      result.current.setNewPw('newpassword');
+    });
     expect(result.current.canSubmit).toBe(false);
-    act(() => { result.current.setConfirmPw('newpassword'); });
+    act(() => {
+      result.current.setConfirmPw('newpassword');
+    });
     expect(result.current.canSubmit).toBe(true);
   });
 
@@ -54,8 +59,16 @@ describe('usePasswordChange', () => {
     await act(() => result.current.save());
 
     expect(apiPatch).toHaveBeenCalledWith('/me', { currentPassword: 'old', newPassword: 'longenough' });
-    expect(result.current).toMatchObject({ currentPw: '', newPw: '', confirmPw: '', message: 'Password updated', saving: false });
-    act(() => { vi.advanceTimersByTime(PW_SAVE_MSG_DURATION_MS); });
+    expect(result.current).toMatchObject({
+      currentPw: '',
+      newPw: '',
+      confirmPw: '',
+      message: 'Password updated',
+      saving: false,
+    });
+    act(() => {
+      vi.advanceTimersByTime(PW_SAVE_MSG_DURATION_MS);
+    });
     expect(result.current.message).toBe('');
   });
 

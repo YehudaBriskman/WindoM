@@ -16,10 +16,7 @@ export function NotFound() {
       <SiteNav />
       <main id="content" className="wrap wrap-prose" style={{ padding: '18vh 24px 20vh' }}>
         <h1>Page not found</h1>
-        <p className="lede">
-          That address does not exist on windom.app. It may have moved, or the link may be
-          wrong.
-        </p>
+        <p className="lede">That address does not exist on windom.app. It may have moved, or the link may be wrong.</p>
         <div className="btn-row">
           <Link className="btn btn-primary" to="/">
             Back to WindoM

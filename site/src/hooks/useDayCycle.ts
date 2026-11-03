@@ -23,9 +23,7 @@ const STAGE_COMMIT_MARGIN = 0.04;
  */
 export function usePrefersReducedMotion(): boolean {
   const [reduced, setReduced] = useState(() =>
-    typeof matchMedia === 'function'
-      ? matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false,
+    typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)').matches : false,
   );
 
   useEffect(() => {

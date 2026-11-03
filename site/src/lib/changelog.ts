@@ -35,15 +35,17 @@ export const SUMMARY_MAX = 220;
 
 /** Markdown emphasis, code and links reduced to the text a reader sees. */
 function plain(md: string): string {
-  return md
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
-    // Asterisks only: underscores appear inside identifiers (`READ_ONLY_MODE`)
-    // far more often than as emphasis in this file.
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\*\*(.+?)\*\*/g, '$1')
-    .replace(/\*(.+?)\*/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return (
+    md
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+      // Asterisks only: underscores appear inside identifiers (`READ_ONLY_MODE`)
+      // far more often than as emphasis in this file.
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/\*\*(.+?)\*\*/g, '$1')
+      .replace(/\*(.+?)\*/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 /**

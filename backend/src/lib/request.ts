@@ -21,7 +21,9 @@ export function isAllowedRedirectUri(
       if (extensionRedirectBase) return uri.startsWith(extensionRedirectBase);
       return true; // dev/test: no specific extension ID configured, allow any
     }
-  } catch { return false; }
+  } catch {
+    return false;
+  }
   return false;
 }
 

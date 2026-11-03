@@ -182,8 +182,7 @@
   --tilt-x: 0deg;
   --tilt-y: 0deg;
 
-  transform: rotateX(calc(var(--rest-x) + var(--tilt-x)))
-             rotateY(calc(var(--rest-y) + var(--tilt-y)));
+  transform: rotateX(calc(var(--rest-x) + var(--tilt-x))) rotateY(calc(var(--rest-y) + var(--tilt-y)));
   transform-style: preserve-3d;
   /* Short, so it tracks the pointer rather than trailing it, but not zero -
      an instant rotation reads as jitter on a high-polling mouse. */
@@ -221,12 +220,7 @@
   z-index: 3;
   pointer-events: none;
   opacity: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.07) 50%,
-    transparent 65%
-  );
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.07) 50%, transparent 65%);
   transition: opacity 320ms var(--ease);
 }
 
@@ -453,8 +447,15 @@ body.motion-paused .hero-cue-rail {
 }
 
 @keyframes hero-cue-drift {
-  0%, 100% { transform: translateY(0); opacity: 0.4; }
-  50% { transform: translateY(10px); opacity: 1; }
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(10px);
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

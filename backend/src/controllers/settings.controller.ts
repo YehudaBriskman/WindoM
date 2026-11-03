@@ -4,72 +4,106 @@ import * as settingsService from '../services/settings.service.js';
 
 const quickLinkSchema = z.object({
   name: z.string().max(100),
-  url: z.string().url().max(2048).refine((value) => {
-    try {
-      const protocol = new URL(value).protocol;
-      return protocol === 'http:' || protocol === 'https:';
-    } catch {
-      return false;
-    }
-  }, { message: 'Only HTTP and HTTPS links are allowed' }),
+  url: z
+    .string()
+    .url()
+    .max(2048)
+    .refine(
+      (value) => {
+        try {
+          const protocol = new URL(value).protocol;
+          return protocol === 'http:' || protocol === 'https:';
+        } catch {
+          return false;
+        }
+      },
+      { message: 'Only HTTP and HTTPS links are allowed' },
+    ),
   icon: z.string().max(2048).optional(),
 });
 
 /** Exported so export-policy.test.ts can check every settings key is classified for GET /me/export. */
 export const settingsSectionSchema = z.object({
-  general: z.object({
-    userName: z.string().max(50),
-    searchEngine: z.enum(['google', 'bing', 'duckduckgo', 'brave']),
-    sidebarSide: z.enum(['left', 'right']),
-    showGreeting: z.boolean(),
-  }).partial().optional(),
+  general: z
+    .object({
+      userName: z.string().max(50),
+      searchEngine: z.enum(['google', 'bing', 'duckduckgo', 'brave']),
+      sidebarSide: z.enum(['left', 'right']),
+      showGreeting: z.boolean(),
+    })
+    .partial()
+    .optional(),
 
-  clock: z.object({
-    timeFormat: z.enum(['12h', '24h']),
-    showSeconds: z.boolean(),
-    leadingZero: z.boolean(),
-    style: z.enum(['default', 'glass', 'outline']),
-    color: z.string().max(50),
-    size: z.number().int().min(20).max(500),
-    weight: z.union([z.literal(100), z.literal(200), z.literal(400), z.literal(600)]),
-    showDate: z.boolean(),
-    dateFormat: z.enum(['long', 'short', 'numeric']),
-  }).partial().optional(),
+  clock: z
+    .object({
+      timeFormat: z.enum(['12h', '24h']),
+      showSeconds: z.boolean(),
+      leadingZero: z.boolean(),
+      style: z.enum(['default', 'glass', 'outline']),
+      color: z.string().max(50),
+      size: z.number().int().min(20).max(500),
+      weight: z.union([z.literal(100), z.literal(200), z.literal(400), z.literal(600)]),
+      showDate: z.boolean(),
+      dateFormat: z.enum(['long', 'short', 'numeric']),
+    })
+    .partial()
+    .optional(),
 
-  background: z.object({
-    source: z.enum(['unsplash', 'local']),
-    unsplashApiKey: z.string().max(100),
-    unsplashCollectionId: z.string().max(100),
-  }).partial().optional(),
+  background: z
+    .object({
+      source: z.enum(['unsplash', 'local']),
+      unsplashApiKey: z.string().max(100),
+      unsplashCollectionId: z.string().max(100),
+    })
+    .partial()
+    .optional(),
 
-  weather: z.object({
-    show: z.boolean(),
-    unit: z.enum(['F', 'C']),
-    location: z.string().max(100),
-    apiKey: z.string().max(100),
-  }).partial().optional(),
-
-  widgets: z.object({
-    showLinks: z.boolean(),
-    showFocus: z.boolean(),
-    showQuotes: z.boolean(),
-    quoteSource: z.enum(['local', 'api']),
-    quickLinks: z.array(quickLinkSchema).max(50),
-  }).partial().optional(),
-
-  integrations: z.object({
-    calendar: z.object({
-      days: z.union([z.literal(7), z.literal(14), z.literal(30)]),
-      connected: z.boolean(),
-    }).partial().optional(),
-    spotify: z.object({
-      connected: z.boolean(),
-    }).partial().optional(),
-    gmail: z.object({
-      connected: z.boolean(),
+  weather: z
+    .object({
       show: z.boolean(),
-    }).partial().optional(),
-  }).partial().optional(),
+      unit: z.enum(['F', 'C']),
+      location: z.string().max(100),
+      apiKey: z.string().max(100),
+    })
+    .partial()
+    .optional(),
+
+  widgets: z
+    .object({
+      showLinks: z.boolean(),
+      showFocus: z.boolean(),
+      showQuotes: z.boolean(),
+      quoteSource: z.enum(['local', 'api']),
+      quickLinks: z.array(quickLinkSchema).max(50),
+    })
+    .partial()
+    .optional(),
+
+  integrations: z
+    .object({
+      calendar: z
+        .object({
+          days: z.union([z.literal(7), z.literal(14), z.literal(30)]),
+          connected: z.boolean(),
+        })
+        .partial()
+        .optional(),
+      spotify: z
+        .object({
+          connected: z.boolean(),
+        })
+        .partial()
+        .optional(),
+      gmail: z
+        .object({
+          connected: z.boolean(),
+          show: z.boolean(),
+        })
+        .partial()
+        .optional(),
+    })
+    .partial()
+    .optional(),
 
   _updatedAt: z.number().optional(),
 });
@@ -83,9 +117,7 @@ export function mergeSections(
   for (const [section, value] of Object.entries(incomingSections)) {
     if (value !== undefined) {
       merged[section] = {
-        ...(typeof existing[section] === 'object' && existing[section] !== null
-          ? existing[section]
-          : {}),
+        ...(typeof existing[section] === 'object' && existing[section] !== null ? existing[section] : {}),
         ...(value as Record<string, unknown>),
       };
     }
@@ -107,7 +139,9 @@ export async function putSettingsController(req: FastifyRequest, reply: FastifyR
   const parsed = settingsSectionSchema.safeParse(req.body);
   if (!parsed.success) {
     void reply.status(400).send({
-      statusCode: 400, error: 'Bad Request', message: 'Invalid settings: links must use HTTP or HTTPS and fields must match the settings schema',
+      statusCode: 400,
+      error: 'Bad Request',
+      message: 'Invalid settings: links must use HTTP or HTTPS and fields must match the settings schema',
     });
     return;
   }
@@ -118,6 +152,7 @@ export async function putSettingsController(req: FastifyRequest, reply: FastifyR
   const { _updatedAt: _, ...incomingSections } = parsed.data;
 
   const saved = await settingsService.updateSettings(req.user.sub, (existing) =>
-    mergeSections(existing, incomingSections));
+    mergeSections(existing, incomingSections),
+  );
   void reply.send({ data: saved.data, updatedAt: saved.updatedAt, previousUpdatedAt: saved.previousUpdatedAt });
 }

@@ -17,11 +17,7 @@ export function authEmailRoutes(app: FastifyInstance): void {
   );
 
   // Public: click link from email → verify email (tightened to prevent token enumeration)
-  app.get(
-    '/verify-email',
-    { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } },
-    verifyEmailController,
-  );
+  app.get('/verify-email', { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } }, verifyEmailController);
 
   // Public: request a password reset email
   app.post(
@@ -36,9 +32,5 @@ export function authEmailRoutes(app: FastifyInstance): void {
     { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } },
     resetPasswordPageController,
   );
-  app.post(
-    '/reset-password',
-    { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } },
-    resetPasswordController,
-  );
+  app.post('/reset-password', { config: { rateLimit: { max: 5, timeWindow: '15 minutes' } } }, resetPasswordController);
 }

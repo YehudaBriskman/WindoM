@@ -10,9 +10,18 @@ import { syncStorage } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { getAccessToken, apiGet, apiPut } from '../lib/api';
 import {
-  type DirtyMap, type ServerRev, type SettingsResponse,
-  planSync, revisionAfterPush, getBaseRev, setBaseRev, getDirty, markDirty, clearDirty,
-  clearAllDirty, getLegacyLocalUpdatedAt,
+  type DirtyMap,
+  type ServerRev,
+  type SettingsResponse,
+  planSync,
+  revisionAfterPush,
+  getBaseRev,
+  setBaseRev,
+  getDirty,
+  markDirty,
+  clearDirty,
+  clearAllDirty,
+  getLegacyLocalUpdatedAt,
 } from '../lib/settings-sync';
 import { SYNC_EXCLUDE, pickSyncable, pickSections, type SetSettings } from '../lib/settings-store';
 import { createLogger } from '../lib/logger';
@@ -78,90 +87,99 @@ export function useSettingsBackendSync(
     [],
   );
 
-  const syncWithBackend = useCallback(async (localSettings: Settings, backendWins = false) => {
-    try {
-      const token = await getAccessToken();
-      if (!token) return;
+  const syncWithBackend = useCallback(
+    async (localSettings: Settings, backendWins = false) => {
+      try {
+        const token = await getAccessToken();
+        if (!token) return;
 
-      const res = await apiGet<SettingsResponse<Partial<Settings> & { _updatedAt?: number }>>('/settings');
-      const data = res.data;
-      const serverRev = res.updatedAt;
-      const syncableSections = Object.keys(pickSyncable(localSettings));
-      const [baseRev, dirty, legacyLocalUpdatedAt] = await Promise.all([
-        getBaseRev(), getDirty(), getLegacyLocalUpdatedAt(),
-      ]);
-      const dirtySections = Object.keys(dirty).filter((k) => syncableSections.includes(k));
+        const res = await apiGet<SettingsResponse<Partial<Settings> & { _updatedAt?: number }>>('/settings');
+        const data = res.data;
+        const serverRev = res.updatedAt;
+        const syncableSections = Object.keys(pickSyncable(localSettings));
+        const [baseRev, dirty, legacyLocalUpdatedAt] = await Promise.all([
+          getBaseRev(),
+          getDirty(),
+          getLegacyLocalUpdatedAt(),
+        ]);
+        const dirtySections = Object.keys(dirty).filter((k) => syncableSections.includes(k));
 
-      const plan = planSync({
-        backendEmpty: !data || Object.keys(data).length === 0,
-        backendWins,
-        serverRev,
-        baseRev,
-        dirtySections,
-        legacyLocalUpdatedAt,
-        syncableSections,
-      });
+        const plan = planSync({
+          backendEmpty: !data || Object.keys(data).length === 0,
+          backendWins,
+          serverRev,
+          baseRev,
+          dirtySections,
+          legacyLocalUpdatedAt,
+          syncableSections,
+        });
 
-      if (plan.kind === 'push-all') {
-        await pushSections(pickSyncable(localSettings), serverRev ?? null, dirty);
-        return;
-      }
-
-      if (plan.kind === 'push-dirty') {
-        if (dirtySections.length > 0) {
-          await pushSections(pickSections(localSettings, dirtySections), serverRev, pickSections(dirty, dirtySections) as DirtyMap);
+        if (plan.kind === 'push-all') {
+          await pushSections(pickSyncable(localSettings), serverRev ?? null, dirty);
+          return;
         }
-        return;
-      }
 
-      // pull: adopt the server copy, except the sections this device must keep.
-      const keepLocal = new Set(plan.keepLocal);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _updatedAt: _, ...rawBackendSettings } = data ?? {};
-      const backendSettings = Object.fromEntries(
-        Object.entries(rawBackendSettings).filter(([k]) => k in defaultSettings),
-      ) as Partial<Settings>;
+        if (plan.kind === 'push-dirty') {
+          if (dirtySections.length > 0) {
+            await pushSections(
+              pickSections(localSettings, dirtySections),
+              serverRev,
+              pickSections(dirty, dirtySections) as DirtyMap,
+            );
+          }
+          return;
+        }
 
-      // Deep-merge backend sections into local (backend wins on conflicts)
-      const merged = { ...localSettings } as Settings;
-      for (const [sectionKey, sectionVal] of Object.entries(backendSettings)) {
-        if (sectionVal && typeof sectionVal === 'object' && sectionKey in merged) {
-          const k = sectionKey as keyof Settings;
-          if (!SYNC_EXCLUDE.has(k) && !keepLocal.has(sectionKey)) {
-            (merged as unknown as Record<string, unknown>)[k] = {
-              ...(localSettings as unknown as Record<string, object>)[k],
-              ...(sectionVal as object),
-            };
+        // pull: adopt the server copy, except the sections this device must keep.
+        const keepLocal = new Set(plan.keepLocal);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { _updatedAt: _, ...rawBackendSettings } = data ?? {};
+        const backendSettings = Object.fromEntries(
+          Object.entries(rawBackendSettings).filter(([k]) => k in defaultSettings),
+        ) as Partial<Settings>;
+
+        // Deep-merge backend sections into local (backend wins on conflicts)
+        const merged = { ...localSettings } as Settings;
+        for (const [sectionKey, sectionVal] of Object.entries(backendSettings)) {
+          if (sectionVal && typeof sectionVal === 'object' && sectionKey in merged) {
+            const k = sectionKey as keyof Settings;
+            if (!SYNC_EXCLUDE.has(k) && !keepLocal.has(sectionKey)) {
+              (merged as unknown as Record<string, unknown>)[k] = {
+                ...(localSettings as unknown as Record<string, object>)[k],
+                ...(sectionVal as object),
+              };
+            }
           }
         }
-      }
 
-      setSettings((prev) => {
-        const result = { ...merged } as Settings;
-        // Keep SYNC_EXCLUDE sections from current state (not from merged backend)
-        for (const key of SYNC_EXCLUDE) {
-          (result as unknown as Record<string, unknown>)[key] = prev[key];
+        setSettings((prev) => {
+          const result = { ...merged } as Settings;
+          // Keep SYNC_EXCLUDE sections from current state (not from merged backend)
+          for (const key of SYNC_EXCLUDE) {
+            (result as unknown as Record<string, unknown>)[key] = prev[key];
+          }
+          return result;
+        });
+
+        const storable = Object.fromEntries(
+          Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
+        );
+        await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
+
+        // We have now seen everything up to serverRev.
+        if (typeof serverRev === 'number') await setBaseRev(serverRev);
+        if (backendWins) await clearAllDirty();
+
+        if (keepLocal.size > 0) {
+          const keys = [...keepLocal];
+          await pushSections(pickSections(localSettings, keys), serverRev, pickSections(dirty, keys) as DirtyMap);
         }
-        return result;
-      });
-
-      const storable = Object.fromEntries(
-        Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
-      );
-      await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
-
-      // We have now seen everything up to serverRev.
-      if (typeof serverRev === 'number') await setBaseRev(serverRev);
-      if (backendWins) await clearAllDirty();
-
-      if (keepLocal.size > 0) {
-        const keys = [...keepLocal];
-        await pushSections(pickSections(localSettings, keys), serverRev, pickSections(dirty, keys) as DirtyMap);
+      } catch (err) {
+        log.warn('Backend sync failed - staying on local:', err);
       }
-    } catch (err) {
-      log.warn('Backend sync failed - staying on local:', err);
-    }
-  }, [setSettings]);
+    },
+    [setSettings],
+  );
 
   // Re-sync on login - backend always wins to overwrite local state with account's settings
   useEffect(() => {

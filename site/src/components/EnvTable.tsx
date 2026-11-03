@@ -7,9 +7,10 @@ import { ENV_VARS, REQUIREMENT_LABELS } from '../lib/env-reference';
  * strings a reader has to type exactly.
  */
 export function EnvTable({ locale }: { locale: 'en' | 'he' }) {
-  const head = locale === 'he'
-    ? { variable: 'משתנה', description: 'תיאור', required: 'נדרש' }
-    : { variable: 'Variable', description: 'Description', required: 'Required' };
+  const head =
+    locale === 'he'
+      ? { variable: 'משתנה', description: 'תיאור', required: 'נדרש' }
+      : { variable: 'Variable', description: 'Description', required: 'Required' };
 
   return (
     <div className="table-wrap">

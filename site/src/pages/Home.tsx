@@ -104,9 +104,9 @@ export function Home() {
             It was a <span className="gradient-text">live tab</span>, showing your time.
           </h2>
           <p className="lede reveal">
-            {SITE.name} replaces every new tab with this — your clock, your weather, your day,
-            on a background that is actually worth looking at. {active.scene} is one of four it
-            ships with, and the lantern-lit house is the one waiting the moment you install it.
+            {SITE.name} replaces every new tab with this — your clock, your weather, your day, on a background that is
+            actually worth looking at. {active.scene} is one of four it ships with, and the lantern-lit house is the one
+            waiting the moment you install it.
           </p>
           <div className="btn-row reveal">
             <a className="btn btn-primary" href={STORE_URL}>
@@ -122,9 +122,7 @@ export function Home() {
               GitHub
             </a>
           </div>
-          <p className="muted hero-compat reveal">
-            Works on Chrome, Arc, Brave, Edge and any Chromium-based browser.
-          </p>
+          <p className="muted hero-compat reveal">Works on Chrome, Arc, Brave, Edge and any Chromium-based browser.</p>
 
           <Wallpapers />
         </div>
@@ -197,9 +195,7 @@ export function Home() {
             </li>
             <li className="panel">
               <h3>3 · Make it yours</h3>
-              <p className="muted">
-                Open settings and turn on only what you want. Everything is optional.
-              </p>
+              <p className="muted">Open settings and turn on only what you want. Everything is optional.</p>
             </li>
           </ol>
         </div>
@@ -214,17 +210,15 @@ export function Home() {
             No tracking. <span className="gradient-text">Ever.</span>
           </h2>
           <p className="lede">
-            WindoM does not track you. There is no analytics, no telemetry and no advertising.
-            Your data stays in your browser unless you explicitly connect an account.
+            WindoM does not track you. There is no analytics, no telemetry and no advertising. Your data stays in your
+            browser unless you explicitly connect an account.
           </p>
           <ul className="pill-row">
-            {['Open Source', 'MIT License', 'No Telemetry', 'No Ads', 'Self-hostable', 'Account Optional'].map(
-              (p) => (
-                <li className="badge" key={p}>
-                  {p}
-                </li>
-              ),
-            )}
+            {['Open Source', 'MIT License', 'No Telemetry', 'No Ads', 'Self-hostable', 'Account Optional'].map((p) => (
+              <li className="badge" key={p}>
+                {p}
+              </li>
+            ))}
           </ul>
         </div>
       </section>
@@ -233,7 +227,9 @@ export function Home() {
       <section className="section" aria-labelledby="faq-heading">
         <div className="wrap wrap-prose">
           <span className="eyebrow reveal">FAQ</span>
-          <h2 id="faq-heading" className="reveal">Questions</h2>
+          <h2 id="faq-heading" className="reveal">
+            Questions
+          </h2>
           {FAQ.map((item) => (
             <details className="panel faq" key={item.q}>
               <summary>{item.q}</summary>
@@ -250,8 +246,7 @@ export function Home() {
             Built in the <span className="gradient-text">open</span>
           </h2>
           <p className="lede">
-            Every line is public, MIT licensed, and built solo. Issues and pull requests are
-            welcome.
+            Every line is public, MIT licensed, and built solo. Issues and pull requests are welcome.
           </p>
           <div className="btn-row">
             <a className="btn btn-secondary" href={GITHUB_URL}>

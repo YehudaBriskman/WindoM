@@ -1,0 +1,7 @@
+# `npm run format` only covers src/, but keep generated output out of reach of an
+# ad-hoc `prettier .` or an editor's format-on-save.
+dist/
+coverage/
+# Written by drizzle-kit; the journal and snapshots stay exactly as generated.
+drizzle/
+package-lock.json

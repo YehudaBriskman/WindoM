@@ -1,14 +1,4 @@
-import {
-  pgTable,
-  uuid,
-  text,
-  timestamp,
-  boolean,
-  index,
-  uniqueIndex,
-  integer,
-  jsonb,
-} from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean, index, uniqueIndex, integer, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ── Users ──────────────────────────────────────────────────────────────────
@@ -113,15 +103,15 @@ export const emailTokens = pgTable(
     usedAt: timestamp('used_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [
-    uniqueIndex('email_tokens_lookup_idx').on(table.tokenLookup),
-  ],
+  (table) => [uniqueIndex('email_tokens_lookup_idx').on(table.tokenLookup)],
 );
 
 // ── User Settings ──────────────────────────────────────────────────────────
 
 export const userSettings = pgTable('user_settings', {
-  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => users.id, { onDelete: 'cascade' }),
   data: jsonb('data').notNull().default({}),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

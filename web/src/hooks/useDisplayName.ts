@@ -21,7 +21,10 @@ export function useDisplayName() {
     if (saving) return;
     const trimmed = name.trim();
     if (!trimmed || trimmed === user?.name) return;
-    if (trimmed.length > 100) { setMessage('Name must be 100 characters or less'); return; }
+    if (trimmed.length > 100) {
+      setMessage('Name must be 100 characters or less');
+      return;
+    }
     setSaving(true);
     setMessage('');
     try {
@@ -39,7 +42,10 @@ export function useDisplayName() {
   }
 
   return {
-    name, setName, saving, message,
+    name,
+    setName,
+    saving,
+    message,
     saved: message === 'Saved',
     canSave: !saving && !!name.trim() && name.trim() !== user?.name,
     save,

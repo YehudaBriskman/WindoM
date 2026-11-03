@@ -16,13 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  * from the duration you picked, just quicker than life.
  */
 
-export type FocusPhase =
-  | 'idle'
-  | 'entering'
-  | 'entering-overlay'
-  | 'active'
-  | 'exiting-overlay'
-  | 'exiting';
+export type FocusPhase = 'idle' | 'entering' | 'entering-overlay' | 'active' | 'exiting-overlay' | 'exiting';
 
 const STEP_MS = 1500;
 const TICK_MS = 1000;

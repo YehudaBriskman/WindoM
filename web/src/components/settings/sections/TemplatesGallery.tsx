@@ -41,9 +41,7 @@ export function TemplatesGallery() {
         {TEMPLATES.map((t) => (
           <div key={t.id} style={{ position: 'relative' }}>
             <TemplateCard template={t} onApply={() => handleApply(t)} />
-            {applied === t.id && (
-              <div className="template-applied-badge">Applied!</div>
-            )}
+            {applied === t.id && <div className="template-applied-badge">Applied!</div>}
           </div>
         ))}
       </div>

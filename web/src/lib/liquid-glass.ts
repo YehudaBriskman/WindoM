@@ -95,9 +95,7 @@ export function refractionOffset(slope: number, thickness: number, ior = GLASS_I
  * rather than four separate corner cases is what lets the bezel stay continuous
  * where the straight edges meet the corners.
  */
-export function roundedRectDistance(
-  x: number, y: number, width: number, height: number, radius: number,
-): number {
+export function roundedRectDistance(x: number, y: number, width: number, height: number, radius: number): number {
   const hw = width / 2;
   const hh = height / 2;
   const r = Math.min(radius, hw, hh);
@@ -172,10 +170,12 @@ export function buildDisplacementField(surface: GlassSurface): DisplacementField
       // Direction: the inward gradient of the distance field, found the same
       // numerical way as the slope so the two always agree.
       const e = 0.75;
-      const gx = roundedRectDistance(x + 0.5 + e, y + 0.5, w, h, radius)
-        - roundedRectDistance(x + 0.5 - e, y + 0.5, w, h, radius);
-      const gy = roundedRectDistance(x + 0.5, y + 0.5 + e, w, h, radius)
-        - roundedRectDistance(x + 0.5, y + 0.5 - e, w, h, radius);
+      const gx =
+        roundedRectDistance(x + 0.5 + e, y + 0.5, w, h, radius) -
+        roundedRectDistance(x + 0.5 - e, y + 0.5, w, h, radius);
+      const gy =
+        roundedRectDistance(x + 0.5, y + 0.5 + e, w, h, radius) -
+        roundedRectDistance(x + 0.5, y + 0.5 - e, w, h, radius);
       const len = Math.hypot(gx, gy) || 1;
 
       // Inward, along the gradient. The direction matters more than it looks:
@@ -247,9 +247,7 @@ export function buildRimMask(surface: GlassSurface): Uint8ClampedArray<ArrayBuff
 }
 
 /** Any RGBA raster as a PNG data URL. */
-export function rasterToDataURL(
-  data: Uint8ClampedArray<ArrayBuffer>, width: number, height: number,
-): string {
+export function rasterToDataURL(data: Uint8ClampedArray<ArrayBuffer>, width: number, height: number): string {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -287,7 +285,11 @@ export class Spring {
   velocity = 0;
   target: number;
 
-  constructor(initial: number, private stiffness = 170, private damping = 26) {
+  constructor(
+    initial: number,
+    private stiffness = 170,
+    private damping = 26,
+  ) {
     this.value = initial;
     this.target = initial;
   }

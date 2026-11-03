@@ -17,7 +17,10 @@ export function AppLoader() {
   if (hidden) return null;
 
   return (
-    <div className={`app-loader ${backgroundReady ? 'app-loader--done' : ''}`} style={{ backgroundImage: DEFAULT_GRADIENT }}>
+    <div
+      className={`app-loader ${backgroundReady ? 'app-loader--done' : ''}`}
+      style={{ backgroundImage: DEFAULT_GRADIENT }}
+    >
       <div className="app-loader-spinner" />
     </div>
   );

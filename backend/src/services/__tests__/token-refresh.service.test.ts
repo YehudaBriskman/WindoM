@@ -9,7 +9,11 @@ vi.mock('../../lib/crypto.js', () => ({
 import { db } from '../../db/client.js';
 import { decryptToken, encryptToken } from '../../lib/crypto.js';
 import { getValidAccessToken } from '../token-refresh.service.js';
-import { githubPatStrategy, parseStandardTokenResponse, type RefreshableTokenStrategy } from '../token-refresh.strategies.js';
+import {
+  githubPatStrategy,
+  parseStandardTokenResponse,
+  type RefreshableTokenStrategy,
+} from '../token-refresh.strategies.js';
 import { TOKEN_REFRESH_BUFFER_MS } from '../../types/constants.js';
 
 const mockDb = db as unknown as { update: ReturnType<typeof vi.fn> };
@@ -36,7 +40,12 @@ const strategy: RefreshableTokenStrategy = {
   refreshUrl: 'https://example.com/token',
   buildHeaders: () => ({}),
   buildBody: (refreshToken) =>
-    new URLSearchParams({ grant_type: 'refresh_token', refresh_token: refreshToken, client_id: 'id', client_secret: 'secret' }),
+    new URLSearchParams({
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      client_id: 'id',
+      client_secret: 'secret',
+    }),
   parseResponse: parseStandardTokenResponse,
 };
 
@@ -154,10 +163,7 @@ describe('getValidAccessToken', () => {
 
     mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
 
-    await getValidAccessToken(
-      account,
-      { ...strategy, buildHeaders: () => ({ Authorization: 'Basic abc123' }) },
-    );
+    await getValidAccessToken(account, { ...strategy, buildHeaders: () => ({ Authorization: 'Basic abc123' }) });
 
     expect(capturedHeaders).toEqual({
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -183,7 +189,9 @@ describe('getValidAccessToken', () => {
     const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     expect(url).toBe('https://example.com/token');
     expect(init.method).toBe('POST');
-    expect((init.body as URLSearchParams).toString()).toBe('grant_type=refresh_token&refresh_token=refresh-token&client_id=id&client_secret=secret');
+    expect((init.body as URLSearchParams).toString()).toBe(
+      'grant_type=refresh_token&refresh_token=refresh-token&client_id=id&client_secret=secret',
+    );
   });
 
   it('writes the encrypted token and an expiry from the strategy-parsed lifetime', async () => {
@@ -270,10 +278,13 @@ describe('getValidAccessToken', () => {
   ])('rejects malformed provider token response %#', async (payload) => {
     const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
     mockDecrypt.mockResolvedValue('refresh-token');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(payload),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(payload),
+      }),
+    );
 
     await expect(getValidAccessToken(account, strategy)).resolves.toEqual({
       ok: false,
@@ -296,10 +307,13 @@ describe('getValidAccessToken', () => {
   it('does not deduplicate refreshes for different accounts', async () => {
     mockDecrypt.mockResolvedValue('refresh-token');
     mockEncrypt.mockResolvedValue('encrypted-new-token');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ access_token: 'token', expires_in: 3600 }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ access_token: 'token', expires_in: 3600 }),
+      }),
+    );
     mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
 
     await Promise.all([

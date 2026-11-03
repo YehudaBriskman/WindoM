@@ -41,7 +41,9 @@ export function useGitHub() {
 
     setLoading(true);
     void fetchSummary();
-    pollRef.current = setInterval(() => { void fetchSummary(); }, GITHUB_POLL_INTERVAL_MS);
+    pollRef.current = setInterval(() => {
+      void fetchSummary();
+    }, GITHUB_POLL_INTERVAL_MS);
 
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);

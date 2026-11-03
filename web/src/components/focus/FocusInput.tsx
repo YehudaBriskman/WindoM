@@ -17,12 +17,9 @@ export function FocusInput() {
     setLocalValue(text);
   }, [text]);
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalValue(e.target.value);
-    },
-    [],
-  );
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+  }, []);
 
   const handleBlur = useCallback(() => {
     const trimmed = localValue.trim();
@@ -30,14 +27,11 @@ export function FocusInput() {
     setEditing(false);
   }, [localValue, text, setText, track]);
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        (e.target as HTMLInputElement).blur();
-      }
-    },
-    [],
-  );
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      (e.target as HTMLInputElement).blur();
+    }
+  }, []);
 
   const startEditing = useCallback(() => {
     setEditing(true);
@@ -55,11 +49,7 @@ export function FocusInput() {
       {showInput ? (
         // No text yet or actively editing: show input
         <>
-          {!text && (
-            <label className="focus-label text-shadow-sm">
-              What is your main focus for today?
-            </label>
-          )}
+          {!text && <label className="focus-label text-shadow-sm">What is your main focus for today?</label>}
           <input
             ref={inputRef}
             type="text"

@@ -31,8 +31,10 @@ describe('planSync (#251)', () => {
   });
 
   it('server moved on: adopt it, keeping unsynced local sections', () => {
-    expect(planSync(input({ serverRev: SERVER_NOW + 5, dirtySections: ['clock'] })))
-      .toEqual({ kind: 'pull', keepLocal: ['clock'] });
+    expect(planSync(input({ serverRev: SERVER_NOW + 5, dirtySections: ['clock'] }))).toEqual({
+      kind: 'pull',
+      keepLocal: ['clock'],
+    });
   });
 
   it('decides by revision equality, so any amount of client clock skew is irrelevant', () => {
@@ -40,28 +42,37 @@ describe('planSync (#251)', () => {
     // legacy stamp) is ignored, however far that clock drifted.
     for (const skew of [-24 * HOUR, -5 * HOUR, 0, 5 * HOUR, 24 * HOUR]) {
       const legacy = SERVER_NOW + skew;
-      expect(planSync(input({ serverRev: SERVER_NOW + 1, legacyLocalUpdatedAt: legacy })))
-        .toEqual({ kind: 'pull', keepLocal: [] });
-      expect(planSync(input({ legacyLocalUpdatedAt: legacy, dirtySections: ['general'] })))
-        .toEqual({ kind: 'push-dirty' });
+      expect(planSync(input({ serverRev: SERVER_NOW + 1, legacyLocalUpdatedAt: legacy }))).toEqual({
+        kind: 'pull',
+        keepLocal: [],
+      });
+      expect(planSync(input({ legacyLocalUpdatedAt: legacy, dirtySections: ['general'] }))).toEqual({
+        kind: 'push-dirty',
+      });
     }
   });
 
   it('pre-#251 backend (no revision): pull but keep unsynced local edits', () => {
-    expect(planSync(input({ serverRev: undefined, dirtySections: ['general'] })))
-      .toEqual({ kind: 'pull', keepLocal: ['general'] });
+    expect(planSync(input({ serverRev: undefined, dirtySections: ['general'] }))).toEqual({
+      kind: 'pull',
+      keepLocal: ['general'],
+    });
   });
 
   describe('first sync after upgrading (no base revision yet)', () => {
     it('a device whose last local edit is newer than the server keeps its settings', () => {
-      expect(planSync(input({ baseRev: undefined, legacyLocalUpdatedAt: SERVER_NOW + 1000 })))
-        .toEqual({ kind: 'pull', keepLocal: ['general', 'clock', 'weather'] });
+      expect(planSync(input({ baseRev: undefined, legacyLocalUpdatedAt: SERVER_NOW + 1000 }))).toEqual({
+        kind: 'pull',
+        keepLocal: ['general', 'clock', 'weather'],
+      });
     });
 
     it('a device that never edited, or edited before the server copy, takes the server copy', () => {
       expect(planSync(input({ baseRev: undefined, legacyLocalUpdatedAt: 0 }))).toEqual({ kind: 'pull', keepLocal: [] });
-      expect(planSync(input({ baseRev: undefined, legacyLocalUpdatedAt: SERVER_NOW - 1000 })))
-        .toEqual({ kind: 'pull', keepLocal: [] });
+      expect(planSync(input({ baseRev: undefined, legacyLocalUpdatedAt: SERVER_NOW - 1000 }))).toEqual({
+        kind: 'pull',
+        keepLocal: [],
+      });
     });
   });
 });

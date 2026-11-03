@@ -52,7 +52,10 @@ export function useOnboarding(): UseOnboardingReturn {
   }, []);
 
   const dismissSpotifyNotice = useCallback(async (): Promise<void> => {
-    const next: OnboardingState = { ...(state ?? { completed: true, spotifyNoticeDismissed: false }), spotifyNoticeDismissed: true };
+    const next: OnboardingState = {
+      ...(state ?? { completed: true, spotifyNoticeDismissed: false }),
+      spotifyNoticeDismissed: true,
+    };
     await localStore.set(ONBOARDING_KEY, next);
     setState(next);
   }, [state]);

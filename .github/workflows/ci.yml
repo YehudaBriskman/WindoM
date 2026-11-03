@@ -103,6 +103,9 @@ jobs:
           echo "REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
           echo "TOKEN_ENC_KEY_BASE64=$(openssl rand -base64 32 | tr -d '\n')" >> "$GITHUB_ENV"
 
+      - name: Format check
+        run: npm run format:check
+
       - name: Lint
         run: npm run lint
 
@@ -150,6 +153,9 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
@@ -207,6 +213,9 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+
+      - name: Format check
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint

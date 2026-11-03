@@ -29,7 +29,7 @@ export function DockBar() {
   const urlErrorId = useId();
 
   // Chunk links into rows of ITEMS_PER_ROW
-  const rows: typeof links[] = [];
+  const rows: (typeof links)[] = [];
   for (let i = 0; i < links.length; i += ITEMS_PER_ROW) {
     rows.push(links.slice(i, i + ITEMS_PER_ROW));
   }
@@ -56,7 +56,7 @@ export function DockBar() {
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
       const direction = e.deltaY > 0 ? 1 : -1;
-      setActiveRow(prev => {
+      setActiveRow((prev) => {
         const next = Math.max(0, Math.min(rows.length - 1, prev + direction));
         rowsRef.current?.scrollTo({ top: next * ROW_HEIGHT, behavior: 'smooth' });
         return next;
@@ -152,21 +152,26 @@ export function DockBar() {
         <div
           ref={containerRef}
           className={`dock-expandable${showForm ? ' expanded glass-panel' : ''}`}
-          onClick={!showForm ? (e) => { e.stopPropagation(); setShowForm(true); } : undefined}
+          onClick={
+            !showForm
+              ? (e) => {
+                  e.stopPropagation();
+                  setShowForm(true);
+                }
+              : undefined
+          }
         >
           <div className="dock-expand-icon">
             <Plus size={18} />
           </div>
 
-          <form
-            className="dock-expand-form"
-            onClick={(e) => e.stopPropagation()}
-            onSubmit={handleSubmit}
-          >
+          <form className="dock-expand-form" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
             <button type="button" className="dock-form-close" onClick={handleClose} aria-label="Close">
               <X size={16} />
             </button>
-            <label htmlFor={nameId} className="sr-only">Link name</label>
+            <label htmlFor={nameId} className="sr-only">
+              Link name
+            </label>
             <input
               ref={nameInputRef}
               id={nameId}
@@ -176,7 +181,9 @@ export function DockBar() {
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <label htmlFor={urlId} className="sr-only">Link URL</label>
+            <label htmlFor={urlId} className="sr-only">
+              Link URL
+            </label>
             <input
               id={urlId}
               className="dock-form-input glass-input"
@@ -185,9 +192,16 @@ export function DockBar() {
               aria-invalid={!!urlError}
               aria-describedby={urlError ? urlErrorId : undefined}
               value={url}
-              onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
+              onChange={(e) => {
+                setUrl(e.target.value);
+                setUrlError('');
+              }}
             />
-            {urlError && <p id={urlErrorId} role="alert" className="auth-field-error">{urlError}</p>}
+            {urlError && (
+              <p id={urlErrorId} role="alert" className="auth-field-error">
+                {urlError}
+              </p>
+            )}
             <button type="submit" className="dock-form-submit">
               Add
             </button>

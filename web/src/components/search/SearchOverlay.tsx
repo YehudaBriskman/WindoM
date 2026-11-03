@@ -1,5 +1,19 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Search, Globe, Clock, LayoutGrid, ChevronDown, Terminal, Plus, X, RotateCcw, Copy, Pin, ExternalLink, type LucideIcon } from 'lucide-react';
+import {
+  Search,
+  Globe,
+  Clock,
+  LayoutGrid,
+  ChevronDown,
+  Terminal,
+  Plus,
+  X,
+  RotateCcw,
+  Copy,
+  Pin,
+  ExternalLink,
+  type LucideIcon,
+} from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import type { GeneralSettings } from '../../types/settings';
 import {
@@ -56,7 +70,6 @@ const ENGINE_LABELS: Record<string, string> = {
 };
 
 const ENGINE_LIST: GeneralSettings['searchEngine'][] = ['google', 'bing', 'duckduckgo', 'brave'];
-
 
 // ── Command definitions ────────────────────────────────────────────────────────
 
@@ -140,14 +153,14 @@ async function getTabSuggestions(q: string): Promise<Suggestion[]> {
     const lower = q.toLowerCase();
     const tabs = await queryTabs();
     return tabs
-      .filter(t => {
+      .filter((t) => {
         if (t.url?.startsWith('chrome://') || t.url?.startsWith('chrome-extension://')) return false;
         const urlMatch = t.url?.toLowerCase().includes(lower) ?? false;
         const titleMatch = t.title?.toLowerCase().includes(lower) ?? false;
         return urlMatch || titleMatch;
       })
       .slice(0, 3)
-      .map(t => ({
+      .map((t) => ({
         kind: 'tab' as const,
         text: t.title || t.url || '',
         subtext: t.url,
@@ -169,9 +182,9 @@ async function getHistorySuggestions(q: string, tabUrls: Set<string>, enabled: b
     if (!enabled || !hasChromeApi || !(await hasHistoryPermission()) || !hasHistoryApi()) return [];
     const items = await searchHistory({ text: q, maxResults: 10 });
     return items
-      .filter(item => item.url && !tabUrls.has(item.url))
+      .filter((item) => item.url && !tabUrls.has(item.url))
       .slice(0, 4)
-      .map(item => ({
+      .map((item) => ({
         kind: 'history' as const,
         text: item.title || item.url || '',
         subtext: item.url,
@@ -184,21 +197,20 @@ async function getHistorySuggestions(q: string, tabUrls: Set<string>, enabled: b
 
 async function getSearchSuggestions(q: string): Promise<Suggestion[]> {
   try {
-    const res = await fetch(
-      `https://duckduckgo.com/ac/?q=${encodeURIComponent(q)}&type=list`,
-      { signal: AbortSignal.timeout(SEARCH_API_TIMEOUT_MS) },
-    );
-    const data = await res.json() as unknown;
+    const res = await fetch(`https://duckduckgo.com/ac/?q=${encodeURIComponent(q)}&type=list`, {
+      signal: AbortSignal.timeout(SEARCH_API_TIMEOUT_MS),
+    });
+    const data = (await res.json()) as unknown;
 
     let terms: string[] = [];
 
     if (Array.isArray(data) && Array.isArray((data as unknown[])[1])) {
       terms = ((data as unknown[])[1] as unknown[]).filter((t): t is string => typeof t === 'string');
-    } else if (Array.isArray(data) && typeof (data as {phrase?: string}[])[0]?.phrase === 'string') {
-      terms = (data as {phrase: string}[]).map(d => d.phrase).filter(Boolean);
+    } else if (Array.isArray(data) && typeof (data as { phrase?: string }[])[0]?.phrase === 'string') {
+      terms = (data as { phrase: string }[]).map((d) => d.phrase).filter(Boolean);
     }
 
-    return terms.slice(0, 5).map(term => ({ kind: 'search' as const, text: term }));
+    return terms.slice(0, 5).map((term) => ({ kind: 'search' as const, text: term }));
   } catch {
     return [];
   }
@@ -226,11 +238,9 @@ export function SearchOverlay() {
   const commandSuggestions = useMemo<Suggestion[]>(() => {
     if (!isCommandMode) return [];
     const q = commandQuery.toLowerCase();
-    const matched = COMMAND_DEFS.filter(cmd =>
-      !q ||
-      cmd.keywords.some(kw => kw.startsWith(q)) ||
-      cmd.label.toLowerCase().includes(q),
-    ).map(cmd => ({
+    const matched = COMMAND_DEFS.filter(
+      (cmd) => !q || cmd.keywords.some((kw) => kw.startsWith(q)) || cmd.label.toLowerCase().includes(q),
+    ).map((cmd) => ({
       kind: 'command' as const,
       text: cmd.label,
       subtext: cmd.description,
@@ -249,7 +259,8 @@ export function SearchOverlay() {
           : `Search in new tab · ${ENGINE_LABELS[settings.general.searchEngine] ?? 'Google'}`,
         Icon: ExternalLink,
         action: () => {
-          const url = resolveAsUrl(commandQuery) || ENGINES[settings.general.searchEngine] + encodeURIComponent(commandQuery);
+          const url =
+            resolveAsUrl(commandQuery) || ENGINES[settings.general.searchEngine] + encodeURIComponent(commandQuery);
           openUrlInNewTab(url);
           setOpen(false);
         },
@@ -264,7 +275,7 @@ export function SearchOverlay() {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.metaKey && e.key.toLowerCase() === 'h') {
         e.preventDefault();
-        setOpen(prev => !prev);
+        setOpen((prev) => !prev);
       }
     };
     document.addEventListener('keydown', handler);
@@ -297,7 +308,7 @@ export function SearchOverlay() {
     }
     debounceRef.current = setTimeout(async () => {
       const tabs = await getTabSuggestions(value);
-      const tabUrls = new Set(tabs.map(t => t.url ?? '').filter(Boolean));
+      const tabUrls = new Set(tabs.map((t) => t.url ?? '').filter(Boolean));
       const [history, searches] = await Promise.all([
         getHistorySuggestions(value, tabUrls, historyEnabled),
         getSearchSuggestions(value),
@@ -339,7 +350,8 @@ export function SearchOverlay() {
       const input = (overrideText ?? value).trim();
       if (!input) return;
       const url = suggestion?.url ?? resolveAsUrl(input);
-      window.location.href = url || (ENGINES[settings.general.searchEngine] ?? ENGINES.google) + encodeURIComponent(input);
+      window.location.href =
+        url || (ENGINES[settings.general.searchEngine] ?? ENGINES.google) + encodeURIComponent(input);
       setOpen(false);
     },
     [value, settings.general.searchEngine],
@@ -354,15 +366,15 @@ export function SearchOverlay() {
       }
 
       if (e.key === 'Escape') {
-        if (dropdownOpen) { setDropdownOpen(false); setActiveIdx(-1); }
-        else setOpen(false);
+        if (dropdownOpen) {
+          setDropdownOpen(false);
+          setActiveIdx(-1);
+        } else setOpen(false);
         return;
       }
 
       const activeSuggestions = isCommandMode ? commandSuggestions : suggestions;
-      const hasDropdown = isCommandMode
-        ? commandSuggestions.length > 0
-        : dropdownOpen && suggestions.length > 0;
+      const hasDropdown = isCommandMode ? commandSuggestions.length > 0 : dropdownOpen && suggestions.length > 0;
 
       if (!hasDropdown) {
         if (e.key === 'Enter') go();
@@ -371,10 +383,10 @@ export function SearchOverlay() {
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setActiveIdx(i => (i < activeSuggestions.length - 1 ? i + 1 : 0));
+        setActiveIdx((i) => (i < activeSuggestions.length - 1 ? i + 1 : 0));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setActiveIdx(i => (i > 0 ? i - 1 : -1));
+        setActiveIdx((i) => (i > 0 ? i - 1 : -1));
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (activeIdx >= 0) go(activeSuggestions[activeIdx].text, activeSuggestions[activeIdx]);
@@ -386,9 +398,7 @@ export function SearchOverlay() {
 
   const isUrl = !isCommandMode && !!resolveAsUrl(value);
   const visibleSuggestions = isCommandMode ? commandSuggestions : suggestions;
-  const showDropdown = isCommandMode
-    ? commandSuggestions.length > 0
-    : dropdownOpen && suggestions.length > 0;
+  const showDropdown = isCommandMode ? commandSuggestions.length > 0 : dropdownOpen && suggestions.length > 0;
 
   return (
     // dir="ltr" forces left-to-right layout regardless of the host page's direction
@@ -400,21 +410,30 @@ export function SearchOverlay() {
       }}
     >
       <div className="search-overlay-box" role="dialog" aria-label="Search" onKeyDown={handleKeyDown}>
-        <div className={`search-overlay-input-row${showDropdown ? ' dropdown-open' : ''}${isCommandMode ? ' command-mode' : ''}`}>
+        <div
+          className={`search-overlay-input-row${showDropdown ? ' dropdown-open' : ''}${isCommandMode ? ' command-mode' : ''}`}
+        >
           <span className="search-bar-icon">
-            {isCommandMode
-              ? <Terminal size={18} strokeWidth={1.8} />
-              : isUrl
-                ? <Globe size={18} strokeWidth={1.8} />
-                : <Search size={18} strokeWidth={1.8} />
-            }
+            {isCommandMode ? (
+              <Terminal size={18} strokeWidth={1.8} />
+            ) : isUrl ? (
+              <Globe size={18} strokeWidth={1.8} />
+            ) : (
+              <Search size={18} strokeWidth={1.8} />
+            )}
           </span>
           <input
             ref={inputRef}
             type="text"
             value={value}
-            onChange={e => { setValue(e.target.value); setDropdownOpen(true); setActiveIdx(-1); }}
-            onFocus={() => { if (!isCommandMode && value.trim()) setDropdownOpen(true); }}
+            onChange={(e) => {
+              setValue(e.target.value);
+              setDropdownOpen(true);
+              setActiveIdx(-1);
+            }}
+            onFocus={() => {
+              if (!isCommandMode && value.trim()) setDropdownOpen(true);
+            }}
             onKeyDown={handleKeyDown}
             placeholder={isCommandMode ? 'Type a command…' : 'Search or enter URL…'}
             className="search-bar-input"
@@ -424,7 +443,7 @@ export function SearchOverlay() {
           <div className="search-engine-pill-wrapper">
             <button
               className="search-engine-pill"
-              onClick={() => setEnginePickerOpen(p => !p)}
+              onClick={() => setEnginePickerOpen((p) => !p)}
               type="button"
               aria-expanded={enginePickerOpen}
               aria-label="Choose search engine"
@@ -434,11 +453,11 @@ export function SearchOverlay() {
             </button>
             {enginePickerOpen && (
               <div className="search-engine-popover">
-                {ENGINE_LIST.map(eng => (
+                {ENGINE_LIST.map((eng) => (
                   <button
                     key={eng}
                     className={`search-engine-option${settings.general.searchEngine === eng ? ' active' : ''}`}
-                    onMouseDown={e => {
+                    onMouseDown={(e) => {
                       e.preventDefault();
                       update('general', { searchEngine: eng });
                       setEnginePickerOpen(false);
@@ -455,7 +474,7 @@ export function SearchOverlay() {
           {value && !isCommandMode && (
             <button
               className="search-bar-submit"
-              onClick={() => activeIdx >= 0 ? go(suggestions[activeIdx].text, suggestions[activeIdx]) : go()}
+              onClick={() => (activeIdx >= 0 ? go(suggestions[activeIdx].text, suggestions[activeIdx]) : go())}
               tabIndex={-1}
               type="button"
               aria-label="Go"
@@ -473,16 +492,25 @@ export function SearchOverlay() {
                 className={`search-suggestion${i === activeIdx ? ' active' : ''}${s.kind === 'command' ? ' command' : ''}`}
                 onMouseEnter={() => setActiveIdx(i)}
                 onMouseLeave={() => setActiveIdx(-1)}
-                onMouseDown={e => { e.preventDefault(); go(s.text, s); }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  go(s.text, s);
+                }}
                 type="button"
               >
                 <span className="suggestion-icon">
                   {s.kind === 'command' ? (
-                    s.Icon ? <s.Icon size={15} strokeWidth={1.8} /> : <Terminal size={15} strokeWidth={1.8} />
+                    s.Icon ? (
+                      <s.Icon size={15} strokeWidth={1.8} />
+                    ) : (
+                      <Terminal size={15} strokeWidth={1.8} />
+                    )
                   ) : s.kind === 'tab' ? (
-                    s.favicon
-                      ? <img src={s.favicon} className="suggestion-favicon" alt="" loading="lazy" />
-                      : <LayoutGrid size={15} strokeWidth={1.8} />
+                    s.favicon ? (
+                      <img src={s.favicon} className="suggestion-favicon" alt="" loading="lazy" />
+                    ) : (
+                      <LayoutGrid size={15} strokeWidth={1.8} />
+                    )
                   ) : s.kind === 'history' ? (
                     <Clock size={15} strokeWidth={1.8} />
                   ) : (

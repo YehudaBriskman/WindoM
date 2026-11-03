@@ -8,7 +8,10 @@ describe('mergeWithDefaults', () => {
   });
 
   it('keeps fields added to a section after the user last saved it', () => {
-    const merged = mergeWithDefaults({ ...defaultSettings, general: { userName: 'Ada' } } as unknown as Record<string, unknown>);
+    const merged = mergeWithDefaults({ ...defaultSettings, general: { userName: 'Ada' } } as unknown as Record<
+      string,
+      unknown
+    >);
     expect(merged.general.userName).toBe('Ada');
     expect(merged.general.searchEngine).toBe('google');
     expect(merged.general.searchEngine).toBe(defaultSettings.general.searchEngine);

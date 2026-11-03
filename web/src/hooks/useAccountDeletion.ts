@@ -53,9 +53,14 @@ export function useAccountDeletion() {
   }
 
   return {
-    confirming, openConfirm, cancel,
-    needsPassword, password, setPassword,
-    deleting, error,
+    confirming,
+    openConfirm,
+    cancel,
+    needsPassword,
+    password,
+    setPassword,
+    deleting,
+    error,
     canSubmit: !deleting && !(needsPassword && password.length === 0),
     deleteAccount,
   };

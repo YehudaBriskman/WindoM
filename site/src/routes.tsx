@@ -15,7 +15,6 @@ import { Support as SupportHe } from './pages/he/Support';
 import { Contact as ContactHe } from './pages/he/Contact';
 import { LocalSetup as LocalSetupHe } from './pages/he/LocalSetup';
 
-
 /**
  * The site, described once.
  *
@@ -137,8 +136,7 @@ export const ROUTES: SiteRoute[] = [
     element: <Terms />,
     locale: 'en',
     title: 'Terms of Use',
-    description:
-      'The terms governing use of the WindoM hosted service and the published Chrome extension.',
+    description: 'The terms governing use of the WindoM hosted service and the published Chrome extension.',
     twinOf: '/terms',
   },
 
@@ -150,8 +148,7 @@ export const ROUTES: SiteRoute[] = [
     element: <InstallHe />,
     locale: 'he',
     title: 'התקנה',
-    description:
-      'התקנת WindoM מחנות האינטרנט של Chrome, מה עובד מיד בלי חשבון, ואיפה נמצא כל דבר.',
+    description: 'התקנת WindoM מחנות האינטרנט של Chrome, מה עובד מיד בלי חשבון, ואיפה נמצא כל דבר.',
     twinOf: '/install',
   },
   {

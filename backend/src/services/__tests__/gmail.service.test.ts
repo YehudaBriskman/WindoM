@@ -62,9 +62,13 @@ describe('getGmailSummary', () => {
   ] as const)('maps Gmail HTTP %s to %s', async (status, error) => {
     dbReturns(account());
     mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
-    vi.stubGlobal('fetch', vi.fn()
-      .mockResolvedValueOnce(response(status))
-      .mockResolvedValueOnce(response(200, { messages: [] })));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(response(status))
+        .mockResolvedValueOnce(response(200, { messages: [] })),
+    );
     await expect(getGmailSummary('user-1')).resolves.toEqual({ ok: false, error });
   });
 
@@ -79,19 +83,27 @@ describe('getGmailSummary', () => {
   it('normalizes headers and defaults missing message fields', async () => {
     dbReturns(account());
     mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
-    vi.stubGlobal('fetch', vi.fn()
-      .mockResolvedValueOnce(response(200, { messagesUnread: 7 }))
-      .mockResolvedValueOnce(response(200, { messages: [{ id: 'message-1' }, { id: 'message-2' }] }))
-      .mockResolvedValueOnce(response(200, {
-        id: 'message-1',
-        snippet: 'Preview',
-        payload: { headers: [
-          { name: 'from', value: 'Alice Example <alice@example.com>' },
-          { name: 'SUBJECT', value: 'Hello' },
-          { name: 'Date', value: 'Thu, 16 Oct 2026 10:00:00 GMT' },
-        ] },
-      }))
-      .mockResolvedValueOnce(response(200, { id: 'message-2' })));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(response(200, { messagesUnread: 7 }))
+        .mockResolvedValueOnce(response(200, { messages: [{ id: 'message-1' }, { id: 'message-2' }] }))
+        .mockResolvedValueOnce(
+          response(200, {
+            id: 'message-1',
+            snippet: 'Preview',
+            payload: {
+              headers: [
+                { name: 'from', value: 'Alice Example <alice@example.com>' },
+                { name: 'SUBJECT', value: 'Hello' },
+                { name: 'Date', value: 'Thu, 16 Oct 2026 10:00:00 GMT' },
+              ],
+            },
+          }),
+        )
+        .mockResolvedValueOnce(response(200, { id: 'message-2' })),
+    );
 
     await expect(getGmailSummary('user-1')).resolves.toEqual({
       ok: true,
@@ -114,11 +126,15 @@ describe('getGmailSummary', () => {
   it('keeps successful messages when another metadata request fails', async () => {
     dbReturns(account());
     mockGetToken.mockResolvedValue({ ok: true, data: 'access-token' });
-    vi.stubGlobal('fetch', vi.fn()
-      .mockResolvedValueOnce(response(200, { messagesUnread: 2 }))
-      .mockResolvedValueOnce(response(200, { messages: [{ id: 'good' }, { id: 'failed' }] }))
-      .mockResolvedValueOnce(response(200, { id: 'good', payload: { headers: [] } }))
-      .mockRejectedValueOnce(new Error('metadata network failure')));
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(response(200, { messagesUnread: 2 }))
+        .mockResolvedValueOnce(response(200, { messages: [{ id: 'good' }, { id: 'failed' }] }))
+        .mockResolvedValueOnce(response(200, { id: 'good', payload: { headers: [] } }))
+        .mockRejectedValueOnce(new Error('metadata network failure')),
+    );
 
     const result = await getGmailSummary('user-1');
     expect(result.ok && result.data.messages.map((message) => message.id)).toEqual(['good']);

@@ -3,9 +3,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DockBar } from './DockBar';
 
 const { addLink } = vi.hoisted(() => ({ addLink: vi.fn() }));
-vi.mock('../../contexts/SettingsContext', () => ({ useSettings: () => ({ settings: { widgets: { showLinks: true } } }) }));
+vi.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => ({ settings: { widgets: { showLinks: true } } }),
+}));
 vi.mock('../../hooks/useLinks', () => ({
-  useLinks: () => ({ links: [{ name: 'Example', url: 'https://example.com', icon: '' }], addLink, removeLink: vi.fn() }),
+  useLinks: () => ({
+    links: [{ name: 'Example', url: 'https://example.com', icon: '' }],
+    addLink,
+    removeLink: vi.fn(),
+  }),
 }));
 beforeEach(() => vi.clearAllMocks());
 
@@ -15,12 +21,15 @@ describe('DockBar URL entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add' }));
   }
 
-  it.each(['javascript:alert(1)', 'data:text/html,test', 'file:///tmp/test', 'ftp://example.com', 'https://'])('rejects unsupported destination %s', (url) => {
-    render(<DockBar />);
-    submit(url);
-    expect(screen.getByRole('alert').textContent).toContain('HTTP or HTTPS');
-    expect(addLink).not.toHaveBeenCalled();
-  });
+  it.each(['javascript:alert(1)', 'data:text/html,test', 'file:///tmp/test', 'ftp://example.com', 'https://'])(
+    'rejects unsupported destination %s',
+    (url) => {
+      render(<DockBar />);
+      submit(url);
+      expect(screen.getByRole('alert').textContent).toContain('HTTP or HTTPS');
+      expect(addLink).not.toHaveBeenCalled();
+    },
+  );
 
   it('normalizes a bare hostname before deriving the default name', () => {
     render(<DockBar />);

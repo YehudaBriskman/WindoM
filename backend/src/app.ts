@@ -117,9 +117,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
         formAction: ["'self'"],
       },
     },
-    hsts: config.isProd
-      ? { maxAge: 31_536_000, includeSubDomains: true, preload: true }
-      : false,
+    hsts: config.isProd ? { maxAge: 31_536_000, includeSubDomains: true, preload: true } : false,
     crossOriginResourcePolicy: { policy: 'cross-origin' }, // allow extension to fetch the API
   });
 
@@ -182,11 +180,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
     void reply.status(statusCode).send({
       statusCode,
       error: isClientError ? error.name : 'Internal Server Error',
-      message: !config.isProd
-        ? error.message
-        : isClientError
-        ? 'Invalid request'
-        : 'An unexpected error occurred',
+      message: !config.isProd ? error.message : isClientError ? 'Invalid request' : 'An unexpected error occurred',
     });
   });
 

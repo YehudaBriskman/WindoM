@@ -39,12 +39,9 @@ describe('SMTP environment schema', () => {
   // Resend authenticates with the literal username "resend" and Brevo with a numeric
   // login. Requiring an email address here would reject valid credentials at startup,
   // which is exactly the kind of failure that only shows up mid-migration.
-  it.each(['resend', '901f3a', 'apikey', 'postmaster@windom.app'])(
-    'accepts the non-email SMTP username %s',
-    (user) => {
-      expect(envSchema.parse(baseEnv({ SMTP_USER: user })).SMTP_USER).toBe(user);
-    },
-  );
+  it.each(['resend', '901f3a', 'apikey', 'postmaster@windom.app'])('accepts the non-email SMTP username %s', (user) => {
+    expect(envSchema.parse(baseEnv({ SMTP_USER: user })).SMTP_USER).toBe(user);
+  });
 
   it('rejects a blank username rather than treating it as configured', () => {
     expect(() => envSchema.parse(baseEnv({ SMTP_USER: '' }))).toThrow();
@@ -66,9 +63,12 @@ describe('SMTP transport wiring', () => {
   });
 
   /** Imports email.ts against a stubbed config and returns the transport options used. */
-  async function transportOptionsFor(
-    smtp: { SMTP_HOST?: string; SMTP_PORT?: number; SMTP_USER?: string; SMTP_PASS?: string },
-  ): Promise<Record<string, unknown> | undefined> {
+  async function transportOptionsFor(smtp: {
+    SMTP_HOST?: string;
+    SMTP_PORT?: number;
+    SMTP_USER?: string;
+    SMTP_PASS?: string;
+  }): Promise<Record<string, unknown> | undefined> {
     const createTransport = vi.fn().mockReturnValue({ sendMail: vi.fn() });
     vi.doMock('nodemailer', () => ({ default: { createTransport } }));
     vi.doMock('../../config.js', () => ({
@@ -98,7 +98,10 @@ describe('SMTP transport wiring', () => {
   // Brevo's relay is 587-only, so the wrong flag would surface only after switching.
   it('negotiates STARTTLS on port 587 and still demands encryption', async () => {
     const opts = await transportOptionsFor({
-      SMTP_HOST: 'smtp-relay.brevo.com', SMTP_PORT: 587, SMTP_USER: 'u', SMTP_PASS: 'p',
+      SMTP_HOST: 'smtp-relay.brevo.com',
+      SMTP_PORT: 587,
+      SMTP_USER: 'u',
+      SMTP_PASS: 'p',
     });
     expect(opts).toMatchObject({
       host: 'smtp-relay.brevo.com',
@@ -110,7 +113,9 @@ describe('SMTP transport wiring', () => {
 
   it('passes the configured credentials through unchanged', async () => {
     const opts = await transportOptionsFor({
-      SMTP_HOST: 'smtp.resend.com', SMTP_USER: 'resend', SMTP_PASS: 're_secret',
+      SMTP_HOST: 'smtp.resend.com',
+      SMTP_USER: 'resend',
+      SMTP_PASS: 're_secret',
     });
     expect(opts?.['auth']).toEqual({ user: 'resend', pass: 're_secret' });
   });

@@ -136,7 +136,10 @@ export async function clearDirty(sent: DirtyMap): Promise<void> {
   const dirty = await getDirty();
   let changed = false;
   for (const [s, stamp] of Object.entries(sent)) {
-    if (dirty[s] === stamp) { delete dirty[s]; changed = true; }
+    if (dirty[s] === stamp) {
+      delete dirty[s];
+      changed = true;
+    }
   }
   if (changed) await localStore.set(DIRTY_KEY, dirty);
 }

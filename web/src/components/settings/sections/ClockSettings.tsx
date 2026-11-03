@@ -11,9 +11,7 @@ export function ClockSettings() {
     <div>
       {/* FORMAT */}
       <div className="settings-group">
-        <label className="settings-section-heading settings-label">
-          Format
-        </label>
+        <label className="settings-section-heading settings-label">Format</label>
 
         <label className="settings-label">Time Format</label>
         <div className="segmented-control" style={{ marginBottom: 16 }}>
@@ -40,7 +38,9 @@ export function ClockSettings() {
                 checked={settings.clock.showSeconds ?? false}
                 onChange={(e) => update('clock', { showSeconds: e.target.checked })}
               />
-              <span className="toggle-track"><span className="toggle-knob" /></span>
+              <span className="toggle-track">
+                <span className="toggle-knob" />
+              </span>
             </label>
           </label>
           {settings.clock.timeFormat === '12h' && (
@@ -52,7 +52,9 @@ export function ClockSettings() {
                   checked={settings.clock.leadingZero ?? false}
                   onChange={(e) => update('clock', { leadingZero: e.target.checked })}
                 />
-                <span className="toggle-track"><span className="toggle-knob" /></span>
+                <span className="toggle-track">
+                  <span className="toggle-knob" />
+                </span>
               </label>
             </label>
           )}
@@ -61,9 +63,7 @@ export function ClockSettings() {
 
       {/* APPEARANCE */}
       <div className="settings-group">
-        <label className="settings-section-heading settings-label">
-          Appearance
-        </label>
+        <label className="settings-section-heading settings-label">Appearance</label>
 
         <label className="settings-label">Style</label>
         <div className="segmented-control" style={{ marginBottom: 16 }}>
@@ -88,9 +88,7 @@ export function ClockSettings() {
           />
         </div>
 
-        <label className="settings-label">
-          Size - {settings.clock.size ?? 120}px
-        </label>
+        <label className="settings-label">Size - {settings.clock.size ?? 120}px</label>
         <input
           type="range"
           min={60}
@@ -118,9 +116,7 @@ export function ClockSettings() {
 
       {/* DATE */}
       <div className="settings-group">
-        <label className="settings-section-heading settings-label">
-          Date
-        </label>
+        <label className="settings-section-heading settings-label">Date</label>
 
         <div className="visibility-table">
           <label className="visibility-row">
@@ -131,7 +127,9 @@ export function ClockSettings() {
                 checked={settings.clock.showDate ?? false}
                 onChange={(e) => update('clock', { showDate: e.target.checked })}
               />
-              <span className="toggle-track"><span className="toggle-knob" /></span>
+              <span className="toggle-track">
+                <span className="toggle-knob" />
+              </span>
             </label>
           </label>
         </div>

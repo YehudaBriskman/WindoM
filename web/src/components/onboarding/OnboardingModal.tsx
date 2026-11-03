@@ -25,17 +25,20 @@ const STEPS: Step[] = [
   {
     icon: <Timer size={36} />,
     title: 'Stay focused',
-    description: 'Use the Focus timer to set an intention and block distractions. Click the focus area in the center of your tab.',
+    description:
+      'Use the Focus timer to set an intention and block distractions. Click the focus area in the center of your tab.',
   },
   {
     icon: <Music size={36} />,
     title: 'Connect Spotify',
-    description: 'WindoM uses your own free Spotify Developer app - no shared limits. Create one at developer.spotify.com, add your redirect URI from Settings → Spotify, paste your Client ID, and hit connect. Full steps are in the ? guide.',
+    description:
+      'WindoM uses your own free Spotify Developer app - no shared limits. Create one at developer.spotify.com, add your redirect URI from Settings → Spotify, paste your Client ID, and hit connect. Full steps are in the ? guide.',
   },
   {
     icon: <Calendar size={36} />,
     title: 'Connect Google Calendar',
-    description: 'Create a free WindoM account (Settings → Account), then click "Connect Google Calendar". Your upcoming events will appear in the right sidebar.',
+    description:
+      'Create a free WindoM account (Settings → Account), then click "Connect Google Calendar". Your upcoming events will appear in the right sidebar.',
   },
 ];
 
@@ -88,8 +91,12 @@ export function OnboardingModal({ onComplete }: Props): React.ReactElement {
             </button>
           )}
           <button className="onboarding-btn-next" onClick={next}>
-            {isLast ? 'Get started' : (
-              <>Next <ArrowRight size={14} /></>
+            {isLast ? (
+              'Get started'
+            ) : (
+              <>
+                Next <ArrowRight size={14} />
+              </>
             )}
           </button>
         </div>

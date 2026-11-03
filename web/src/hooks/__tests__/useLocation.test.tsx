@@ -32,7 +32,9 @@ beforeEach(() => {
     configurable: true,
     value: {
       query: vi.fn(async () => ({
-        get state() { return permissionState; },
+        get state() {
+          return permissionState;
+        },
         addEventListener: (_: string, l: () => void) => changeListeners.add(l),
         removeEventListener: (_: string, l: () => void) => changeListeners.delete(l),
       })),
@@ -46,10 +48,12 @@ afterEach(() => {
 
 const succeed = () =>
   getCurrentPosition.mockImplementation((ok: PositionCallback) =>
-    ok({ coords: { latitude: 32.08, longitude: 34.78 } } as GeolocationPosition));
+    ok({ coords: { latitude: 32.08, longitude: 34.78 } } as GeolocationPosition),
+  );
 const fail = (code: number) =>
   getCurrentPosition.mockImplementation((_ok: PositionCallback, err: PositionErrorCallback) =>
-    err({ code } as GeolocationPositionError));
+    err({ code } as GeolocationPositionError),
+  );
 
 describe('useLocation().getLocation (the passive path a new tab runs)', () => {
   it.each<PermissionState>(['prompt', 'denied'])('never asks the browser when permission is %s', async (state) => {

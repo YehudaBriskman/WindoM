@@ -12,6 +12,17 @@ Thanks for your interest in contributing. Here is everything you need to know.
 
 Follow the [Local Setup Guide](https://windom.app/local-setup.html) to get the project running on your machine.
 
+Then, once per clone:
+
+```bash
+npm install                                            # at the repo root: installs the pre-commit hook
+git config blame.ignoreRevsFile .git-blame-ignore-revs # git blame skips mass-reformat commits
+```
+
+The root `package.json` holds only the git hook tooling (husky and lint-staged). `backend/`, `web/` and `site/` still install separately, each with `npm install` in its own directory, and the hook uses each one's own ESLint and Prettier - so install the workspaces you commit to.
+
+The pre-commit hook runs `eslint --fix` and `prettier --write` on the staged files under `backend/src`, `web/src` and `site/src` only, and re-stages the fixes. It does not type-check or run tests. A lint error it cannot fix stops the commit. In an emergency, `git commit --no-verify` skips it; CI runs the same checks anyway.
+
 ## Making changes
 
 1. Fork the repository and create a branch from `main`.
@@ -33,7 +44,7 @@ site/       windom.app - Vite + React, deployed to GitHub Pages by workflow
 ## Code style
 
 - TypeScript everywhere - no implicit `any`.
-- Follow the existing patterns in each package. Both ship ESLint and Prettier: run `npm run lint` and `npm run format` in `web/` or `backend/`.
+- Follow the existing patterns in each package. All three ship ESLint and Prettier with one shared Prettier style: run `npm run lint` and `npm run format` in `backend/`, `web/` or `site/`. CI fails on `npm run format:check`.
 - For the extension, keep new components in `web/src/components/` and new hooks in `web/src/hooks/`.
 - For CSS, use the existing classes from `globals.css`. Do not add Tailwind utility classes for backgrounds, borders, or shadows.
 

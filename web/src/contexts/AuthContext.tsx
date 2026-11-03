@@ -1,5 +1,14 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, purgeLegacyRefreshToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
+import {
+  apiGet,
+  apiPost,
+  getAccessToken,
+  setAccessToken,
+  clearAccessToken,
+  purgeLegacyRefreshToken,
+  refreshAccessToken,
+  setLogoutCallback,
+} from '../lib/api';
 import { createLogger } from '../lib/logger';
 
 const log = createLogger('auth');
@@ -114,9 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             const me = await Promise.race([
               apiGet<User>('/me'),
-              new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('me_timeout')), ME_TIMEOUT_MS)
-              ),
+              new Promise<never>((_, reject) => setTimeout(() => reject(new Error('me_timeout')), ME_TIMEOUT_MS)),
             ]);
             setUser(me);
             initLog.debug('User loaded:', me.email ?? me.name);
@@ -162,7 +169,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, accessToken, authLoading: loading, sessionExpired, sessionLimitReached, login, loginWithToken, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        accessToken,
+        authLoading: loading,
+        sessionExpired,
+        sessionLimitReached,
+        login,
+        loginWithToken,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

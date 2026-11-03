@@ -106,10 +106,7 @@ export async function revokeSession(id: string): Promise<void> {
 
 /** Revoke every active session for a user (used on token reuse detection). */
 export async function revokeAllUserSessions(userId: string): Promise<void> {
-  await db
-    .update(refreshSessions)
-    .set({ revokedAt: new Date() })
-    .where(eq(refreshSessions.userId, userId));
+  await db.update(refreshSessions).set({ revokedAt: new Date() }).where(eq(refreshSessions.userId, userId));
 }
 
 /**
@@ -127,11 +124,13 @@ export async function listActiveSessions(userId: string, currentSessionId?: stri
       renewalCount: refreshSessions.renewalCount,
     })
     .from(refreshSessions)
-    .where(and(
-      eq(refreshSessions.userId, userId),
-      isNull(refreshSessions.revokedAt),
-      gt(refreshSessions.expiresAt, new Date()),
-    ));
+    .where(
+      and(
+        eq(refreshSessions.userId, userId),
+        isNull(refreshSessions.revokedAt),
+        gt(refreshSessions.expiresAt, new Date()),
+      ),
+    );
 
   return rows
     .map((row) => ({
@@ -153,12 +152,14 @@ export async function revokeOtherSessions(userId: string, currentSessionId: stri
   const revoked = await db
     .update(refreshSessions)
     .set({ revokedAt: new Date() })
-    .where(and(
-      eq(refreshSessions.userId, userId),
-      ne(refreshSessions.id, currentSessionId),
-      isNull(refreshSessions.revokedAt),
-      gt(refreshSessions.expiresAt, new Date()),
-    ))
+    .where(
+      and(
+        eq(refreshSessions.userId, userId),
+        ne(refreshSessions.id, currentSessionId),
+        isNull(refreshSessions.revokedAt),
+        gt(refreshSessions.expiresAt, new Date()),
+      ),
+    )
     .returning({ id: refreshSessions.id });
   return revoked.length;
 }
@@ -168,24 +169,22 @@ export async function revokeOwnedSession(userId: string, sessionId: string): Pro
   const revoked = await db
     .update(refreshSessions)
     .set({ revokedAt: new Date() })
-    .where(and(
-      eq(refreshSessions.id, sessionId),
-      eq(refreshSessions.userId, userId),
-      isNull(refreshSessions.revokedAt),
-      gt(refreshSessions.expiresAt, new Date()),
-    ))
+    .where(
+      and(
+        eq(refreshSessions.id, sessionId),
+        eq(refreshSessions.userId, userId),
+        isNull(refreshSessions.revokedAt),
+        gt(refreshSessions.expiresAt, new Date()),
+      ),
+    )
     .returning({ id: refreshSessions.id });
   return revoked.length > 0;
 }
 
-export type SessionRotationError =
-  | 'SESSION_NOT_FOUND'
-  | 'SESSION_LIMIT_REACHED'
-  | 'TOKEN_REUSE_DETECTED';
+export type SessionRotationError = 'SESSION_NOT_FOUND' | 'SESSION_LIMIT_REACHED' | 'TOKEN_REUSE_DETECTED';
 
 export type SessionRotationResult =
-  | { ok: true; rawRefreshToken: string; sessionId: string }
-  | { ok: false; error: SessionRotationError };
+  { ok: true; rawRefreshToken: string; sessionId: string } | { ok: false; error: SessionRotationError };
 
 /**
  * Atomically revoke one refresh session and create its replacement.
@@ -225,10 +224,7 @@ export async function rotateSessionAtomically(
     }
 
     if (isRenewalCapReached(session.renewalCount)) {
-      await tx
-        .update(refreshSessions)
-        .set({ revokedAt: new Date() })
-        .where(eq(refreshSessions.id, session.id));
+      await tx.update(refreshSessions).set({ revokedAt: new Date() }).where(eq(refreshSessions.id, session.id));
       return { ok: false, error: 'SESSION_LIMIT_REACHED' };
     }
 
@@ -239,17 +235,11 @@ export async function rotateSessionAtomically(
       .limit(1);
 
     if (child) {
-      await tx
-        .update(refreshSessions)
-        .set({ revokedAt: new Date() })
-        .where(eq(refreshSessions.userId, userId));
+      await tx.update(refreshSessions).set({ revokedAt: new Date() }).where(eq(refreshSessions.userId, userId));
       return { ok: false, error: 'TOKEN_REUSE_DETECTED' };
     }
 
-    await tx
-      .update(refreshSessions)
-      .set({ revokedAt: new Date() })
-      .where(eq(refreshSessions.id, session.id));
+    await tx.update(refreshSessions).set({ revokedAt: new Date() }).where(eq(refreshSessions.id, session.id));
 
     await tx.insert(refreshSessions).values({
       id: newSessionId,

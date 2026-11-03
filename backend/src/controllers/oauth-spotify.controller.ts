@@ -41,7 +41,8 @@ async function handleSpotifyCodeExchange(
   if (conflict === 'other_user') {
     void reply.status(409).send({
       error: 'SPOTIFY_ACCOUNT_TAKEN',
-      message: 'This Spotify account is already linked to a different WindoM account. Please log into your own Spotify account in the browser and try again.',
+      message:
+        'This Spotify account is already linked to a different WindoM account. Please log into your own Spotify account in the browser and try again.',
     });
     return;
   }
@@ -61,7 +62,13 @@ async function handleSpotifyCodeExchange(
 
 export async function startSpotifyOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const query = req.query as { redirectUri?: string };
-  const body = (req.body as { clientId?: string; codeChallenge?: string; codeChallengeMethod?: string; redirectUri?: string } | null) ?? {};
+  const body =
+    (req.body as {
+      clientId?: string;
+      codeChallenge?: string;
+      codeChallengeMethod?: string;
+      redirectUri?: string;
+    } | null) ?? {};
 
   const effectiveUri = body.redirectUri ?? query.redirectUri ?? config.SPOTIFY_REDIRECT_URI ?? '';
   const pkceClientId = body.clientId;
@@ -76,7 +83,10 @@ export async function startSpotifyOAuthController(req: FastifyRequest, reply: Fa
   // For PKCE (BYOA) flows, the redirect URI is the user's own extension URL - skip shared-URI validation.
   // For legacy shared-app flows, validate against the configured server redirect URI.
   if (!pkceClientId && !isAllowedRedirectUri(effectiveUri, config.SPOTIFY_REDIRECT_URI)) {
-    void reply.status(400).send({ error: 'Redirect URI not allowed', message: 'This extension ID is not registered for Spotify. Contact support.' });
+    void reply.status(400).send({
+      error: 'Redirect URI not allowed',
+      message: 'This extension ID is not registered for Spotify. Contact support.',
+    });
     return;
   }
 
@@ -120,7 +130,14 @@ export async function exchangeSpotifyOAuthController(req: FastifyRequest, reply:
   }
 
   const pkceClientId = stateResult.data.clientId ?? undefined;
-  await handleSpotifyCodeExchange(stateResult.data.userId, parsed.data.code, parsed.data.redirectUri, reply, parsed.data.codeVerifier, pkceClientId);
+  await handleSpotifyCodeExchange(
+    stateResult.data.userId,
+    parsed.data.code,
+    parsed.data.redirectUri,
+    reply,
+    parsed.data.codeVerifier,
+    pkceClientId,
+  );
 }
 
 export async function callbackSpotifyOAuthController(req: FastifyRequest, reply: FastifyReply): Promise<void> {

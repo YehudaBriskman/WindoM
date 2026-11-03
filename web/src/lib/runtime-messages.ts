@@ -9,8 +9,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export function isOwnExtensionSender(sender: chrome.runtime.MessageSender): boolean {
-  return typeof chrome.runtime.id === 'string' && chrome.runtime.id.length > 0
-    && sender.id === chrome.runtime.id;
+  return typeof chrome.runtime.id === 'string' && chrome.runtime.id.length > 0 && sender.id === chrome.runtime.id;
 }
 
 /** Reconstruct commands so untrusted payload fields never select target tabs. */
@@ -23,8 +22,7 @@ export function parseTabCommand(value: unknown): TabCommand | null {
     case 'WINDOM_CMD_PIN_TAB':
       return { type: value.type };
     case 'WINDOM_CMD_OPEN_URL':
-      return typeof value.url === 'string' && isValidUrl(value.url)
-        ? { type: value.type, url: value.url } : null;
+      return typeof value.url === 'string' && isValidUrl(value.url) ? { type: value.type, url: value.url } : null;
     default:
       return null;
   }
@@ -38,13 +36,19 @@ export function isTabId(value: unknown): value is number {
 
 /** Validate only fields consumed by the sidebar, including persisted snapshots. */
 export function isTabSnapshotList(value: unknown): value is TabSnapshot[] {
-  return Array.isArray(value) && value.every((tab: unknown) =>
-    isRecord(tab) && isTabId(tab.id) && isTabId(tab.windowId) && typeof tab.active === 'boolean'
-    && ['title', 'url', 'favIconUrl'].every((key) => tab[key] === undefined || typeof tab[key] === 'string'),
+  return (
+    Array.isArray(value) &&
+    value.every(
+      (tab: unknown) =>
+        isRecord(tab) &&
+        isTabId(tab.id) &&
+        isTabId(tab.windowId) &&
+        typeof tab.active === 'boolean' &&
+        ['title', 'url', 'favIconUrl'].every((key) => tab[key] === undefined || typeof tab[key] === 'string'),
+    )
   );
 }
 
 export function parseTabsChanged(value: unknown): TabSnapshot[] | null {
-  return isRecord(value) && value.type === 'WINDOM_TABS_CHANGED' && isTabSnapshotList(value.tabs)
-    ? value.tabs : null;
+  return isRecord(value) && value.type === 'WINDOM_TABS_CHANGED' && isTabSnapshotList(value.tabs) ? value.tabs : null;
 }
