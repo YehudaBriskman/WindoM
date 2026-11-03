@@ -361,6 +361,21 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
     view-transition-name: ambient;
   }
 
+  /* The group, too. Silencing the old and new snapshots was not enough: the
+     group around them still ran the default 250ms morph of position, width
+     and height from the old page's box to the new one, so the rail - a
+     different length on every page - visibly stretched, and both panels slid
+     when the old one was stuck and the new one was not. With no group
+     animation each frame element is simply at its new place from the first
+     frame of the transition. */
+  ::view-transition-group(docs-nav),
+  ::view-transition-group(docs-rail),
+  ::view-transition-group(docs-bar),
+  ::view-transition-group(site-nav),
+  ::view-transition-group(ambient) {
+    animation: none;
+  }
+
   ::view-transition-old(docs-nav),
   ::view-transition-old(docs-rail),
   ::view-transition-old(docs-bar),
