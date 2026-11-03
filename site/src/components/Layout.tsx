@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
+import { STORE_URL, GITHUB_URL, CONTACT_EMAIL, AUTHOR } from '../lib/site';
 import { SiteNav } from './SiteNav';
 
 interface LayoutProps {
@@ -79,7 +79,8 @@ export function Layout({
             <a href={GITHUB_URL}>GitHub</a>
           </nav>
           <p>
-            MIT License © {new Date().getFullYear()} Yehuda Briskman &nbsp;·&nbsp;{' '}
+            MIT License © {new Date().getFullYear()}{' '}
+            <a href={AUTHOR.url} rel="author">{AUTHOR.name}</a> &nbsp;·&nbsp;{' '}
             <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </p>
         </div>

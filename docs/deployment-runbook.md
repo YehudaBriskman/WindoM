@@ -114,11 +114,13 @@ Deleting an account (`Settings > Account > Delete account`) removes the user's
 database rows immediately. It cannot remove log lines already written: request
 logs carry the user's IP address, and some service logs carry their user id.
 Nothing in the repo deletes individual log lines from Fly; they expire with the
-retention window. Two things for the owner to decide:
+retention window.
 
-- The privacy policy (`site/src/pages/Privacy.tsx`) says all data is deleted
-  "permanently and immediately". Logs (up to the Fly window) and the pre-deploy
-  Postgres backups (retention set on the Fly Postgres app, not in this repo) are
-  not. Either state those windows in the policy or change what is kept.
+- **Decided 2026-11-03:** the privacy policy (en and he) says account data is
+  deleted from the database immediately, and copies in server logs and database
+  backups expire within **30 days**. That promise holds only while Fly log search
+  stays at 7 days and the Postgres backup retention (set on the Fly Postgres app,
+  not in this repo) stays at 30 days or less. Changing either means changing the
+  policy first.
 - If an erasure request must cover logs inside the window, Fly support is the
   only route the repo knows of.

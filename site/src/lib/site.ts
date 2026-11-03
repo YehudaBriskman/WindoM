@@ -21,6 +21,22 @@ export const ISSUES_URL = `${GITHUB_URL}/issues`;
 export const CONTACT_EMAIL = 'yehudabriskman@windom.app';
 
 /**
+ * The author, as one entity across both sites. yehudabriskman.com is the home of
+ * the Person record; windom.app points at it by the same `@id`, so search
+ * engines merge the two rather than seeing two people. The alternate names are
+ * the spellings people actually search for - the Hebrew name included, since a
+ * Hebrew query is matched against Hebrew text, not a transliteration.
+ */
+export const AUTHOR = {
+  id: 'https://yehudabriskman.com/#person',
+  url: 'https://yehudabriskman.com',
+  name: 'Yehuda Briskman',
+  nameHe: 'יהודה בריסקמן',
+  alternateName: ['יהודה בריסקמן', 'yehuda.br', 'YehudaBriskman', 'Yehuda B.'],
+  sameAs: ['https://github.com/YehudaBriskman', 'https://yehudabriskman.com'],
+} as const;
+
+/**
  * The lowest Node the build runs on, quoted by both Local Setup pages so the
  * English and Hebrew copies cannot disagree. It tracks the `engines.node`
  * field in `web/package.json`, `backend/package.json` and `site/package.json`,
