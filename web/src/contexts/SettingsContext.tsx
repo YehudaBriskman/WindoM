@@ -68,8 +68,14 @@ interface SettingsContextValue {
   settings: Settings;
   loaded: boolean;
   get: <S extends keyof Settings>(section: S) => Settings[S];
-  update: <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => Promise<void>;
-  updateMultiple: (patches: Partial<Settings>) => Promise<void>;
+  /**
+   * Resolves `true` once the write reached chrome.storage, `false` when it did
+   * not (quota exceeded, storage unavailable). The in-memory state is updated
+   * either way, so a `false` means "shown but not persisted".
+   */
+  update: <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => Promise<boolean>;
+  /** Same contract as `update`: `false` when the storage write failed. */
+  updateMultiple: (patches: Partial<Settings>) => Promise<boolean>;
   reset: () => Promise<void>;
 }
 
@@ -302,13 +308,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   );
 
   const update = useCallback(
-    async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => {
+    async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>): Promise<boolean> => {
       // Focus is device-local - store in chrome.storage.local only, never sync or backend
       if (section === 'focus') {
         const next = { ...(settingsRef.current.focus as object), ...(patch as object) } as Settings['focus'];
         setSettings(prev => ({ ...prev, focus: next }));
-        await localStore.set('windom_focus', next);
-        return;
+        return localStore.set('windom_focus', next);
       }
 
       keyTimestampsRef.current[section as string] = Date.now();
@@ -322,19 +327,20 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       debouncedPush({ [section]: mergedSection } as Partial<Settings>);
 
-      await Promise.all([
+      const [saved] = await Promise.all([
         syncStorage.setMultiple({
           [section]: mergedSection,
           [KEY_TIMESTAMPS_STORAGE_KEY]: { ...keyTimestampsRef.current },
         } as Record<string, unknown>),
         setLocalUpdatedAt(),
       ]);
+      return saved;
     },
     [debouncedPush],
   );
 
   const updateMultiple = useCallback(
-    async (patches: Partial<Settings>) => {
+    async (patches: Partial<Settings>): Promise<boolean> => {
       const now = Date.now();
       for (const k of Object.keys(patches)) keyTimestampsRef.current[k] = now;
 
@@ -365,10 +371,11 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       debouncedPush(patches);
 
-      await Promise.all([
+      const [saved] = await Promise.all([
         syncStorage.setMultiple(storageUpdate),
         setLocalUpdatedAt(),
       ]);
+      return saved;
     },
     [debouncedPush],
   );

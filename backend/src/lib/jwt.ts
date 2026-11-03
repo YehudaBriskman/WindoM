@@ -9,10 +9,14 @@ export interface AccessTokenPayload {
   email: string | null;
   name: string;
   emailVerified: boolean;
+  /** The refresh session this access token was issued with; absent on pre-claim tokens. */
+  sid?: string;
 }
 
 export async function signAccessToken(payload: AccessTokenPayload): Promise<string> {
-  return new SignJWT({ email: payload.email, name: payload.name, emailVerified: payload.emailVerified })
+  const claims: Record<string, unknown> = { email: payload.email, name: payload.name, emailVerified: payload.emailVerified };
+  if (payload.sid) claims['sid'] = payload.sid;
+  return new SignJWT(claims)
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.sub)
     .setIssuedAt()
@@ -33,5 +37,6 @@ export async function verifyAccessToken(token: string): Promise<AccessTokenPaylo
     email: (payload['email'] as string | null) ?? null,
     name: (payload['name'] as string) ?? '',
     emailVerified: (payload['emailVerified'] as boolean) ?? false,
+    ...(typeof payload['sid'] === 'string' ? { sid: payload['sid'] } : {}),
   };
 }

@@ -201,7 +201,8 @@ Measured on main `36ff884` (2026-11-03):
   - `ci.yml`'s site job runs on pull requests only.
   - On main, `deploy-site.yml` builds the site once. It gains `npm audit` and
     the type check, so it checks everything CI did, and uploads that same
-    build to Pages.
+    build to Pages. (Both later gained `npm test`, #376: the site's
+    `node --test` suite runs before the build in each.)
   - Both use one URL list, `site/scripts/verify-dist.sh`, the stronger of the
     two.
 - **Caches and timeouts:** already scoped. Every `setup-node` cache is keyed

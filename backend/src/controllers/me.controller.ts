@@ -3,7 +3,8 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { COOKIE_NAME } from '../types/constants.js';
 import { verifyPassword } from '../lib/password.js';
 import * as meService from '../services/me.service.js';
-import { listActiveSessions, revokeOwnedSession } from '../services/session.service.js';
+import { listActiveSessions, revokeOtherSessions, revokeOwnedSession } from '../services/session.service.js';
+import { buildUserExport } from '../services/export.service.js';
 
 const updateMeSchema = z
   .object({
@@ -89,7 +90,7 @@ export async function deleteAccountController(req: FastifyRequest, reply: Fastif
 }
 
 export async function listSessionsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const sessions = await listActiveSessions(req.user.sub);
+  const sessions = await listActiveSessions(req.user.sub, req.user.sid);
   reply.header('Cache-Control', 'no-store');
   void reply.send({ sessions });
 }
@@ -109,4 +110,34 @@ export async function revokeSessionController(req: FastifyRequest, reply: Fastif
     return;
   }
   void reply.status(204).send();
+}
+
+export async function exportMeController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const data = await buildUserExport(req.user.sub);
+  if (!data.profile) {
+    void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'User not found' });
+    return;
+  }
+  const date = data.exportedAt.slice(0, 10);
+  reply.header('Cache-Control', 'no-store');
+  reply.header('Content-Disposition', `attachment; filename="windom-export-${date}.json"`);
+  void reply.type('application/json; charset=utf-8').send(data);
+}
+
+const revokeOthersQuerySchema = z.object({ others: z.literal('true') });
+
+/** DELETE /me/sessions?others=true - sign out everywhere except the calling session. */
+export async function revokeOtherSessionsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  // Require the explicit flag so a bare DELETE /me/sessions can never mean "everything".
+  if (!revokeOthersQuerySchema.safeParse(req.query).success) {
+    void reply.status(400).send({ statusCode: 400, error: 'Bad Request', message: 'Pass others=true to revoke every other session' });
+    return;
+  }
+  // Tokens issued before the session claim existed cannot say which session to keep.
+  if (!req.user.sid) {
+    void reply.status(409).send({ statusCode: 409, error: 'Conflict', message: 'Current session unknown; sign in again and retry' });
+    return;
+  }
+  const revoked = await revokeOtherSessions(req.user.sub, req.user.sid);
+  void reply.send({ revoked });
 }

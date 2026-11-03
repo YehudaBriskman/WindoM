@@ -15,7 +15,8 @@ const quickLinkSchema = z.object({
   icon: z.string().max(2048).optional(),
 });
 
-const settingsSectionSchema = z.object({
+/** Exported so export-policy.test.ts can check every settings key is classified for GET /me/export. */
+export const settingsSectionSchema = z.object({
   general: z.object({
     userName: z.string().max(50),
     searchEngine: z.enum(['google', 'bing', 'duckduckgo', 'brave']),

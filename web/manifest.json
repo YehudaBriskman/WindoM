@@ -8,8 +8,10 @@
     "storage",
     "unlimitedStorage",
     "tabs",
-    "history",
     "identity"
+  ],
+  "optional_permissions": [
+    "history"
   ],
   "host_permissions": [
     "https://api.unsplash.com/*",

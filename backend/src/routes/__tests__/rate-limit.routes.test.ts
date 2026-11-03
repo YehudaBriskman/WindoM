@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import type { FastifyInstance, LightMyRequestResponse } from 'fastify';
 import { buildApp } from '../../app.js';
 import { closeDb } from '../../test-utils/db.js';
+import { signAccessToken } from '../../lib/jwt.js';
 
 /**
  * Proves the rate limiter enforces (#358). buildTestApp() skips the limiter so counts do
@@ -120,5 +121,18 @@ describe('global limit (100 / minute) on a route with no override', () => {
     const blocked = await health();
     expect(blocked.statusCode).toBe(429);
     expect(blocked.json<{ message: string }>().message).toBe('Rate limit exceeded. Try again in 1 minute.');
+  });
+});
+
+describe('per-route override: GET /me/export (max 5 / 1 hour)', () => {
+  it('lets the first 5 through and rejects the 6th with 429', async () => {
+    // No user row: each allowed call is a cheap 404, which still counts against the limit.
+    const token = await signAccessToken({ sub: '00000000-0000-4000-8000-000000000000', email: 'x@windom.invalid', name: '', emailVerified: true });
+    const send = (): Promise<LightMyRequestResponse> =>
+      app.inject({ method: 'GET', url: '/me/export', headers: { authorization: `Bearer ${token}`, 'fly-client-ip': CLIENT_A } });
+
+    const allowed = await times(5, send);
+    for (const res of allowed) expect(res.statusCode).not.toBe(429);
+    expect((await send()).statusCode).toBe(429);
   });
 });

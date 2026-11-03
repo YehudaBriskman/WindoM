@@ -185,7 +185,7 @@ jobs:
     needs: changes
     if: github.event_name == 'pull_request' && needs.changes.outputs.site == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     defaults:
       run:
@@ -214,8 +214,22 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      # Plain `node --test` over src/**/*.test.ts: Node strips the types itself
+      # (unflagged from 22.18, which setup-node's `22` resolves past), so the
+      # site needs no test runner as a dependency.
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
       - name: Verify every public URL still exists
         run: bash scripts/verify-dist.sh
+
+      # Measured all the way down each page, not just at the top: the day stage
+      # and the beat glows only overhang mid-scroll (#412, #413, #414).
+      - name: Install Chromium for the overflow audit
+        run: npx playwright install --with-deps --only-shell chromium
+
+      - name: No horizontal overflow at any scroll position
+        run: npm run audit:overflow

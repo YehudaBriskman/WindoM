@@ -39,11 +39,12 @@ export function Privacy() {
             <li>Your email address and a bcrypt-hashed password</li>
             <li>Your display name</li>
             <li>Your dashboard settings - synced so preferences are consistent across your devices</li>
-            <li>Active session records (used to manage login sessions and detect unauthorized access)</li>
+            <li>Active session records (used to manage login sessions and detect unauthorized access). For each signed-in session we store the browser and operating system name (for example &ldquo;Chrome &middot; Windows&rdquo;, no versions) so you can recognise it under Active sessions; it is deleted with the session or your account</li>
           </ul>
           <p>
             You can delete your account and all associated server-side data at any time from
             <strong>Settings → Account → Delete account</strong>. All data is deleted permanently and immediately.
+            You can also download a JSON copy of this data, with passwords, tokens and API keys left out, from the authenticated <code>GET /me/export</code> endpoint.
           </p>
           <h2>Google Calendar integration (optional)</h2>
           <p>
@@ -134,7 +135,7 @@ export function Privacy() {
               </tr>
               <tr>
                 <td><code>history</code></td>
-                <td>Read your recent browsing history to display recent sites in the tab sidebar and provide search suggestions. Only the last 7 days are read, deduplicated by hostname, limited to 10 entries. This data never leaves your device.</td>
+                <td>Optional - not requested at install. Chrome asks for it only when you turn on Tab History (Settings → Apps → History), and turning that off gives it back. Read your recent browsing history to display recent sites in the tab sidebar and provide search suggestions on the new tab. For the sidebar, only the last 7 days are read, deduplicated by hostname, limited to 10 entries. This data never leaves your device.</td>
               </tr>
               <tr>
                 <td><code>identity</code></td>
