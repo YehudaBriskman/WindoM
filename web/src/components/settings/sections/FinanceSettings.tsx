@@ -69,7 +69,7 @@ export function FinanceSettings() {
                 onChange={toggleShowStocks}
               />
               <span className="settings-toggle-track" />
-              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', marginLeft: '8px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)', marginLeft: '8px' }}>
                 Show
               </span>
             </label>
@@ -94,7 +94,7 @@ export function FinanceSettings() {
                 onChange={toggleShowCrypto}
               />
               <span className="settings-toggle-track" />
-              <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', marginLeft: '8px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--ink-tertiary)', marginLeft: '8px' }}>
                 Show
               </span>
             </label>
