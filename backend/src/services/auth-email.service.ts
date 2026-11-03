@@ -6,6 +6,8 @@ import { db } from '../db/client.js';
 import { users, emailTokens } from '../db/schema.js';
 import { hashPassword } from '../lib/password.js';
 import { revokeAllUserSessions } from './session.service.js';
+import { recordAudit } from './audit.service.js';
+import type { SessionMeta } from '../types/auth.types.js';
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -77,16 +79,17 @@ export async function sendVerification(userId: string): Promise<'ok' | 'already_
   return 'ok';
 }
 
-export async function verifyEmail(token: string): Promise<'ok' | 'invalid'> {
+export async function verifyEmail(token: string, meta?: SessionMeta): Promise<'ok' | 'invalid'> {
   const userId = await consumeToken(token, 'verify_email');
   if (!userId) return 'invalid';
   await db.update(users).set({ emailVerified: true }).where(eq(users.id, userId));
+  await recordAudit('email_verified', { userId, meta });
   return 'ok';
 }
 
 // ── Password reset ─────────────────────────────────────────────────────────
 
-export async function sendPasswordReset(email: string): Promise<void> {
+export async function sendPasswordReset(email: string, meta?: SessionMeta): Promise<void> {
   const [user] = await db
     .select({ id: users.id, name: users.name, passwordHash: users.passwordHash })
     .from(users)
@@ -94,6 +97,7 @@ export async function sendPasswordReset(email: string): Promise<void> {
     .limit(1);
 
   if (!user) return; // silent - no user enumeration
+  await recordAudit('password_reset_requested', { userId: user.id, meta });
 
   if (!user.passwordHash) {
     await sendGoogleOnlyResetEmail(email, user.name);
@@ -104,12 +108,13 @@ export async function sendPasswordReset(email: string): Promise<void> {
   await sendPasswordResetEmail(email, user.name, token);
 }
 
-export async function resetPassword(token: string, newPassword: string): Promise<'ok' | 'invalid'> {
+export async function resetPassword(token: string, newPassword: string, meta?: SessionMeta): Promise<'ok' | 'invalid'> {
   const userId = await consumeToken(token, 'password_reset');
   if (!userId) return 'invalid';
 
   const passwordHash = await hashPassword(newPassword);
   await db.update(users).set({ passwordHash }).where(eq(users.id, userId));
   await revokeAllUserSessions(userId);
+  await recordAudit('password_reset', { userId, meta });
   return 'ok';
 }

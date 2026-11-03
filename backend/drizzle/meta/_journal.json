@@ -64,6 +64,13 @@
       "when": 1793731692458,
       "tag": "0008_bright_kingpin",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793733117673,
+      "tag": "0009_big_magma",
+      "breakpoints": true
     }
   ]
 }
