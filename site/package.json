@@ -16,6 +16,7 @@
     "typecheck": "tsc -b --noEmit",
     "test": "node --test \"src/**/*.test.ts\"",
     "audit:overflow": "node scripts/overflow-audit.mjs",
+    "screenshots": "node scripts/screenshots.mjs",
     "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs && node scripts/sitemap.mjs"
   },
   "dependencies": {

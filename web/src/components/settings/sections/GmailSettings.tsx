@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSettings } from '../../../contexts/SettingsContext';
-import { apiPost, apiFetch } from '../../../lib/api';
-import { mapOAuthError } from '../../../lib/oauth-errors';
+import { useOAuthConnection } from '../../../hooks/useOAuthConnection';
+import { GOOGLE_GMAIL_OAUTH } from '../../../lib/google-oauth';
+import { mapIntegrationError } from '../../../lib/oauth-connection';
 import { SETTINGS_EVENT } from '../../../lib/settings-events';
-import { clearOAuthState, rememberOAuthState, validateAndConsumeOAuthState } from '../../../lib/oauth-state';
 
 function GmailIcon() {
   return (
@@ -15,93 +14,28 @@ function GmailIcon() {
   );
 }
 
-function launchWebAuth(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      settled = true;
-      reject(new Error('Sign-in timed out. Please try again.'));
-    }, 120_000);
-    chrome.identity.launchWebAuthFlow({ url, interactive: true }, (redirectUrl) => {
-      clearTimeout(timer);
-      if (settled) return;
-      if (chrome.runtime.lastError || !redirectUrl) {
-        reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
-      } else {
-        resolve(redirectUrl);
-      }
-    });
-  });
-}
-
-function mapIntegrationError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  if (/already.linked|account already linked/i.test(msg)) return 'This account is already linked to a different user.';
-  if (/network|fetch|connection|failed to fetch/i.test(msg)) return 'Connection failed. Check your internet and try again.';
-  if (msg === 'access_denied' || msg.includes('access_denied')) return mapOAuthError(msg);
-  if (msg && msg !== 'Failed') return msg;
-  return 'Something went wrong. Please try again.';
-}
-
 export function GmailSettings() {
   const { user } = useAuth();
   const { settings, update } = useSettings();
   const { gmail, calendar } = settings.integrations;
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  async function connectGmail() {
-    setBusy(true);
-    setError('');
-    try {
-      const redirectUri = chrome.identity.getRedirectURL();
-      // Request expanded gmail scopes so the token covers both Calendar and Gmail
-      const { authUrl } = await apiPost<{ authUrl: string }>(
-        `/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}&features=gmail`
-      );
-      rememberOAuthState(authUrl, 'google');
-      try {
-        const redirectUrl = await launchWebAuth(authUrl);
-        const params = new URL(redirectUrl).searchParams;
-        const oauthError = params.get('error');
-        if (oauthError) throw new Error(mapOAuthError(oauthError));
-        const code = params.get('code');
-        const state = params.get('state');
-        if (!code) throw new Error('No auth code returned');
-        validateAndConsumeOAuthState(state, 'google');
-        const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
-        if (status !== 'linked') throw new Error('Linking failed');
-      } finally {
-        clearOAuthState('google');
-      }
-      // Mark both gmail and calendar as connected since we granted combined scopes
-      await update('integrations', {
-        gmail: { ...gmail, connected: true },
-        calendar: { ...calendar, connected: true },
-      });
-    } catch (err) {
-      setError(mapIntegrationError(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function disconnectGmail() {
-    setBusy(true);
-    setError('');
-    try {
-      const res = await apiFetch('/integrations/google', { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to disconnect Gmail');
-      await update('integrations', {
-        gmail: { ...gmail, connected: false },
-        calendar: { ...calendar, connected: false },
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Disconnect failed');
-    } finally {
-      setBusy(false);
-    }
-  }
+  // One Google integration: the Gmail scopes include Calendar's, and unlinking removes both.
+  const setGoogleConnected = (connected: boolean) =>
+    update('integrations', {
+      gmail: { ...gmail, connected },
+      calendar: { ...calendar, connected },
+    });
+  const {
+    busy,
+    error,
+    connect: connectGmail,
+    disconnect: disconnectGmail,
+  } = useOAuthConnection({
+    provider: GOOGLE_GMAIL_OAUTH,
+    onConnected: () => setGoogleConnected(true),
+    onDisconnected: () => setGoogleConnected(false),
+    mapConnectError: mapIntegrationError,
+    disconnectFailedMessage: 'Failed to disconnect Gmail',
+  });
 
   if (!user) {
     return (
@@ -145,11 +79,11 @@ export function GmailSettings() {
             </div>
           </div>
           {gmail.connected ? (
-            <button className="integration-disconnect-btn" disabled={busy} onClick={disconnectGmail}>
+            <button className="integration-disconnect-btn" disabled={busy} onClick={() => void disconnectGmail()}>
               {busy ? '…' : 'Disconnect'}
             </button>
           ) : (
-            <button className="integration-connect-btn" disabled={busy} onClick={connectGmail}>
+            <button className="integration-connect-btn" disabled={busy} onClick={() => void connectGmail()}>
               {busy ? 'Connecting…' : 'Connect'}
             </button>
           )}

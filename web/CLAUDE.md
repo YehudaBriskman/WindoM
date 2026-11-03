@@ -75,6 +75,7 @@ web/                               (repo root for the extension)
 - **Chrome APIs**: Typed wrappers in `src/lib/chrome-storage.ts` for async get/set/onChange on both sync and local storage.
 - **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, Open-Meteo, Quotable, Yahoo Finance, CoinGecko, GitHub).
 - **`history` is an optional permission** (#256): requested from the History app's toggle, given back when it is turned off. Gate every `chrome.history` call on `hasHistoryPermission()` (`src/lib/history-permission.ts`), not on `showHistory` (it syncs across devices) or on `chrome.history` existing (Chrome leaves the binding in place after a revoke).
+- **Location is opt-in** (#449): a new tab never calls `navigator.geolocation` by itself. The weather widget's passive `useLocation().getLocation()` reads coordinates only when the Permissions API already reports `granted`; the one call that can make Chrome prompt is `requestCurrentLocation()`, from the "Use my current location" button in Settings → Weather. Without a city or a grant, the widget shows "Set location".
 
 ## Key Patterns
 

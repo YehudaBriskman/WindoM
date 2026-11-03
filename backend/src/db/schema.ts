@@ -126,6 +126,62 @@ export const userSettings = pgTable('user_settings', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+// ── Audit Logs (#232) ──────────────────────────────────────────────────────
+
+/**
+ * The fixed list of security events written to audit_logs. Stored as text rather than a
+ * Postgres enum so adding an action is a code change, not a type migration.
+ */
+export const AUDIT_ACTIONS = [
+  'account_created',
+  'sign_in',
+  'sign_in_google',
+  'sign_in_failed',
+  'sign_out',
+  'password_changed',
+  'password_reset_requested',
+  'password_reset',
+  'email_verified',
+  'account_deleted',
+  'session_revoked',
+  'sessions_revoked_others',
+  'token_reuse_detected',
+  'data_exported',
+  'integration_connected_google',
+  'integration_connected_spotify',
+  'integration_connected_github',
+  'integration_disconnected_google',
+  'integration_disconnected_spotify',
+  'integration_disconnected_github',
+] as const;
+
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+
+/**
+ * Security log of sensitive account actions. Deliberately minimal: no IP, no raw User-Agent,
+ * no email, no token - only who, what, when, which session and a coarse "Browser · OS".
+ * Rows cascade with the user (GDPR erasure); account_deleted is written afterwards with a
+ * null userId as an anonymous tombstone. Purged after AUDIT_RETENTION_DAYS (audit.service.ts).
+ */
+export const auditLogs = pgTable(
+  'audit_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    /** Null for a failed sign-in on an unknown email and for the account_deleted tombstone. */
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    action: text('action').$type<AuditAction>().notNull(),
+    /** Refresh session the event concerns, when there is one. No FK, so the row outlives the session. */
+    sessionId: uuid('session_id'),
+    /** Same coarse "Browser · OS" label as refresh_sessions.device_label. */
+    deviceLabel: text('device_label'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('audit_logs_user_created_idx').on(table.userId, table.createdAt),
+    index('audit_logs_created_idx').on(table.createdAt),
+  ],
+);
+
 // ── Relations ──────────────────────────────────────────────────────────────
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -133,6 +189,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   oauthAccounts: many(oauthAccounts),
   oauthStates: many(oauthStates),
   emailTokens: many(emailTokens),
+  auditLogs: many(auditLogs),
 }));
 
 export const refreshSessionsRelations = relations(refreshSessions, ({ one }) => ({

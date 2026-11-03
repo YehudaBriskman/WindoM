@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import * as authEmailService from '../services/auth-email.service.js';
+import { extractSessionMeta } from '../lib/request.js';
 
 // ── Shared page shell ──────────────────────────────────────────────────────
 // Full glass-morphism page: animated gradient blobs + backdrop-filter card.
@@ -309,7 +310,7 @@ export async function verifyEmailController(req: FastifyRequest, reply: FastifyR
     void reply.type('text/html').send(buildPage({ title: 'Verification Failed', body: verifyErrorBody('Missing verification token.') }));
     return;
   }
-  const result = await authEmailService.verifyEmail(token);
+  const result = await authEmailService.verifyEmail(token, extractSessionMeta(req));
   if (result === 'invalid') {
     void reply.type('text/html').send(buildPage({ title: 'Verification Failed', body: verifyErrorBody('This verification link is invalid or has expired. Request a new one from the WindoM extension.') }));
     return;
@@ -322,7 +323,7 @@ const forgotSchema = z.object({ email: z.string().email() });
 export async function forgotPasswordController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const parsed = forgotSchema.safeParse(req.body);
   if (parsed.success) {
-    await authEmailService.sendPasswordReset(parsed.data.email).catch((err: unknown) => {
+    await authEmailService.sendPasswordReset(parsed.data.email, extractSessionMeta(req)).catch((err: unknown) => {
       req.log.error({ err }, 'forgotPassword: email send failed');
     });
   }
@@ -357,7 +358,7 @@ export async function resetPasswordController(req: FastifyRequest, reply: Fastif
     return;
   }
 
-  const result = await authEmailService.resetPassword(parsed.data.token, parsed.data.newPassword);
+  const result = await authEmailService.resetPassword(parsed.data.token, parsed.data.newPassword, extractSessionMeta(req));
 
   if (result === 'invalid') {
     if (isHtml) {
