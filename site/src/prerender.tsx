@@ -171,8 +171,9 @@ export function renderAll(): Rendered[] {
       { initialEntries: [route.path] },
     );
 
-    const files = [cleanFile(route.path)];
-    if (route.legacyHtml) files.push(legacyFile(route.path));
+    // Both shapes for every route - see emittedPaths() in routes.tsx for why the
+    // flat file is not optional on Pages. The root's flat shape is index.html itself.
+    const files = route.path === '/' ? [cleanFile(route.path)] : [cleanFile(route.path), legacyFile(route.path)];
 
     return {
       files,

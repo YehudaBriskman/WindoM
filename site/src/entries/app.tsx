@@ -31,17 +31,12 @@ const router = createBrowserRouter([
     children: [
       ...ROUTES.flatMap((route) => {
         const entries = [{ path: route.path, element: route.element }];
-        /* The home page is registered at `/index.html` too, even though it does
-           not carry `legacyHtml`. That flag means "write a second file", and the
-           root needs no second file: the shell the prerender fills *is*
-           `dist/index.html`. So the file shipped, the server served the whole
-           home page from it, and the router - having no match - fell through to
-           `*` and replaced it with "Page not found" a moment after hydration,
-           under the home page's own title. `/index.html` was a real URL on the
-           previous multi-page site, so inbound links to it exist. */
-        if (route.legacyHtml || route.path === '/') {
-          entries.push({ path: legacyPathOf(route.path), element: route.element });
-        }
+        /* Every route is also registered at its `.html` address, because the
+           prerender writes that file for every route (see emittedPaths() in
+           routes.tsx) - an unregistered one would hydrate into "Page not found"
+           over a correctly served page. For the home page that address is
+           `/index.html`, a real URL on the previous multi-page site. */
+        entries.push({ path: legacyPathOf(route.path), element: route.element });
         return entries;
       }),
       { path: '*', element: <NotFound /> },

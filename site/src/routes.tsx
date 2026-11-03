@@ -48,12 +48,6 @@ export interface SiteRoute {
    * exist in one language. Drives the switcher and the hreflang pairs.
    */
   twinOf?: string;
-  /**
-   * Emitted as `<path>.html` as well as at the clean path. Set on the pages
-   * whose `.html` URL is registered somewhere we do not control - the Chrome
-   * Web Store listing, and the guide link compiled into the extension.
-   */
-  legacyHtml?: boolean;
   /** Sidebar grouping. Absent for pages that are not documentation. */
   group?: string;
   /**
@@ -93,7 +87,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'User Guide',
     description: 'Every panel in WindoM and what it does, with setup for Calendar and Spotify.',
     twinOf: '/guide',
-    legacyHtml: true,
   },
   {
     path: '/support',
@@ -105,7 +98,6 @@ export const ROUTES: SiteRoute[] = [
     description:
       'How to report a problem with WindoM, fixes for the common ones, and what to include so it can be reproduced.',
     twinOf: '/support',
-    legacyHtml: true,
   },
   {
     path: '/contact',
@@ -116,7 +108,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'Contact',
     description: 'How to reach the developer of WindoM, and what to expect.',
     twinOf: '/contact',
-    legacyHtml: true,
   },
   {
     path: '/local-setup',
@@ -127,7 +118,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'Local Setup',
     description: "Run WindoM's extension, backend and database on your own machine.",
     twinOf: '/local-setup',
-    legacyHtml: true,
   },
   {
     path: '/privacy',
@@ -139,7 +129,6 @@ export const ROUTES: SiteRoute[] = [
     description:
       'What WindoM stores, what stays on your device, and what the optional account syncs. No analytics, no telemetry, no ads.',
     twinOf: '/privacy',
-    legacyHtml: true,
   },
   {
     path: '/terms',
@@ -151,7 +140,6 @@ export const ROUTES: SiteRoute[] = [
     description:
       'The terms governing use of the WindoM hosted service and the published Chrome extension.',
     twinOf: '/terms',
-    legacyHtml: true,
   },
 
   // ── Hebrew ──────────────────────────────────────────────────────────────
@@ -175,7 +163,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'מדריך למשתמש',
     description: 'כל פאנל ב-WindoM ומה הוא עושה, כולל הגדרת יומן ו-Spotify.',
     twinOf: '/guide',
-    legacyHtml: true,
   },
   {
     path: '/he/support',
@@ -186,7 +173,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'תמיכה',
     description: 'איך לדווח על תקלה ב-WindoM, פתרונות לתקלות הנפוצות, ומה לכלול בדיווח.',
     twinOf: '/support',
-    legacyHtml: true,
   },
   {
     path: '/he/contact',
@@ -197,7 +183,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'יצירת קשר',
     description: 'איך ליצור קשר עם המפתח של WindoM, ולמה לצפות.',
     twinOf: '/contact',
-    legacyHtml: true,
   },
   {
     path: '/he/local-setup',
@@ -208,7 +193,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'הרצה מקומית',
     description: 'הרצת התוסף, השרת ובסיס הנתונים של WindoM על המחשב שלך.',
     twinOf: '/local-setup',
-    legacyHtml: true,
   },
   {
     path: '/he/privacy',
@@ -219,7 +203,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'מדיניות פרטיות',
     description: 'מה WindoM שומר, מה נשאר על המכשיר שלך, ומה החשבון האופציונלי מסנכרן.',
     twinOf: '/privacy',
-    legacyHtml: true,
   },
   {
     path: '/he/terms',
@@ -230,7 +213,6 @@ export const ROUTES: SiteRoute[] = [
     title: 'תנאי שימוש',
     description: 'התנאים החלים על השימוש בשירות WindoM ובתוסף המפורסם ל-Chrome.',
     twinOf: '/terms',
-    legacyHtml: true,
   },
 ];
 
@@ -250,11 +232,18 @@ export function legacyPathOf(path: string): string {
   return path === '/' ? '/index.html' : `${path}.html`;
 }
 
-/** Every path the build must emit a file for, clean and legacy together. */
+/**
+ * Every path the build must emit a file for, clean and legacy together.
+ *
+ * Unconditional on purpose. This used to be an opt-in `legacyHtml` flag, read as
+ * "the .html URL is registered somewhere we do not control". But on GitHub Pages
+ * the flat file is also what makes the *clean* URL work: `/guide` is served from
+ * `guide.html` with a 200, while a route that only has `install/index.html`
+ * answers `/install` with a 301 to `/install/`. #435 added /install without the
+ * flag and every deploy after it failed its live check. Every route gets both.
+ */
 export function emittedPaths(route: SiteRoute): string[] {
-  const paths = [route.path];
-  if (route.legacyHtml) paths.push(legacyPathOf(route.path));
-  return paths;
+  return route.path === '/' ? ['/', legacyPathOf('/')] : [route.path, legacyPathOf(route.path)];
 }
 
 /**

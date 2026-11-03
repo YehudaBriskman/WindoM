@@ -90,12 +90,22 @@ async function isFile(p) {
   }
 }
 
-/** Serves dist/ the way Pages does: `/x` finds `x.html` or `x/index.html`. */
+/**
+ * Serves dist/ the way Pages does: `/x` is `x` or `x.html`, and `/x/` is
+ * `x/index.html`. A bare `/x` that only exists as a directory gets a 301 to `/x/`,
+ * exactly as on Pages - this used to fall back to `x/index.html` silently, which
+ * hid a page missing its flat file until the live check after deploy.
+ */
 function serve() {
   const server = createServer(async (req, res) => {
     const path = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname));
     if (path.includes('..')) return res.writeHead(400).end();
     const base = join(DIST, path);
+    if (!path.endsWith('/') && !(await isFile(base)) && !(await isFile(`${base}.html`)) &&
+        (await isFile(join(base, 'index.html')))) {
+      res.writeHead(301, { location: `${path}/` });
+      return res.end();
+    }
     const candidates = [base, `${base}.html`, join(base, 'index.html')];
     for (const file of candidates) {
       if (await isFile(file)) {
