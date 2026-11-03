@@ -43,7 +43,7 @@ export function FinanceWidget() {
       )}
 
       {!empty && !loading && error && stocks.length === 0 && (
-        <p className="finance-loading" style={{ color: 'rgba(248,113,113,0.8)' }}>Unable to load prices</p>
+        <p className="finance-loading" style={{ color: 'var(--error-ink-soft)' }}>Unable to load prices</p>
       )}
 
       {stocks.length > 0 && (

@@ -17,7 +17,7 @@ function LoadingRow() {
 
 function ErrorRow() {
   return (
-    <div className="finance-dashboard-empty" style={{ color: '#f87171' }}>
+    <div className="finance-dashboard-empty" style={{ color: 'var(--error-solid)' }}>
       Unable to load
     </div>
   );

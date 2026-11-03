@@ -89,6 +89,16 @@
   --ink-secondary: rgba(255, 255, 255, 0.82);
   --ink-tertiary: rgba(255, 255, 255, 0.66);
 
+  /* Error and brand colours that components set inline. Reference them as
+     `var(--error-ink)` in a style prop rather than repeating the literal. */
+  --error-solid: #f87171;                      /* red-400, full strength   */
+  --error-ink: rgba(248, 113, 113, 0.9);       /* error text in a notice   */
+  --error-ink-soft: rgba(248, 113, 113, 0.8);  /* inline "unable to load"  */
+  --error-edge: rgba(248, 113, 113, 0.4);      /* border of an error notice */
+  --brand-gmail-tint: rgba(234, 67, 53, 0.12); /* Gmail icon tile          */
+  --brand-spotify: #1db954;
+  --tile-neutral: rgba(255, 255, 255, 0.08);   /* icon tile with no brand  */
+
   /* ── Glass ──────────────────────────────────────────────────────────────
      Twenty surfaces blurred their backdrop independently of the glass system,
      anywhere from 4px to 40px, so a dropdown could land 40px of blur on top of
@@ -130,6 +140,46 @@
   --delay-content: 200ms;
 }
 
+/* ── Stacking ──────────────────────────────────────────────────────────────
+   Every z-index in globals.css and glass.css reads one of these. The values
+   are the numbers the app already used, kept exactly, so moving to tokens
+   changed no element's stacking: ties stay ties, and nothing swapped order.
+   Add a new layer here rather than a literal in a rule.
+
+   `:host` as well as `:root` because the content script injects this sheet
+   into a shadow root, where `:root` matches nothing; custom properties set on
+   the shadow host inherit into the tree. Without it every `var(--z-*)` there
+   would be invalid and fall back to `auto`.
+
+   Two groups. The local ones order siblings inside a component that is
+   already its own stacking context, so they never compete with a page layer.
+   The page layers order the fixed and floating surfaces against each other. */
+:root,
+:host {
+  /* local: inside one component */
+  --z-below: -1;     /* a glass pane's backdrop (::after) */
+  --z-base: 0;       /* a glass pane's refracted rim (::before) */
+  --z-raised: 1;     /* content over its own pane; a remove badge over its item */
+  --z-popover: 10;   /* a small popover inside the search overlay */
+
+  /* page layers, bottom to top */
+  --z-wallpaper: -2;   /* the zooming background image */
+  --z-scrim: -1;       /* the dimming overlay over the wallpaper */
+  --z-credit: 50;      /* photographer credit */
+  --z-chrome: 100;     /* top bar, dock row */
+  --z-panel: 200;      /* sidebar, the dock's add form, stock search results */
+  --z-dropdown: 300;   /* city autocomplete */
+  --z-suggest: 400;    /* search suggestions */
+  --z-overlay: 500;    /* focus mode; the tab sidebar sits either side of it */
+  --z-search: 800;     /* full-screen search overlay */
+  --z-modal: 1000;     /* settings panel, and a select's listbox inside it */
+  --z-app-center: 1100;
+  --z-guide: 1201;
+  --z-toast: 1500;     /* Spotify notice */
+  --z-onboarding: 2000;
+  --z-loader: 9999;    /* first-paint loader, over everything */
+}
+
 /* ============================================================
    Global Reset & Base
    ============================================================ */
@@ -160,7 +210,7 @@ body {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  z-index: -2;
+  z-index: var(--z-wallpaper);
   transform-origin: center center;
   transform: scale(1);
   transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -215,7 +265,7 @@ a {
 .app-loader {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-loader);
   background-size: cover;
   display: flex;
   align-items: center;
@@ -333,7 +383,7 @@ select option {
   top: calc(100% + 6px);
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: var(--z-modal);
   list-style: none;
   margin: 0;
   padding: 5px;
@@ -406,7 +456,7 @@ input[type="file"]::file-selector-button:hover {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.2);
-  z-index: -1;
+  z-index: var(--z-scrim);
 }
 
 /* ============================================================
@@ -421,7 +471,7 @@ input[type="file"]::file-selector-button:hover {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  z-index: 100;
+  z-index: var(--z-chrome);
 }
 
 /* ============================================================
@@ -747,7 +797,7 @@ input.clock-size-slider:focus-visible {
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   border: 1px solid rgba(255, 255, 255, 0.15);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  z-index: 300;
+  z-index: var(--z-dropdown);
 }
 .city-dropdown-item {
   display: flex;
@@ -795,7 +845,7 @@ input.clock-size-slider:focus-visible {
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 100;
+  z-index: var(--z-chrome);
   height: 46px;
 }
 
@@ -903,7 +953,7 @@ input.clock-size-slider:focus-visible {
   cursor: pointer;
   color: rgba(255, 255, 255, 0.8);
   padding: 0;
-  z-index: 1;
+  z-index: var(--z-raised);
 }
 
 .dock-item-wrapper:hover .dock-item-remove,
@@ -972,7 +1022,7 @@ input.clock-size-slider:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 200;
+  z-index: var(--z-panel);
   opacity: 0.45;
   transition:
     width var(--dur-md) var(--ease-out),
@@ -1235,7 +1285,7 @@ input.clock-size-slider:focus-visible {
   border-top: none;
   border-radius: 0 0 var(--r-card) var(--r-card);
   overflow: hidden;
-  z-index: 400;
+  z-index: var(--z-suggest);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
   padding: 4px 0 8px;
 }
@@ -1324,7 +1374,7 @@ input.clock-size-slider:focus-visible {
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(var(--scrim-blur));
-  z-index: 800;
+  z-index: var(--z-search);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1430,7 +1480,7 @@ input.clock-size-slider:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--r-control);
   padding: 4px;
-  z-index: 10;
+  z-index: var(--z-popover);
   min-width: 110px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
@@ -1470,7 +1520,7 @@ input.clock-size-slider:focus-visible {
   top: 0;
   bottom: 0;
   width: 10px;
-  z-index: 502;
+  z-index: calc(var(--z-overlay) + 2);
   pointer-events: all;
 }
 
@@ -1486,7 +1536,7 @@ input.clock-size-slider:focus-visible {
   height: 60px;
   background: rgba(255, 255, 255, 0.18);
   border-radius: var(--r-xs);
-  z-index: 499;
+  z-index: calc(var(--z-overlay) - 1);
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
@@ -1500,7 +1550,7 @@ input.clock-size-slider:focus-visible {
   top: 10px;
   bottom: 10px;
   width: 220px;
-  z-index: 501;
+  z-index: calc(var(--z-overlay) + 1);
   display: flex;
   flex-direction: column;
   padding: 12px 8px;
@@ -1701,7 +1751,7 @@ input.clock-size-slider:focus-visible {
 .focus-overlay {
   position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: var(--z-overlay);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1806,7 +1856,7 @@ input.clock-size-slider:focus-visible {
   position: fixed;
   right: 10px;
   bottom: 10px;
-  z-index: 200;
+  z-index: var(--z-panel);
   width: 42px;
   height: 42px;
   border-radius: var(--r-pill);
@@ -1887,7 +1937,7 @@ input.clock-size-slider:focus-visible {
   color: rgba(255, 255, 255, 0.5);
   transition: color 0.2s, background 0.2s;
   flex-shrink: 0;
-  z-index: 1;
+  z-index: var(--z-raised);
 }
 .sidebar-close-btn:hover {
   color: white;
@@ -2069,7 +2119,7 @@ input.clock-size-slider:focus-visible {
   position: fixed;
   bottom: 10px;
   left: 10px;
-  z-index: 1000;
+  z-index: var(--z-modal);
   width: 42px;
   height: 42px;
   border-radius: var(--r-pill);
@@ -2656,7 +2706,7 @@ input[type="checkbox"]:focus-visible {
   gap: 0;
   font-size: 11.5px;
   color: rgba(255, 255, 255, 0.55);
-  z-index: 50;
+  z-index: var(--z-credit);
   transition: opacity 0.3s;
   pointer-events: auto;
 }
@@ -3393,14 +3443,14 @@ body.focus-exiting .sidebar-container {
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(var(--scrim-blur));
-  z-index: 1100;
+  z-index: var(--z-app-center);
 }
 .app-center-panel {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1101;
+  z-index: calc(var(--z-app-center) + 1);
   width: min(460px, calc(100vw - 32px));
   max-height: min(600px, calc(100vh - 40px));
   display: flex;
@@ -4095,7 +4145,7 @@ body.focus-exiting .sidebar-container {
 .onboarding-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: var(--z-onboarding);
   background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(var(--scrim-blur));
   display: flex;
@@ -4247,7 +4297,7 @@ body.focus-exiting .sidebar-container {
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 1500;
+  z-index: var(--z-toast);
   display: flex;
   align-items: center;
   gap: 12px;
@@ -4349,7 +4399,7 @@ body.focus-exiting .sidebar-container {
   position: fixed;
   top: 60px;
   right: 16px;
-  z-index: 1201;
+  z-index: var(--z-guide);
   width: min(360px, calc(100vw - 32px));
   max-height: min(480px, calc(100vh - 80px));
   border-radius: var(--r-card);
@@ -4902,7 +4952,7 @@ body.focus-exiting .sidebar-container {
   border-radius: var(--r-control);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
   overflow: hidden;
-  z-index: 200;
+  z-index: var(--z-panel);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 .stock-dropdown-item {

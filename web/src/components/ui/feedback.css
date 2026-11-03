@@ -37,7 +37,8 @@
   color: var(--ink-primary);
 }
 .widget-error-retry:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline: var(--focus-ring);
+  box-shadow: var(--focus-halo);
   outline-offset: 2px;
   border-radius: var(--r-xs);
 }
@@ -69,7 +70,7 @@
   transition-duration: var(--dur-sm);
 }
 .save-status.error {
-  color: rgba(248, 113, 113, 0.95);
+  color: var(--error-ink);
 }
 
 /* Zero-height rail under the focus line: the status hangs off it, so the

@@ -32,7 +32,7 @@ export function FinanceStrip() {
     return (
       <div className="finance-strip">
         <div className="finance-strip-item" style={{ opacity: 0.5 }}>
-          <span className="finance-strip-symbol" style={{ letterSpacing: 0, color: '#f87171' }}>Unable to load prices</span>
+          <span className="finance-strip-symbol" style={{ letterSpacing: 0, color: 'var(--error-solid)' }}>Unable to load prices</span>
         </div>
       </div>
     );
