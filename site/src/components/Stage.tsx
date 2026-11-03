@@ -33,6 +33,7 @@ interface StageProps {
  */
 export function Stage({ cycle, animated, interactive = false }: StageProps) {
   const active = DAY[cycle.stage];
+  const index = STAGES.indexOf(cycle.stage);
   const focus = useFocusDemo();
 
   /**
@@ -48,15 +49,23 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
   const lit = (p: Pane) => (active.spotlight.includes(p) ? ' is-lit' : ' is-dim');
 
   return (
-    <div className="stage-pin" data-focus={focus.phase}>
+    <div
+      className={`stage-pin${animated && !cycle.live ? ' is-scrubbing' : ''}`}
+      data-focus={focus.phase}
+    >
       {/* All four wallpapers stay mounted and crossfade. Swapping `src`
           mid-scroll leaves a blank frame; at 524 KB total, holding them is
-          cheaper than the flicker. */}
+          cheaper than the flicker.
+
+          While the scroll owns the day, the cross-fade is positional rather
+          than timed: each wallpaper's opacity is read from the scroll itself
+          (`--wall-at` is where it starts to arrive; see stage.css). */}
       <div className="stage-wallpapers" aria-hidden="true">
-        {STAGES.map((s) => (
+        {STAGES.map((s, i) => (
           <img
             key={s}
             className={`stage-wallpaper${s === cycle.stage ? ' is-active' : ''}`}
+            style={{ '--wall-at': wallArrives(i) } as React.CSSProperties}
             src={DAY[s].wallpaper}
             alt=""
             loading={s === cycle.stage ? 'eager' : 'lazy'}
@@ -109,7 +118,17 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
             <div className="headline-swap" aria-hidden="true">
               <div className="headline-clock">
                 <p className="stage-clock">{cycle.clock}</p>
-                <p className="stage-greeting">{active.greeting}</p>
+                {/* All four greetings share one cell and cross-fade, in step
+                    with the wallpaper behind them. Swapping the text in place
+                    changed the words in a single frame while the picture was
+                    still dissolving - the snap #370 describes. */}
+                <p className="stage-greeting">
+                  {STAGES.map((s, i) => (
+                    <span key={s} className={`greeting-line${beatClass(i, index)}`}>
+                      {DAY[s].greeting}
+                    </span>
+                  ))}
+                </p>
               </div>
               <div className="headline-focus">
                 <span className="focus-label">Focus</span>
@@ -119,10 +138,26 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
 
             {interactive && <FocusControl focus={focus} />}
 
-            {/* The only place this copy exists, so it stays readable. */}
-            <div className="stage-story" key={cycle.stage}>
-              <h2 className="story-headline">{active.headline}</h2>
-              <p className="story-body">{active.body}</p>
+            {/* The only place this copy exists, so it stays readable.
+
+                Every stage's copy is mounted, stacked in one grid cell, and
+                cross-fades: the outgoing beat leaves upward as the next one
+                rises in behind it. It used to be keyed on the stage, which
+                remounted it - the new copy faded in, but the old copy vanished
+                in a single frame. Stacking also sizes the cell by the longest
+                beat, so the clock above no longer shifts when a shorter one
+                arrives. Only the current beat is exposed to assistive tech. */}
+            <div className="stage-story">
+              {STAGES.map((s, i) => (
+                <div
+                  key={s}
+                  className={`story-beat${beatClass(i, index)}`}
+                  aria-hidden={i === index ? undefined : true}
+                >
+                  <h2 className="story-headline">{DAY[s].headline}</h2>
+                  <p className="story-body">{DAY[s].body}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -149,6 +184,24 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
       </div>
     </div>
   );
+}
+
+/**
+ * The scroll progress at which wallpaper `i` begins to dissolve in: its stage
+ * boundary. The first is always there, so it is placed out of reach.
+ */
+function wallArrives(i: number): number {
+  return i === 0 ? -1 : i / STAGES.length;
+}
+
+/**
+ * Where a beat sits relative to the current one. Beats already passed leave
+ * upward and beats still to come wait below, so the copy moves the way the
+ * scroll does - in either direction.
+ */
+function beatClass(i: number, current: number): string {
+  if (i === current) return ' is-active';
+  return i < current ? ' is-past' : '';
 }
 
 /**

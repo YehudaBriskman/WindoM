@@ -128,6 +128,13 @@ export function useDayCycle(enabled: boolean): DayCycle {
       const total = stageEl.offsetHeight - window.innerHeight;
       const progress = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 0;
 
+      // Published to CSS as well, so the wallpaper cross-fade can be tied to
+      // scroll position rather than to a timer: a timed fade longer than a
+      // fast scroll's dwell on a stage was cut off by the next one. Written to
+      // the element, not React state - it changes on every scrolled frame and
+      // nothing in the tree needs to re-render for it.
+      stageEl.style.setProperty('--day-p', progress.toFixed(4));
+
       if (progress <= 0.02) {
         // Back at the top: hand control back to the real clock.
         if (!liveRef.current) {
