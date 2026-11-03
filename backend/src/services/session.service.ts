@@ -1,10 +1,11 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { and, eq, gt, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNull, ne } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { refreshSessions } from '../db/schema.js';
 import { REFRESH_WINDOW_DAYS, MAX_RENEWALS, BCRYPT_ROUNDS } from '../types/constants.js';
 import type { SessionMeta } from '../types/auth.types.js';
+import { parseDeviceLabel } from '../lib/device-label.js';
 
 type SessionRow = typeof refreshSessions.$inferSelect;
 
@@ -15,6 +16,14 @@ export interface ActiveSession {
   lastUsedAt: Date;
   expiresAt: Date;
   renewalCount: number;
+  /** "Browser · OS", or null when the row predates labels or the UA was unrecognisable. */
+  device: string | null;
+  /** True for the session the caller's access token was issued with. */
+  current: boolean;
+}
+
+function deviceLabelFor(meta: SessionMeta): string | null {
+  return parseDeviceLabel(meta.userAgent, { brands: meta.uaBrands, platform: meta.uaPlatform });
 }
 
 /** SHA-256 of raw token - used as a fast indexed lookup key. */
@@ -25,12 +34,14 @@ function sha256Hex(token: string): string {
 /**
  * Create a new refresh session in the DB and return the raw (un-hashed) token.
  * The raw token is set in the HttpOnly cookie; only its hashes are stored.
+ * Pass `id` to choose the row ID up front, so an access token can name its session.
  */
 export async function createSession(
   userId: string,
   meta: SessionMeta,
   rotatedFromId?: string,
   renewalCount = 0,
+  id?: string,
 ): Promise<string> {
   const rawToken = crypto.randomBytes(48).toString('base64url');
   const tokenLookup = sha256Hex(rawToken);
@@ -38,12 +49,14 @@ export async function createSession(
   const expiresAt = new Date(Date.now() + REFRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
   await db.insert(refreshSessions).values({
+    ...(id ? { id } : {}),
     userId,
     tokenHash,
     tokenLookup,
     rotatedFromId: rotatedFromId ?? null,
     ip: sha256Hex(meta.ip),
     userAgent: sha256Hex(meta.userAgent),
+    deviceLabel: deviceLabelFor(meta),
     expiresAt,
     renewalCount,
   });
@@ -99,12 +112,16 @@ export async function revokeAllUserSessions(userId: string): Promise<void> {
     .where(eq(refreshSessions.userId, userId));
 }
 
-/** List only active sessions, exposing opaque device information rather than raw client data. */
-export async function listActiveSessions(userId: string): Promise<ActiveSession[]> {
+/**
+ * List only active sessions, exposing a coarse device label rather than raw client data.
+ * The caller's own session comes first, then the most recently renewed.
+ */
+export async function listActiveSessions(userId: string, currentSessionId?: string): Promise<ActiveSession[]> {
   const rows = await db
     .select({
       id: refreshSessions.id,
       userAgent: refreshSessions.userAgent,
+      deviceLabel: refreshSessions.deviceLabel,
       createdAt: refreshSessions.createdAt,
       expiresAt: refreshSessions.expiresAt,
       renewalCount: refreshSessions.renewalCount,
@@ -116,15 +133,34 @@ export async function listActiveSessions(userId: string): Promise<ActiveSession[
       gt(refreshSessions.expiresAt, new Date()),
     ));
 
-  return rows.map((row) => ({
-    id: row.id,
-    deviceId: row.userAgent.slice(0, 12),
-    createdAt: row.createdAt,
-    // Refresh rotation creates a new row, so the active row's creation marks last use.
-    lastUsedAt: row.createdAt,
-    expiresAt: row.expiresAt,
-    renewalCount: row.renewalCount,
-  }));
+  return rows
+    .map((row) => ({
+      id: row.id,
+      deviceId: row.userAgent.slice(0, 12),
+      createdAt: row.createdAt,
+      // Refresh rotation creates a new row, so the active row's creation marks last use.
+      lastUsedAt: row.createdAt,
+      expiresAt: row.expiresAt,
+      renewalCount: row.renewalCount,
+      device: row.deviceLabel,
+      current: currentSessionId !== undefined && row.id === currentSessionId,
+    }))
+    .sort((a, b) => Number(b.current) - Number(a.current) || b.lastUsedAt.getTime() - a.lastUsedAt.getTime());
+}
+
+/** Revoke every active session of the user except the caller's own. Returns how many ended. */
+export async function revokeOtherSessions(userId: string, currentSessionId: string): Promise<number> {
+  const revoked = await db
+    .update(refreshSessions)
+    .set({ revokedAt: new Date() })
+    .where(and(
+      eq(refreshSessions.userId, userId),
+      ne(refreshSessions.id, currentSessionId),
+      isNull(refreshSessions.revokedAt),
+      gt(refreshSessions.expiresAt, new Date()),
+    ))
+    .returning({ id: refreshSessions.id });
+  return revoked.length;
 }
 
 /** Revoke one active session only when it belongs to the authenticated user. */
@@ -148,7 +184,7 @@ export type SessionRotationError =
   | 'TOKEN_REUSE_DETECTED';
 
 export type SessionRotationResult =
-  | { ok: true; rawRefreshToken: string }
+  | { ok: true; rawRefreshToken: string; sessionId: string }
   | { ok: false; error: SessionRotationError };
 
 /**
@@ -169,6 +205,7 @@ export async function rotateSessionAtomically(
   const tokenLookup = sha256Hex(rawRefreshToken);
   const tokenHash = await bcrypt.hash(rawRefreshToken, BCRYPT_ROUNDS);
   const expiresAt = new Date(Date.now() + REFRESH_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const newSessionId = crypto.randomUUID();
 
   return db.transaction(async (tx) => {
     const [session] = await tx
@@ -215,16 +252,18 @@ export async function rotateSessionAtomically(
       .where(eq(refreshSessions.id, session.id));
 
     await tx.insert(refreshSessions).values({
+      id: newSessionId,
       userId,
       tokenHash,
       tokenLookup,
       rotatedFromId: session.id,
       ip: sha256Hex(meta.ip),
       userAgent: sha256Hex(meta.userAgent),
+      deviceLabel: deviceLabelFor(meta),
       expiresAt,
       renewalCount,
     });
 
-    return { ok: true, rawRefreshToken };
+    return { ok: true, rawRefreshToken, sessionId: newSessionId };
   });
 }

@@ -68,8 +68,8 @@ jobs:
     # A tag push releases everything; a manual run only what it names.
     if: github.event_name == 'push' || inputs.targets != 'extension'
     runs-on: ubuntu-latest
-    # backup + push + migration + deploy + health check
-    timeout-minutes: 25
+    # backup + push + migration + deploy + health check, plus a rollback deploy + health check on failure
+    timeout-minutes: 35
     env:
       SHA: ${{ needs.gate.outputs.sha }}
       FLY_APP: windom-api
@@ -146,10 +146,23 @@ jobs:
         env:
           FLY_POSTGRES_APP: ${{ secrets.FLY_POSTGRES_APP }}
 
+      # ── Rollback target ─────────────────────────────────────────────────────
+      # What production runs right now (its digest, and the tag to redeploy it
+      # by), so a failure below can put exactly that back (#228). Read just before the deploy so it is current.
+      # A failed read warns and the deploy continues with rollback unavailable:
+      # it is only a read of the Fly API, and blocking a release on it would turn
+      # an API hiccup into a stuck release. The reasoning is in the script.
+      - name: Record the image production runs now
+        id: previous
+        run: |
+          flyctl machine list --app "$FLY_APP" --json > machines-before.json || echo "::warning::fly machine list failed"
+          node release-tools/.github/scripts/deploy-rollback.mjs capture machines-before.json
+
       # release_command in fly.toml runs the migrations in a short-lived machine
       # from this same image before the new release goes live. Fly's rolling
       # strategy keeps the old machine serving until the new one is healthy.
       - name: Deploy the scanned image
+        id: deploy
         working-directory: backend
         run: flyctl deploy --app "$FLY_APP" --image "$IMAGE" --wait-timeout 300
         env:
@@ -158,6 +171,7 @@ jobs:
       # READINESS, not liveness: /health stays 200 while the database is read-only,
       # which is how incident #307 ran undetected for four months.
       - name: Verify production readiness
+        id: ready
         run: |
           echo "Verifying https://windom-api.fly.dev/health/ready ..."
           for i in 1 2 3 4 5 6; do
@@ -172,7 +186,7 @@ jobs:
             sleep 10
           done
           echo "::error::Readiness check failed after 60s - the API is up but its database"
-          echo "::error::is unreachable or read-only. Run: flyctl rollback -a windom-api"
+          echo "::error::is unreachable or read-only. The next step rolls back automatically."
           exit 1
 
       - name: Production runs the image the gate scanned
@@ -182,6 +196,74 @@ jobs:
         env:
           EXPECTED_DIGEST: ${{ steps.push.outputs.digest }}
 
+      # ── Automatic rollback (#228) ───────────────────────────────────────────
+      # Runs when the deploy was attempted and it, readiness or the image check
+      # failed. Redeploys the image recorded above BY DIGEST, then re-checks
+      # readiness and the digest. Only the app image goes back: migrations already
+      # ran and are NOT reverted, which is safe only because migrations must be
+      # backward-compatible with the previous release (CONTRIBUTING.md, "Database
+      # migrations"). The old image's release_command re-runs and applies nothing:
+      # drizzle applies only migrations newer than the newest one recorded.
+      #
+      # The job stays failed whatever happens here: a rolled-back release is still
+      # a failed release, and the extension must not publish against it.
+      - name: Roll back to the previous image
+        if: >-
+          failure() &&
+          (steps.deploy.outcome == 'success' || steps.deploy.outcome == 'failure')
+        working-directory: backend
+        run: |
+          if [ "$DEPLOY" = failure ]; then FAILED_STEP="Deploy the scanned image (flyctl deploy)"
+          elif [ "$READY" = failure ]; then FAILED_STEP="Verify production readiness (/health/ready)"
+          else FAILED_STEP="Production runs the image the gate scanned (digest check)"; fi
+          export FAILED_STEP
+
+          flyctl machine list --app "$FLY_APP" --json > ../machines-after.json || echo "::warning::fly machine list failed"
+          node ../release-tools/.github/scripts/deploy-rollback.mjs decide ../machines-after.json | tee decision.log
+          ACTION=$(sed -n 's/^Rollback decision: \([a-z]*\) - .*/\1/p' decision.log)
+          DECISION_REASON=$(sed -n 's/^Rollback decision: [a-z]* - //p' decision.log)
+          export ACTION DECISION_REASON
+
+          ROLLBACK_RESULT=""
+          if [ "$ACTION" = rollback ]; then
+            ROLLBACK_RESULT=failure
+            echo "Redeploying $PREVIOUS_IMAGE"
+            if flyctl deploy --app "$FLY_APP" --image "$PREVIOUS_IMAGE" --wait-timeout 300; then
+              for i in 1 2 3 4 5 6; do
+                STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 https://windom-api.fly.dev/health/ready || true)
+                if [ "$STATUS" = "200" ]; then
+                  flyctl machine list --app "$FLY_APP" --json > ../machines-rolled-back.json || true
+                  if EXPECTED_DIGEST="$PREVIOUS_DIGEST" node ../release-tools/.github/scripts/check-deployed-image.mjs ../machines-rolled-back.json; then
+                    ROLLBACK_RESULT=success
+                  fi
+                  break
+                fi
+                echo "Rollback readiness attempt $i: HTTP $STATUS, retrying in 10s..."
+                sleep 10
+              done
+            fi
+          fi
+          export ROLLBACK_RESULT
+
+          node ../release-tools/.github/scripts/deploy-rollback.mjs summary
+          if [ "$ROLLBACK_RESULT" = success ]; then
+            echo "::error::Release $RELEASE_TAG failed and was rolled back to $PREVIOUS_IMAGE. Migrations were NOT reverted."
+          elif [ "$ACTION" = rollback ]; then
+            echo "::error::Release $RELEASE_TAG failed AND the automatic rollback failed. Production needs a human now."
+          else
+            echo "::error::Release $RELEASE_TAG failed; no automatic rollback (${ACTION:-no decision}). Migrations were NOT reverted."
+          fi
+          exit 1
+        env:
+          DEPLOY: ${{ steps.deploy.outcome }}
+          READY: ${{ steps.ready.outcome }}
+          PREVIOUS_AVAILABLE: ${{ steps.previous.outputs.available }}
+          PREVIOUS_IMAGE: ${{ steps.previous.outputs.image }}
+          PREVIOUS_DIGEST: ${{ steps.previous.outputs.digest }}
+          CAPTURE_REASON: ${{ steps.previous.outputs.reason }}
+          NEW_DIGEST: ${{ steps.push.outputs.digest }}
+          NEW_IMAGE: ${{ steps.push.outputs.ref }}@${{ steps.push.outputs.digest }}
+
       - name: Deployment summary
         run: |
           echo "===== Deployment complete ====="
@@ -189,13 +271,14 @@ jobs:
           echo "Commit:     $SHA"
           echo "Image:      $IMAGE@$DIGEST"
           echo "Backup at:  $BACKUP_AT"
+          echo "Previous:   ${PREVIOUS_IMAGE:-not recorded, so automatic rollback was unavailable}"
           echo ""
-          echo "To roll back code only:  flyctl rollback -a windom-api"
-          echo "To roll back database:   see Windom/runbooks/deploy-rollback.md"
+          echo "Roll back by hand:  docs/deployment-runbook.md"
         env:
           IMAGE: ${{ steps.push.outputs.ref }}
           DIGEST: ${{ steps.push.outputs.digest }}
           BACKUP_AT: ${{ steps.backup.outputs.timestamp }}
+          PREVIOUS_IMAGE: ${{ steps.previous.outputs.image }}
 
   # ── Extension ──────────────────────────────────────────────────────────────
   publish:
@@ -274,6 +357,8 @@ jobs:
         run: node .github/scripts/report-store-status.mjs
         env:
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          # The published version is read through the v2 API, whose paths name the publisher.
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
@@ -285,6 +370,8 @@ jobs:
         env:
           SUBMIT_FOR_REVIEW: 'true'
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          # The published version is read through the v2 API, whose paths name the publisher.
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}

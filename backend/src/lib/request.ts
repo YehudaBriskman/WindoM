@@ -34,5 +34,11 @@ export function extractSessionMeta(req: FastifyRequest): SessionMeta {
       req.ip ||
       '0.0.0.0',
     userAgent: req.headers['user-agent'] ?? '',
+    uaBrands: headerString(req.headers['sec-ch-ua']),
+    uaPlatform: headerString(req.headers['sec-ch-ua-platform']),
   };
+}
+
+function headerString(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }

@@ -360,15 +360,111 @@
   z-index: var(--z-raised);
 }
 
-/* Reduced motion keeps the material and stops the light. The highlight is
-   pinned by the hook; this guards the transitions. */
+/* ── Reduced motion (#354) ────────────────────────────────────────────────
+
+   Reduced motion keeps the material and stops the light: the highlight is
+   pinned by the hook. For the panes themselves the decision is *less* motion,
+   not *none*.
+
+   This used to be `transition: none !important` on every glass class, so the
+   settings panel, the right sidebar and the dock's add form snapped between
+   button and panel with no transition at all. Nobody chose that; it was
+   inherited. A large surface appearing or vanishing in one frame is its own
+   kind of jolt, and what the preference guards against is vestibular motion -
+   things travelling, growing, zooming - not change over time. A short opacity
+   fade carries none of that. So: every positional and size animation goes
+   (width, height, border-radius morphs, slides), and in its place the pane
+   cross-fades over --dur-fade (150ms), on the way in and on the way out.
+
+   The blanket also hid things. `!important` beat each component's own
+   transition, so nobody could see which ones were really running: the dock
+   form only carries .glass-panel while expanded, so its *close* still morphed
+   under reduced motion, and the Spotify dock's sprung width was only stopped
+   by accident. The rules below name each pane and say what replaces its
+   motion; nothing here needs `!important`. Colour transitions (border and
+   background on hover) are not motion and are left alone.
+
+   How the morphing panes fade. The same element is both the small button and
+   the open panel, so a fade has two halves:
+     open   the size snaps at once and the whole pane fades in from 0.
+     close  the size is held for --dur-fade (a 0s transition with a delay)
+            while the pane fades to 0, then it snaps to button size and the
+            button fades back in. The contents switch at the moment of the
+            snap, while the pane is invisible.
+   That needs keyframes, because a transition cannot go 1 -> 0 -> base. One
+   consequence: the closed state's animation also runs once when the button
+   first mounts (a 300ms dip), normally under the app loader.
+   Opacity must not be in these panes' `transition` lists here - a running
+   transition outranks an animation in the cascade and would replace it. */
+@keyframes glass-rm-in {
+  from { opacity: 0; }
+}
+@keyframes glass-rm-out {
+  0%   { opacity: 1; }
+  50%  { opacity: 0; }
+  /* 100% is the closed state's own opacity (0.8 for the gear, 0.45 for the
+     dock's add button). */
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .glass-panel,
-  .glass-sidebar,
-    .glass-quote,
-  .glass-credit,
-  .glass-dock {
-    transition: none !important;
+  /* Morphing panes: button <-> panel. */
+  .settings-container,
+  .sidebar-container,
+  .dock-expandable {
+    transition:
+      width 0s linear var(--dur-fade),
+      height 0s linear var(--dur-fade),
+      border-radius 0s linear var(--dur-fade);
+    animation: glass-rm-out calc(var(--dur-fade) * 2) linear;
+  }
+  .settings-container.open,
+  .sidebar-container.open,
+  .dock-expandable.expanded {
+    transition: none;
+    animation: glass-rm-in var(--dur-fade) var(--ease-out);
+  }
+
+  /* Their contents and icons swap while the pane is invisible: on close at
+     the snap, on open straight away (the pane is fading in from 0 anyway). */
+  .settings-inner,
+  .sidebar-panel-content,
+  .dock-expand-form,
+  .settings-icon,
+  .sidebar-btn-icon,
+  .dock-expand-icon {
+    transition: opacity 0s linear var(--dur-fade);
+  }
+  .settings-container.open .settings-inner,
+  .sidebar-container.open .sidebar-panel-content,
+  .dock-expandable.expanded .dock-expand-form,
+  .settings-container.open .settings-icon,
+  .sidebar-container.open .sidebar-btn-icon,
+  .dock-expandable.expanded .dock-expand-icon {
+    transition: none;
+  }
+
+  /* The tab sidebar slides in from the edge. It can fade with transitions
+     alone, because its hidden state is free to be transparent: on open it
+     jumps into place and fades in; on close it fades out in place and only
+     then jumps off-screen. */
+  .tab-sidebar-panel {
+    opacity: 0;
+    transition:
+      opacity var(--dur-fade) var(--ease-in),
+      transform 0s linear var(--dur-fade);
+  }
+  .tab-sidebar-panel.visible {
+    opacity: 1;
+    transition:
+      opacity var(--dur-fade) var(--ease-out),
+      transform 0s;
+  }
+
+  /* The Spotify dock grows sideways on hover with a sprung width. The width
+     now snaps; its contents already fade (.spotify-dock-expand), and its slow
+     opacity settle is not motion. */
+  .spotify-dock {
+    transition: opacity 1.5s ease;
   }
 }
 

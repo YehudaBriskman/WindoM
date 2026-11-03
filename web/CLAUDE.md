@@ -13,7 +13,7 @@ Features: clock, greeting, background images (Unsplash/local), weather widget, q
 - **React 19** - Functional components + hooks
 - **TypeScript** - Strict mode
 - **Vite 8** + `@crxjs/vite-plugin` - Chrome extension builds with HMR
-- **Plain CSS** - no framework. `src/styles/globals.css` (~4900 lines) holds layout and components; `src/styles/glass.css` holds the glass material. Design tokens are CSS custom properties in the `:root` block at the top of globals.css: radius (`--r-pill`, `--r-card`, `--r-control`, `--r-inner`, `--r-xs`), spacing (`--space-1`..`6`), control heights and panel sizes. Use them rather than literals.
+- **Plain CSS** - no framework. `src/styles/globals.css` (~4900 lines) holds layout and components; `src/styles/glass.css` holds the glass material. Design tokens are CSS custom properties in the `:root, :host` block at the top of globals.css (`:host` so they also reach the content script's shadow root): radius (`--r-pill`, `--r-card`, `--r-control`, `--r-inner`, `--r-xs`), spacing (`--space-1`..`6`), control heights and panel sizes. Use them rather than literals.
 - **lucide-react** - SVG icon library
 
 ## Development Commands
@@ -75,11 +75,13 @@ web/                               (repo root for the extension)
 - **Chrome APIs**: Typed wrappers in `src/lib/chrome-storage.ts` for async get/set/onChange on both sync and local storage.
 - **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, Open-Meteo, Quotable, Yahoo Finance, CoinGecko, GitHub).
 - **`history` is an optional permission** (#256): requested from the History app's toggle, given back when it is turned off. Gate every `chrome.history` call on `hasHistoryPermission()` (`src/lib/history-permission.ts`), not on `showHistory` (it syncs across devices) or on `chrome.history` existing (Chrome leaves the binding in place after a revoke).
+- **Location is opt-in** (#449): a new tab never calls `navigator.geolocation` by itself. The weather widget's passive `useLocation().getLocation()` reads coordinates only when the Permissions API already reports `granted`; the one call that can make Chrome prompt is `requestCurrentLocation()`, from the "Use my current location" button in Settings → Weather. Without a city or a grant, the widget shows "Set location".
 
 ## Key Patterns
 
 - Settings changes trigger re-renders through `SettingsContext` - no manual DOM manipulation
 - Cross-tab sync happens automatically via `chrome.storage.onChanged` listener in `SettingsContext`
+- Backend sync (#251) decides conflicts by the server's revision (`updatedAt` on GET/PUT `/settings`), compared for equality, never against `Date.now()`. See `src/lib/settings-sync.ts`; per-device state lives in `chrome.storage.local` (`windom_settings_server_rev`, `windom_settings_dirty`)
 - Weather/background data cached in `chrome.storage.local` (larger quota) rather than sync storage
 - Focus timer uses `body.focus-active` CSS class to hide all UI except the overlay
 - `SettingsContext` exposes `get()`, `update()`, `updateMultiple()`, and `reset()` methods
