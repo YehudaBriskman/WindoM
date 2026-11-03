@@ -3209,6 +3209,229 @@ body.focus-exiting .sidebar-container {
   cursor: not-allowed;
 }
 
+/* ── Active sessions ──────────────────────────────────────────────────────────
+   A table, not cards: the reader is scanning for a browser they do not
+   recognise, so the device name leads (primary ink, medium weight) and the two
+   dates are demoted to secondary ink in tabular figures. Workbench density:
+   13px text, 8px cell padding, row rules only - no zebra, no per-value boxes.
+   Collapsed by default to one line; the summary says what the table would. */
+.sessions {
+  padding: 0;
+}
+.sessions-disclosure {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  min-height: var(--control-h);
+  background: none;
+  border: none;
+  border-radius: var(--r-control);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--dur-sm) var(--ease-out);
+}
+.sessions-disclosure:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+.sessions-disclosure-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.sessions-title {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--ink-secondary);
+}
+.sessions-summary {
+  font-size: var(--text-sm);
+  color: var(--ink-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.sessions-chevron {
+  flex-shrink: 0;
+  color: var(--ink-tertiary);
+  transition: transform var(--dur-sm) var(--ease-out);
+}
+.sessions-disclosure[aria-expanded="true"] .sessions-chevron {
+  transform: rotate(180deg);
+}
+.sessions-body {
+  padding: 0 var(--space-4) var(--space-4);
+  container-type: inline-size;
+}
+.sessions-error {
+  margin: 0 var(--space-4) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--error-ink);
+}
+
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.sessions-table th,
+.sessions-table td {
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  vertical-align: baseline;
+  text-align: left;
+}
+.sessions-table th:first-child,
+.sessions-table td:first-child {
+  padding-left: 0;
+}
+.sessions-table th:last-child,
+.sessions-table td:last-child {
+  padding-right: 0;
+}
+.sessions-table tbody tr:last-child > * {
+  border-bottom: none;
+}
+.sessions-table thead th {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--ink-tertiary);
+}
+/* Relative dates are compared down the column: physical right, tabular. */
+.sessions-table .sessions-num {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-secondary);
+}
+.sessions-device {
+  font-weight: var(--weight-medium);
+  color: var(--ink-primary);
+  /* Identifying text wraps; it is never truncated. */
+  overflow-wrap: break-word;
+}
+/* Four columns need ~440px; the settings panel gives ~290. Below that the
+   Expires column folds into a second line under the device - one of the two
+   is display:none, so assistive tech hears it once. */
+.sessions-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-body);
+  color: var(--ink-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+.sessions-table .sessions-col-expires {
+  display: none;
+}
+@container (min-width: 440px) {
+  .sessions-table .sessions-col-expires {
+    display: table-cell;
+  }
+  .sessions-sub {
+    display: none;
+  }
+}
+.sessions-unknown {
+  font-weight: var(--weight-body);
+  color: var(--ink-tertiary);
+}
+.sessions-badge {
+  display: block;
+  width: fit-content;
+  margin-top: 2px;
+  padding: 0 6px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.12);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--ink-primary);
+  white-space: nowrap;
+}
+.sessions-empty {
+  color: var(--ink-tertiary);
+}
+.sessions-action {
+  text-align: right;
+  width: 1%;
+  white-space: nowrap;
+}
+
+.sessions-revoke-btn,
+.sessions-link-btn,
+.sessions-danger-btn {
+  font: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  border-radius: var(--r-inner);
+  transition:
+    background-color var(--dur-sm) var(--ease-out),
+    border-color var(--dur-sm) var(--ease-out),
+    color var(--dur-sm) var(--ease-out);
+}
+.sessions-revoke-btn {
+  min-height: 28px;
+  padding: 0 var(--space-2);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--ink-secondary);
+}
+.sessions-revoke-btn:hover:not(:disabled) {
+  border-color: var(--error-edge);
+  color: var(--error-solid);
+}
+.sessions-link-btn {
+  min-height: 28px;
+  padding: 0 var(--space-1);
+  background: none;
+  border: none;
+  color: var(--ink-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sessions-link-btn:hover:not(:disabled) {
+  color: var(--ink-primary);
+}
+.sessions-show-all {
+  margin-top: var(--space-2);
+}
+.sessions-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.sessions-footer > :only-child {
+  margin-left: auto;
+}
+.sessions-danger-btn {
+  min-height: var(--control-h-sm);
+  padding: 0 var(--space-3);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: rgba(255, 200, 200, 0.9);
+}
+.sessions-danger-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: var(--ink-primary);
+}
+.sessions-revoke-btn:disabled,
+.sessions-link-btn:disabled,
+.sessions-danger-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sessions-chevron {
+    transition: none;
+  }
+}
+
 /* ── Email verification banner ────────────────────────────────────────────── */
 
 .verification-banner {
