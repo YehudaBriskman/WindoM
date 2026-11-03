@@ -4,6 +4,7 @@ import { COOKIE_NAME } from '../types/constants.js';
 import { verifyPassword } from '../lib/password.js';
 import * as meService from '../services/me.service.js';
 import { listActiveSessions, revokeOwnedSession } from '../services/session.service.js';
+import { buildUserExport } from '../services/export.service.js';
 
 const updateMeSchema = z
   .object({
@@ -109,4 +110,16 @@ export async function revokeSessionController(req: FastifyRequest, reply: Fastif
     return;
   }
   void reply.status(204).send();
+}
+
+export async function exportMeController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const data = await buildUserExport(req.user.sub);
+  if (!data.profile) {
+    void reply.status(404).send({ statusCode: 404, error: 'Not Found', message: 'User not found' });
+    return;
+  }
+  const date = data.exportedAt.slice(0, 10);
+  reply.header('Cache-Control', 'no-store');
+  reply.header('Content-Disposition', `attachment; filename="windom-export-${date}.json"`);
+  void reply.type('application/json; charset=utf-8').send(data);
 }
