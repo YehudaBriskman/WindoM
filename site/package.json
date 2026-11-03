@@ -15,6 +15,7 @@
     "lint:fix": "eslint src --fix",
     "typecheck": "tsc -b --noEmit",
     "test": "node --test \"src/**/*.test.ts\"",
+    "audit:overflow": "node scripts/overflow-audit.mjs",
     "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs && node scripts/sitemap.mjs"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.0.0",
     "globals": "^17.13.0",
+    "playwright": "1.64.1",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.4"
