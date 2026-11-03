@@ -1,5 +1,6 @@
 /** Background service worker - manages tab state and broadcasts to content scripts */
 import { isOwnExtensionSender, isTabId, parseTabCommand } from '../lib/runtime-messages';
+import { TABS_SNAPSHOT_KEY } from '../lib/chrome-tabs';
 
 let suspended = false;
 chrome.runtime.onSuspend.addListener(() => { suspended = true; });
@@ -7,7 +8,7 @@ chrome.runtime.onSuspend.addListener(() => { suspended = true; });
 async function broadcastTabsChanged() {
   if (suspended) return;
   const tabs = await chrome.tabs.query({});
-  await chrome.storage.local.set({ _windom_tabs: tabs });
+  await chrome.storage.local.set({ [TABS_SNAPSHOT_KEY]: tabs });
 
   for (const tab of tabs) {
     if (tab.id === null || tab.id === undefined) continue;

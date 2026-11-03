@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, t
 import { useSettings } from './SettingsContext';
 import { useAuth } from './AuthContext';
 import { localStore as ls } from '../lib/chrome-storage';
+import { extensionUrl } from '../lib/chrome-runtime';
 import { usePhotoHistory } from '../hooks/usePhotoHistory';
 import { SETTINGS_EVENT } from '../lib/settings-events';
 import { DEFAULT_GRADIENT } from '../lib/background-constants';
@@ -9,9 +10,7 @@ import type { PhotoRecord } from '../types/photos';
 
 const UNSPLASH_API_URL = 'https://api.unsplash.com/photos/random';
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
-const BUNDLED_BG_URL = (typeof chrome !== 'undefined' && chrome.runtime?.getURL)
-  ? chrome.runtime.getURL('images/bundled-bg.jpg')
-  : '/images/bundled-bg.jpg';
+const BUNDLED_BG_URL = extensionUrl('images/bundled-bg.jpg');
 
 interface UnsplashCache {
   imageUrl: string;

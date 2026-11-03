@@ -8,7 +8,18 @@ import {
   SUGGESTIONS_DEBOUNCE_MS,
   SEARCH_API_TIMEOUT_MS,
 } from '../../lib/timing-constants';
-import { hasHistoryPermission } from '../../lib/history-permission';
+import { hasHistoryApi, hasHistoryPermission, searchHistory } from '../../lib/history-permission';
+import { hasChromeApi } from '../../lib/chrome-runtime';
+import {
+  canQueryTabs,
+  closeActiveTab,
+  duplicateActiveTab,
+  focusTab,
+  openNewTab,
+  openUrlInNewTab,
+  queryTabs,
+  togglePinActiveTab,
+} from '../../lib/chrome-tabs';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -46,9 +57,6 @@ const ENGINE_LABELS: Record<string, string> = {
 
 const ENGINE_LIST: GeneralSettings['searchEngine'][] = ['google', 'bing', 'duckduckgo', 'brave'];
 
-const hasChromeApi = typeof chrome !== 'undefined';
-// Content scripts cannot use chrome.tabs.* in MV3; detect and route via background
-const isContentScript = typeof window !== 'undefined' && window.location.protocol !== 'chrome-extension:';
 
 // ── Command definitions ────────────────────────────────────────────────────────
 
@@ -67,10 +75,7 @@ const COMMAND_DEFS: CommandDef[] = [
     keywords: ['new', 'n', 'tab', 'newtab', 'open'],
     Icon: Plus,
     makeAction: (setOpen) => () => {
-      if (hasChromeApi) {
-        if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_NEW_TAB' });
-        else chrome.tabs.create({});
-      }
+      openNewTab();
       setOpen(false);
     },
   },
@@ -80,14 +85,7 @@ const COMMAND_DEFS: CommandDef[] = [
     keywords: ['close', 'c', 'x', 'exit', 'quit'],
     Icon: X,
     makeAction: (setOpen) => async () => {
-      if (hasChromeApi) {
-        if (isContentScript) {
-          chrome.runtime.sendMessage({ type: 'WINDOM_CMD_CLOSE_TAB' });
-        } else {
-          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-          if (tab?.id) chrome.tabs.remove(tab.id);
-        }
-      }
+      await closeActiveTab();
       setOpen(false);
     },
   },
@@ -107,14 +105,7 @@ const COMMAND_DEFS: CommandDef[] = [
     keywords: ['dup', 'duplicate', 'd', 'clone', 'copy'],
     Icon: Copy,
     makeAction: (setOpen) => async () => {
-      if (hasChromeApi) {
-        if (isContentScript) {
-          chrome.runtime.sendMessage({ type: 'WINDOM_CMD_DUPLICATE_TAB' });
-        } else {
-          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-          if (tab?.id) chrome.tabs.duplicate(tab.id);
-        }
-      }
+      await duplicateActiveTab();
       setOpen(false);
     },
   },
@@ -124,14 +115,7 @@ const COMMAND_DEFS: CommandDef[] = [
     keywords: ['pin', 'p', 'unpin'],
     Icon: Pin,
     makeAction: (setOpen) => async () => {
-      if (hasChromeApi) {
-        if (isContentScript) {
-          chrome.runtime.sendMessage({ type: 'WINDOM_CMD_PIN_TAB' });
-        } else {
-          const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-          if (tab?.id) chrome.tabs.update(tab.id, { pinned: !tab.pinned });
-        }
-      }
+      await togglePinActiveTab();
       setOpen(false);
     },
   },
@@ -152,9 +136,9 @@ function resolveAsUrl(input: string): string {
 
 async function getTabSuggestions(q: string): Promise<Suggestion[]> {
   try {
-    if (!hasChromeApi || !chrome.tabs?.query) return [];
+    if (!canQueryTabs()) return [];
     const lower = q.toLowerCase();
-    const tabs = await chrome.tabs.query({});
+    const tabs = await queryTabs();
     return tabs
       .filter(t => {
         if (t.url?.startsWith('chrome://') || t.url?.startsWith('chrome-extension://')) return false;
@@ -182,8 +166,8 @@ async function getHistorySuggestions(q: string, tabUrls: Set<string>, enabled: b
     // `history` is an optional permission (#256): only the History app's
     // toggle grants it, and it can be revoked at any time. Check it per query
     // rather than trusting the synced setting or the presence of chrome.history.
-    if (!enabled || !hasChromeApi || !(await hasHistoryPermission()) || !chrome.history?.search) return [];
-    const items = await chrome.history.search({ text: q, maxResults: 10 });
+    if (!enabled || !hasChromeApi || !(await hasHistoryPermission()) || !hasHistoryApi()) return [];
+    const items = await searchHistory({ text: q, maxResults: 10 });
     return items
       .filter(item => item.url && !tabUrls.has(item.url))
       .slice(0, 4)
@@ -266,12 +250,7 @@ export function SearchOverlay() {
         Icon: ExternalLink,
         action: () => {
           const url = resolveAsUrl(commandQuery) || ENGINES[settings.general.searchEngine] + encodeURIComponent(commandQuery);
-          if (hasChromeApi) {
-            if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_OPEN_URL', url });
-            else chrome.tabs.create({ url });
-          } else {
-            window.open(url, '_blank');
-          }
+          openUrlInNewTab(url);
           setOpen(false);
         },
       });
@@ -341,8 +320,7 @@ export function SearchOverlay() {
 
       // Tab switch
       if (suggestion?.kind === 'tab' && suggestion.tabId !== null && suggestion.tabId !== undefined && hasChromeApi) {
-        chrome.tabs.update(suggestion.tabId, { active: true });
-        if (suggestion.windowId !== null && suggestion.windowId !== undefined) chrome.windows.update(suggestion.windowId, { focused: true });
+        focusTab(suggestion.tabId, suggestion.windowId);
         setOpen(false);
         return;
       }
@@ -352,12 +330,7 @@ export function SearchOverlay() {
         const q = value.slice(1).trimStart();
         if (!q) return;
         const url = resolveAsUrl(q) || ENGINES[settings.general.searchEngine] + encodeURIComponent(q);
-        if (hasChromeApi) {
-          if (isContentScript) chrome.runtime.sendMessage({ type: 'WINDOM_CMD_OPEN_URL', url });
-          else chrome.tabs.create({ url });
-        } else {
-          window.open(url, '_blank');
-        }
+        openUrlInNewTab(url);
         setOpen(false);
         return;
       }

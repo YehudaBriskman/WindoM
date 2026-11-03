@@ -4,6 +4,8 @@ import {
   requestHistoryPermission,
   releaseHistoryPermission,
   onHistoryPermissionChange,
+  hasHistoryApi,
+  searchHistory,
 } from '../lib/history-permission';
 
 export interface HistoryItem {
@@ -55,15 +57,15 @@ export function useHistory(enabled: boolean) {
   const [items, setItems] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    if (!enabled || granted !== true || !chrome.history?.search) { setItems([]); return; }
+    if (!enabled || granted !== true || !hasHistoryApi()) { setItems([]); return; }
 
     let alive = true;
     const startTime = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    chrome.history.search({ text: '', maxResults: 20, startTime }, (results) => {
+    void searchHistory({ text: '', maxResults: 20, startTime }).then((results) => {
       if (!alive) return;
       const seen = new Set<string>();
       const filtered: HistoryItem[] = [];
-      for (const r of results ?? []) {
+      for (const r of results) {
         if (!r.url || !r.title) continue;
         try {
           const hostname = new URL(r.url).hostname;
