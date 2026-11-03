@@ -47,11 +47,15 @@ import { buildTestApp } from '../../test-utils/app.js';
 import { closeDb, truncateAll } from '../../test-utils/db.js';
 
 const app = await buildTestApp();
-afterAll(async () => { await app.close(); await closeDb(); });
+afterAll(async () => {
+  await app.close();
+  await closeDb();
+});
 
 const EMAIL = 'audit-me@example.com';
 const PASSWORD = 'correct horse battery';
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+const UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
 const IP = '203.0.113.77';
 const client = { 'user-agent': UA, 'x-forwarded-for': IP };
 const DEVICE = 'Chrome · Windows';
@@ -62,12 +66,18 @@ let authorization: string;
 
 async function registerUser(): Promise<{ refreshToken: string }> {
   const res = await app.inject({
-    method: 'POST', url: '/auth/register', headers: client, payload: { email: EMAIL, password: PASSWORD, name: 'Audit' },
+    method: 'POST',
+    url: '/auth/register',
+    headers: client,
+    payload: { email: EMAIL, password: PASSWORD, name: 'Audit' },
   });
   expect(res.statusCode).toBe(200);
   const [user] = await db.select({ id: users.id }).from(users).where(eq(users.email, EMAIL));
   userId = user.id;
-  const [session] = await db.select({ id: refreshSessions.id }).from(refreshSessions).where(eq(refreshSessions.userId, userId));
+  const [session] = await db
+    .select({ id: refreshSessions.id })
+    .from(refreshSessions)
+    .where(eq(refreshSessions.userId, userId));
   sid = session.id;
   authorization = `Bearer ${res.json<{ accessToken: string }>().accessToken}`;
   return { refreshToken: res.cookies.find((c) => c.name === 'windom_refresh')!.value };
@@ -108,7 +118,12 @@ describe('audit log: authentication events', () => {
 
   it('sign-in writes sign_in with the session it created', async () => {
     await registerUser();
-    const res = await app.inject({ method: 'POST', url: '/auth/login', headers: client, payload: { email: EMAIL, password: PASSWORD } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers: client,
+      payload: { email: EMAIL, password: PASSWORD },
+    });
     expect(res.statusCode).toBe(200);
     const row = await only('sign_in');
     expect(row).toMatchObject({ userId, deviceLabel: DEVICE });
@@ -119,14 +134,24 @@ describe('audit log: authentication events', () => {
 
   it('a wrong password writes sign_in_failed against the account', async () => {
     await registerUser();
-    const res = await app.inject({ method: 'POST', url: '/auth/login', headers: client, payload: { email: EMAIL, password: 'wrong-password' } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers: client,
+      payload: { email: EMAIL, password: 'wrong-password' },
+    });
     expect(res.statusCode).toBe(401);
     expect(await only('sign_in_failed')).toMatchObject({ userId, sessionId: null, deviceLabel: DEVICE });
     await expectNoSecrets(['wrong-password']);
   });
 
   it('an unknown email writes sign_in_failed with no user and no email', async () => {
-    const res = await app.inject({ method: 'POST', url: '/auth/login', headers: client, payload: { email: 'nobody@example.com', password: 'whatever-pw' } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/login',
+      headers: client,
+      payload: { email: 'nobody@example.com', password: 'whatever-pw' },
+    });
     expect(res.statusCode).toBe(401);
     expect(await only('sign_in_failed')).toMatchObject({ userId: null, sessionId: null, deviceLabel: DEVICE });
     await expectNoSecrets(['nobody@example.com', 'whatever-pw']);
@@ -134,7 +159,12 @@ describe('audit log: authentication events', () => {
 
   it('sign-out writes sign_out for the revoked session', async () => {
     const { refreshToken } = await registerUser();
-    const res = await app.inject({ method: 'POST', url: '/auth/logout', headers: client, cookies: { windom_refresh: refreshToken } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/logout',
+      headers: client,
+      cookies: { windom_refresh: refreshToken },
+    });
     expect(res.statusCode).toBe(200);
     expect(await only('sign_out')).toMatchObject({ userId, sessionId: sid, deviceLabel: DEVICE });
     await expectNoSecrets([refreshToken]);
@@ -143,12 +173,24 @@ describe('audit log: authentication events', () => {
   it('refresh-token reuse writes token_reuse_detected', async () => {
     await registerUser();
     const raw = await createSession(userId, { ip: IP, userAgent: UA });
-    const reused = (await db.select().from(refreshSessions).where(eq(refreshSessions.userId, userId))).find((s) => s.id !== sid)!;
+    const reused = (await db.select().from(refreshSessions).where(eq(refreshSessions.userId, userId))).find(
+      (s) => s.id !== sid,
+    )!;
     // A child already exists while the parent is still live: the token was replayed.
     await db.insert(refreshSessions).values({
-      userId, tokenHash: 'x', tokenLookup: randomUUID(), rotatedFromId: reused.id, ip: 'x', expiresAt: new Date(Date.now() + 86_400_000),
+      userId,
+      tokenHash: 'x',
+      tokenLookup: randomUUID(),
+      rotatedFromId: reused.id,
+      ip: 'x',
+      expiresAt: new Date(Date.now() + 86_400_000),
     });
-    const res = await app.inject({ method: 'POST', url: '/auth/refresh', headers: client, cookies: { windom_refresh: raw } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/refresh',
+      headers: client,
+      cookies: { windom_refresh: raw },
+    });
     expect(res.statusCode).toBe(401);
     expect(await only('token_reuse_detected')).toMatchObject({ userId, sessionId: reused.id, deviceLabel: DEVICE });
     await expectNoSecrets([raw]);
@@ -168,7 +210,10 @@ describe('audit log: account events', () => {
   it('password change writes password_changed', async () => {
     await registerUser();
     const res = await app.inject({
-      method: 'PATCH', url: '/me', headers: { ...client, authorization }, payload: { currentPassword: PASSWORD, newPassword: 'brand-new-secret' },
+      method: 'PATCH',
+      url: '/me',
+      headers: { ...client, authorization },
+      payload: { currentPassword: PASSWORD, newPassword: 'brand-new-secret' },
     });
     expect(res.statusCode).toBe(200);
     expect(await only('password_changed')).toMatchObject({ userId, sessionId: sid, deviceLabel: DEVICE });
@@ -181,14 +226,24 @@ describe('audit log: account events', () => {
     expect(await only('password_reset_requested')).toMatchObject({ userId, deviceLabel: DEVICE });
     const token = vi.mocked(sendPasswordResetEmail).mock.calls[0][2];
 
-    const res = await app.inject({ method: 'POST', url: '/auth/reset-password', headers: client, payload: { token, newPassword: 'reset-new-secret' } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/auth/reset-password',
+      headers: client,
+      payload: { token, newPassword: 'reset-new-secret' },
+    });
     expect(res.statusCode).toBe(200);
     expect(await only('password_reset')).toMatchObject({ userId, sessionId: null, deviceLabel: DEVICE });
     await expectNoSecrets([token, 'reset-new-secret']);
   });
 
   it('a forgot-password request for an unknown email writes nothing', async () => {
-    await app.inject({ method: 'POST', url: '/auth/forgot-password', headers: client, payload: { email: 'ghost@example.com' } });
+    await app.inject({
+      method: 'POST',
+      url: '/auth/forgot-password',
+      headers: client,
+      payload: { email: 'ghost@example.com' },
+    });
     expect(await auditRows()).toEqual([]);
   });
 
@@ -204,8 +259,14 @@ describe('audit log: account events', () => {
   it('revoking one session writes session_revoked for that session', async () => {
     await registerUser();
     await createSession(userId, { ip: IP, userAgent: UA });
-    const other = (await db.select().from(refreshSessions).where(eq(refreshSessions.userId, userId))).find((s) => s.id !== sid)!;
-    const res = await app.inject({ method: 'DELETE', url: `/me/sessions/${other.id}`, headers: { ...client, authorization } });
+    const other = (await db.select().from(refreshSessions).where(eq(refreshSessions.userId, userId))).find(
+      (s) => s.id !== sid,
+    )!;
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/me/sessions/${other.id}`,
+      headers: { ...client, authorization },
+    });
     expect(res.statusCode).toBe(204);
     expect(await only('session_revoked')).toMatchObject({ userId, sessionId: other.id, deviceLabel: DEVICE });
     await expectNoSecrets();
@@ -213,7 +274,11 @@ describe('audit log: account events', () => {
 
   it('signing out all others writes sessions_revoked_others for the kept session', async () => {
     await registerUser();
-    const res = await app.inject({ method: 'DELETE', url: '/me/sessions?others=true', headers: { ...client, authorization } });
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/me/sessions?others=true',
+      headers: { ...client, authorization },
+    });
     expect(res.statusCode).toBe(200);
     expect(await only('sessions_revoked_others')).toMatchObject({ userId, sessionId: sid, deviceLabel: DEVICE });
     await expectNoSecrets();
@@ -230,9 +295,14 @@ describe('audit log: account events', () => {
     await expectNoSecrets();
   });
 
-  it('account deletion erases the user\'s rows and leaves an anonymous tombstone', async () => {
+  it("account deletion erases the user's rows and leaves an anonymous tombstone", async () => {
     await registerUser();
-    const res = await app.inject({ method: 'DELETE', url: '/me', headers: { ...client, authorization }, payload: { password: PASSWORD } });
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/me',
+      headers: { ...client, authorization },
+      payload: { password: PASSWORD },
+    });
     expect(res.statusCode).toBe(204);
     const rows = await auditRows();
     expect(rows).toHaveLength(1);
@@ -246,13 +316,27 @@ describe('audit log: integrations', () => {
 
   it('linking Google writes integration_connected_google', async () => {
     await registerUser();
-    vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({ ok: true, data: { id: 's', userId, provider: 'google', purpose: 'link', clientId: null } });
+    vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({
+      ok: true,
+      data: { id: 's', userId, provider: 'google', purpose: 'link', clientId: null },
+    });
     vi.mocked(oauthService.exchangeGoogleCode).mockResolvedValue({
       ok: true,
-      data: { tokens: { access_token: 'google-access-SECRET', refresh_token: 'google-refresh-SECRET', expires_in: 3600, scope: 'openid' }, userInfo: { sub: 'g-1', email: EMAIL, name: 'A' } },
+      data: {
+        tokens: {
+          access_token: 'google-access-SECRET',
+          refresh_token: 'google-refresh-SECRET',
+          expires_in: 3600,
+          scope: 'openid',
+        },
+        userInfo: { sub: 'g-1', email: EMAIL, name: 'A' },
+      },
     });
     const res = await app.inject({
-      method: 'POST', url: '/oauth/google/exchange', headers: { ...client, authorization }, payload: { code: 'c', state: 's', redirectUri },
+      method: 'POST',
+      url: '/oauth/google/exchange',
+      headers: { ...client, authorization },
+      payload: { code: 'c', state: 's', redirectUri },
     });
     expect(res.statusCode).toBe(200);
     expect(await only('integration_connected_google')).toMatchObject({ userId, deviceLabel: DEVICE });
@@ -261,12 +345,25 @@ describe('audit log: integrations', () => {
 
   it('linking Spotify writes integration_connected_spotify', async () => {
     await registerUser();
-    vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({ ok: true, data: { id: 's', userId, provider: 'spotify', purpose: 'link', clientId: null } });
+    vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({
+      ok: true,
+      data: { id: 's', userId, provider: 'spotify', purpose: 'link', clientId: null },
+    });
     vi.mocked(oauthService.exchangeSpotifyCode).mockResolvedValue({
-      ok: true, data: { access_token: 'spotify-access-SECRET', refresh_token: 'spotify-refresh-SECRET', expires_in: 3600, scope: 'user-read-playback-state', providerUserId: 'sp-1' },
+      ok: true,
+      data: {
+        access_token: 'spotify-access-SECRET',
+        refresh_token: 'spotify-refresh-SECRET',
+        expires_in: 3600,
+        scope: 'user-read-playback-state',
+        providerUserId: 'sp-1',
+      },
     });
     const res = await app.inject({
-      method: 'POST', url: '/oauth/spotify/exchange', headers: { ...client, authorization }, payload: { code: 'c', state: 's', redirectUri },
+      method: 'POST',
+      url: '/oauth/spotify/exchange',
+      headers: { ...client, authorization },
+      payload: { code: 'c', state: 's', redirectUri },
     });
     expect(res.statusCode).toBe(200);
     expect(await only('integration_connected_spotify')).toMatchObject({ userId, deviceLabel: DEVICE });
@@ -277,32 +374,51 @@ describe('audit log: integrations', () => {
     await registerUser();
     vi.mocked(githubService.storePat).mockResolvedValue({ ok: true, data: { username: 'octo' } });
     const res = await app.inject({
-      method: 'POST', url: '/integrations/github/pat', headers: { ...client, authorization }, payload: { pat: 'ghp_SECRETPAT' },
+      method: 'POST',
+      url: '/integrations/github/pat',
+      headers: { ...client, authorization },
+      payload: { pat: 'ghp_SECRETPAT' },
     });
     expect(res.statusCode).toBe(200);
     expect(await only('integration_connected_github')).toMatchObject({ userId, sessionId: sid, deviceLabel: DEVICE });
     await expectNoSecrets(['ghp_SECRETPAT']);
   });
 
-  it.each(['google', 'spotify', 'github'] as const)('disconnecting %s writes integration_disconnected_%s', async (provider) => {
-    await registerUser();
-    const res = await app.inject({ method: 'DELETE', url: `/integrations/${provider}`, headers: { ...client, authorization } });
-    expect(res.statusCode).toBe(200);
-    expect(await only(`integration_disconnected_${provider}`)).toMatchObject({ userId, sessionId: sid, deviceLabel: DEVICE });
-    await expectNoSecrets();
-  });
+  it.each(['google', 'spotify', 'github'] as const)(
+    'disconnecting %s writes integration_disconnected_%s',
+    async (provider) => {
+      await registerUser();
+      const res = await app.inject({
+        method: 'DELETE',
+        url: `/integrations/${provider}`,
+        headers: { ...client, authorization },
+      });
+      expect(res.statusCode).toBe(200);
+      expect(await only(`integration_disconnected_${provider}`)).toMatchObject({
+        userId,
+        sessionId: sid,
+        deviceLabel: DEVICE,
+      });
+      await expectNoSecrets();
+    },
+  );
 });
 
 describe('audit log: failure isolation and retention', () => {
   it('a failing audit write never breaks the action it records', async () => {
     await registerUser();
     const insert = db.insert.bind(db);
-    const spy = vi.spyOn(db, 'insert').mockImplementation(((table: Parameters<typeof db.insert>[0]) => {
+    const spy = vi.spyOn(db, 'insert').mockImplementation((table: Parameters<typeof db.insert>[0]) => {
       if (table === auditLogs) throw new Error('audit table unavailable');
       return insert(table);
-    }));
+    });
     try {
-      const res = await app.inject({ method: 'POST', url: '/auth/login', headers: client, payload: { email: EMAIL, password: PASSWORD } });
+      const res = await app.inject({
+        method: 'POST',
+        url: '/auth/login',
+        headers: client,
+        payload: { email: EMAIL, password: PASSWORD },
+      });
       expect(res.statusCode).toBe(200);
     } finally {
       spy.mockRestore();
@@ -332,7 +448,7 @@ describe('GET /me/activity', () => {
     expect((await app.inject({ method: 'GET', url: '/me/activity' })).statusCode).toBe(401);
   });
 
-  it('lists the caller\'s own events newest first, within retention, honouring limit', async () => {
+  it("lists the caller's own events newest first, within retention, honouring limit", async () => {
     await registerUser();
     const otherId = randomUUID();
     await db.insert(users).values({ id: otherId });
@@ -354,6 +470,8 @@ describe('GET /me/activity', () => {
 
     const limited = await app.inject({ method: 'GET', url: '/me/activity?limit=1', headers: { authorization } });
     expect(limited.json<{ events: unknown[] }>().events).toHaveLength(1);
-    expect((await app.inject({ method: 'GET', url: '/me/activity?limit=0', headers: { authorization } })).statusCode).toBe(400);
+    expect(
+      (await app.inject({ method: 'GET', url: '/me/activity?limit=0', headers: { authorization } })).statusCode,
+    ).toBe(400);
   });
 });

@@ -113,10 +113,10 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
     messageIds.map(async ({ id }) => {
       const r = await fetchWithTimeout(
         `${GMAIL_API}/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
-        { headers }
+        { headers },
       );
       return (await r.json()) as GmailMessageResponse;
-    })
+    }),
   );
 
   const messages: GmailMessage[] = messageResults

@@ -1,5 +1,13 @@
 import { db, pool } from '../db/client.js';
-import { refreshSessions, oauthAccounts, oauthStates, userSettings, emailTokens, users, auditLogs } from '../db/schema.js';
+import {
+  refreshSessions,
+  oauthAccounts,
+  oauthStates,
+  userSettings,
+  emailTokens,
+  users,
+  auditLogs,
+} from '../db/schema.js';
 
 /**
  * Truncates all tables in dependency order (children before parents).

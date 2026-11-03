@@ -19,7 +19,9 @@ function mockAccount(): { id: string; userId: string; provider: string } {
 
 function dbReturnsAccount(account: ReturnType<typeof mockAccount> | null): void {
   const limitMock = vi.fn().mockResolvedValue(account ? [account] : []);
-  mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: limitMock }) }) });
+  mockDb.select.mockReturnValue({
+    from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: limitMock }) }),
+  });
 }
 
 beforeEach(() => {
@@ -67,8 +69,7 @@ describe('getCalendarEvents', () => {
 
     const calListResponse = {
       ok: true,
-      json: () =>
-        Promise.resolve({ items: [{ id: 'primary', backgroundColor: '#ff0000' }] }),
+      json: () => Promise.resolve({ items: [{ id: 'primary', backgroundColor: '#ff0000' }] }),
     };
     const eventsResponse = {
       ok: true,
@@ -126,7 +127,8 @@ describe('getCalendarEvents', () => {
 
     vi.stubGlobal(
       'fetch',
-      vi.fn()
+      vi
+        .fn()
         .mockResolvedValueOnce(calListResponse)
         .mockResolvedValueOnce(eventResponse)
         .mockResolvedValueOnce(eventResponse),

@@ -21,14 +21,22 @@ beforeEach(async () => {
   authorization = `Bearer ${await signAccessToken({ sub: userId, email: 'test@example.com', name: '', emailVerified: true })}`;
 });
 afterEach(() => vi.useRealTimers());
-afterAll(async () => { await app.close(); await closeDb(); });
+afterAll(async () => {
+  await app.close();
+  await closeDb();
+});
 
 async function seed(overrides: Partial<typeof refreshSessions.$inferInsert> = {}): Promise<string> {
   const id = randomUUID();
   await db.insert(refreshSessions).values({
-    id, userId, tokenHash: 'private-token-hash', tokenLookup: randomUUID(),
-    ip: 'private-ip-hash', userAgent: 'a'.repeat(64),
-    expiresAt: new Date(Date.now() + 86_400_000), ...overrides,
+    id,
+    userId,
+    tokenHash: 'private-token-hash',
+    tokenLookup: randomUUID(),
+    ip: 'private-ip-hash',
+    userAgent: 'a'.repeat(64),
+    expiresAt: new Date(Date.now() + 86_400_000),
+    ...overrides,
   });
   return id;
 }
@@ -108,23 +116,35 @@ describe('session management with PostgreSQL and production routes', () => {
     expect(session).not.toBeNull();
     expect((await revoke(session!.id)).statusCode).toBe(204);
     const response = await app.inject({
-      method: 'POST', url: '/auth/refresh', cookies: { windom_refresh: token },
+      method: 'POST',
+      url: '/auth/refresh',
+      cookies: { windom_refresh: token },
     });
     expect(response.statusCode).toBe(401);
   });
 
-  it('labels a session from the sign-in User-Agent and marks the caller\'s own session current', async () => {
-    const chromeOnMac = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+  it("labels a session from the sign-in User-Agent and marks the caller's own session current", async () => {
+    const chromeOnMac =
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
     const login = await app.inject({
-      method: 'POST', url: '/auth/refresh',
+      method: 'POST',
+      url: '/auth/refresh',
       cookies: { windom_refresh: await createSession(userId, { ip: '10.0.0.1', userAgent: chromeOnMac }) },
-      headers: { 'user-agent': chromeOnMac, 'sec-ch-ua': '"Chromium";v="130", "Brave";v="130"', 'sec-ch-ua-platform': '"macOS"' },
+      headers: {
+        'user-agent': chromeOnMac,
+        'sec-ch-ua': '"Chromium";v="130", "Brave";v="130"',
+        'sec-ch-ua-platform': '"macOS"',
+      },
     });
     expect(login.statusCode).toBe(200);
     const { accessToken } = login.json<{ accessToken: string }>();
     await seed({ deviceLabel: 'Firefox · Windows' });
 
-    const response = await app.inject({ method: 'GET', url: '/me/sessions', headers: { authorization: `Bearer ${accessToken}` } });
+    const response = await app.inject({
+      method: 'GET',
+      url: '/me/sessions',
+      headers: { authorization: `Bearer ${accessToken}` },
+    });
     const { sessions } = response.json<{ sessions: Array<{ device: string | null; current: boolean }> }>();
     expect(sessions.map((s) => [s.device, s.current])).toEqual([
       ['Brave · macOS', true],
@@ -138,13 +158,21 @@ describe('session management with PostgreSQL and production routes', () => {
     }
   });
 
-  it('signs out every other session and keeps the caller\'s', async () => {
+  it("signs out every other session and keeps the caller's", async () => {
     const mine = await seed();
     const other = await seed();
     const foreign = await seed({ userId: otherUserId });
-    const token = await signAccessToken({ sub: userId, email: 'test@example.com', name: '', emailVerified: true, sid: mine });
+    const token = await signAccessToken({
+      sub: userId,
+      email: 'test@example.com',
+      name: '',
+      emailVerified: true,
+      sid: mine,
+    });
     const response = await app.inject({
-      method: 'DELETE', url: '/me/sessions?others=true', headers: { authorization: `Bearer ${token}` },
+      method: 'DELETE',
+      url: '/me/sessions?others=true',
+      headers: { authorization: `Bearer ${token}` },
     });
     expect(response.json()).toEqual({ revoked: 1 });
     const rows = await db.select().from(refreshSessions);

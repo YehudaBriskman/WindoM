@@ -46,7 +46,11 @@ beforeEach(() => vi.clearAllMocks());
 
 describe('register', () => {
   it('returns EMAIL_TAKEN when email already exists', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: '1' }]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi
+        .fn()
+        .mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: '1' }]) }) }),
+    });
 
     const result = await register('a@b.com', 'password123', 'Alice', { ip: '1.1.1.1', userAgent: '' });
 
@@ -54,13 +58,18 @@ describe('register', () => {
   });
 
   it('creates user and returns token pair on success', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }),
+    });
     const returningMock = vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]);
     mockDb.insert.mockReturnValue({ values: vi.fn().mockReturnValue({ returning: returningMock }) });
 
     const result = await register('a@b.com', 'password123', 'Alice', { ip: '1.1.1.1', userAgent: '' });
 
-    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token', emailSent: true } });
+    expect(result).toEqual({
+      ok: true,
+      data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token', emailSent: true },
+    });
   });
 });
 
@@ -68,7 +77,9 @@ describe('register', () => {
 
 describe('login', () => {
   it('returns INVALID_CREDENTIALS when user not found', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }),
+    });
     vi.mocked(verifyPassword).mockResolvedValueOnce(false);
 
     const result = await login('x@x.com', 'pass', { ip: '1.1.1.1', userAgent: '' });
@@ -76,7 +87,13 @@ describe('login', () => {
   });
 
   it('returns INVALID_CREDENTIALS when password is wrong', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice', passwordHash: '$hashed' }]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice', passwordHash: '$hashed' }]),
+        }),
+      }),
+    });
     vi.mocked(verifyPassword).mockResolvedValueOnce(false);
 
     const result = await login('a@b.com', 'wrongpass', { ip: '1.1.1.1', userAgent: '' });
@@ -84,11 +101,20 @@ describe('login', () => {
   });
 
   it('returns token pair on success', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice', passwordHash: '$hashed' }]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice', passwordHash: '$hashed' }]),
+        }),
+      }),
+    });
     vi.mocked(verifyPassword).mockResolvedValueOnce(true);
 
     const result = await login('a@b.com', 'correct', { ip: '1.1.1.1', userAgent: '' });
-    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token' } });
+    expect(result).toEqual({
+      ok: true,
+      data: { accessToken: 'access-token-xyz', rawRefreshToken: 'raw-refresh-token' },
+    });
   });
 });
 
@@ -106,8 +132,17 @@ describe('refresh', () => {
 
   it('returns SESSION_LIMIT_REACHED when renewal cap exceeded', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }) }) });
-    vi.mocked(sessionService.rotateSessionAtomically).mockResolvedValueOnce({ ok: false, error: 'SESSION_LIMIT_REACHED' });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi
+          .fn()
+          .mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }),
+      }),
+    });
+    vi.mocked(sessionService.rotateSessionAtomically).mockResolvedValueOnce({
+      ok: false,
+      error: 'SESSION_LIMIT_REACHED',
+    });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'SESSION_LIMIT_REACHED' });
@@ -116,8 +151,17 @@ describe('refresh', () => {
 
   it('returns TOKEN_REUSE_DETECTED and revokes all sessions on reuse', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }) }) });
-    vi.mocked(sessionService.rotateSessionAtomically).mockResolvedValueOnce({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi
+          .fn()
+          .mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }),
+      }),
+    });
+    vi.mocked(sessionService.rotateSessionAtomically).mockResolvedValueOnce({
+      ok: false,
+      error: 'TOKEN_REUSE_DETECTED',
+    });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
@@ -128,7 +172,9 @@ describe('refresh', () => {
 
   it('returns USER_NOT_FOUND when user is gone from DB', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }),
+    });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'USER_NOT_FOUND' });
@@ -136,16 +182,20 @@ describe('refresh', () => {
 
   it('rotates session and returns new token pair on success', async () => {
     vi.mocked(sessionService.findSessionByToken).mockResolvedValueOnce(validSession as never);
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi
+          .fn()
+          .mockReturnValue({ limit: vi.fn().mockResolvedValue([{ id: 'u1', email: 'a@b.com', name: 'Alice' }]) }),
+      }),
+    });
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
-    expect(result).toEqual({ ok: true, data: { accessToken: 'access-token-xyz', rawRefreshToken: 'rotated-refresh-token' } });
-    expect(sessionService.rotateSessionAtomically).toHaveBeenCalledWith(
-      's1',
-      'u1',
-      expect.anything(),
-      1,
-    );
+    expect(result).toEqual({
+      ok: true,
+      data: { accessToken: 'access-token-xyz', rawRefreshToken: 'rotated-refresh-token' },
+    });
+    expect(sessionService.rotateSessionAtomically).toHaveBeenCalledWith('s1', 'u1', expect.anything(), 1);
   });
 });
 

@@ -22,19 +22,18 @@ describe('backend security baseline', () => {
     }
   });
 
-  it.each(['development', 'test'] as const)(
-    'allows %s environments without a production redirect base',
-    (NODE_ENV) => {
-      expect(envSchema.safeParse({ ...validEnv, NODE_ENV }).success).toBe(true);
-    },
-  );
+  it.each(['development', 'test'] as const)('allows %s environments without a production redirect base', (NODE_ENV) => {
+    expect(envSchema.safeParse({ ...validEnv, NODE_ENV }).success).toBe(true);
+  });
 
   it('accepts an HTTPS chromiumapp.org redirect base in production', () => {
-    expect(envSchema.safeParse({
-      ...validEnv,
-      NODE_ENV: 'production',
-      EXTENSION_REDIRECT_BASE: 'https://abcdefghijklmnop.chromiumapp.org',
-    }).success).toBe(true);
+    expect(
+      envSchema.safeParse({
+        ...validEnv,
+        NODE_ENV: 'production',
+        EXTENSION_REDIRECT_BASE: 'https://abcdefghijklmnop.chromiumapp.org',
+      }).success,
+    ).toBe(true);
   });
 
   it.each([
@@ -44,11 +43,13 @@ describe('backend security baseline', () => {
     'https://chromiumapp.org.evil.example',
     'https://example.com',
   ])('rejects an unsafe production redirect base: %j', (EXTENSION_REDIRECT_BASE) => {
-    expect(envSchema.safeParse({
-      ...validEnv,
-      NODE_ENV: 'production',
-      EXTENSION_REDIRECT_BASE,
-    }).success).toBe(false);
+    expect(
+      envSchema.safeParse({
+        ...validEnv,
+        NODE_ENV: 'production',
+        EXTENSION_REDIRECT_BASE,
+      }).success,
+    ).toBe(false);
   });
 
   it('creates a complete secure production refresh-cookie policy', () => {
@@ -65,13 +66,9 @@ describe('backend security baseline', () => {
     expect(createRefreshCookieOptions(false)).toMatchObject({ secure: true, sameSite: 'lax' });
   });
 
-  it.each([false, undefined])(
-    'rejects SameSite=None when Secure is %s',
-    (secure) => {
-      expect(() => assertRefreshCookieSecurity({ sameSite: 'none', secure }))
-        .toThrow('SameSite=None requires Secure');
-    },
-  );
+  it.each([false, undefined])('rejects SameSite=None when Secure is %s', (secure) => {
+    expect(() => assertRefreshCookieSecurity({ sameSite: 'none', secure })).toThrow('SameSite=None requires Secure');
+  });
 
   it('allows secure SameSite=None and non-cross-site cookie policies', () => {
     expect(() => assertRefreshCookieSecurity({ sameSite: 'none', secure: true })).not.toThrow();
@@ -79,13 +76,12 @@ describe('backend security baseline', () => {
   });
 
   it('includes the request correlation ID in structured request logs', () => {
-    expect(requestLogSerializer({ id: 'req-42', method: 'GET', url: '/health', ip: '127.0.0.1' }))
-      .toEqual({
-        id: 'req-42',
-        method: 'GET',
-        url: '/health',
-        remoteAddress: '127.0.0.1',
-      });
+    expect(requestLogSerializer({ id: 'req-42', method: 'GET', url: '/health', ip: '127.0.0.1' })).toEqual({
+      id: 'req-42',
+      method: 'GET',
+      url: '/health',
+      remoteAddress: '127.0.0.1',
+    });
   });
 
   it('never logs query-string values, which carry single-use tokens and OAuth codes', () => {
@@ -101,8 +97,9 @@ describe('backend security baseline', () => {
   });
 
   it('keeps parameter names but redacts every value, including on OAuth callbacks', () => {
-    expect(redactUrlQuery('/auth/google/callback?code=4%2F0Ab&state=xyz&scope=email'))
-      .toBe('/auth/google/callback?code=[redacted]&state=[redacted]&scope=[redacted]');
+    expect(redactUrlQuery('/auth/google/callback?code=4%2F0Ab&state=xyz&scope=email')).toBe(
+      '/auth/google/callback?code=[redacted]&state=[redacted]&scope=[redacted]',
+    );
     expect(redactUrlQuery('/auth/verify-email?token=abc#frag')).toBe('/auth/verify-email?token=[redacted]');
     expect(redactUrlQuery('/search?flag&x=1')).toBe('/search?flag&x=[redacted]');
     expect(redactUrlQuery('/health')).toBe('/health');
@@ -121,15 +118,10 @@ describe('backend security baseline', () => {
     await app.close();
   });
 
-  it.each(['/health', '/definitely-missing'])(
-    'sets restrictive browser permissions on %s responses',
-    async (url) => {
-      const app = await buildApp({ logger: false, skipRateLimit: true });
-      const response = await app.inject({ method: 'GET', url });
-      expect(response.headers['permissions-policy']).toBe(
-        'geolocation=(), microphone=(), camera=()',
-      );
-      await app.close();
-    },
-  );
+  it.each(['/health', '/definitely-missing'])('sets restrictive browser permissions on %s responses', async (url) => {
+    const app = await buildApp({ logger: false, skipRateLimit: true });
+    const response = await app.inject({ method: 'GET', url });
+    expect(response.headers['permissions-policy']).toBe('geolocation=(), microphone=(), camera=()');
+    await app.close();
+  });
 });

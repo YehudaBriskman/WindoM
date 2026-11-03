@@ -26,7 +26,10 @@ pool.on('error', (err) => {
 pool.on('connect', () => {
   const utilisation = pool.totalCount / (config.isProd ? 10 : 5);
   if (utilisation >= 0.8) {
-    logger.warn({ total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount }, 'DB pool approaching max connections');
+    logger.warn(
+      { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount },
+      'DB pool approaching max connections',
+    );
   }
 });
 

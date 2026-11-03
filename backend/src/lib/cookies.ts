@@ -2,9 +2,7 @@ import type { CookieSerializeOptions } from '@fastify/cookie';
 import { config } from '../config.js';
 import { COOKIE_MAX_AGE_SECONDS } from '../types/constants.js';
 
-export function assertRefreshCookieSecurity(
-  options: Pick<CookieSerializeOptions, 'sameSite' | 'secure'>,
-): void {
+export function assertRefreshCookieSecurity(options: Pick<CookieSerializeOptions, 'sameSite' | 'secure'>): void {
   if (options.sameSite === 'none' && options.secure !== true) {
     throw new Error('SameSite=None requires Secure');
   }

@@ -42,18 +42,21 @@ beforeEach(() => {
 });
 
 describe('Spotify OAuth routes', () => {
-  it.each(['/oauth/spotify/start', '/oauth/spotify/exchange'])(
-    'requires authentication for POST %s',
-    async (url) => expect((await app.inject({ method: 'POST', url })).statusCode).toBe(401),
+  it.each(['/oauth/spotify/start', '/oauth/spotify/exchange'])('requires authentication for POST %s', async (url) =>
+    expect((await app.inject({ method: 'POST', url })).statusCode).toBe(401),
   );
 
   it('starts a BYOA PKCE flow with the supplied client and challenge', async () => {
     vi.mocked(oauthService.createOAuthState).mockResolvedValue('state-1');
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/start', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/start',
+      headers: { authorization },
       payload: {
-        clientId: 'user-client', redirectUri: pkceRedirect,
-        codeChallenge: 'challenge', codeChallengeMethod: 'S256',
+        clientId: 'user-client',
+        redirectUri: pkceRedirect,
+        codeChallenge: 'challenge',
+        codeChallengeMethod: 'S256',
       },
     });
     expect(response.statusCode).toBe(200);
@@ -69,7 +72,9 @@ describe('Spotify OAuth routes', () => {
     vi.mocked(oauthService.createOAuthState).mockResolvedValue('state-1');
     vi.mocked(oauthService.hasOAuthAccount).mockResolvedValue(true);
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/start', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/start',
+      headers: { authorization },
       payload: { clientId: 'user-client', redirectUri: pkceRedirect, codeChallenge: 'challenge' },
     });
     expect(new URL(response.json<{ authUrl: string }>().authUrl).searchParams.has('show_dialog')).toBe(false);
@@ -77,7 +82,9 @@ describe('Spotify OAuth routes', () => {
 
   it('rejects an unapproved legacy redirect before creating state', async () => {
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/start?redirectUri=https://attacker.example', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/start?redirectUri=https://attacker.example',
+      headers: { authorization },
     });
     expect(response.statusCode).toBe(400);
     expect(oauthService.createOAuthState).not.toHaveBeenCalled();
@@ -85,15 +92,25 @@ describe('Spotify OAuth routes', () => {
 
   it.each([{}, { code: 'code' }, { code: 'code', state: 'state', redirectUri: 'invalid' }])(
     'rejects malformed exchange body %#',
-    async (payload) => expect((await app.inject({
-      method: 'POST', url: '/oauth/spotify/exchange', headers: { authorization }, payload,
-    })).statusCode).toBe(400),
+    async (payload) =>
+      expect(
+        (
+          await app.inject({
+            method: 'POST',
+            url: '/oauth/spotify/exchange',
+            headers: { authorization },
+            payload,
+          })
+        ).statusCode,
+      ).toBe(400),
   );
 
   it('rejects mismatched state without contacting Spotify', async () => {
     vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({ ok: false, error: 'STATE_INVALID' });
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/exchange',
+      headers: { authorization },
       payload: { code: 'code', state: 'wrong', redirectUri: pkceRedirect, codeVerifier: 'verifier' },
     });
     expect(response.statusCode).toBe(400);
@@ -108,19 +125,29 @@ describe('Spotify OAuth routes', () => {
     vi.mocked(oauthService.exchangeSpotifyCode).mockResolvedValue({
       ok: true,
       data: {
-        access_token: 'access', refresh_token: 'refresh', expires_in: 3600,
-        scope: 'streaming', providerUserId: 'spotify-user',
+        access_token: 'access',
+        refresh_token: 'refresh',
+        expires_in: 3600,
+        scope: 'streaming',
+        providerUserId: 'spotify-user',
       },
     });
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/exchange',
+      headers: { authorization },
       payload: { code: 'code', state: 'state', redirectUri: pkceRedirect, codeVerifier: 'verifier' },
     });
     expect(response.statusCode).toBe(200);
     expect(oauthService.exchangeSpotifyCode).toHaveBeenCalledWith('code', pkceRedirect, 'verifier', 'user-client');
-    expect(oauthService.storeOAuthTokens).toHaveBeenCalledWith('owner-1', 'spotify', expect.objectContaining({
-      providerUserId: 'spotify-user', providerClientId: 'user-client',
-    }));
+    expect(oauthService.storeOAuthTokens).toHaveBeenCalledWith(
+      'owner-1',
+      'spotify',
+      expect.objectContaining({
+        providerUserId: 'spotify-user',
+        providerClientId: 'user-client',
+      }),
+    );
   });
 
   it('rejects a Spotify account already linked to another WindoM user', async () => {
@@ -134,7 +161,9 @@ describe('Spotify OAuth routes', () => {
     });
     vi.mocked(oauthService.checkOAuthConflict).mockResolvedValue('other_user');
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/exchange',
+      headers: { authorization },
       payload: { code: 'code', state: 'state', redirectUri: pkceRedirect, codeVerifier: 'verifier' },
     });
     expect(response.statusCode).toBe(409);
@@ -143,7 +172,8 @@ describe('Spotify OAuth routes', () => {
   });
 
   it.each([
-    ['TOKEN_EXCHANGE_FAILED', 400], ['USERINFO_FAILED', 500],
+    ['TOKEN_EXCHANGE_FAILED', 400],
+    ['USERINFO_FAILED', 500],
   ] as const)('maps provider %s to HTTP %s', async (error, statusCode) => {
     vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({
       ok: true,
@@ -151,7 +181,9 @@ describe('Spotify OAuth routes', () => {
     });
     vi.mocked(oauthService.exchangeSpotifyCode).mockResolvedValue({ ok: false, error });
     const response = await app.inject({
-      method: 'POST', url: '/oauth/spotify/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/spotify/exchange',
+      headers: { authorization },
       payload: { code: 'bad', state: 'state', redirectUri: pkceRedirect, codeVerifier: 'verifier' },
     });
     expect(response.statusCode).toBe(statusCode);

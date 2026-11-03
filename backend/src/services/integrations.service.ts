@@ -38,9 +38,7 @@ export async function getIntegrations(userId: string): Promise<IntegrationsStatu
 }
 
 export async function unlinkProvider(userId: string, provider: OAuthProvider): Promise<void> {
-  await db
-    .delete(oauthAccounts)
-    .where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, provider)));
+  await db.delete(oauthAccounts).where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, provider)));
 
   if (provider === 'google') {
     invalidateCalendarCache(userId);

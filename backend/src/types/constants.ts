@@ -50,12 +50,9 @@ export const SPOTIFY_SCOPES = [
   'user-modify-playback-state',
 ].join(' ');
 
-export const CALENDAR_SCOPES = [
-  'https://www.googleapis.com/auth/calendar.readonly',
-  'openid',
-  'email',
-  'profile',
-].join(' ');
+export const CALENDAR_SCOPES = ['https://www.googleapis.com/auth/calendar.readonly', 'openid', 'email', 'profile'].join(
+  ' ',
+);
 
 export const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',

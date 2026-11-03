@@ -105,7 +105,12 @@ describe('findSessionByToken', () => {
   });
 
   it('returns null when session is revoked', async () => {
-    const session = { revokedAt: new Date(), expiresAt: new Date(Date.now() + 99999), tokenHash: '$2b$hash', tokenLookup: 'abc' };
+    const session = {
+      revokedAt: new Date(),
+      expiresAt: new Date(Date.now() + 99999),
+      tokenHash: '$2b$hash',
+      tokenLookup: 'abc',
+    };
     const whereSpy = vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([session]) });
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: whereSpy }) });
 
@@ -115,7 +120,12 @@ describe('findSessionByToken', () => {
   });
 
   it('returns null when session is expired', async () => {
-    const session = { revokedAt: null, expiresAt: new Date(Date.now() - 1000), tokenHash: '$2b$hash', tokenLookup: 'abc' };
+    const session = {
+      revokedAt: null,
+      expiresAt: new Date(Date.now() - 1000),
+      tokenHash: '$2b$hash',
+      tokenLookup: 'abc',
+    };
     const whereSpy = vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([session]) });
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: whereSpy }) });
 
@@ -126,7 +136,12 @@ describe('findSessionByToken', () => {
 
   it('returns null when bcrypt compare fails', async () => {
     vi.mocked(bcrypt.compare).mockResolvedValueOnce(false as unknown as string);
-    const session = { revokedAt: null, expiresAt: new Date(Date.now() + 99999), tokenHash: '$2b$hash', tokenLookup: 'abc' };
+    const session = {
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 99999),
+      tokenHash: '$2b$hash',
+      tokenLookup: 'abc',
+    };
     const whereSpy = vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([session]) });
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: whereSpy }) });
 
@@ -137,7 +152,13 @@ describe('findSessionByToken', () => {
 
   it('returns the session when valid', async () => {
     vi.mocked(bcrypt.compare).mockResolvedValueOnce(true as unknown as string);
-    const session = { revokedAt: null, expiresAt: new Date(Date.now() + 99999), tokenHash: '$2b$hash', tokenLookup: 'abc', id: 'sid' };
+    const session = {
+      revokedAt: null,
+      expiresAt: new Date(Date.now() + 99999),
+      tokenHash: '$2b$hash',
+      tokenLookup: 'abc',
+      id: 'sid',
+    };
     const whereSpy = vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([session]) });
     mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: whereSpy }) });
 
@@ -175,9 +196,8 @@ describe('rotateSessionAtomically', () => {
     const values = vi.fn().mockResolvedValue(undefined);
     const insert = vi.fn().mockReturnValue({ values });
     const tx = { select, update, insert };
-    mockDb.transaction.mockImplementationOnce(
-      ((callback: (client: typeof tx) => unknown): unknown => callback(tx)) as never,
-    );
+    mockDb.transaction.mockImplementationOnce(((callback: (client: typeof tx) => unknown): unknown =>
+      callback(tx)) as never);
     return { tx, updateWhere, values };
   }
 
@@ -192,33 +212,25 @@ describe('rotateSessionAtomically', () => {
   it('revokes the old row and inserts its replacement in one transaction', async () => {
     const { tx, values } = transactionWith(activeSession);
 
-    const result = await rotateSessionAtomically(
-      'session-1',
-      'user-1',
-      { ip: '1.2.3.4', userAgent: 'test-agent' },
-      3,
-    );
+    const result = await rotateSessionAtomically('session-1', 'user-1', { ip: '1.2.3.4', userAgent: 'test-agent' }, 3);
 
     expect(result.ok).toBe(true);
     expect(mockDb.transaction).toHaveBeenCalledOnce();
     expect(tx.update).toHaveBeenCalledOnce();
     expect(tx.insert).toHaveBeenCalledOnce();
-    expect(values).toHaveBeenCalledWith(expect.objectContaining({
-      userId: 'user-1',
-      rotatedFromId: 'session-1',
-      renewalCount: 3,
-    }));
+    expect(values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: 'user-1',
+        rotatedFromId: 'session-1',
+        renewalCount: 3,
+      }),
+    );
   });
 
   it('rejects a session that was revoked while waiting for the row lock', async () => {
     const { tx } = transactionWith({ ...activeSession, revokedAt: new Date() });
 
-    const result = await rotateSessionAtomically(
-      'session-1',
-      'user-1',
-      { ip: '1.2.3.4', userAgent: 'test-agent' },
-      3,
-    );
+    const result = await rotateSessionAtomically('session-1', 'user-1', { ip: '1.2.3.4', userAgent: 'test-agent' }, 3);
 
     expect(result).toEqual({ ok: false, error: 'SESSION_NOT_FOUND' });
     expect(tx.update).not.toHaveBeenCalled();
@@ -243,12 +255,7 @@ describe('rotateSessionAtomically', () => {
   it('revokes the token family when a rotated child already exists', async () => {
     const { tx } = transactionWith(activeSession, { id: 'child-session' });
 
-    const result = await rotateSessionAtomically(
-      'session-1',
-      'user-1',
-      { ip: '1.2.3.4', userAgent: 'test-agent' },
-      3,
-    );
+    const result = await rotateSessionAtomically('session-1', 'user-1', { ip: '1.2.3.4', userAgent: 'test-agent' }, 3);
 
     expect(result).toEqual({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
     expect(tx.update).toHaveBeenCalledOnce();

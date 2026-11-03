@@ -25,7 +25,10 @@ beforeEach(async () => {
   ]);
   authorization = `Bearer ${await signAccessToken({ sub: userId, email: 'me@example.com', name: 'Me', emailVerified: true })}`;
 });
-afterAll(async () => { await app.close(); await closeDb(); });
+afterAll(async () => {
+  await app.close();
+  await closeDb();
+});
 
 function exportMe(headers: Record<string, string> = { authorization }): ReturnType<typeof app.inject> {
   return app.inject({ method: 'GET', url: '/me/export', headers });
@@ -33,17 +36,44 @@ function exportMe(headers: Record<string, string> = { authorization }): ReturnTy
 
 async function seedEverything(): Promise<void> {
   await db.insert(refreshSessions).values([
-    { userId, tokenHash: `${SECRET}-th`, tokenLookup: `${SECRET}-tl`, ip: `${SECRET}-ip`, userAgent: 'abcdef0123456789' + SECRET, expiresAt: new Date(Date.now() + 86_400_000) },
-    { userId: otherUserId, tokenHash: 'x', tokenLookup: 'other-lookup', ip: 'x', expiresAt: new Date(Date.now() + 86_400_000) },
+    {
+      userId,
+      tokenHash: `${SECRET}-th`,
+      tokenLookup: `${SECRET}-tl`,
+      ip: `${SECRET}-ip`,
+      userAgent: 'abcdef0123456789' + SECRET,
+      expiresAt: new Date(Date.now() + 86_400_000),
+    },
+    {
+      userId: otherUserId,
+      tokenHash: 'x',
+      tokenLookup: 'other-lookup',
+      ip: 'x',
+      expiresAt: new Date(Date.now() + 86_400_000),
+    },
   ]);
   await db.insert(oauthAccounts).values({
-    userId, provider: 'google', providerUserId: 'g-123', accessTokenEnc: `${SECRET}-at`, refreshTokenEnc: `${SECRET}-rt`, scopes: ['openid'],
+    userId,
+    provider: 'google',
+    providerUserId: 'g-123',
+    accessTokenEnc: `${SECRET}-at`,
+    refreshTokenEnc: `${SECRET}-rt`,
+    scopes: ['openid'],
   });
   await db.insert(oauthStates).values({
-    state: `${SECRET}-state`, userId, provider: 'google', purpose: 'link', expiresAt: new Date(Date.now() + 60_000),
+    state: `${SECRET}-state`,
+    userId,
+    provider: 'google',
+    purpose: 'link',
+    expiresAt: new Date(Date.now() + 60_000),
   });
   await db.insert(emailTokens).values({
-    userId, token: `${SECRET}-tok`, tokenHash: `${SECRET}-tokh`, tokenLookup: `${SECRET}-tokl`, type: 'verify_email', expiresAt: new Date(Date.now() + 60_000),
+    userId,
+    token: `${SECRET}-tok`,
+    tokenHash: `${SECRET}-tokh`,
+    tokenLookup: `${SECRET}-tokl`,
+    type: 'verify_email',
+    expiresAt: new Date(Date.now() + 60_000),
   });
   await db.insert(userSettings).values({
     userId,
@@ -62,12 +92,14 @@ describe('GET /me/export', () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it('returns a JSON download with the caller\'s data and no secrets', async () => {
+  it("returns a JSON download with the caller's data and no secrets", async () => {
     await seedEverything();
     const res = await exportMe();
     expect(res.statusCode).toBe(200);
     expect(res.headers['content-type']).toMatch(/^application\/json/);
-    expect(res.headers['content-disposition']).toMatch(/^attachment; filename="windom-export-\d{4}-\d{2}-\d{2}\.json"$/);
+    expect(res.headers['content-disposition']).toMatch(
+      /^attachment; filename="windom-export-\d{4}-\d{2}-\d{2}\.json"$/,
+    );
     expect(res.headers['cache-control']).toBe('no-store');
     expect(res.body).not.toContain(SECRET);
     expect(res.body).not.toContain('other@example.com');
@@ -75,7 +107,13 @@ describe('GET /me/export', () => {
 
     const body = res.json<Record<string, unknown>>();
     expect(body['format']).toBe('windom-export/1');
-    expect(body['profile']).toMatchObject({ id: userId, email: 'me@example.com', name: 'Me', emailVerified: true, hasPassword: true });
+    expect(body['profile']).toMatchObject({
+      id: userId,
+      email: 'me@example.com',
+      name: 'Me',
+      emailVerified: true,
+      hasPassword: true,
+    });
     expect(Object.keys(body['profile'] as object).sort()).toEqual(
       ['id', 'email', 'name', 'emailVerified', 'createdAt', 'hasPassword'].sort(),
     );

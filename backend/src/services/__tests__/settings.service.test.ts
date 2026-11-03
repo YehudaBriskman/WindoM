@@ -16,7 +16,9 @@ beforeEach(() => vi.clearAllMocks());
 
 describe('getSettings', () => {
   it('returns null when no settings row exists', async () => {
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([]) }) }),
+    });
 
     const result = await getSettings('user-1');
     expect(result).toBeNull();
@@ -24,7 +26,11 @@ describe('getSettings', () => {
 
   it('returns data from the settings row', async () => {
     const data = { theme: 'dark', language: 'en' };
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data, updatedAt: new Date(1_000) }]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data, updatedAt: new Date(1_000) }]) }),
+      }),
+    });
 
     const result = await getSettings('user-1');
     expect(result).toEqual(data);
@@ -36,7 +42,13 @@ describe('getSettings', () => {
 describe('getSettingsRecord', () => {
   it('returns the server revision as epoch ms beside the data', async () => {
     const data = { general: { userName: 'A' } };
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data, updatedAt: new Date(1_700_000_000_123) }]) }) }) });
+    mockDb.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi
+          .fn()
+          .mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data, updatedAt: new Date(1_700_000_000_123) }]) }),
+      }),
+    });
 
     expect(await getSettingsRecord('user-1')).toEqual({ data, updatedAt: 1_700_000_000_123 });
   });

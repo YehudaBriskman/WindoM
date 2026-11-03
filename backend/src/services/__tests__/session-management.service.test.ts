@@ -15,46 +15,58 @@ describe('session management service', () => {
     const expiresAt = new Date('2026-10-23T10:00:00Z');
     mockDb.select.mockReturnValue({
       from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([{
-          id: '11111111-1111-4111-8111-111111111111',
-          userAgent: 'abcdef0123456789raw-hash-remainder',
-          deviceLabel: 'Firefox · Linux',
-          createdAt,
-          expiresAt,
-          renewalCount: 3,
-        }]),
+        where: vi.fn().mockResolvedValue([
+          {
+            id: '11111111-1111-4111-8111-111111111111',
+            userAgent: 'abcdef0123456789raw-hash-remainder',
+            deviceLabel: 'Firefox · Linux',
+            createdAt,
+            expiresAt,
+            renewalCount: 3,
+          },
+        ]),
       }),
     });
 
-    await expect(listActiveSessions('user-1')).resolves.toEqual([{
-      id: '11111111-1111-4111-8111-111111111111',
-      deviceId: 'abcdef012345',
-      createdAt,
-      lastUsedAt: createdAt,
-      expiresAt,
-      renewalCount: 3,
-      device: 'Firefox · Linux',
-      current: false,
-    }]);
+    await expect(listActiveSessions('user-1')).resolves.toEqual([
+      {
+        id: '11111111-1111-4111-8111-111111111111',
+        deviceId: 'abcdef012345',
+        createdAt,
+        lastUsedAt: createdAt,
+        expiresAt,
+        renewalCount: 3,
+        device: 'Firefox · Linux',
+        current: false,
+      },
+    ]);
   });
 
   it('marks the calling session current and orders it first, then by recency', async () => {
     const row = (id: string, at: string) => ({
-      id, userAgent: 'x'.repeat(64), deviceLabel: null,
-      createdAt: new Date(at), expiresAt: new Date('2026-12-01T00:00:00Z'), renewalCount: 0,
+      id,
+      userAgent: 'x'.repeat(64),
+      deviceLabel: null,
+      createdAt: new Date(at),
+      expiresAt: new Date('2026-12-01T00:00:00Z'),
+      renewalCount: 0,
     });
     mockDb.select.mockReturnValue({
       from: vi.fn().mockReturnValue({
-        where: vi.fn().mockResolvedValue([
-          row('old', '2026-10-01T00:00:00Z'),
-          row('mine', '2026-10-02T00:00:00Z'),
-          row('newest', '2026-10-03T00:00:00Z'),
-        ]),
+        where: vi
+          .fn()
+          .mockResolvedValue([
+            row('old', '2026-10-01T00:00:00Z'),
+            row('mine', '2026-10-02T00:00:00Z'),
+            row('newest', '2026-10-03T00:00:00Z'),
+          ]),
       }),
     });
     const sessions = await listActiveSessions('user-1', 'mine');
     expect(sessions.map((s) => [s.id, s.current])).toEqual([
-      ['mine', true], ['newest', false], ['old', false],
+      ['mine', true],
+      ['newest', false],
+      ['old', false],
     ]);
     expect(sessions[0]?.device).toBeNull();
   });

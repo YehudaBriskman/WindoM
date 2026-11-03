@@ -53,24 +53,27 @@ type TokenReply = { status: number; json?: unknown } | 'throw';
  */
 function stubFetch(reply: TokenReply): CapturedRequest[] {
   const tokenCalls: CapturedRequest[] = [];
-  vi.stubGlobal('fetch', vi.fn((input: string, init: RequestInit = {}) => {
-    const url = String(input);
-    if (url === GOOGLE_TOKEN_URL || url === SPOTIFY_TOKEN_URL) {
-      tokenCalls.push({
-        url,
-        method: init.method,
-        headers: { ...(init.headers as Record<string, string>) },
-        body: (init.body as URLSearchParams).toString(),
-      });
-      if (reply === 'throw') return Promise.reject(new TypeError('fetch failed'));
-      return Promise.resolve({
-        ok: reply.status >= 200 && reply.status < 300,
-        status: reply.status,
-        json: () => Promise.resolve(reply.json),
-      });
-    }
-    return Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) });
-  }));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string, init: RequestInit = {}) => {
+      const url = String(input);
+      if (url === GOOGLE_TOKEN_URL || url === SPOTIFY_TOKEN_URL) {
+        tokenCalls.push({
+          url,
+          method: init.method,
+          headers: { ...(init.headers as Record<string, string>) },
+          body: (init.body as URLSearchParams).toString(),
+        });
+        if (reply === 'throw') return Promise.reject(new TypeError('fetch failed'));
+        return Promise.resolve({
+          ok: reply.status >= 200 && reply.status < 300,
+          status: reply.status,
+          json: () => Promise.resolve(reply.json),
+        });
+      }
+      return Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) });
+    }),
+  );
   return tokenCalls;
 }
 
@@ -81,18 +84,24 @@ async function seed(opts: {
   providerClientId?: string | null;
   scopes?: string[];
 }) {
-  const [user] = await db.insert(users).values({ email: `u-${Math.random()}@example.test` }).returning();
-  const [row] = await db.insert(oauthAccounts).values({
-    userId: user.id,
-    provider: opts.provider,
-    providerUserId: `${opts.provider}-${user.id}`,
-    accessTokenEnc: await encryptToken('old-access'),
-    refreshTokenEnc: opts.refreshToken === null ? null : await encryptToken(opts.refreshToken ?? 'stored-refresh'),
-    tokenExpiresAt: opts.expiresAt,
-    scopes: opts.scopes ?? [],
-    providerClientId: opts.providerClientId ?? null,
-    updatedAt: new Date('2020-01-01T00:00:00Z'),
-  }).returning();
+  const [user] = await db
+    .insert(users)
+    .values({ email: `u-${Math.random()}@example.test` })
+    .returning();
+  const [row] = await db
+    .insert(oauthAccounts)
+    .values({
+      userId: user.id,
+      provider: opts.provider,
+      providerUserId: `${opts.provider}-${user.id}`,
+      accessTokenEnc: await encryptToken('old-access'),
+      refreshTokenEnc: opts.refreshToken === null ? null : await encryptToken(opts.refreshToken ?? 'stored-refresh'),
+      tokenExpiresAt: opts.expiresAt,
+      scopes: opts.scopes ?? [],
+      providerClientId: opts.providerClientId ?? null,
+      updatedAt: new Date('2020-01-01T00:00:00Z'),
+    })
+    .returning();
   return { userId: user.id, row };
 }
 
@@ -171,7 +180,12 @@ afterAll(async () => {
 
 describe.each(PROVIDERS)('provider token refresh characterization: $name', (p) => {
   it('sends the exact token request and persists the new encrypted access token', async () => {
-    const { userId, row } = await seed({ provider: p.provider, expiresAt: EXPIRED(), scopes: p.scopes, providerClientId: p.providerClientId });
+    const { userId, row } = await seed({
+      provider: p.provider,
+      expiresAt: EXPIRED(),
+      scopes: p.scopes,
+      providerClientId: p.providerClientId,
+    });
     const calls = stubFetch({ status: 200, json: { access_token: 'fresh-access', expires_in: 3600 } });
 
     const before = Date.now();
@@ -189,13 +203,20 @@ describe.each(PROVIDERS)('provider token refresh characterization: $name', (p) =
     expect(updated.tokenExpiresAt!.getTime()).toBeLessThanOrEqual(after + 3600_000 + 1000);
     expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(before - 1000);
     // Nothing else on the row changes.
-    expect({ ...updated, accessTokenEnc: null, tokenExpiresAt: null, updatedAt: null })
-      .toEqual({ ...row, accessTokenEnc: null, tokenExpiresAt: null, updatedAt: null });
+    expect({ ...updated, accessTokenEnc: null, tokenExpiresAt: null, updatedAt: null }).toEqual({
+      ...row,
+      accessTokenEnc: null,
+      tokenExpiresAt: null,
+      updatedAt: null,
+    });
   });
 
   it('does not call the token endpoint while the access token is still valid', async () => {
     const { userId, row } = await seed({
-      provider: p.provider, expiresAt: new Date(Date.now() + 60 * 60_000), scopes: p.scopes, providerClientId: p.providerClientId,
+      provider: p.provider,
+      expiresAt: new Date(Date.now() + 60 * 60_000),
+      scopes: p.scopes,
+      providerClientId: p.providerClientId,
     });
     const calls = stubFetch({ status: 200, json: { access_token: 'fresh-access', expires_in: 3600 } });
 
@@ -211,9 +232,18 @@ describe.each(PROVIDERS)('provider token refresh characterization: $name', (p) =
     { label: '400 -> network error', reply: { status: 400 }, error: 'TOKEN_REFRESH_NETWORK_ERROR' },
     { label: '503 -> network error', reply: { status: 503 }, error: 'TOKEN_REFRESH_NETWORK_ERROR' },
     { label: 'fetch throws -> network error', reply: 'throw', error: 'TOKEN_REFRESH_NETWORK_ERROR' },
-    { label: 'malformed body -> failed', reply: { status: 200, json: { access_token: 'x' } }, error: 'TOKEN_REFRESH_FAILED' },
+    {
+      label: 'malformed body -> failed',
+      reply: { status: 200, json: { access_token: 'x' } },
+      error: 'TOKEN_REFRESH_FAILED',
+    },
   ])('maps $label and leaves the row untouched', async ({ reply, error }) => {
-    const { userId, row } = await seed({ provider: p.provider, expiresAt: EXPIRED(), scopes: p.scopes, providerClientId: p.providerClientId });
+    const { userId, row } = await seed({
+      provider: p.provider,
+      expiresAt: EXPIRED(),
+      scopes: p.scopes,
+      providerClientId: p.providerClientId,
+    });
     const calls = stubFetch(reply);
 
     const result = await p.call(userId);
@@ -225,7 +255,11 @@ describe.each(PROVIDERS)('provider token refresh characterization: $name', (p) =
 
   it('fails with TOKEN_REFRESH_FAILED and no network call when no refresh token is stored', async () => {
     const { userId, row } = await seed({
-      provider: p.provider, expiresAt: EXPIRED(), refreshToken: null, scopes: p.scopes, providerClientId: p.providerClientId,
+      provider: p.provider,
+      expiresAt: EXPIRED(),
+      refreshToken: null,
+      scopes: p.scopes,
+      providerClientId: p.providerClientId,
     });
     const calls = stubFetch({ status: 200, json: { access_token: 'fresh-access', expires_in: 3600 } });
 

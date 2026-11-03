@@ -15,7 +15,9 @@ const mockGetToken = getValidAccessToken as ReturnType<typeof vi.fn>;
 
 function dbReturnsAccount(account: Record<string, unknown> | null): void {
   const limitMock = vi.fn().mockResolvedValue(account ? [account] : []);
-  mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: limitMock }) }) });
+  mockDb.select.mockReturnValue({
+    from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: limitMock }) }),
+  });
 }
 
 const rawTrack = {
@@ -76,11 +78,14 @@ describe('getNowPlaying', () => {
     dbReturnsAccount({ id: 'acct-1' });
     mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      status: 200,
-      ok: true,
-      json: () => Promise.resolve({ is_playing: true, progress_ms: 12000, item: rawTrack }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        status: 200,
+        ok: true,
+        json: () => Promise.resolve({ is_playing: true, progress_ms: 12000, item: rawTrack }),
+      }),
+    );
 
     const result = await getNowPlaying('user-1');
 
@@ -122,10 +127,13 @@ describe('getTopTracks', () => {
     dbReturnsAccount({ id: 'acct-1' });
     mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ items: [rawTrack, rawTrack] }),
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ items: [rawTrack, rawTrack] }),
+      }),
+    );
 
     const result = await getTopTracks('user-1', 2, 'medium_term');
 
@@ -141,10 +149,13 @@ describe('getTopTracks', () => {
     mockGetToken.mockResolvedValue({ ok: true, data: 'token' });
 
     let capturedUrl = '';
-    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
-      capturedUrl = url;
-      return Promise.resolve({ ok: true, json: () => Promise.resolve({ items: [] }) });
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((url: string) => {
+        capturedUrl = url;
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({ items: [] }) });
+      }),
+    );
 
     await getTopTracks('user-1', 10, 'unknown_range');
 
@@ -157,15 +168,18 @@ describe('getTopTracks', () => {
 describe('sendPlaybackCommand', () => {
   function mockFetchSequence(...responses: Array<{ status: number; ok: boolean; body?: unknown }>): void {
     let callCount = 0;
-    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
-      const r = responses[callCount] ?? responses[responses.length - 1];
-      callCount++;
-      return Promise.resolve({
-        status: r.status,
-        ok: r.ok,
-        json: () => Promise.resolve(r.body ?? {}),
-      });
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(() => {
+        const r = responses[callCount] ?? responses[responses.length - 1];
+        callCount++;
+        return Promise.resolve({
+          status: r.status,
+          ok: r.ok,
+          json: () => Promise.resolve(r.body ?? {}),
+        });
+      }),
+    );
   }
 
   it('returns NOT_CONNECTED when token is unavailable', async () => {
@@ -240,17 +254,19 @@ describe('a playback command and the now-playing cache', () => {
    */
   function respond(handlers: Record<string, () => Response>): void {
     const keys = Object.keys(handlers).sort((a, b) => b.length - a.length);
-    vi.stubGlobal('fetch', vi.fn((url: string) => {
-      const key = keys.find((k) => url.includes(k));
-      const handler = key ? handlers[key] : undefined;
-      if (!handler) throw new Error(`unexpected fetch: ${url}`);
-      return Promise.resolve(handler());
-    }));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((url: string) => {
+        const key = keys.find((k) => url.includes(k));
+        const handler = key ? handlers[key] : undefined;
+        if (!handler) throw new Error(`unexpected fetch: ${url}`);
+        return Promise.resolve(handler());
+      }),
+    );
   }
 
   /** Device resolution precedes every command; this is the shortest valid path. */
-  const activeDevice = () =>
-    new Response(JSON.stringify({ device: { id: 'dev-1' } }), { status: 200 });
+  const activeDevice = () => new Response(JSON.stringify({ device: { id: 'dev-1' } }), { status: 200 });
 
   const playingBody = (name: string) =>
     new Response(JSON.stringify({ is_playing: true, progress_ms: 1000, item: { ...rawTrack, name } }), { status: 200 });
@@ -265,7 +281,10 @@ describe('a playback command and the now-playing cache', () => {
     respond({
       'currently-playing': () => playingBody(current),
       'me/player': activeDevice,
-      'me/player/next': () => { current = 'Second Song'; return new Response(null, { status: 204 }); },
+      'me/player/next': () => {
+        current = 'Second Song';
+        return new Response(null, { status: 204 });
+      },
     });
 
     const before = await getNowPlaying('user-1');
@@ -285,7 +304,10 @@ describe('a playback command and the now-playing cache', () => {
       'currently-playing': () =>
         new Response(JSON.stringify({ is_playing: playing, progress_ms: 0, item: rawTrack }), { status: 200 }),
       'me/player': activeDevice,
-      'me/player/pause': () => { playing = false; return new Response(null, { status: 204 }); },
+      'me/player/pause': () => {
+        playing = false;
+        return new Response(null, { status: 204 });
+      },
     });
 
     const before = await getNowPlaying('user-1');

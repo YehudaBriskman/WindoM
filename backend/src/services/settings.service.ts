@@ -47,12 +47,7 @@ export async function updateSettings(
       .onConflictDoNothing()
       .returning({ userId: userSettings.userId });
 
-    const [row] = await tx
-      .select()
-      .from(userSettings)
-      .where(eq(userSettings.userId, userId))
-      .for('update')
-      .limit(1);
+    const [row] = await tx.select().from(userSettings).where(eq(userSettings.userId, userId)).for('update').limit(1);
 
     const previous = row.updatedAt.getTime();
     const updatedAt = Math.max(Date.now(), previous + 1);

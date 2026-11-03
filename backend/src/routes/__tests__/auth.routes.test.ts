@@ -15,7 +15,11 @@ afterAll(async () => {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-async function register(email = 'test@test.com', password = 'password123', name = 'Tester'): Promise<ReturnType<typeof app.inject>> {
+async function register(
+  email = 'test@test.com',
+  password = 'password123',
+  name = 'Tester',
+): Promise<ReturnType<typeof app.inject>> {
   return app.inject({
     method: 'POST',
     url: '/auth/register',
@@ -184,7 +188,11 @@ describe('GET /me', () => {
 describe('settings', () => {
   it('GET /settings returns null data before any settings are saved', async () => {
     const { accessToken } = (await register('s@s.com', 'password123', 'S')).json<{ accessToken: string }>();
-    const res = await app.inject({ method: 'GET', url: '/settings', headers: { Authorization: `Bearer ${accessToken}` } });
+    const res = await app.inject({
+      method: 'GET',
+      url: '/settings',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     expect(res.statusCode).toBe(200);
     expect(res.json<{ data: null }>().data).toBeNull();
   });
@@ -193,11 +201,20 @@ describe('settings', () => {
     const { accessToken } = (await register('s2@s.com', 'password123', 'S2')).json<{ accessToken: string }>();
     const payload = { general: { userName: 'TestUser', showGreeting: true } };
 
-    const putRes = await app.inject({ method: 'PUT', url: '/settings', headers: { Authorization: `Bearer ${accessToken}` }, payload });
+    const putRes = await app.inject({
+      method: 'PUT',
+      url: '/settings',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      payload,
+    });
     expect(putRes.statusCode).toBe(200);
     expect(putRes.json<{ data: typeof payload }>().data).toMatchObject(payload);
 
-    const getRes = await app.inject({ method: 'GET', url: '/settings', headers: { Authorization: `Bearer ${accessToken}` } });
+    const getRes = await app.inject({
+      method: 'GET',
+      url: '/settings',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     expect(getRes.json<{ data: typeof payload }>().data).toMatchObject(payload);
   });
 });
@@ -207,7 +224,11 @@ describe('settings', () => {
 describe('GET /integrations', () => {
   it('returns both providers as disconnected for a new user', async () => {
     const { accessToken } = (await register('i@i.com', 'password123', 'I')).json<{ accessToken: string }>();
-    const res = await app.inject({ method: 'GET', url: '/integrations', headers: { Authorization: `Bearer ${accessToken}` } });
+    const res = await app.inject({
+      method: 'GET',
+      url: '/integrations',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     expect(res.statusCode).toBe(200);
     const body = res.json<{ google: { connected: boolean }; spotify: { connected: boolean } }>();
     expect(body.google.connected).toBe(false);
@@ -223,13 +244,21 @@ describe('GET /integrations', () => {
 describe('DELETE /integrations/:provider', () => {
   it('returns 400 for invalid provider name', async () => {
     const { accessToken } = (await register('d@d.com', 'password123', 'D')).json<{ accessToken: string }>();
-    const res = await app.inject({ method: 'DELETE', url: '/integrations/tiktok', headers: { Authorization: `Bearer ${accessToken}` } });
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/integrations/tiktok',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     expect(res.statusCode).toBe(400);
   });
 
   it('returns 200 for valid provider even if not linked', async () => {
     const { accessToken } = (await register('d2@d.com', 'password123', 'D2')).json<{ accessToken: string }>();
-    const res = await app.inject({ method: 'DELETE', url: '/integrations/google', headers: { Authorization: `Bearer ${accessToken}` } });
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/integrations/google',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
     expect(res.statusCode).toBe(200);
   });
 });

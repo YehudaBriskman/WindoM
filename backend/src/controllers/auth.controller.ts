@@ -74,12 +74,23 @@ export async function refreshController(req: FastifyRequest, reply: FastifyReply
     req.log.warn({ reason: result.error }, 'refresh: token rotation failed');
     reply.clearCookie(COOKIE_NAME, { path: '/auth' });
     if (result.error === 'SESSION_LIMIT_REACHED') {
-      void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', code: 'SESSION_LIMIT_REACHED', message: 'Session expired. Please log in again.' });
+      void reply.status(401).send({
+        statusCode: 401,
+        error: 'Unauthorized',
+        code: 'SESSION_LIMIT_REACHED',
+        message: 'Session expired. Please log in again.',
+      });
     } else if (result.error === 'TOKEN_REUSE_DETECTED') {
       req.log.error('refresh: TOKEN_REUSE_DETECTED - all sessions for user revoked');
-      void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Refresh token reuse detected. Please log in again.' });
+      void reply.status(401).send({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message: 'Refresh token reuse detected. Please log in again.',
+      });
     } else {
-      void reply.status(401).send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired refresh token' });
+      void reply
+        .status(401)
+        .send({ statusCode: 401, error: 'Unauthorized', message: 'Invalid or expired refresh token' });
     }
     return;
   }

@@ -4,12 +4,7 @@ import { oauthAccounts } from '../db/schema.js';
 import { getValidAccessToken } from './token-refresh.service.js';
 import { googleRefreshStrategy } from './token-refresh.strategies.js';
 import { config } from '../config.js';
-import {
-  CALENDAR_API,
-  MAX_CALENDAR_DAYS,
-  DEFAULT_CALENDAR_DAYS,
-  MAX_CALENDAR_RESULTS,
-} from '../types/constants.js';
+import { CALENDAR_API, MAX_CALENDAR_DAYS, DEFAULT_CALENDAR_DAYS, MAX_CALENDAR_RESULTS } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
 import { fetchWithTimeout } from '../lib/external-fetch.js';
@@ -70,10 +65,7 @@ async function batchRequests<T>(tasks: (() => Promise<T>)[], concurrency: number
 }
 
 /** Fetch and normalize Google Calendar events for a user over the given day range. */
-export async function getCalendarEvents(
-  userId: string,
-  days: number,
-): Promise<Result<CalendarEvent[], CalendarError>> {
+export async function getCalendarEvents(userId: string, days: number): Promise<Result<CalendarEvent[], CalendarError>> {
   const dayCount = Math.min(MAX_CALENDAR_DAYS, Math.max(1, days || DEFAULT_CALENDAR_DAYS));
   const cacheKey = `${userId}:${dayCount}`;
   const cached = calendarCache.get(cacheKey);
@@ -99,9 +91,12 @@ export async function getCalendarEvents(
   const timeMax = new Date(Date.now() + dayCount * 24 * 60 * 60 * 1000).toISOString();
 
   // Fetch all calendars; fall back to primary if the list call fails
-  const calListRes = await fetchWithTimeout(`${CALENDAR_API}/users/me/calendarList?maxResults=${MAX_CALENDAR_RESULTS}`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
+  const calListRes = await fetchWithTimeout(
+    `${CALENDAR_API}/users/me/calendarList?maxResults=${MAX_CALENDAR_RESULTS}`,
+    {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
 
   let calendarIds: Array<{ id: string; color?: string }> = [{ id: 'primary' }];
   if (calListRes.ok) {

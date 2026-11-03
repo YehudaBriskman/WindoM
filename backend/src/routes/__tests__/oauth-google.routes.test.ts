@@ -45,9 +45,8 @@ afterAll(async () => app.close());
 beforeEach(() => vi.clearAllMocks());
 
 describe('Google OAuth routes', () => {
-  it.each(['/oauth/google/start', '/oauth/google/exchange'])(
-    'requires authentication for POST %s',
-    async (url) => expect((await app.inject({ method: 'POST', url })).statusCode).toBe(401),
+  it.each(['/oauth/google/start', '/oauth/google/exchange'])('requires authentication for POST %s', async (url) =>
+    expect((await app.inject({ method: 'POST', url })).statusCode).toBe(401),
   );
 
   it('starts a link flow with user-bound state, requested Gmail scopes, and PKCE', async () => {
@@ -67,7 +66,9 @@ describe('Google OAuth routes', () => {
 
   it('rejects an unapproved link redirect before creating state', async () => {
     const response = await app.inject({
-      method: 'POST', url: '/oauth/google/start?redirectUri=https://attacker.example/callback', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/google/start?redirectUri=https://attacker.example/callback',
+      headers: { authorization },
     });
     expect(response.statusCode).toBe(400);
     expect(oauthService.createOAuthState).not.toHaveBeenCalled();
@@ -75,15 +76,25 @@ describe('Google OAuth routes', () => {
 
   it.each([{}, { code: 'code' }, { code: 'code', state: 'state', redirectUri: 'invalid' }])(
     'rejects malformed link exchange body %#',
-    async (payload) => expect((await app.inject({
-      method: 'POST', url: '/oauth/google/exchange', headers: { authorization }, payload,
-    })).statusCode).toBe(400),
+    async (payload) =>
+      expect(
+        (
+          await app.inject({
+            method: 'POST',
+            url: '/oauth/google/exchange',
+            headers: { authorization },
+            payload,
+          })
+        ).statusCode,
+      ).toBe(400),
   );
 
   it('rejects mismatched or expired link state without contacting Google', async () => {
     vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({ ok: false, error: 'STATE_INVALID' });
     const response = await app.inject({
-      method: 'POST', url: '/oauth/google/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/google/exchange',
+      headers: { authorization },
       payload: { code: 'code', state: 'wrong', redirectUri: linkRedirect },
     });
     expect(response.statusCode).toBe(400);
@@ -92,7 +103,8 @@ describe('Google OAuth routes', () => {
 
   it('exchanges a valid link code and stores provider tokens for the state owner', async () => {
     vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({
-      ok: true, data: { id: 's1', userId: 'owner-1', provider: 'google', purpose: 'link', clientId: null },
+      ok: true,
+      data: { id: 's1', userId: 'owner-1', provider: 'google', purpose: 'link', clientId: null },
     });
     vi.mocked(oauthService.exchangeGoogleCode).mockResolvedValue({
       ok: true,
@@ -102,21 +114,30 @@ describe('Google OAuth routes', () => {
       },
     });
     const response = await app.inject({
-      method: 'POST', url: '/oauth/google/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/google/exchange',
+      headers: { authorization },
       payload: { code: 'code', state: 'state', redirectUri: linkRedirect },
     });
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ status: 'linked' });
-    expect(oauthService.storeOAuthTokens).toHaveBeenCalledWith('owner-1', 'google', expect.objectContaining({ providerUserId: 'google-user' }));
+    expect(oauthService.storeOAuthTokens).toHaveBeenCalledWith(
+      'owner-1',
+      'google',
+      expect.objectContaining({ providerUserId: 'google-user' }),
+    );
   });
 
   it('maps a Google token exchange failure without storing tokens', async () => {
     vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({
-      ok: true, data: { id: 's1', userId: 'owner-1', provider: 'google', purpose: 'link', clientId: null },
+      ok: true,
+      data: { id: 's1', userId: 'owner-1', provider: 'google', purpose: 'link', clientId: null },
     });
     vi.mocked(oauthService.exchangeGoogleCode).mockResolvedValue({ ok: false, error: 'TOKEN_EXCHANGE_FAILED' });
     const response = await app.inject({
-      method: 'POST', url: '/oauth/google/exchange', headers: { authorization },
+      method: 'POST',
+      url: '/oauth/google/exchange',
+      headers: { authorization },
       payload: { code: 'bad', state: 'state', redirectUri: linkRedirect },
     });
     expect(response.statusCode).toBe(400);
@@ -126,7 +147,8 @@ describe('Google OAuth routes', () => {
   it('starts the login flow without an existing WindoM session', async () => {
     vi.mocked(oauthService.createOAuthState).mockResolvedValue('login-state');
     const response = await app.inject({
-      method: 'GET', url: `/auth/google/start?redirectUri=${encodeURIComponent(loginRedirect)}`,
+      method: 'GET',
+      url: `/auth/google/start?redirectUri=${encodeURIComponent(loginRedirect)}`,
     });
     expect(response.statusCode).toBe(200);
     expect(oauthService.createOAuthState).toHaveBeenCalledWith('google', 'login');
@@ -134,7 +156,8 @@ describe('Google OAuth routes', () => {
 
   it('exchanges a valid login state and returns an HttpOnly refresh cookie', async () => {
     vi.mocked(oauthService.verifyAndConsumeOAuthState).mockResolvedValue({
-      ok: true, data: { id: 's1', userId: null, provider: 'google', purpose: 'login', clientId: null },
+      ok: true,
+      data: { id: 's1', userId: null, provider: 'google', purpose: 'login', clientId: null },
     });
     vi.mocked(oauthService.exchangeGoogleCode).mockResolvedValue({
       ok: true,
@@ -143,9 +166,13 @@ describe('Google OAuth routes', () => {
         userInfo: { sub: 'google-user', email: 'user@example.com', name: 'Alice' },
       },
     });
-    vi.mocked(authService.loginWithGoogle).mockResolvedValue({ accessToken: 'windom-access', rawRefreshToken: 'raw-refresh' });
+    vi.mocked(authService.loginWithGoogle).mockResolvedValue({
+      accessToken: 'windom-access',
+      rawRefreshToken: 'raw-refresh',
+    });
     const response = await app.inject({
-      method: 'POST', url: '/auth/google/exchange',
+      method: 'POST',
+      url: '/auth/google/exchange',
       payload: { code: 'code', state: 'state', redirectUri: loginRedirect },
     });
     expect(response.statusCode).toBe(200);
@@ -153,8 +180,10 @@ describe('Google OAuth routes', () => {
     expect(response.headers['set-cookie']).toContain('HttpOnly');
   });
 
-  it.each(['/auth/google/callback', '/auth/google/callback?error=access_denied', '/oauth/google/callback'])
-    ('rejects invalid callback %s', async (url) => {
+  it.each(['/auth/google/callback', '/auth/google/callback?error=access_denied', '/oauth/google/callback'])(
+    'rejects invalid callback %s',
+    async (url) => {
       expect((await app.inject({ method: 'GET', url })).statusCode).toBe(400);
-    });
+    },
+  );
 });

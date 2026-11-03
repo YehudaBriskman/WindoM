@@ -41,10 +41,7 @@ function buildEmail(opts: {
   const year = new Date().getFullYear();
 
   const bodyHtml = bodyLines
-    .map(
-      (line) =>
-        `<p style="margin:0 0 20px 0;font-size:16px;line-height:1.7;color:#b0b8cc;">${line}</p>`,
-    )
+    .map((line) => `<p style="margin:0 0 20px 0;font-size:16px;line-height:1.7;color:#b0b8cc;">${line}</p>`)
     .join('\n');
 
   return `<!DOCTYPE html>
@@ -154,13 +151,17 @@ function buildEmail(opts: {
                 <a href="${ctaUrl}" style="color:#6e7bff;text-decoration:none;word-break:break-all;">${ctaUrl}</a>
               </p>
 
-              ${footerNote ? `
+              ${
+                footerNote
+                  ? `
               <!-- Divider -->
               <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin:28px 0 0 0;">
                 <tr><td style="border-top:1px solid rgba(255,255,255,0.06);font-size:1px;line-height:1px;">&nbsp;</td></tr>
               </table>
               <p style="margin:20px 0 0 0;font-size:13px;line-height:1.6;color:#3e4457;">${footerNote}</p>
-              ` : ''}
+              `
+                  : ''
+              }
 
             </td>
           </tr>

@@ -7,10 +7,7 @@ import { extractSessionMeta } from '../lib/request.js';
 // Full glass-morphism page: animated gradient blobs + backdrop-filter card.
 // Used for reset-password and verify-email browser pages.
 
-function buildPage(opts: {
-  title: string;
-  body: string;
-}): string {
+function buildPage(opts: { title: string; body: string }): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -307,12 +304,21 @@ export async function resendVerificationController(req: FastifyRequest, reply: F
 export async function verifyEmailController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const { token } = req.query as { token?: string };
   if (!token) {
-    void reply.type('text/html').send(buildPage({ title: 'Verification Failed', body: verifyErrorBody('Missing verification token.') }));
+    void reply
+      .type('text/html')
+      .send(buildPage({ title: 'Verification Failed', body: verifyErrorBody('Missing verification token.') }));
     return;
   }
   const result = await authEmailService.verifyEmail(token, extractSessionMeta(req));
   if (result === 'invalid') {
-    void reply.type('text/html').send(buildPage({ title: 'Verification Failed', body: verifyErrorBody('This verification link is invalid or has expired. Request a new one from the WindoM extension.') }));
+    void reply.type('text/html').send(
+      buildPage({
+        title: 'Verification Failed',
+        body: verifyErrorBody(
+          'This verification link is invalid or has expired. Request a new one from the WindoM extension.',
+        ),
+      }),
+    );
     return;
   }
   void reply.type('text/html').send(buildPage({ title: 'Email Verified', body: verifySuccessBody() }));
@@ -333,7 +339,9 @@ export async function forgotPasswordController(req: FastifyRequest, reply: Fasti
 export function resetPasswordPageController(req: FastifyRequest, reply: FastifyReply): void {
   const { token } = req.query as { token?: string };
   if (!token) {
-    void reply.type('text/html').send(buildPage({ title: 'Reset Password', body: resetErrorBody('Missing reset token.') }));
+    void reply
+      .type('text/html')
+      .send(buildPage({ title: 'Reset Password', body: resetErrorBody('Missing reset token.') }));
     return;
   }
   void reply.type('text/html').send(buildPage({ title: 'Reset Password', body: resetFormBody(token) }));
@@ -351,18 +359,28 @@ export async function resetPasswordController(req: FastifyRequest, reply: Fastif
 
   if (!parsed.success) {
     if (isHtml) {
-      void reply.type('text/html').send(buildPage({ title: 'Reset Password', body: resetErrorBody('Password must be at least 8 characters.') }));
+      void reply
+        .type('text/html')
+        .send(buildPage({ title: 'Reset Password', body: resetErrorBody('Password must be at least 8 characters.') }));
     } else {
       void reply.status(400).send({ error: 'Bad Request', message: parsed.error.issues[0]?.message });
     }
     return;
   }
 
-  const result = await authEmailService.resetPassword(parsed.data.token, parsed.data.newPassword, extractSessionMeta(req));
+  const result = await authEmailService.resetPassword(
+    parsed.data.token,
+    parsed.data.newPassword,
+    extractSessionMeta(req),
+  );
 
   if (result === 'invalid') {
     if (isHtml) {
-      void reply.type('text/html').send(buildPage({ title: 'Reset Password', body: resetErrorBody('This reset link is invalid or has expired.') }));
+      void reply
+        .type('text/html')
+        .send(
+          buildPage({ title: 'Reset Password', body: resetErrorBody('This reset link is invalid or has expired.') }),
+        );
     } else {
       void reply.status(400).send({ error: 'INVALID_TOKEN', message: 'Reset link is invalid or has expired' });
     }

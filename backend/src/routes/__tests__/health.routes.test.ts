@@ -81,9 +81,7 @@ describe('GET /health (liveness)', () => {
   it('probes write capability rather than mere connectivity', async () => {
     dbWritable();
     await app.inject({ method: 'GET', url: '/health' });
-    expect(queryMock).toHaveBeenCalledWith(expect.stringContaining('current_setting'), [
-      'transaction_read_only',
-    ]);
+    expect(queryMock).toHaveBeenCalledWith(expect.stringContaining('current_setting'), ['transaction_read_only']);
   });
 });
 

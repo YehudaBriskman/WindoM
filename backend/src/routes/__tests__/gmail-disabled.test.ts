@@ -48,7 +48,10 @@ let authorization: string;
 beforeAll(async () => {
   app = await buildApp({ logger: false, skipRateLimit: true });
   authorization = `Bearer ${await signAccessToken({
-    sub: 'user-1', email: 'user@example.com', name: 'Alice', emailVerified: true,
+    sub: 'user-1',
+    email: 'user@example.com',
+    name: 'Alice',
+    emailVerified: true,
   })}`;
 });
 afterAll(async () => app.close());

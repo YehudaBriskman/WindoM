@@ -10,15 +10,18 @@ afterEach(() => {
 describe('fetchWithTimeout', () => {
   it('passes request input and options through with an active signal', async () => {
     const response = new Response('ok');
-    const fetchMock = vi.fn<(input: string | URL | Request, init?: RequestInit) => Promise<Response>>()
+    const fetchMock = vi
+      .fn<(input: string | URL | Request, init?: RequestInit) => Promise<Response>>()
       .mockResolvedValue(response);
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(fetchWithTimeout('https://provider.example/data', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer token' },
-      body: 'payload',
-    })).resolves.toBe(response);
+    await expect(
+      fetchWithTimeout('https://provider.example/data', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer token' },
+        body: 'payload',
+      }),
+    ).resolves.toBe(response);
 
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(
@@ -35,13 +38,22 @@ describe('fetchWithTimeout', () => {
 
   it('aborts a stalled request at the default deadline', async () => {
     vi.useFakeTimers();
-    vi.stubGlobal('fetch', vi.fn((_input: RequestInfo | URL, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        init?.signal?.addEventListener('abort', () => {
-          const reason: unknown = init.signal?.reason;
-          reject(reason instanceof Error ? reason : new Error('request aborted'));
-        }, { once: true });
-      })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener(
+              'abort',
+              () => {
+                const reason: unknown = init.signal?.reason;
+                reject(reason instanceof Error ? reason : new Error('request aborted'));
+              },
+              { once: true },
+            );
+          }),
+      ),
+    );
 
     const request = fetchWithTimeout('https://provider.example/stalled');
     const rejection = expect(request).rejects.toMatchObject({ name: 'TimeoutError' });
@@ -51,13 +63,22 @@ describe('fetchWithTimeout', () => {
 
   it('supports a shorter per-request timeout', async () => {
     vi.useFakeTimers();
-    vi.stubGlobal('fetch', vi.fn((_input: RequestInfo | URL, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        init?.signal?.addEventListener('abort', () => {
-          const reason: unknown = init.signal?.reason;
-          reject(reason instanceof Error ? reason : new Error('request aborted'));
-        }, { once: true });
-      })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener(
+              'abort',
+              () => {
+                const reason: unknown = init.signal?.reason;
+                reject(reason instanceof Error ? reason : new Error('request aborted'));
+              },
+              { once: true },
+            );
+          }),
+      ),
+    );
 
     const request = fetchWithTimeout('https://provider.example/stalled', {}, 25);
     const rejection = expect(request).rejects.toMatchObject({ name: 'TimeoutError' });
@@ -69,13 +90,22 @@ describe('fetchWithTimeout', () => {
 
   it('forwards a caller abort and its reason', async () => {
     const caller = new AbortController();
-    vi.stubGlobal('fetch', vi.fn((_input: RequestInfo | URL, init?: RequestInit) =>
-      new Promise<Response>((_resolve, reject) => {
-        init?.signal?.addEventListener('abort', () => {
-          const reason: unknown = init.signal?.reason;
-          reject(reason instanceof Error ? reason : new Error('request aborted'));
-        }, { once: true });
-      })));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener(
+              'abort',
+              () => {
+                const reason: unknown = init.signal?.reason;
+                reject(reason instanceof Error ? reason : new Error('request aborted'));
+              },
+              { once: true },
+            );
+          }),
+      ),
+    );
 
     const request = fetchWithTimeout('https://provider.example/data', { signal: caller.signal });
     caller.abort(new Error('caller cancelled'));
@@ -93,14 +123,16 @@ describe('fetchWithTimeout', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(fetchWithTimeout('https://provider.example/data', { signal: caller.signal }))
-      .rejects.toThrow('already cancelled');
+    await expect(fetchWithTimeout('https://provider.example/data', { signal: caller.signal })).rejects.toThrow(
+      'already cancelled',
+    );
   });
 
   it('clears its deadline after success and after fetch rejection', async () => {
     vi.useFakeTimers();
     const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
-    const fetchMock = vi.fn()
+    const fetchMock = vi
+      .fn()
       .mockResolvedValueOnce(new Response('ok'))
       .mockRejectedValueOnce(new Error('network failed'));
     vi.stubGlobal('fetch', fetchMock);

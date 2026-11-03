@@ -1,7 +1,15 @@
 import { desc, eq, getTableColumns } from 'drizzle-orm';
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { db } from '../db/client.js';
-import { users, refreshSessions, oauthAccounts, oauthStates, emailTokens, userSettings, auditLogs } from '../db/schema.js';
+import {
+  users,
+  refreshSessions,
+  oauthAccounts,
+  oauthStates,
+  emailTokens,
+  userSettings,
+  auditLogs,
+} from '../db/schema.js';
 
 /**
  * GDPR data export (GET /me/export, #265).
@@ -41,7 +49,10 @@ export const EXPORT_POLICY = {
       tokenHash: { kind: 'secret', reason: 'refresh-token hash' },
       tokenLookup: { kind: 'secret', reason: 'refresh-token lookup digest' },
       rotatedFromId: { kind: 'internal', reason: 'rotation chain bookkeeping' },
-      userAgent: { kind: 'internal', reason: 'stored only as a SHA-256 digest; exported as the deviceId prefix shown in Settings' },
+      userAgent: {
+        kind: 'internal',
+        reason: 'stored only as a SHA-256 digest; exported as the deviceId prefix shown in Settings',
+      },
       ip: { kind: 'internal', reason: 'stored only as a SHA-256 digest for anomaly detection; no IP address is held' },
     },
   }),
@@ -65,7 +76,10 @@ export const EXPORT_POLICY = {
       provider: { kind: 'internal', reason: 'transient handshake record, expires within minutes' },
       purpose: { kind: 'internal', reason: 'transient handshake record, expires within minutes' },
       used: { kind: 'internal', reason: 'transient handshake record, expires within minutes' },
-      clientId: { kind: 'internal', reason: 'transient handshake record; the connected client ID is exported with the account' },
+      clientId: {
+        kind: 'internal',
+        reason: 'transient handshake record; the connected client ID is exported with the account',
+      },
       expiresAt: { kind: 'internal', reason: 'transient handshake record, expires within minutes' },
       createdAt: { kind: 'internal', reason: 'transient handshake record, expires within minutes' },
     },
@@ -153,17 +167,25 @@ export interface UserExport {
 export async function buildUserExport(userId: string): Promise<UserExport> {
   const P = EXPORT_POLICY;
 
-  const [profileRows, passwordRows, sessionRows, deviceRows, accountRows, tokenRows, settingsRows, auditRows] = await Promise.all([
-    db.select(pickColumns(P.users)).from(users).where(eq(users.id, userId)).limit(1),
-    // Read only to derive the hasPassword flag; the hash itself never leaves this function.
-    db.select({ hasPassword: users.passwordHash }).from(users).where(eq(users.id, userId)).limit(1),
-    db.select(pickColumns(P.refreshSessions)).from(refreshSessions).where(eq(refreshSessions.userId, userId)),
-    db.select({ id: refreshSessions.id, ua: refreshSessions.userAgent }).from(refreshSessions).where(eq(refreshSessions.userId, userId)),
-    db.select(pickColumns(P.oauthAccounts)).from(oauthAccounts).where(eq(oauthAccounts.userId, userId)),
-    db.select(pickColumns(P.emailTokens)).from(emailTokens).where(eq(emailTokens.userId, userId)),
-    db.select(pickColumns(P.userSettings)).from(userSettings).where(eq(userSettings.userId, userId)).limit(1),
-    db.select(pickColumns(P.auditLogs)).from(auditLogs).where(eq(auditLogs.userId, userId)).orderBy(desc(auditLogs.createdAt)),
-  ]);
+  const [profileRows, passwordRows, sessionRows, deviceRows, accountRows, tokenRows, settingsRows, auditRows] =
+    await Promise.all([
+      db.select(pickColumns(P.users)).from(users).where(eq(users.id, userId)).limit(1),
+      // Read only to derive the hasPassword flag; the hash itself never leaves this function.
+      db.select({ hasPassword: users.passwordHash }).from(users).where(eq(users.id, userId)).limit(1),
+      db.select(pickColumns(P.refreshSessions)).from(refreshSessions).where(eq(refreshSessions.userId, userId)),
+      db
+        .select({ id: refreshSessions.id, ua: refreshSessions.userAgent })
+        .from(refreshSessions)
+        .where(eq(refreshSessions.userId, userId)),
+      db.select(pickColumns(P.oauthAccounts)).from(oauthAccounts).where(eq(oauthAccounts.userId, userId)),
+      db.select(pickColumns(P.emailTokens)).from(emailTokens).where(eq(emailTokens.userId, userId)),
+      db.select(pickColumns(P.userSettings)).from(userSettings).where(eq(userSettings.userId, userId)).limit(1),
+      db
+        .select(pickColumns(P.auditLogs))
+        .from(auditLogs)
+        .where(eq(auditLogs.userId, userId))
+        .orderBy(desc(auditLogs.createdAt)),
+    ]);
 
   // Same anonymous prefix GET /me/sessions shows as deviceId: a digest prefix, not the UA.
   const deviceIds = new Map(deviceRows.map((r) => [r.id, r.ua.slice(0, 12)]));
