@@ -123,7 +123,7 @@ export function StockSearch({ selected, onChange }: Props) {
           onKeyDown={handleKeyDown}
         />
         {searching && (
-          <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+          <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '11px', color: 'var(--ink-tertiary)' }}>
             …
           </span>
         )}
