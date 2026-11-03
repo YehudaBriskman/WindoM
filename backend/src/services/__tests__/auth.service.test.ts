@@ -28,9 +28,14 @@ vi.mock('../auth-email.service.js', () => ({
   sendVerification: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../../lib/sentry.js', () => ({
+  captureTokenReuse: vi.fn(),
+}));
+
 import { db } from '../../db/client.js';
 import * as sessionService from '../session.service.js';
 import { verifyPassword } from '../../lib/password.js';
+import { captureTokenReuse } from '../../lib/sentry.js';
 import { register, login, refresh, logout, loginWithGoogle } from '../auth.service.js';
 
 const mockDb = db as unknown as { select: ReturnType<typeof vi.fn>; insert: ReturnType<typeof vi.fn> };
@@ -106,6 +111,7 @@ describe('refresh', () => {
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'SESSION_LIMIT_REACHED' });
+    expect(captureTokenReuse).not.toHaveBeenCalled();
   });
 
   it('returns TOKEN_REUSE_DETECTED and revokes all sessions on reuse', async () => {
@@ -115,6 +121,9 @@ describe('refresh', () => {
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
+    // The security alert (#204): opaque ids only - never the email or IP.
+    expect(captureTokenReuse).toHaveBeenCalledOnce();
+    expect(captureTokenReuse).toHaveBeenCalledWith({ userId: validSession.userId, sessionId: validSession.id });
   });
 
   it('returns USER_NOT_FOUND when user is gone from DB', async () => {

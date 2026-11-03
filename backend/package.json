@@ -31,6 +31,7 @@
     "@fastify/rate-limit": "^11.2.1",
     "@fastify/swagger": "^9.9.2",
     "@fastify/swagger-ui": "^6.1.2",
+    "@sentry/node": "^11.10.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
