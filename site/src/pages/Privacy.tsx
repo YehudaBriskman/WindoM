@@ -9,7 +9,7 @@ import { DocsLayout } from '../components/DocsLayout';
  */
 export function Privacy() {
   return (
-    <DocsLayout path="/privacy" eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: April 27, 2026">
+    <DocsLayout path="/privacy" eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: November 3, 2026">
         <p>
             WindoM is a Chrome extension that replaces your new tab page with a personal productivity dashboard.
             This policy explains exactly what data we collect, what stays entirely on your device, and how we use it.
@@ -25,7 +25,7 @@ export function Privacy() {
             <li>Custom background images you upload</li>
             <li>Cached background images from Unsplash (photo history)</li>
             <li>Cached weather data</li>
-            <li>Your last-known location coordinates (used for weather only)</li>
+            <li>Your last-known location coordinates (used for weather only, and only if you chose "Use my current location")</li>
             <li>Finance watchlist - the stock tickers and crypto coins you add</li>
             <li>Tab history displayed in the sidebar (read from your local browser, never transmitted)</li>
             <li>Onboarding and dismissal state</li>
@@ -178,7 +178,7 @@ export function Privacy() {
               <tr>
                 <td><strong>ipapi.co</strong></td>
                 <td>Your IP address (implicit)</td>
-                <td>IP-based location fallback - only used if browser geolocation is denied or unavailable</td>
+                <td>IP-based location fallback - only used after you have allowed location for weather and the browser cannot get a fix. WindoM never asks for your location on its own: the browser prompt appears only when you press "Use my current location" in Settings → Weather</td>
               </tr>
               <tr>
                 <td><strong>Quotable</strong> (<code>api.quotable.io</code>)</td>
