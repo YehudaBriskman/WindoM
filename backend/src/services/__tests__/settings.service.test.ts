@@ -8,7 +8,7 @@ vi.mock('../../db/client.js', () => ({
 }));
 
 import { db } from '../../db/client.js';
-import { getSettings, saveSettings } from '../settings.service.js';
+import { getSettings, getSettingsRecord } from '../settings.service.js';
 
 const mockDb = db as unknown as { select: ReturnType<typeof vi.fn>; insert: ReturnType<typeof vi.fn> };
 
@@ -24,22 +24,20 @@ describe('getSettings', () => {
 
   it('returns data from the settings row', async () => {
     const data = { theme: 'dark', language: 'en' };
-    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data }]) }) }) });
+    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data, updatedAt: new Date(1_000) }]) }) }) });
 
     const result = await getSettings('user-1');
     expect(result).toEqual(data);
   });
 });
 
-describe('saveSettings', () => {
-  it('upserts and returns the data', async () => {
-    const data = { theme: 'light' };
-    const onConflictMock = vi.fn().mockResolvedValue(undefined);
-    mockDb.insert.mockReturnValue({ values: vi.fn().mockReturnValue({ onConflictDoUpdate: onConflictMock }) });
+// updateSettings runs a locked transaction; it is covered against a real
+// database in routes/__tests__/e2e.test.ts (Journey 5b).
+describe('getSettingsRecord', () => {
+  it('returns the server revision as epoch ms beside the data', async () => {
+    const data = { general: { userName: 'A' } };
+    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([{ data, updatedAt: new Date(1_700_000_000_123) }]) }) }) });
 
-    const result = await saveSettings('user-1', data);
-
-    expect(result).toEqual(data);
-    expect(onConflictMock).toHaveBeenCalledOnce();
+    expect(await getSettingsRecord('user-1')).toEqual({ data, updatedAt: 1_700_000_000_123 });
   });
 });

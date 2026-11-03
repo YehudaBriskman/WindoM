@@ -272,7 +272,7 @@ export function Guide() {
             <div className="step-num">3</div>
             <div className="step-body">
                 <p>Start typing a city in the <strong>Location</strong> field (e.g. <code>Tel Aviv</code> or <code>New York</code>). Matching cities appear below the field with their region and country - click the one you mean.</p>
-                <p>Leave the field empty and WindoM asks the browser for your location instead.</p>
+                <p>Or press <strong>Use my current location</strong> - only then does the browser ask whether WindoM may know your location. WindoM never asks on its own; until you set one, the widget shows <strong>Set location</strong>, which opens this tab. If you block the request, type a city instead.</p>
             </div>
           </div>
           <div className="step">
@@ -282,7 +282,7 @@ export function Guide() {
             </div>
           </div>
           <div className="callout">
-            <strong>Showing the wrong place?</strong> With the Location field empty, WindoM falls back to a rough lookup from your IP address when the browser will not give coordinates, which can be a long way out on a VPN or a mobile connection. Type a city by hand to pin it.
+            <strong>Showing the wrong place?</strong> When you use your current location, WindoM falls back to a rough lookup from your IP address when the browser will not give coordinates, which can be a long way out on a VPN or a mobile connection. Type a city by hand to pin it.
           </div>
           <div className="callout tip">
             <strong>Refreshed every 30 minutes</strong> -

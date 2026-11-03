@@ -91,7 +91,8 @@ export function Support() {
 
       <h3>Weather shows the wrong place</h3>
       <p>
-        WindoM asks the browser for your location and falls back to a rough lookup from your IP
+        With <strong>Use my current location</strong> on, WindoM reads your location from the
+        browser and, if the browser cannot get a fix, falls back to a rough lookup from your IP
         address, which can be some distance out on a VPN or a mobile connection. Set a city by
         hand in <strong>Settings → Weather</strong>.
       </p>

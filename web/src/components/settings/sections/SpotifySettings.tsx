@@ -1,13 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { useAuth } from '../../../contexts/AuthContext';
-import { apiPost, apiFetch } from '../../../lib/api';
-import { mapOAuthError } from '../../../lib/oauth-errors';
-import { generateCodeVerifier, generateCodeChallenge } from '../../../lib/pkce';
+import { useSpotifyConnection, useSpotifySetup } from '../../../hooks/useSpotifyConnection';
 import { COPY_CONFIRM_DURATION_MS } from '../../../lib/timing-constants';
-import { clearOAuthState, rememberOAuthState, validateAndConsumeOAuthState } from '../../../lib/oauth-state';
-
-const CLIENT_ID_KEY = 'windom_spotify_client_id';
 
 // ── Spotify icon ────────────────────────────────────────────────────────────
 
@@ -19,73 +14,13 @@ function SpotifyIcon({ size = 20 }: { size?: number }) {
   );
 }
 
-// ── Shared PKCE OAuth flow ──────────────────────────────────────────────────
-
-async function runPkceFlow(clientId: string): Promise<void> {
-  const redirectUri = chrome.identity.getRedirectURL();
-  const codeVerifier = generateCodeVerifier();
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
-
-  const { authUrl } = await apiPost<{ authUrl: string }>('/oauth/spotify/start', {
-    clientId,
-    codeChallenge,
-    codeChallengeMethod: 'S256',
-    redirectUri,
-  });
-
-  rememberOAuthState(authUrl, 'spotify');
-  try {
-    const redirectUrl = await launchWebAuth(authUrl);
-    const params = new URL(redirectUrl).searchParams;
-    const error = params.get('error');
-    if (error) throw new Error(mapOAuthError(error));
-
-    const code = params.get('code');
-    const state = params.get('state');
-    if (!code) throw new Error('No auth code returned');
-    validateAndConsumeOAuthState(state, 'spotify');
-
-    const { status } = await apiPost<{ status: string }>('/oauth/spotify/exchange', {
-      code,
-      state,
-      redirectUri,
-      codeVerifier,
-    });
-    if (status !== 'linked') throw new Error('Linking failed');
-  } finally {
-    clearOAuthState('spotify');
-  }
-}
-
-function launchWebAuth(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      settled = true;
-      reject(new Error('Sign-in timed out. Please try again.'));
-    }, 120_000);
-
-    chrome.identity.launchWebAuthFlow({ url, interactive: true }, (redirectUrl) => {
-      clearTimeout(timer);
-      if (settled) return;
-      if (chrome.runtime.lastError || !redirectUrl) {
-        reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
-      } else {
-        resolve(redirectUrl);
-      }
-    });
-  });
-}
-
 // ── State 1: No client ID saved ─────────────────────────────────────────────
 
 function NoClientIdState({ onSaved }: { onSaved: () => void }) {
-  const { settings, update } = useSettings();
   const { user } = useAuth();
   const [clientIdInput, setClientIdInput] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const { busy, error, setError, connect } = useSpotifyConnection({ afterConnect: onSaved, saveClientId: true });
 
   const redirectUri = chrome.identity.getRedirectURL();
 
@@ -95,31 +30,10 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
     setTimeout(() => setCopied(false), COPY_CONFIRM_DURATION_MS);
   }
 
-  async function handleSaveAndConnect() {
-    if (busy) return;
+  function handleSaveAndConnect() {
     const trimmed = clientIdInput.trim();
     if (!trimmed) return;
-    setBusy(true);
-    setError('');
-    try {
-      await runPkceFlow(trimmed);
-      await chrome.storage.local.set({ [CLIENT_ID_KEY]: trimmed });
-      await update('integrations', { spotify: { ...settings.integrations.spotify, connected: true } });
-      onSaved();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Connection failed';
-      if (/cancelled|canceled/i.test(msg)) {
-        setError('Connection cancelled.');
-      } else if (/invalid_client|INVALID_CLIENT/i.test(msg) || /Invalid Client/i.test(msg)) {
-        setError('Invalid Client ID - check your app settings at developer.spotify.com.');
-      } else if (!user) {
-        setError('You must be signed in to connect Spotify.');
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setBusy(false);
-    }
+    void connect(trimmed);
   }
 
   return (
@@ -201,31 +115,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
 // ── State 2: Client ID saved but not connected ──────────────────────────────
 
 function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { clientId: string; onConnected: () => void; onChangeApp: () => void }) {
-  const { settings, update } = useSettings();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleConnect() {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      await runPkceFlow(clientId);
-      await update('integrations', { spotify: { ...settings.integrations.spotify, connected: true } });
-      onConnected();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Connection failed';
-      if (/cancelled|canceled/i.test(msg)) {
-        setError('Connection cancelled.');
-      } else if (/invalid_client|INVALID_CLIENT/i.test(msg) || /Invalid Client/i.test(msg)) {
-        setError('Invalid Client ID - check your app settings at developer.spotify.com.');
-      } else {
-        setError(msg);
-      }
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { busy, error, connect } = useSpotifyConnection({ afterConnect: onConnected });
 
   return (
     <div className="settings-group">
@@ -242,7 +132,7 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
           type="button"
           className="integration-connect-btn"
           disabled={busy}
-          onClick={handleConnect}
+          onClick={() => void connect(clientId)}
         >
           {busy ? '…' : 'Connect'}
         </button>
@@ -268,26 +158,8 @@ function SavedNotConnectedState({ clientId, onConnected, onChangeApp }: { client
 
 function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisconnected: () => void }) {
   const { settings, update } = useSettings();
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const { busy, error, disconnect } = useSpotifyConnection({ afterDisconnect: onDisconnected });
   const showTopTracks = settings.integrations.spotify.showTopTracks;
-
-  async function handleDisconnect() {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      const res = await apiFetch('/integrations/spotify', { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to disconnect Spotify');
-      await chrome.storage.local.remove(CLIENT_ID_KEY);
-      await update('integrations', { spotify: { ...settings.integrations.spotify, connected: false } });
-      onDisconnected();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Disconnect failed');
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="settings-group">
@@ -304,7 +176,7 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
           type="button"
           className="integration-disconnect-btn"
           disabled={busy}
-          onClick={handleDisconnect}
+          onClick={() => void disconnect()}
         >
           {busy ? '…' : 'Disconnect'}
         </button>
@@ -334,35 +206,8 @@ function ConnectedState({ clientId, onDisconnected }: { clientId: string; onDisc
 
 // ── Root component ──────────────────────────────────────────────────────────
 
-type SpotifyState = 'loading' | 'no-client-id' | 'saved-not-connected' | 'connected';
-
 export function SpotifySettings() {
-  const { settings } = useSettings();
-  const spotifyConnected = settings.integrations.spotify.connected;
-
-  const [uiState, setUiState] = useState<SpotifyState>('loading');
-  const [savedClientId, setSavedClientId] = useState<string>('');
-
-  useEffect(() => {
-    void chrome.storage.local.get(CLIENT_ID_KEY, (result) => {
-      const clientId = (result[CLIENT_ID_KEY] as string | undefined) ?? '';
-      setSavedClientId(clientId);
-      if (!clientId) {
-        setUiState('no-client-id');
-      } else if (spotifyConnected) {
-        setUiState('connected');
-      } else {
-        setUiState('saved-not-connected');
-      }
-    });
-  }, [spotifyConnected]);
-
-  function handleChangeApp() {
-    chrome.storage.local.remove(CLIENT_ID_KEY, () => {
-      setSavedClientId('');
-      setUiState('no-client-id');
-    });
-  }
+  const { state: uiState, setState: setUiState, clientId: savedClientId, changeApp } = useSpotifySetup();
 
   if (uiState === 'loading') {
     return <p className="settings-label" style={{ opacity: 0.5 }}>Loading…</p>;
@@ -377,7 +222,7 @@ export function SpotifySettings() {
       <SavedNotConnectedState
         clientId={savedClientId}
         onConnected={() => setUiState('connected')}
-        onChangeApp={handleChangeApp}
+        onChangeApp={() => void changeApp()}
       />
     );
   }

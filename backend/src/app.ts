@@ -3,6 +3,8 @@ import fastifyCookie from '@fastify/cookie';
 import fastifyFormbody from '@fastify/formbody';
 import fastifyHelmet from '@fastify/helmet';
 import { config } from './config.js';
+import { pool } from './db/client.js';
+import { captureDbPoolExhausted, captureRequestError } from './lib/sentry.js';
 import { registerCors } from './plugins/cors.js';
 import { registerSwagger } from './plugins/swagger.js';
 import { registerRateLimit } from './plugins/rate-limit.js';
@@ -25,6 +27,32 @@ export interface BuildAppOptions extends FastifyServerOptions {
   skipRateLimit?: boolean;
 }
 
+/**
+ * The request URL with every query-string value replaced, keeping the parameter
+ * names so a log line still says which flow it was.
+ *
+ * Several GET routes carry a credential in the query string: /auth/verify-email
+ * and /auth/reset-password take a single-use `token`, and the OAuth callbacks
+ * take `code` and `state`. Logging `req.url` verbatim put a still-valid password
+ * reset token in Fly's log search for anyone with log access. Redacting every
+ * value, not a list of known names, keeps the next such route safe by default.
+ */
+export function redactUrlQuery(url: string): string {
+  const q = url.indexOf('?');
+  if (q === -1) return url;
+  const hashAt = url.indexOf('#', q);
+  const query = hashAt === -1 ? url.slice(q + 1) : url.slice(q + 1, hashAt);
+  const redacted = query
+    .split('&')
+    .filter((pair) => pair !== '')
+    .map((pair) => {
+      const eq = pair.indexOf('=');
+      return eq === -1 ? pair : `${pair.slice(0, eq)}=[redacted]`;
+    })
+    .join('&');
+  return `${url.slice(0, q)}?${redacted}`;
+}
+
 export function requestLogSerializer(req: { id: string; method: string; url: string; ip: string }): {
   id: string;
   method: string;
@@ -34,7 +62,7 @@ export function requestLogSerializer(req: { id: string; method: string; url: str
   return {
     id: req.id,
     method: req.method,
-    url: req.url,
+    url: redactUrlQuery(req.url),
     // Never log Authorization headers or cookie values.
     remoteAddress: req.ip,
   };
@@ -122,7 +150,7 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
 
   // ── Global error handler ───────────────────────────────────────────────────
 
-  app.setErrorHandler((error: FastifyError, _req, reply) => {
+  app.setErrorHandler((error: FastifyError, req, reply) => {
     // Postgres pool exhaustion: connectionTimeoutMillis exceeded → 503
     const isPoolTimeout =
       error.message === 'timeout expired' ||
@@ -130,6 +158,11 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
       (error as { code?: string }).code === 'CONNECTION_TIMEOUT';
     if (isPoolTimeout) {
       app.log.warn('DB pool connection timeout - returning 503');
+      captureDbPoolExhausted(
+        error,
+        { method: req.method, route: req.routeOptions.url, requestId: req.id },
+        { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount, max: pool.options.max ?? 0 },
+      );
       void reply.status(503).send({
         statusCode: 503,
         error: 'Service Unavailable',
@@ -140,6 +173,10 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
 
     const statusCode = error.statusCode ?? 500;
     app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
+    // 4xx are the client's mistake and would only be noise; 5xx are ours.
+    if (statusCode >= 500) {
+      captureRequestError(error, { method: req.method, route: req.routeOptions.url, statusCode, requestId: req.id });
+    }
     const isClientError = statusCode >= 400 && statusCode < 500;
     // In production, never send internal error details to clients - log-only.
     void reply.status(statusCode).send({
