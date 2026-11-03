@@ -134,7 +134,7 @@ export function Privacy() {
               </tr>
               <tr>
                 <td><code>history</code></td>
-                <td>Read your recent browsing history to display recent sites in the tab sidebar and provide search suggestions. Only the last 7 days are read, deduplicated by hostname, limited to 10 entries. This data never leaves your device.</td>
+                <td>Optional - not requested at install. Chrome asks for it only when you turn on Tab History (Settings → Apps → History), and turning that off gives it back. Read your recent browsing history to display recent sites in the tab sidebar and provide search suggestions on the new tab. For the sidebar, only the last 7 days are read, deduplicated by hostname, limited to 10 entries. This data never leaves your device.</td>
               </tr>
               <tr>
                 <td><code>identity</code></td>

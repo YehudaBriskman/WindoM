@@ -214,7 +214,7 @@ export function Guide() {
           <p>Press <kbd>Ctrl</kbd> + <kbd>Win</kbd> + <kbd>H</kbd> - <kbd>Ctrl</kbd> + <kbd>Cmd</kbd> + <kbd>H</kbd> on a Mac - to open a search box over the page you are on. It works on the new tab and on ordinary websites; extensions cannot run on Chrome's own pages, so it does not open there. The same keys close it, as does <strong>Escape</strong>.
           </p>
           <ul>
-            <li><strong>Type anything</strong> - suggestions come from your open tabs, then your history, then the web. Pick a tab to switch to it rather than opening it again.</li>
+            <li><strong>Type anything</strong> - suggestions come from your open tabs, then your history (on the new tab, once <Link to="/guide#history">Tab History</Link> is on), then the web. Pick a tab to switch to it rather than opening it again.</li>
             <li><strong>Type an address</strong> - such as <code>github.com</code>, and <strong>Enter</strong> goes straight there.</li>
             <li><strong>Choose the engine</strong> - the pill beside the box switches between Google, Bing, DuckDuckGo and Brave. Google is the default.</li>
             <li><strong>Start with <code>&gt;</code></strong> - for commands: New Tab, Close Tab, Reload Page, Duplicate Tab and Pin / Unpin Tab. Anything else after <code>&gt;</code> opens in a new tab.</li>
@@ -239,7 +239,7 @@ export function Guide() {
           <div className="step">
             <div className="step-num">1</div>
             <div className="step-body">
-              <p>Open Settings → <strong>Apps</strong> → <strong>History</strong> and turn on <strong>Show in sidebar</strong>.</p>
+              <p>Open Settings → <strong>Apps</strong> → <strong>History</strong> and turn on <strong>Show in sidebar and search</strong>. Chrome then asks whether WindoM may read your browsing history - click <strong>Allow</strong>. If you decline, the switch stays off and nothing else changes.</p>
             </div>
           </div>
           <div className="step">
@@ -248,7 +248,8 @@ export function Guide() {
               <p>Open the sidebar from the list icon in the bottom-right corner. Click an entry to open it in a new tab.</p>
             </div>
           </div>
-          <p>The list is read from Chrome's own history on your device; nothing in it is sent anywhere.</p>
+          <p>The list is read from Chrome's own history on your device; nothing in it is sent anywhere. The same switch adds pages you visited to the <Link to="/guide#search">search</Link> suggestions on the new tab.</p>
+          <p>WindoM does not ask for your history when you install it - only when you turn this on. Turning it off gives the permission back to Chrome. If you remove it yourself at <code>chrome://extensions</code>, the <strong>Recent</strong> list shows an <strong>Allow access</strong> button instead of your history.</p>
 
           <h2 id="weather">
             Weather Widget

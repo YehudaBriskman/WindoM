@@ -115,10 +115,14 @@ export function Support() {
       <p>The other permissions Chrome lists are for:</p>
       <ul>
         <li><strong>Tabs</strong> - the tab sidebar, and open tabs as search suggestions</li>
-        <li><strong>History</strong> - the tab history list, and history as search suggestions</li>
         <li><strong>Identity</strong> - the sign-in windows for Google and Spotify</li>
         <li><strong>Storage</strong> - your settings, todos and images, on your device</li>
       </ul>
+      <p>
+        <strong>History</strong> is not asked for at install. Chrome asks for it only when you
+        turn on <Link to="/guide#history">Tab History</Link>, for the Recent list and history as
+        search suggestions; turning Tab History off gives it back.
+      </p>
       <p>
         The full list of what is stored and every service WindoM contacts is in the{' '}
         <Link to="/privacy">privacy policy</Link>.
