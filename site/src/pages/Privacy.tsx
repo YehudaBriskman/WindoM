@@ -40,6 +40,7 @@ export function Privacy() {
             <li>Your display name</li>
             <li>Your dashboard settings - synced so preferences are consistent across your devices</li>
             <li>Active session records (used to manage login sessions and detect unauthorized access). For each signed-in session we store the browser and operating system name (for example &ldquo;Chrome &middot; Windows&rdquo;, no versions) so you can recognise it under Active sessions; it is deleted with the session or your account</li>
+            <li>A security log of sensitive account actions (sign-ins and failed sign-in attempts, sign-outs, password changes and resets, email verification, session revocations, connecting or disconnecting integrations, and data exports): each entry holds only the action, its time, the session it concerns and the same browser and operating system name, never an IP address, email or token; entries are deleted after 180 days, or immediately with your account</li>
           </ul>
           <p>
             You can delete your account and all associated server-side data at any time from

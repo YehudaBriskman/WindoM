@@ -11,6 +11,8 @@ vi.mock('../../lib/email.js', () => ({
 }));
 vi.mock('../../lib/password.js', () => ({ hashPassword: vi.fn() }));
 vi.mock('../session.service.js', () => ({ revokeAllUserSessions: vi.fn() }));
+// The security log has its own suite (audit.routes.test.ts); here only the token writes count.
+vi.mock('../audit.service.js', () => ({ recordAudit: vi.fn() }));
 
 import { db } from '../../db/client.js';
 import { sendGoogleOnlyResetEmail, sendPasswordResetEmail, sendVerificationEmail } from '../../lib/email.js';

@@ -8,6 +8,7 @@ import {
   revokeSessionController,
   exportMeController,
   revokeOtherSessionsController,
+  listActivityController,
 } from '../controllers/me.controller.js';
 
 const security = [{ bearerAuth: [] }];
@@ -86,13 +87,52 @@ export function meRoutes(app: FastifyInstance): void {
     },
   }, revokeSessionController);
 
+  app.get('/me/activity', {
+    preHandler: authenticate,
+    config: { rateLimit: { max: 30, timeWindow: '15 minutes' } },
+    schema: {
+      tags: ['Me'],
+      summary: 'List the caller\'s recent security events, newest first - accepts ?limit=1..100 (default 20)',
+      description: 'Sign-ins (and failed attempts), sign-outs, password and email changes, session revocations, integration connects/disconnects, token-reuse detection and data exports from the last 180 days. Each event carries only its action, time, the session it concerns and a coarse "Browser · OS" label; no IP address, user agent or email is stored.',
+      security,
+      querystring: {
+        type: 'object',
+        properties: { limit: { type: 'integer', minimum: 1, maximum: 100 } },
+      },
+      response: {
+        200: {
+          type: 'object',
+          required: ['events'],
+          properties: {
+            events: {
+              type: 'array',
+              items: {
+                type: 'object',
+                required: ['action', 'createdAt', 'device', 'sessionId'],
+                properties: {
+                  action: { type: 'string' },
+                  createdAt: { type: 'string', format: 'date-time' },
+                  device: { type: ['string', 'null'] },
+                  sessionId: { type: ['string', 'null'], format: 'uuid' },
+                },
+              },
+            },
+          },
+        },
+        400: errorResponse,
+        401: errorResponse,
+        429: errorResponse,
+      },
+    },
+  }, listActivityController);
+
   app.get('/me/export', {
     preHandler: authenticate,
     config: { rateLimit: { max: 5, timeWindow: '1 hour' } },
     schema: {
       tags: ['Me'],
       summary: 'Download a JSON copy of the data stored about the caller (GDPR Art. 15/20)',
-      description: 'Profile, synced settings, session metadata, integration connection status and email-token history. Never includes credentials: password hash, OAuth/GitHub tokens, session and email token hashes, and third-party API keys typed into settings are withheld and listed by name in `withheld`. Sent with Content-Disposition: attachment.',
+      description: 'Profile, synced settings, session metadata, integration connection status, email-token history and the security log. Never includes credentials: password hash, OAuth/GitHub tokens, session and email token hashes, and third-party API keys typed into settings are withheld and listed by name in `withheld`. Sent with Content-Disposition: attachment.',
       security,
       response: {
         200: { type: 'object', additionalProperties: true },
