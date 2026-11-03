@@ -40,7 +40,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const errors = deployedImageErrors(machines, process.env.EXPECTED_DIGEST);
   for (const error of errors) console.log(`::error::${error}`);
   if (errors.length) {
-    console.log('::error::Production is not running the image the gate scanned. Run: flyctl rollback -a windom-api');
+    console.log(`::error::Production is not running the expected image (${process.env.EXPECTED_DIGEST}). See docs/deployment-runbook.md.`);
     process.exitCode = 1;
   } else {
     console.log(`Every started app machine runs ${process.env.EXPECTED_DIGEST}.`);

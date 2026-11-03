@@ -13,7 +13,7 @@ Features: clock, greeting, background images (Unsplash/local), weather widget, q
 - **React 19** - Functional components + hooks
 - **TypeScript** - Strict mode
 - **Vite 8** + `@crxjs/vite-plugin` - Chrome extension builds with HMR
-- **Plain CSS** - no framework. `src/styles/globals.css` (~4900 lines) holds layout and components; `src/styles/glass.css` holds the glass material. Design tokens are CSS custom properties in the `:root` block at the top of globals.css: radius (`--r-pill`, `--r-card`, `--r-control`, `--r-inner`, `--r-xs`), spacing (`--space-1`..`6`), control heights and panel sizes. Use them rather than literals.
+- **Plain CSS** - no framework. `src/styles/globals.css` (~4900 lines) holds layout and components; `src/styles/glass.css` holds the glass material. Design tokens are CSS custom properties in the `:root, :host` block at the top of globals.css (`:host` so they also reach the content script's shadow root): radius (`--r-pill`, `--r-card`, `--r-control`, `--r-inner`, `--r-xs`), spacing (`--space-1`..`6`), control heights and panel sizes. Use them rather than literals.
 - **lucide-react** - SVG icon library
 
 ## Development Commands
@@ -80,6 +80,7 @@ web/                               (repo root for the extension)
 
 - Settings changes trigger re-renders through `SettingsContext` - no manual DOM manipulation
 - Cross-tab sync happens automatically via `chrome.storage.onChanged` listener in `SettingsContext`
+- Backend sync (#251) decides conflicts by the server's revision (`updatedAt` on GET/PUT `/settings`), compared for equality, never against `Date.now()`. See `src/lib/settings-sync.ts`; per-device state lives in `chrome.storage.local` (`windom_settings_server_rev`, `windom_settings_dirty`)
 - Weather/background data cached in `chrome.storage.local` (larger quota) rather than sync storage
 - Focus timer uses `body.focus-active` CSS class to hide all UI except the overlay
 - `SettingsContext` exposes `get()`, `update()`, `updateMultiple()`, and `reset()` methods
