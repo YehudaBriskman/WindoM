@@ -3,7 +3,8 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config.js';
 import { SPOTIFY_AUTH_URL, SPOTIFY_SCOPES } from '../types/constants.js';
 import * as oauthService from '../services/oauth.service.js';
-import { isAllowedRedirectUri } from '../lib/request.js';
+import { extractSessionMeta, isAllowedRedirectUri } from '../lib/request.js';
+import { recordAudit } from '../services/audit.service.js';
 import { replyOAuthExchangeError } from '../lib/oauth-exchange.js';
 
 const exchangeSchema = z.object({
@@ -53,6 +54,7 @@ async function handleSpotifyCodeExchange(
     providerUserId,
     ...(pkceClientId ? { providerClientId: pkceClientId } : {}),
   });
+  await recordAudit('integration_connected_spotify', { userId, meta: extractSessionMeta(reply.request) });
 
   void reply.send({ status: 'linked' });
 }

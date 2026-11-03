@@ -93,7 +93,7 @@ export async function logoutController(req: FastifyRequest, reply: FastifyReply)
   const rawToken = req.cookies[COOKIE_NAME];
   if (rawToken) {
     req.log.info('logout: revoking session');
-    await authService.logout(rawToken);
+    await authService.logout(rawToken, extractSessionMeta(req));
   } else {
     req.log.warn('logout: no refresh token cookie - session not revoked server-side');
   }

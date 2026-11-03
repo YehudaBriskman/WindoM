@@ -3,7 +3,8 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import { config } from '../config.js';
 import { GOOGLE_AUTH_URL, CALENDAR_SCOPES, GMAIL_SCOPES } from '../types/constants.js';
 import * as oauthService from '../services/oauth.service.js';
-import { isAllowedRedirectUri } from '../lib/request.js';
+import { extractSessionMeta, isAllowedRedirectUri } from '../lib/request.js';
+import { recordAudit } from '../services/audit.service.js';
 import { replyOAuthExchangeError } from '../lib/oauth-exchange.js';
 
 const exchangeSchema = z.object({
@@ -44,6 +45,7 @@ async function handleGoogleOAuthExchange(
     scope: tokens.scope,
     providerUserId: userInfo.sub,
   });
+  await recordAudit('integration_connected_google', { userId, meta: extractSessionMeta(reply.request) });
 
   void reply.send({ status: 'linked' });
 }
