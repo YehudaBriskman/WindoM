@@ -135,9 +135,14 @@ export function useSpotifyTopTracks() {
 
   useEffect(() => {
     if (!spotifyConnected) { setTracks([]); return; }
-    apiGet<{ tracks: SpotifyTrack[] }>('/spotify/top-tracks?limit=10&time_range=short_term')
-      .then((data) => setTracks(data.tracks))
-      .catch(() => setTracks([]));
+    void (async () => {
+      try {
+        const data = await apiGet<{ tracks: SpotifyTrack[] }>('/spotify/top-tracks?limit=10&time_range=short_term');
+        setTracks(data.tracks);
+      } catch {
+        setTracks([]);
+      }
+    })();
   }, [spotifyConnected]);
 
   return { tracks };
