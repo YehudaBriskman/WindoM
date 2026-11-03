@@ -1,69 +1,134 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { nearestScrollTop, pickActiveIndex } from '../lib/scrollspy';
 
 /**
- * Which heading the reader is currently under.
+ * Which heading the reader is currently under, and a way to say "this one" on
+ * a click.
  *
- * The contents rail listed every section and marked none of them, so it told
- * you what a page contained but never where in it you were - which is most of
- * what a rail on a long document is for.
+ * A scroll-position spy rather than the IntersectionObserver it replaced. The
+ * observer collapsed the viewport to a band with a hardcoded `-120px` top and
+ * reported only when a heading crossed one of the band's edges; between those
+ * moments it fell back to "the last heading above the viewport's top edge",
+ * which excluded every heading that had slid under the ~114px sticky chrome
+ * but not yet off the screen. So the previous section stayed marked for the
+ * first stretch of every new one - the lag a reader saw. Measured on /guide
+ * at 1440x900: 26 of 31 sampled scroll positions marked the wrong item.
  *
- * An IntersectionObserver rather than a scroll listener: the browser does the
- * geometry off the main thread and reports only when something crosses the
- * line, where a scroll handler would measure every heading on every frame.
+ * Now every scroll (passive, coalesced to one read per frame) and resize asks
+ * the one question directly: which is the last heading at or above the reading
+ * line? The line is read from the headings' own `scroll-margin-top`, which is
+ * `--chrome-h` plus the landing gap in docs.css - the exact spot a heading is
+ * put when its rail link is followed - so the rail and the anchor jump cannot
+ * disagree, and there is no pixel count here to drift from the CSS.
  *
- * The root margin collapses the viewport to a band just below the sticky
- * chrome, so "current" means the heading that has most recently passed under
- * the bar rather than whichever one happens to be visible - with a tall
- * viewport several are visible at once, and the topmost is not always the one
- * being read.
+ * The cost is one `getBoundingClientRect` per heading per frame while
+ * scrolling: a few dozen reads, no writes, on pages with at most ~30 headings.
  */
-export function useActiveHeading(ids: string[]): string | undefined {
-  const [active, setActive] = useState<string | undefined>(undefined);
+export function useActiveHeading(ids: string[]): {
+  active: string | undefined;
+  /** Mark a heading now, ahead of the smooth scroll that will reach it. */
+  select: (id: string) => void;
+} {
+  const [active, setActive] = useState<string | undefined>(ids[0]);
+  /** Set by a click, held until the scroll that click started has settled. */
+  const pinned = useRef<{ id: string; settled: boolean } | null>(null);
+  const settleTimer = useRef<number | undefined>(undefined);
+  const key = ids.join('|');
 
   useEffect(() => {
-    if (!ids.length || typeof IntersectionObserver !== 'function') return;
+    if (!ids.length) return;
 
-    const seen = new Map<string, boolean>();
+    let frame = 0;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          seen.set(entry.target.id, entry.isIntersecting);
-        }
+    const measure = () => {
+      frame = 0;
+      const els = ids.map((id) => document.getElementById(id));
+      const first = els.find((el): el is HTMLElement => el !== null);
+      if (!first) return;
 
-        // The first heading inside the band, in document order. Falling back
-        // to the last one above it keeps something marked while the reader is
-        // in the body of a long section with no heading on screen.
-        const inBand = ids.find((id) => seen.get(id));
-        if (inBand) {
-          setActive(inBand);
+      // Resolved px of calc(var(--chrome-h) + var(--s-4)), plus a pixel or
+      // two for a smooth scroll that lands on a fractional offset.
+      const line = parseFloat(getComputedStyle(first).scrollMarginTop) + 2;
+      const root = document.documentElement;
+      const atBottom = Math.ceil(window.scrollY + window.innerHeight) >= root.scrollHeight - 2;
+      const tops = els.map((el) => (el ? el.getBoundingClientRect().top : Infinity));
+      const index = pickActiveIndex(tops, line, atBottom);
+      if (index >= 0) setActive(ids[index]);
+    };
+
+    const onScroll = () => {
+      const pin = pinned.current;
+      if (pin) {
+        if (!pin.settled) {
+          // Still travelling to the clicked heading: keep its mark and wait
+          // for the scroll to go quiet.
+          window.clearTimeout(settleTimer.current);
+          settleTimer.current = window.setTimeout(() => {
+            if (pinned.current) pinned.current.settled = true;
+          }, 140);
           return;
         }
+        // The reader has scrolled on their own since; follow them again. This
+        // is what keeps a click on a short final section marked even though
+        // its heading cannot scroll up to the line.
+        pinned.current = null;
+      }
+      if (!frame) frame = window.requestAnimationFrame(measure);
+    };
 
-        const passed = ids.filter((id) => {
-          const el = document.getElementById(id);
-          return el !== null && el.getBoundingClientRect().top < 0;
-        });
-        setActive(passed.length ? passed[passed.length - 1] : ids[0]);
-      },
-      {
-        // Top of the band under the chrome, bottom most of the way up the
-        // viewport, so a heading becomes current as it reaches reading
-        // position rather than as it appears at the bottom edge.
-        rootMargin: '-120px 0px -70% 0px',
-        threshold: 0,
-      },
-    );
+    const onResize = () => {
+      if (!frame) frame = window.requestAnimationFrame(measure);
+    };
 
-    for (const id of ids) {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    }
-
-    return () => observer.disconnect();
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      if (frame) window.cancelAnimationFrame(frame);
+      window.clearTimeout(settleTimer.current);
+    };
     // The ids are derived from the page's own headings, so this re-runs on a
     // route change and on nothing else.
-  }, [ids.join('|')]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return active;
+  const select = useCallback((id: string) => {
+    pinned.current = { id, settled: false };
+    window.clearTimeout(settleTimer.current);
+    // Released even if the click starts no scroll at all (already there).
+    settleTimer.current = window.setTimeout(() => {
+      if (pinned.current) pinned.current.settled = true;
+    }, 140);
+    setActive(id);
+  }, []);
+
+  return { active, select };
+}
+
+/**
+ * Scrolls `container` just far enough to show `item`, and never the page.
+ *
+ * For a sticky panel taller than the viewport: as the mark moves down a long
+ * contents list, the list follows it instead of leaving it below the fold.
+ */
+export function keepInView(container: HTMLElement | null, item: Element | null | undefined): void {
+  if (!container || !item || container.scrollHeight <= container.clientHeight) return;
+  const box = container.getBoundingClientRect();
+  const rect = item.getBoundingClientRect();
+  const itemTop = rect.top - box.top - container.clientTop + container.scrollTop;
+  const next = nearestScrollTop(container.scrollTop, container.clientHeight, itemTop, rect.height, 24);
+  if (next !== null) container.scrollTop = next;
+}
+
+/** Keeps the item matching `selector` inside `ref` visible whenever `active` moves. */
+export function useKeepActiveInView(
+  ref: RefObject<HTMLElement | null>,
+  selector: string,
+  active: string | undefined,
+): void {
+  useEffect(() => {
+    const container = ref.current;
+    keepInView(container, container?.querySelector(selector));
+  }, [ref, selector, active]);
 }

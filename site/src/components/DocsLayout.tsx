@@ -3,6 +3,7 @@ import {
   cloneElement,
   isValidElement,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
   type ReactElement,
@@ -19,7 +20,7 @@ import {
 } from '../lib/docs';
 import { SiteNav } from './SiteNav';
 import { DocsSearch } from './DocsSearch';
-import { useActiveHeading } from '../hooks/useActiveHeading';
+import { useActiveHeading, useKeepActiveInView } from '../hooks/useActiveHeading';
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -34,6 +35,18 @@ interface DocsLayoutProps {
 const SIDEBAR_KEY = 'windom-docs-sidebar';
 
 /**
+ * The stored sidebar choice, once it has been read.
+ *
+ * Every docs page renders its own `DocsLayout`, so the shell remounts on each
+ * route change. Reading storage in an effect each time meant a closed sidebar
+ * rendered open for one frame on every navigation and then snapped shut - the
+ * panel visibly moving, inside the view transition that is meant to hold it
+ * still. Remembered here after the first read, so only the hydration render
+ * (which must match the prerendered HTML) starts from the default.
+ */
+let rememberedCollapsed: boolean | undefined;
+
+/**
  * The handful of strings the shell itself contributes, in both languages.
  *
  * The footer labels live here with the rest rather than inline, because they
@@ -43,11 +56,11 @@ const SIDEBAR_KEY = 'windom-docs-sidebar';
  */
 const UI = {
   en: {
-    home: 'Home', onPage: 'On this page', more: 'More documentation', prev: 'Previous', next: 'Next', toggle: 'Toggle navigation',
+    home: 'Home', onPage: 'On this page', sections: 'Sections of this page', more: 'More documentation', prev: 'Previous', next: 'Next', toggle: 'Toggle navigation',
     guide: 'User Guide', support: 'Support', localSetup: 'Local Setup', privacy: 'Privacy', terms: 'Terms',
   },
   he: {
-    home: 'דף הבית', onPage: 'בעמוד הזה', more: 'תיעוד נוסף', prev: 'הקודם', next: 'הבא', toggle: 'הצגה או הסתרה של הניווט',
+    home: 'דף הבית', onPage: 'בעמוד הזה', sections: 'הסעיפים בעמוד הזה', more: 'תיעוד נוסף', prev: 'הקודם', next: 'הבא', toggle: 'הצגה או הסתרה של הניווט',
     guide: 'מדריך למשתמש', support: 'תמיכה', localSetup: 'הרצה מקומית', privacy: 'פרטיות', terms: 'תנאים',
   },
 } as const;
@@ -82,7 +95,23 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
   const inThisLanguage = (to: string): string => translatedPath(to, locale) ?? to;
 
   const { headings, content } = anchorHeadings(children);
-  const active = useActiveHeading(headings.map((h) => h.id));
+  const { active, select } = useActiveHeading(headings.map((h) => h.id));
+  const railList = useRef<HTMLUListElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  useKeepActiveInView(railList, 'a[aria-current="location"]', active);
+  useKeepActiveInView(navRef, '.docs-nav-sections a[aria-current="location"]', active);
+
+  /* The current page's own sections, for the sidebar. Only the h2s: the
+     sidebar is a map of the site, and a page's outline one level deep is as
+     far into a page as a map should go. Each h3 is folded into the section it
+     sits under, so the mark follows the reader through subsections too. */
+  const sections = headings.filter((h) => h.level === 2);
+  const activeIndex = headings.findIndex((h) => h.id === active);
+  const activeSection = headings
+    .slice(0, activeIndex + 1)
+    .filter((h) => h.level === 2)
+    .pop()?.id;
+  const [sectionsOpen, setSectionsOpen] = useState(true);
   const { prev, next } = docsNeighbours(path);
   /* The trail uses the sidebar title, not the page's h1: the guide's heading is
      "Using WindoM" and its group is "Using WindoM", which produced a crumb that
@@ -98,19 +127,23 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
    * is prerendered HTML, and a value read from localStorage would disagree with
    * it on any load where the sidebar had been closed.
    */
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => rememberedCollapsed ?? false);
 
   useEffect(() => {
+    if (rememberedCollapsed !== undefined) return;
     try {
-      if (localStorage.getItem(SIDEBAR_KEY) === 'collapsed') setCollapsed(true);
+      rememberedCollapsed = localStorage.getItem(SIDEBAR_KEY) === 'collapsed';
     } catch {
       // Private mode, or storage disabled. The sidebar simply stays open.
+      rememberedCollapsed = false;
     }
+    if (rememberedCollapsed) setCollapsed(true);
   }, []);
 
   const toggleSidebar = () => {
     setCollapsed((was) => {
       const next = !was;
+      rememberedCollapsed = next;
       try {
         localStorage.setItem(SIDEBAR_KEY, next ? 'collapsed' : 'open');
       } catch { /* not worth failing the click over */ }
@@ -159,34 +192,76 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
       </div>
 
       <div className="docs-shell">
-        <nav className="docs-nav" id="docs-nav" aria-label="Documentation">
-          {docsGroups(locale).map(({ group: groupName, pages }) => (
-            /* `details` rather than a button and state: it collapses before
-               JavaScript runs and survives the static prerender, and the group
-               containing the current page is the one worth opening. */
-            /* Open by default, every group. Only the current page's group
-               used to be, which left most of the column empty and the rest of
-               the site behind a disclosure - the sidebar is a map, and a map
-               that shows one region is not doing its job. They still collapse
-               if someone wants the room. */
-            <details className="docs-nav-group" key={groupName} open>
-              <summary className="docs-nav-heading">{groupName}</summary>
-              <ul>
-                {pages.map((page) => (
-                  <li key={page.path}>
-                    <Link
-                      to={page.path}
-                      className={page.path === path ? 'is-current' : undefined}
-                      aria-current={page.path === path ? 'page' : undefined}
-                      viewTransition
-                    >
-                      {page.title}
-                      {page.blurb && <span className="docs-nav-blurb">{page.blurb}</span>}
-                    </Link>
-                  </li>
-                ))}
+        {/* A tree, not a stack of disclosures.
+
+            The groups used to be `<details>` with a triangle on every label,
+            which made section names look like the things you open while the
+            pages under them looked like plain text - and each group holds one
+            or two pages, so collapsing one bought nothing. Now a group is a
+            label (never interactive), its pages hang off a guide line, the
+            current page carries the accent bar on that line, and the only
+            control in the tree is a chevron button - with `aria-expanded` -
+            for the current page's own sections. */}
+        <nav className="docs-nav" id="docs-nav" aria-label="Documentation" ref={navRef}>
+          {docsGroups(locale).map(({ group: groupName, pages }, gi) => (
+            <div className="docs-nav-group" key={groupName}>
+              <p className="docs-nav-label" id={`docs-nav-label-${gi}`}>
+                {groupName}
+              </p>
+              <ul className="docs-nav-tree" aria-labelledby={`docs-nav-label-${gi}`}>
+                {pages.map((page) => {
+                  const isCurrent = page.path === path;
+                  const nested = isCurrent && sections.length > 1;
+                  return (
+                    <li key={page.path} className={nested ? 'has-sections' : undefined}>
+                      <div className="docs-nav-row">
+                        <Link
+                          to={page.path}
+                          className={`docs-nav-link${isCurrent ? ' is-current' : ''}`}
+                          aria-current={isCurrent ? 'page' : undefined}
+                          viewTransition
+                        >
+                          {page.title}
+                        </Link>
+                        {nested && (
+                          <button
+                            type="button"
+                            className="docs-nav-expander"
+                            aria-expanded={sectionsOpen}
+                            aria-controls="docs-nav-sections"
+                            aria-label={t.sections}
+                            onClick={() => setSectionsOpen((o) => !o)}
+                          >
+                            <ChevronGlyph />
+                          </button>
+                        )}
+                      </div>
+                      {nested && (
+                        <ul
+                          className="docs-nav-tree docs-nav-sections"
+                          id="docs-nav-sections"
+                          aria-label={t.sections}
+                          hidden={!sectionsOpen}
+                        >
+                          {sections.map((h) => (
+                            <li key={h.id}>
+                              <a
+                                href={`#${h.id}`}
+                                className={`docs-nav-link${h.id === activeSection ? ' is-active' : ''}`}
+                                aria-current={h.id === activeSection ? 'location' : undefined}
+                                onClick={() => select(h.id)}
+                              >
+                                {h.text}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
-            </details>
+            </div>
           ))}
         </nav>
 
@@ -215,7 +290,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
         {headings.length > 1 && (
           <aside className="docs-rail" aria-label={t.onPage}>
             <h2 className="docs-rail-heading">{t.onPage}</h2>
-            <ul>
+            <ul ref={railList}>
               {headings.map((h) => (
                 <li key={h.id} className={h.level === 3 ? 'is-sub' : undefined}>
                   <a
@@ -225,6 +300,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
                        thing saying where you are, and a colour alone says it
                        to no one using a screen reader. */
                     aria-current={h.id === active ? 'location' : undefined}
+                    onClick={() => select(h.id)}
                   >
                     {h.text}
                   </a>
@@ -262,6 +338,15 @@ function SidebarGlyph() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <rect x="1" y="2.5" width="14" height="11" rx="2" stroke="currentColor" strokeWidth="1.3" />
       <line x1="6" y1="2.5" x2="6" y2="13.5" stroke="currentColor" strokeWidth="1.3" />
+    </svg>
+  );
+}
+
+/** Points to the inline end; turned to point down when its list is open. */
+function ChevronGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M4.5 2.5 8 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

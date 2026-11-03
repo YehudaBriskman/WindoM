@@ -22,24 +22,39 @@
   align-items: start;
 }
 
-/* ── Between pages ──────────────────────────────────────────────────── */
+/* ── Side panels ────────────────────────────────────────────────────────
+   The sidebar (between pages) and the rail (within this page) are the frame,
+   and the frame holds still: both stick under the chrome, are never taller
+   than the space left for them, and scroll on their own when their list is
+   longer than that - so neither one scrolls away with the page, and neither
+   one's lower half sits below the fold where nothing can reach it (the rail
+   on /guide was 824px tall in a 900px window, starting at 130px).
 
-.docs-nav {
+   `--panel-top` is where they rest in the flow - the chrome plus the shell's
+   own top padding - and the sticky offset is the same value. It used to be
+   `chrome + s-4` against an in-flow position of `chrome + s-5`, so both
+   panels jumped up by eight pixels the moment they stuck, and again on every
+   page change, when the scroll reset put them back. */
+
+.docs-shell {
+  --panel-top: calc(var(--chrome-h) + var(--s-5));
+}
+
+.docs-nav,
+.docs-rail {
   position: sticky;
-  font-size: 0.9rem;
+  top: var(--panel-top);
+  max-height: calc(100dvh - var(--panel-top) - var(--s-5));
 }
 
-.docs-nav-group + .docs-nav-group {
-  margin-top: var(--s-5);
-}
-
-.docs-nav-heading {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 var(--s-2);
+.docs-nav,
+.docs-rail ul {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* A thin scrollbar rather than the platform default, which is wide enough
+     here to steal a noticeable slice of a narrow column. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 .docs-nav ul,
@@ -49,40 +64,230 @@
   padding: 0;
 }
 
-.docs-nav a {
+/* Section labels: what the pages below are, never something to click. In
+   Hebrew the tracking goes - letter-spacing pulls Hebrew letters apart, and
+   uppercase does nothing to them anyway. */
+.docs-nav-label,
+.docs-rail-heading {
+  margin: 0 0 var(--s-2);
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.docs[dir='rtl'] .docs-nav-label,
+.docs[dir='rtl'] .docs-rail-heading {
+  letter-spacing: 0;
+  font-size: 0.78rem;
+}
+
+/* ── The tree ───────────────────────────────────────────────────────────
+   One guide line per level, drawn by each item's own inline-start border so
+   it runs unbroken down the list (and mirrors in Hebrew). The marks - current
+   page, current section, hover - are a 2px bar laid over that line, so the
+   tree reads the same way in both panels: where the bar is, you are. */
+
+.docs-nav {
+  font-size: 0.875rem;
+  padding-inline-end: var(--s-2);
+}
+
+.docs-nav-group + .docs-nav-group {
+  margin-top: var(--s-5);
+}
+
+.docs-nav-tree > li,
+.docs-rail li {
+  border-inline-start: 1px solid var(--border);
+}
+
+.docs-nav-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1);
+}
+
+.docs-nav-link,
+.docs-rail a {
+  position: relative;
   display: block;
-  padding: var(--s-2) var(--s-3);
-  margin-left: calc(var(--s-3) * -1);
-  border-radius: var(--r-sm);
-  color: var(--muted-strong);
+  min-width: 0;
+  padding: 0.3125rem var(--s-3);
+  border-start-end-radius: var(--r-sm);
+  border-end-end-radius: var(--r-sm);
+  line-height: 1.4;
   text-decoration: none;
-  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+  overflow-wrap: anywhere;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
 }
 
-.docs-nav a:hover {
-  background: var(--surface);
+.docs-nav-link {
+  flex: 1;
+  color: var(--muted-strong);
+}
+
+.docs-rail a {
+  color: var(--muted);
+}
+
+.docs-nav-link::before,
+.docs-rail a::before {
+  content: '';
+  position: absolute;
+  inset-block: 0.25rem;
+  inset-inline-start: -1.5px;
+  width: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color var(--dur-fast) var(--ease);
+}
+
+.docs-nav-link:hover,
+.docs-rail a:hover {
   color: var(--text);
+  background: var(--surface);
 }
 
-/* The current page is marked by weight and a rule rather than by colour
-   alone, so it survives being read without colour. */
-/* A bar and a brighter label rather than a filled panel. The box read as a
-   button sitting in a list of links, and at the width of the column it was
-   the heaviest thing on the page. */
-.docs-nav a.is-current {
-  background: none;
+.docs-nav-link:hover::before,
+.docs-rail a:hover::before {
+  background: var(--border-strong);
+}
+
+/* The current page: the bar, full-strength text, weight and a faint wash of
+   the accent - marked by more than colour, so it survives being read without
+   colour. */
+.docs-nav-link.is-current {
   color: var(--text);
   font-weight: 600;
-  box-shadow: inset 2px 0 0 var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-.docs-nav-blurb {
-  display: block;
-  margin-top: 1px;
-  font-size: 0.74rem;
-  font-weight: 400;
-  line-height: 1.35;
+/* Where you are within the page, in either panel. */
+.docs-nav-link.is-active,
+.docs-rail a.is-active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.docs-nav-link.is-current::before,
+.docs-nav-link.is-active::before,
+.docs-rail a.is-active::before {
+  background: var(--accent);
+}
+
+/* Subheadings in the rail indent their text, not their line: the bar stays
+   on the one guide, so the mark does not jump sideways at an h3. */
+.docs-rail li.is-sub a {
+  padding-inline-start: calc(var(--s-3) * 2);
+  font-size: 0.97em;
+}
+
+.docs-rail li.is-sub a:not(.is-active) {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+}
+
+.docs-rail ul {
+  min-height: 0;
+}
+
+.docs-rail {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.84rem;
+}
+
+/* ── The current page's sections ────────────────────────────────────────
+   Nested under the current page as a second level of the tree, with its own
+   guide line one step in - but only between 761px and 1280px, where the rail
+   is hidden. Wider, the rail already lists them beside the page, and the same
+   list twice on one screen would leave the reader wondering which is which;
+   narrower, the sidebar is a block above the article, and seventeen section
+   links there would push the article itself off the first screen.
+
+   The chevron is the tree's only control. It is a real button, with its own
+   hover surface and `aria-expanded`, beside the page link rather than part of
+   it - so the page name always navigates and the chevron always toggles. */
+
+.docs-nav-sections {
+  margin-block: 2px var(--s-1);
+  margin-inline-start: var(--s-3);
+  font-size: 0.8125rem;
+}
+
+.docs-nav-sections .docs-nav-link {
+  padding-block: 0.25rem;
   color: var(--muted);
+}
+
+.docs-nav-sections .docs-nav-link.is-active {
+  color: var(--text);
+}
+
+.docs-nav-expander {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.docs-nav-expander:hover {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.docs-nav-expander svg {
+  transition: transform var(--dur-fast) var(--ease);
+}
+
+/* Closed it points along the line of reading - right in English, left in
+   Hebrew; open it points down at the list it opened. */
+.docs[dir='rtl'] .docs-nav-expander svg {
+  transform: scaleX(-1);
+}
+
+.docs-nav-expander[aria-expanded='true'] svg,
+.docs[dir='rtl'] .docs-nav-expander[aria-expanded='true'] svg {
+  transform: rotate(90deg);
+}
+
+.docs-nav-expander,
+.docs-nav-sections {
+  display: none;
+}
+
+@media (min-width: 761px) and (max-width: 1280px) {
+  .docs-nav-expander {
+    display: inline-flex;
+  }
+
+  .docs-nav-sections:not([hidden]) {
+    display: block;
+  }
+}
+
+@media (pointer: coarse) {
+  .docs-nav-expander {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
 }
 
 /* ── The page ───────────────────────────────────────────────────────── */
@@ -109,71 +314,6 @@
 }
 
 /* Anchored headings sit clear of the top when jumped to. */
-
-/* ── Contents of this page ──────────────────────────────────────────── */
-
-.docs-rail {
-  position: sticky;
-  font-size: 0.84rem;
-  border-left: 1px solid var(--border);
-  padding-left: 1.125rem;
-}
-
-.docs-rail-heading {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 0.625rem;
-}
-
-.docs-rail li + li {
-  margin-top: var(--s-2);
-}
-
-.docs-rail a {
-  color: var(--muted);
-  text-decoration: none;
-  line-height: 1.4;
-  display: block;
-}
-
-.docs-rail a:hover {
-  color: var(--text);
-}
-
-/**
- * Where you are.
- *
- * The rail listed every section and marked none of them, so it said what the
- * page contained but never where in it you were. The bar sits in the column's
- * own rule rather than beside it, so the list does not shift as the mark
- * moves down it.
- */
-.docs-rail a.is-active {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.docs-rail li {
-  position: relative;
-}
-
-.docs-rail a.is-active::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: calc(var(--s-5) * -1 + 0.3125rem);
-  top: 0.15em;
-  bottom: 0.15em;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--accent);
-}
-
-.docs-rail li.is-sub a.is-active::before {
-  inset-inline-start: calc(var(--s-5) * -1 + 0.3125rem - var(--s-3));
-}
 
 /* ── Previous / next ────────────────────────────────────────────────── */
 
@@ -241,7 +381,8 @@
 
 /* Below this the sidebar becomes a list above the page rather than vanishing -
    losing it entirely would leave no way between documents, which is the
-   problem this layout exists to solve. */
+   problem this layout exists to solve. It stops being sticky here: a panel
+   pinned over a phone-width article would cover the thing being read. */
 @media (max-width: 760px) {
   .docs-shell {
     grid-template-columns: minmax(0, 1fr);
@@ -250,103 +391,16 @@
 
   .docs-nav {
     position: static;
+    max-height: none;
+    overflow: visible;
+    padding-inline-end: 0;
     border-bottom: 1px solid var(--border);
     padding-bottom: 1.25rem;
-  }
-
-  .docs-nav-group {
-    margin-top: 0;
   }
 
   .docs-nav-group + .docs-nav-group {
     margin-top: 1.125rem;
   }
-
-  .docs-nav-blurb {
-    display: none;
-  }
-}
-
-/* Mirrored for the Hebrew guide. */
-.docs[dir='rtl'] .docs-nav a {
-  margin-left: 0;
-  margin-right: calc(var(--s-3) * -1);
-}
-
-.docs[dir='rtl'] .docs-nav a.is-current {
-  box-shadow: inset -2px 0 0 var(--accent);
-}
-
-/* The blurb belongs under its title, not beside it. A coarse pointer turns
-   the link into a flex row for the 2.75rem target, which laid the two out as
-   columns - invisible on a phone only because the blurb is hidden there, and
-   plainly wrong on a tablet between 47.5625rem and 68.75rem. */
-@media (pointer: coarse) {
-  .docs-nav a {
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-  }
-}
-
-.docs[dir='rtl'] .docs-rail {
-  border-left: 0;
-  border-right: 1px solid var(--border);
-  padding-left: 0;
-  padding-right: 1.125rem;
-}
-
-/* ── Collapsible groups ─────────────────────────────────────────────────
-   Native `details`, so the sidebar is structure rather than a flat list and
-   still works with no JavaScript and inside the prerender. */
-
-.docs-nav-group > summary {
-  cursor: pointer;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 0.4375rem;
-  user-select: none;
-}
-
-/* The default marker is replaced by one that points the way it opens. */
-.docs-nav-group > summary::-webkit-details-marker {
-  display: none;
-}
-
-.docs-nav-group > summary::before {
-  content: '';
-  width: 0;
-  height: 0;
-  border-left: var(--s-1) solid currentColor;
-  border-top: 3.5px solid transparent;
-  border-bottom: 3.5px solid transparent;
-  transition: transform var(--dur-fast) var(--ease);
-}
-
-.docs-nav-group[open] > summary::before {
-  transform: rotate(90deg);
-}
-
-.docs-nav-group > summary:hover {
-  color: var(--muted-strong);
-}
-
-/* ── Nested contents ────────────────────────────────────────────────── */
-
-.docs-rail li.is-sub {
-  /* Logical, so the indent mirrors in Hebrew. `margin-left` put the h3
-     indent on the wrong side of an RTL page. */
-  margin-inline-start: var(--s-3);
-  font-size: 0.97em;
-}
-
-.docs-rail li.is-sub a {
-  color: color-mix(in srgb, var(--muted) 72%, transparent);
-}
-
-.docs-rail li.is-sub a:hover {
-  color: var(--muted-strong);
 }
 
 /* Anchored headings clear the sticky nav when jumped to, rather than landing
@@ -361,6 +415,10 @@
  * identically by a native anchor jump, by `scrollIntoView` in RouteChrome, and
  * by a result picked out of the search dialog.
  *
+ * The contents rail's scroll-spy reads this same resolved value as its
+ * reading line (useActiveHeading), so a heading reached from the rail is
+ * always the one the rail then marks.
+ *
  * It can be the plain chrome height now. While the nav shrank on scroll it had
  * to clear the taller pre-shrink measurement, because the reflow moved the
  * heading after the browser had chosen where to put it.
@@ -370,14 +428,6 @@
   scroll-margin-top: calc(var(--chrome-h) + var(--s-4));
 }
 
-/* The sidebar and rail sit below the nav rather than under it. */
-.docs-nav,
-.docs-rail {
-  /* One token, not a number copied into three places. The three copies had
-     drifted to 4.75rem against a 6.125rem chrome, which is why both of these
-     columns' headings sat behind the breadcrumb bar whenever they stuck. */
-  top: calc(var(--chrome-h) + var(--s-4));
-}
 
 /* ── Breadcrumb bar ─────────────────────────────────────────────────────
    Under the nav, with the sidebar control at its head - the arrangement the
@@ -395,7 +445,14 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  padding: var(--s-2) var(--gutter);
+  /* Exactly `--bar-h`, border included, rather than whatever its tallest
+     child plus padding came to. It came to 51.3px against a 50px token, so
+     `--chrome-h` - which the sticky panels, the anchor clearance and the
+     contents rail's reading line all build on - was a pixel and a bit short,
+     and the panels nudged up by that much when they stuck. */
+  box-sizing: border-box;
+  height: var(--bar-h);
+  padding: 0 var(--gutter);
   background: color-mix(in srgb, var(--bg) 78%, transparent);
   backdrop-filter: blur(14px) saturate(160%);
   border-bottom: 1px solid var(--border);
@@ -491,18 +548,6 @@
   }
 }
 
-/* ── The sidebar scrolls on its own ─────────────────────────────────── */
-
-.docs-nav {
-  max-height: calc(100dvh - 7.5rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  /* A thin scrollbar rather than the platform default, which is wide enough
-     here to steal a noticeable slice of a 12.5rem column. */
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-strong) transparent;
-  padding-right: 0.375rem;
-}
 
 /* ── Heading anchors ────────────────────────────────────────────────────
    Visible on hover and whenever focused, so they are reachable by keyboard
@@ -563,7 +608,7 @@
 @media (max-width: 760px) {
   .docs-bar {
     top: 2.75rem;
-    padding: 0.375rem var(--s-4);
+    padding: 0 var(--s-4);
   }
 }
 
