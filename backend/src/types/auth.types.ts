@@ -20,6 +20,9 @@ export type AuthError =
 export interface SessionMeta {
   ip: string;
   userAgent: string;
+  /** Raw Sec-CH-UA / Sec-CH-UA-Platform headers, used only to derive the device label. */
+  uaBrands?: string;
+  uaPlatform?: string;
 }
 
 /** Access token + raw (un-hashed) refresh token returned after login/refresh. */
