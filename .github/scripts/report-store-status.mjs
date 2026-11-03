@@ -13,6 +13,11 @@ import { pathToFileURL } from 'node:url';
  */
 
 const API = 'https://www.googleapis.com/chromewebstore/v1.1/items';
+// The published half lives only in v2. v1.1 `items.get?projection=PUBLISHED`
+// answered without a `crxVersion` on every run (#368), and its reference page
+// is gone from developer.chrome.com - v2 `fetchStatus` is the documented source:
+// https://developer.chrome.com/docs/webstore/api/reference/rest/v2/publishers.items/fetchStatus
+const API_V2 = 'https://chromewebstore.googleapis.com/v2';
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 
 /**
@@ -108,6 +113,126 @@ export async function publishItem(id, token, fetchImpl = fetch) {
   return interpretPublish(body);
 }
 
+/** The v2 status URL. Both ids are path segments, so neither may smuggle a `/`. */
+export function statusUrl(publisherId, itemId) {
+  return `${API_V2}/publishers/${encodeURIComponent(publisherId)}/items/${encodeURIComponent(itemId)}:fetchStatus`;
+}
+
+/**
+ * Reads one ItemRevisionStatus. A revision can be split across distribution
+ * channels during a staged rollout; the version that counts is the one the
+ * largest share of users gets. `deployPercentage` is left out of the JSON when
+ * it is 0, so a missing value is read as 0, not as unknown.
+ */
+export function revisionVersion(revision) {
+  if (!revision || typeof revision !== 'object') return null;
+  const channels = Array.isArray(revision.distributionChannels) ? revision.distributionChannels : [];
+  const withVersion = channels.filter((c) => typeof c?.crxVersion === 'string' && c.crxVersion);
+  const main = withVersion.reduce(
+    (best, c) => ((c.deployPercentage ?? 0) > (best?.deployPercentage ?? -1) ? c : best),
+    null,
+  );
+  return {
+    state: revision.state ?? null,
+    version: main?.crxVersion ?? null,
+    percentage: main ? (main.deployPercentage ?? 0) : null,
+  };
+}
+
+/**
+ * Turns a v2 fetchStatus response into log lines.
+ *
+ * Advisory only: nothing here changes the exit code, because what the store
+ * serves lags a release by however long review takes. But a published side that
+ * cannot be read is a `warning`, never a quiet "(unknown)" - that silence is
+ * how #368 went unnoticed.
+ *
+ * `draftVersion` is the v1.1 DRAFT reading, which v2 has no equivalent for: an
+ * uploaded but unsubmitted package appears in neither revision below.
+ */
+export function interpretStatus(body, { draftVersion } = {}) {
+  const lines = [];
+  const warnings = [];
+
+  if (!body || typeof body !== 'object') {
+    warnings.push('fetchStatus returned no status resource; the published version is unknown.');
+    return { lines, warnings };
+  }
+  if (body.takenDown) warnings.push('The store reports this item TAKEN DOWN for a policy violation. See the Developer Dashboard.');
+  if (body.warned) warnings.push('The store has warned this item for a policy violation. See the Developer Dashboard.');
+
+  const published = revisionVersion(body.publishedItemRevisionStatus);
+  const submitted = revisionVersion(body.submittedItemRevisionStatus);
+
+  if (!published) {
+    // Documented: the field is unset when the item has never been published.
+    lines.push('published version: (none - the store has no published revision)');
+  } else if (!published.version) {
+    warnings.push(
+      `fetchStatus returned a published revision (state ${published.state ?? 'unset'}) with no crxVersion; the published version is unknown.`,
+    );
+  } else {
+    const share = published.percentage !== null && published.percentage < 100 ? `, ${published.percentage}% rollout` : '';
+    lines.push(`published version: ${published.version} (${published.state ?? 'state unset'}${share})`);
+  }
+
+  if (submitted) {
+    lines.push(`submitted version: ${submitted.version ?? '(no crxVersion)'} (${submitted.state ?? 'state unset'})`);
+    if (submitted.state === 'REJECTED') {
+      warnings.push(`The store REJECTED submitted version ${submitted.version ?? '(unknown)'}. See the Developer Dashboard.`);
+    }
+  }
+
+  // The one question anyone has: did it ship? Compare the newest thing we gave
+  // the store - the submission if there is one, else the draft - with what it serves.
+  const candidate = submitted?.version
+    ? { label: 'Submitted', version: submitted.version, state: submitted.state }
+    : draftVersion
+      ? { label: 'Draft', version: draftVersion, state: null }
+      : null;
+  if (published?.version && candidate) {
+    if (candidate.version === published.version) {
+      lines.push(`${candidate.label} and published agree: ${published.version} is live.`);
+    } else if (candidate.state === 'STAGED') {
+      lines.push(`Submitted ${candidate.version} passed review and is staged; the store still serves ${published.version}.`);
+    } else if (candidate.state === 'PENDING_REVIEW') {
+      lines.push(`Submitted ${candidate.version} is awaiting review; the store still serves ${published.version}.`);
+    } else if (candidate.label === 'Draft') {
+      lines.push(
+        `Draft ${candidate.version} differs from published ${published.version} and is not submitted for review.`,
+      );
+    } else {
+      lines.push(`Submitted ${candidate.version} (${candidate.state ?? 'state unset'}); the store still serves ${published.version}.`);
+    }
+  }
+  return { lines, warnings };
+}
+
+/** Never throws: a failed read becomes a warning, with whatever reason Google gave. */
+export async function fetchPublishedStatus(publisherId, itemId, token, { draftVersion, fetchImpl = fetch } = {}) {
+  if (!publisherId) {
+    return {
+      lines: [],
+      warnings: ['CHROME_PUBLISHER_ID is not set, so the published version cannot be read (the v2 API needs it).'],
+    };
+  }
+  let res;
+  try {
+    res = await fetchImpl(statusUrl(publisherId, itemId), { headers: { Authorization: `Bearer ${token}` } });
+  } catch (err) {
+    return { lines: [], warnings: [`fetchStatus request failed: ${err.message}`] };
+  }
+  const body = await res.json().catch(() => null);
+  if (!res.ok) {
+    const reason = [body?.error?.status, body?.error?.message].filter(Boolean).join(': ');
+    return {
+      lines: [],
+      warnings: [`fetchStatus failed: HTTP ${res.status}${reason ? ` (${reason})` : ''}; the published version is unknown.`],
+    };
+  }
+  return interpretStatus(body, { draftVersion });
+}
+
 async function accessToken(env) {
   const res = await fetch(TOKEN_URL, {
     method: 'POST',
@@ -142,21 +267,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
 
     // The draft alone cannot say whether a release is live. Printing both makes
     // the one question anyone actually has - did it ship? - answerable from the
-    // log: equal means shipped, draft ahead means still waiting on review.
-    try {
-      const live = await fetch(`${API}/${id}?projection=PUBLISHED`, { headers });
-      const published = await live.json();
-      console.log(`published version: ${published.crxVersion ?? '(unknown)'}`);
-      if (published.crxVersion && item.crxVersion) {
-        console.log(
-          published.crxVersion === item.crxVersion
-            ? 'Draft and published agree: this version is live.'
-            : `Draft ${item.crxVersion} is ahead of published ${published.crxVersion} - awaiting review.`,
-        );
-      }
-    } catch {
-      console.log('published version: (could not be read)');
-    }
+    // log. Advisory: it warns when it cannot answer, and never fails the step.
+    const status = await fetchPublishedStatus(env.CHROME_PUBLISHER_ID, id, token, {
+      draftVersion: item.crxVersion,
+    });
+    for (const line of status.lines) console.log(line);
+    for (const warning of status.warnings) console.log(`::warning::${warning}`);
 
     const { errors, notes } = interpretItem(item, { expectedVersion });
     for (const note of notes) console.log(note);
@@ -167,6 +283,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const submitted = await publishItem(id, token);
       for (const note of submitted.notes) console.log(note);
       errors.push(...submitted.errors);
+      // Read again, so the log ends on what the submission produced -
+      // "awaiting review" - rather than on the state before it.
+      if (!submitted.errors.length) {
+        const after = await fetchPublishedStatus(env.CHROME_PUBLISHER_ID, id, token, {
+          draftVersion: item.crxVersion,
+        });
+        console.log('After submitting:');
+        for (const line of after.lines) console.log(line);
+        for (const warning of after.warnings) console.log(`::warning::${warning}`);
+      }
     }
 
     for (const error of errors) console.error(`::error::${error}`);
