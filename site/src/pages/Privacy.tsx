@@ -44,6 +44,7 @@ export function Privacy() {
           <p>
             You can delete your account and all associated server-side data at any time from
             <strong>Settings → Account → Delete account</strong>. All data is deleted permanently and immediately.
+            You can also download a JSON copy of this data, with passwords, tokens and API keys left out, from the authenticated <code>GET /me/export</code> endpoint.
           </p>
           <h2>Google Calendar integration (optional)</h2>
           <p>

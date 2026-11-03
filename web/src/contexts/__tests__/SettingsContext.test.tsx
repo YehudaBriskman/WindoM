@@ -333,4 +333,84 @@ describe('useSettingsSection', () => {
 
     expect(result.current.section.userName).toBe('Felix');
   });
+
+  // #260: the integration hooks (useGmail, useSpotify, useCalendar) rely on this.
+  it('does not re-render a subscriber when an unrelated section changes', async () => {
+    const ctx = await mountAndWait();
+    let renders = 0;
+    // No wrapper: the subscriber reads the shared store, so the provider's own
+    // re-renders cannot reach it - only a store notification for its section can.
+    const sub = renderHook(() => {
+      renders += 1;
+      return useSettingsSection('integrations');
+    });
+    const before = renders;
+
+    await act(async () => {
+      await ctx.result.current.update('clock', { timeFormat: '24h' });
+    });
+    expect(renders).toBe(before);
+
+    await act(async () => {
+      await ctx.result.current.update('integrations', {
+        calendar: { ...defaultSettings.integrations.calendar, days: 14 },
+      });
+    });
+    expect(renders).toBeGreaterThan(before);
+    expect(sub.result.current.calendar.days).toBe(14);
+  });
+});
+
+// ── write result (#437) ───────────────────────────────────────────────────────
+// The chrome-storage helpers report a failed write by resolving `false`, not by
+// throwing. update/updateMultiple pass that on so the UI can say "Couldn't save".
+
+describe('write result', () => {
+  it('update resolves true when the sync write succeeds', async () => {
+    const { result } = await mountAndWait();
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.update('general', { userName: 'Gil' });
+    });
+    expect(saved).toBe(true);
+  });
+
+  it('update resolves false when the sync write fails', async () => {
+    const { result } = await mountAndWait();
+    vi.mocked(syncStorage.setMultiple).mockResolvedValueOnce(false);
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.update('general', { userName: 'Gil' });
+    });
+    expect(saved).toBe(false);
+  });
+
+  it('update resolves false when the device-local focus write fails', async () => {
+    const { result } = await mountAndWait();
+    vi.mocked(localStore.set).mockResolvedValueOnce(false);
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.update('focus', { mainFocus: 'Ship it' });
+    });
+    expect(saved).toBe(false);
+  });
+
+  it('updateMultiple resolves true when the sync write succeeds', async () => {
+    const { result } = await mountAndWait();
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.updateMultiple({ general: { ...defaultSettings.general, userName: 'Hen' } });
+    });
+    expect(saved).toBe(true);
+  });
+
+  it('updateMultiple resolves false when the sync write fails', async () => {
+    const { result } = await mountAndWait();
+    vi.mocked(syncStorage.setMultiple).mockResolvedValueOnce(false);
+    let saved: boolean | undefined;
+    await act(async () => {
+      saved = await result.current.updateMultiple({ general: { ...defaultSettings.general, userName: 'Hen' } });
+    });
+    expect(saved).toBe(false);
+  });
 });

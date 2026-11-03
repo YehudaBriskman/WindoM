@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { apiGet } from '../lib/api';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettingsSection } from '../contexts/SettingsContext';
 import { useGmailAvailable } from './useServerFeatures';
 import { GMAIL_POLL_INTERVAL_MS } from '../lib/timing-constants';
 
@@ -18,7 +18,7 @@ export interface GmailSummary {
 }
 
 export function useGmail() {
-  const { settings } = useSettings();
+  const integrations = useSettingsSection('integrations');
   const gmailAvailable = useGmailAvailable();
 
   /**
@@ -33,7 +33,7 @@ export function useGmail() {
    * The server is the authority on what it will actually serve, so the saved
    * flag only decides whether the user *wants* the widget.
    */
-  const gmailConnected = settings.integrations.gmail.connected && gmailAvailable;
+  const gmailConnected = integrations.gmail.connected && gmailAvailable;
   const [summary, setSummary] = useState<GmailSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

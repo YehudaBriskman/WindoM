@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { syncStorage } from '../lib/chrome-storage';
 import { apiGet, getAccessToken } from '../lib/api';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettingsSection } from '../contexts/SettingsContext';
 import { CALENDAR_FETCH_DEBOUNCE_MS } from '../lib/timing-constants';
 import type { CalendarEvent } from '../types/calendar';
 
 export function useCalendar() {
-  const { settings } = useSettings();
-  const calendarConnected = settings.integrations.calendar.connected;
-  const calendarDays = settings.integrations.calendar.days;
+  const integrations = useSettingsSection('integrations');
+  const calendarConnected = integrations.calendar.connected;
+  const calendarDays = integrations.calendar.days;
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   const fetchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);

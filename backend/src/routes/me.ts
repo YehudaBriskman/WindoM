@@ -6,6 +6,7 @@ import {
   deleteAccountController,
   listSessionsController,
   revokeSessionController,
+  exportMeController,
 } from '../controllers/me.controller.js';
 
 const security = [{ bearerAuth: [] }];
@@ -56,6 +57,23 @@ export function meRoutes(app: FastifyInstance): void {
       response: { 400: errorResponse, 401: errorResponse, 404: errorResponse },
     },
   }, revokeSessionController);
+
+  app.get('/me/export', {
+    preHandler: authenticate,
+    config: { rateLimit: { max: 5, timeWindow: '1 hour' } },
+    schema: {
+      tags: ['Me'],
+      summary: 'Download a JSON copy of the data stored about the caller (GDPR Art. 15/20)',
+      description: 'Profile, synced settings, session metadata, integration connection status and email-token history. Never includes credentials: password hash, OAuth/GitHub tokens, session and email token hashes, and third-party API keys typed into settings are withheld and listed by name in `withheld`. Sent with Content-Disposition: attachment.',
+      security,
+      response: {
+        200: { type: 'object', additionalProperties: true },
+        401: errorResponse,
+        404: errorResponse,
+        429: errorResponse,
+      },
+    },
+  }, exportMeController);
 
   app.get('/me', {
     preHandler: authenticate,
