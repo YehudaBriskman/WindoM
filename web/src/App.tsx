@@ -15,6 +15,7 @@ import { RightSidebar } from './components/layout/RightSidebar';
 import { SpotifyPlayer } from './components/spotify/SpotifyPlayer';
 import { GlassFilters } from './components/GlassFilters';
 import { AppLoader } from './components/AppLoader';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { OnboardingModal } from './components/onboarding/OnboardingModal';
 import { SpotifyNotice } from './components/onboarding/SpotifyNotice';
 
@@ -37,23 +38,32 @@ function Dashboard(): React.ReactElement {
       <GlassFilters />
       <BackgroundOverlay />
       <AppLoader />
-      <TopBar />
+      {/* Each region is its own boundary: one widget throwing must not blank
+          the whole new tab. Regions are absolutely placed, so they fail
+          silently; the widgets inside them carry visible fallbacks. */}
+      <ErrorBoundary name="Top bar" silent><TopBar /></ErrorBoundary>
       <div className="top-dock-area">
-        <DockBar />
+        <ErrorBoundary name="Links" silent><DockBar /></ErrorBoundary>
         <div className="spotify-anchor">
-          <SpotifyPlayer />
+          <ErrorBoundary name="Spotify" silent><SpotifyPlayer /></ErrorBoundary>
         </div>
       </div>
-      <CenterContent />
-      <BottomSection />
-      <RightSidebar />
-      <Suspense>
-        <SettingsPanel />
-        <FocusOverlay />
-        <SearchOverlay />
-        <TabSidebar />
-      </Suspense>
-      <PhotographerCredit />
+      <ErrorBoundary name="Center" silent><CenterContent /></ErrorBoundary>
+      <ErrorBoundary name="Quote" silent><BottomSection /></ErrorBoundary>
+      <ErrorBoundary name="Sidebar" silent><RightSidebar /></ErrorBoundary>
+      <ErrorBoundary name="Settings" silent>
+        <Suspense>
+          <SettingsPanel />
+        </Suspense>
+      </ErrorBoundary>
+      <ErrorBoundary name="Overlays" silent>
+        <Suspense>
+          <FocusOverlay />
+          <SearchOverlay />
+          <TabSidebar />
+        </Suspense>
+      </ErrorBoundary>
+      <ErrorBoundary name="Photo credit" silent><PhotographerCredit /></ErrorBoundary>
 
       {showOnboarding && <OnboardingModal onComplete={completeOnboarding} />}
       {showSpotifyNotice && <SpotifyNotice onDismiss={dismissSpotifyNotice} />}

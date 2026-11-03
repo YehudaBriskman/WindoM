@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EditableName } from './EditableName';
 
@@ -34,5 +34,29 @@ describe('EditableName', () => {
     field.textContent = 'Grace';
     fireEvent.keyDown(field, { key: 'Enter' });
     expect(update).toHaveBeenCalledWith('general', { userName: 'Grace' });
+  });
+
+  it('confirms a saved edit in a polite live region', async () => {
+    update.mockResolvedValueOnce(undefined);
+    render(<EditableName />);
+    const field = screen.getByRole('textbox', { name: 'Your name' });
+    field.focus();
+    field.textContent = 'Grace';
+    await act(async () => fireEvent.keyDown(field, { key: 'Enter' }));
+    const status = screen.getByRole('status');
+    expect(status.getAttribute('aria-live')).toBe('polite');
+    expect(status.textContent).toBe('Saved');
+  });
+
+  it('reports a failed save and puts the stored name back', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    update.mockRejectedValueOnce(new Error('quota'));
+    render(<EditableName />);
+    const field = screen.getByRole('textbox', { name: 'Your name' });
+    field.focus();
+    field.textContent = 'Grace';
+    await act(async () => fireEvent.keyDown(field, { key: 'Enter' }));
+    expect(screen.getByRole('status').textContent).toBe('Couldn’t save. Try again.');
+    expect(field.textContent).toBe('Ada');
   });
 });

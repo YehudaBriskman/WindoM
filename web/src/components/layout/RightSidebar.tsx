@@ -8,6 +8,7 @@ import { SpotifyTopTracks } from "../spotify/SpotifyTopTracks";
 import { HistorySection } from "../sidebar/HistorySection";
 import { GmailWidget } from "../gmail/GmailWidget";
 import { GitHubWidget } from "../github/GitHubWidget";
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 
 export function RightSidebar() {
@@ -55,12 +56,12 @@ export function RightSidebar() {
 
       <div className="sidebar-panel-content">
         <div className="sidebar-content">
-          {settings.general.showHistory && <HistorySection />}
-          {settings.general.showTodo && <TodoSection />}
-          <CalendarSection />
-          {settings.integrations.spotify.connected && settings.integrations.spotify.showTopTracks && <SpotifyTopTracks />}
-          <GmailWidget />
-          <GitHubWidget />
+          {settings.general.showHistory && <ErrorBoundary name="History"><HistorySection /></ErrorBoundary>}
+          {settings.general.showTodo && <ErrorBoundary name="Tasks"><TodoSection /></ErrorBoundary>}
+          <ErrorBoundary name="Calendar"><CalendarSection /></ErrorBoundary>
+          {settings.integrations.spotify.connected && settings.integrations.spotify.showTopTracks && <ErrorBoundary name="Top tracks"><SpotifyTopTracks /></ErrorBoundary>}
+          <ErrorBoundary name="Gmail"><GmailWidget /></ErrorBoundary>
+          <ErrorBoundary name="GitHub"><GitHubWidget /></ErrorBoundary>
         </div>
       </div>
     </div>

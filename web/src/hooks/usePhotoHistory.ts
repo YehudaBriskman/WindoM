@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { localStore as ls } from '../lib/chrome-storage';
 import type { PhotoRecord } from '../types/photos';
 
@@ -12,6 +12,14 @@ export function usePhotoHistory() {
   const [unsplashHistory, setUnsplashHistory] = useState<PhotoRecord[]>([]);
   const [localHistory, setLocalHistory] = useState<PhotoRecord[]>([]);
   const [liked, setLiked] = useState<PhotoRecord[]>([]);
+
+  // Latest lists, for the actions below that must compute their writes up
+  // front (so they can return a promise for them) instead of inside a state
+  // updater, which React may run later or more than once.
+  const latest = useRef({ unsplash: unsplashHistory, local: localHistory, liked });
+  useEffect(() => {
+    latest.current = { unsplash: unsplashHistory, local: localHistory, liked };
+  }, [unsplashHistory, localHistory, liked]);
 
   useEffect(() => {
     (async () => {
@@ -59,63 +67,51 @@ export function usePhotoHistory() {
     });
   }, []);
 
-  const toggleLike = useCallback((id: string) => {
-    let updatedPhoto: PhotoRecord | undefined;
+  /** Resolves true once every storage write for the toggle has landed. */
+  const toggleLike = useCallback(async (id: string): Promise<boolean> => {
+    const { unsplash, local, liked: likedNow } = latest.current;
+    const current =
+      unsplash.find((p) => p.id === id) ?? local.find((p) => p.id === id) ?? likedNow.find((p) => p.id === id);
+    if (!current) return false;
+    const updated: PhotoRecord = { ...current, liked: !current.liked };
+    const swap = (list: PhotoRecord[]) => list.map((p) => (p.id === id ? updated : p));
+    const writes: Promise<boolean>[] = [];
 
-    setUnsplashHistory((prev) => {
-      const next = prev.map((p) => {
-        if (p.id === id) {
-          updatedPhoto = { ...p, liked: !p.liked };
-          return updatedPhoto;
-        }
-        return p;
-      });
-      if (next.some((p) => p.id === id)) ls.set(HISTORY_KEY, next);
-      return next;
-    });
+    let nextUnsplash = unsplash;
+    if (unsplash.some((p) => p.id === id)) {
+      nextUnsplash = swap(unsplash);
+      setUnsplashHistory(nextUnsplash);
+      writes.push(ls.set(HISTORY_KEY, nextUnsplash));
+    }
+    let nextLocal = local;
+    if (local.some((p) => p.id === id)) {
+      nextLocal = swap(local);
+      setLocalHistory(nextLocal);
+      writes.push(ls.set(LOCAL_HISTORY_KEY, nextLocal));
+    }
+    const others = likedNow.filter((p) => p.id !== id);
+    const nextLiked = updated.liked ? [updated, ...others] : others;
+    setLiked(nextLiked);
+    writes.push(ls.set(LIKED_KEY, nextLiked));
 
-    setLocalHistory((prev) => {
-      const next = prev.map((p) => {
-        if (p.id === id) {
-          updatedPhoto = { ...p, liked: !p.liked };
-          return updatedPhoto;
-        }
-        return p;
-      });
-      if (next.some((p) => p.id === id)) ls.set(LOCAL_HISTORY_KEY, next);
-      return next;
-    });
-
-    queueMicrotask(() => {
-      if (!updatedPhoto) return;
-      if (updatedPhoto.liked) {
-        setLiked((prev) => {
-          const next = [updatedPhoto!, ...prev.filter((p) => p.id !== id)];
-          ls.set(LIKED_KEY, next);
-          return next;
-        });
-      } else {
-        setLiked((prev) => {
-          const next = prev.filter((p) => p.id !== id);
-          ls.set(LIKED_KEY, next);
-          return next;
-        });
-      }
-    });
+    latest.current = { unsplash: nextUnsplash, local: nextLocal, liked: nextLiked };
+    return (await Promise.all(writes)).every(Boolean);
   }, []);
 
-  const deleteLocalPhoto = useCallback((id: string) => {
-    ls.set(`localPhoto-${id}`, null);
-    setLocalHistory((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      ls.set(LOCAL_HISTORY_KEY, next);
-      return next;
-    });
-    setLiked((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      ls.set(LIKED_KEY, next);
-      return next;
-    });
+  /** Resolves true once the photo and every list referencing it are rewritten. */
+  const deleteLocalPhoto = useCallback(async (id: string): Promise<boolean> => {
+    const { unsplash, local, liked: likedNow } = latest.current;
+    const nextLocal = local.filter((p) => p.id !== id);
+    const nextLiked = likedNow.filter((p) => p.id !== id);
+    setLocalHistory(nextLocal);
+    setLiked(nextLiked);
+    latest.current = { unsplash, local: nextLocal, liked: nextLiked };
+    const results = await Promise.all([
+      ls.set(`localPhoto-${id}`, null),
+      ls.set(LOCAL_HISTORY_KEY, nextLocal),
+      ls.set(LIKED_KEY, nextLiked),
+    ]);
+    return results.every(Boolean);
   }, []);
 
   return { unsplashHistory, localHistory, liked, addPhoto, addLocalPhoto, toggleLike, deleteLocalPhoto };
