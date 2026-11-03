@@ -2,8 +2,9 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { oauthAccounts } from '../db/schema.js';
 import { getValidAccessToken } from './token-refresh.service.js';
+import { googleRefreshStrategy } from './token-refresh.strategies.js';
 import { config } from '../config.js';
-import { GOOGLE_TOKEN_URL, GMAIL_API, GMAIL_MAX_MESSAGES } from '../types/constants.js';
+import { GMAIL_API, GMAIL_MAX_MESSAGES } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
 import { fetchWithTimeout } from '../lib/external-fetch.js';
@@ -71,10 +72,10 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
   const hasGmailScope = account.scopes.some((s) => s.includes('gmail'));
   if (!hasGmailScope) return { ok: false, error: 'INSUFFICIENT_SCOPES' };
 
-  const tokenResult = await getValidAccessToken(account, {
-    tokenUrl: GOOGLE_TOKEN_URL,
-    extraBody: { client_id: config.GOOGLE_CLIENT_ID ?? '', client_secret: config.GOOGLE_CLIENT_SECRET ?? '' },
-  });
+  const tokenResult = await getValidAccessToken(
+    account,
+    googleRefreshStrategy({ clientId: config.GOOGLE_CLIENT_ID ?? '', clientSecret: config.GOOGLE_CLIENT_SECRET ?? '' }),
+  );
   if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
   const accessToken = tokenResult.data;
 
