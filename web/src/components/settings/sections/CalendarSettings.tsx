@@ -65,7 +65,8 @@ export function CalendarSettings() {
       try {
         const redirectUrl = await launchWebAuth(authUrl);
         const params = new URL(redirectUrl).searchParams;
-        if (params.get('error')) throw new Error(mapOAuthError(params.get('error')!));
+        const oauthError = params.get('error');
+        if (oauthError) throw new Error(mapOAuthError(oauthError));
         const code = params.get('code');
         const state = params.get('state');
         if (!code) throw new Error('No auth code returned');

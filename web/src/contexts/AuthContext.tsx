@@ -1,5 +1,9 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { apiGet, apiPost, getAccessToken, setAccessToken, clearAccessToken, purgeLegacyRefreshToken, refreshAccessToken, setLogoutCallback } from '../lib/api';
+import { createLogger } from '../lib/logger';
+
+const log = createLogger('auth');
+const initLog = createLogger('auth:init');
 
 const AUTH_REFRESH_TIMEOUT_MS = 5_000;
 const ME_TIMEOUT_MS = 5_000;
@@ -36,8 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     try {
       await apiPost('/auth/logout');
-    } catch {
-      // best effort
+    } catch (err) {
+      // Best effort: the local session is cleared below regardless, but a
+      // failed server logout leaves the refresh cookie's session alive.
+      log.warn('Server logout failed - clearing the local session anyway:', err);
     }
     await clearAccessToken();
     await purgeLegacyRefreshToken();
@@ -48,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Register the logout callback so apiFetch can trigger it on 401
   useEffect(() => {
     setLogoutCallback(() => {
-      console.warn('[auth] Logout triggered by failed token refresh (401)');
+      log.warn('Logout triggered by failed token refresh (401)');
       void purgeLegacyRefreshToken();
       setUser(null);
       setTokenState(null);
@@ -59,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Listen for session hard-expiry (renewal cap reached) to show re-login message
   useEffect(() => {
     const handler = () => {
-      console.warn('[auth] Session expired (renewal cap reached) - user must re-login');
+      log.warn('Session expired (renewal cap reached) - user must re-login');
       setUser(null);
       setTokenState(null);
       setSessionExpired(true);
@@ -71,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Listen for session limit reached - too many active sessions
   useEffect(() => {
     const handler = () => {
-      console.warn('[auth] Session limit reached - user must sign out from another device');
+      log.warn('Session limit reached - user must sign out from another device');
       setUser(null);
       setTokenState(null);
       setSessionLimitReached(true);
@@ -84,23 +90,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Uses a 5s timeout so a missing backend doesn't stall the Account tab.
   useEffect(() => {
     async function init() {
-      console.log('[auth:init] Starting auth init...');
+      initLog.debug('Starting auth init...');
       try {
         await purgeLegacyRefreshToken();
         let token = await getAccessToken();
         if (token) {
-          console.log('[auth:init] Valid stored access token found');
+          initLog.debug('Valid stored access token found');
         } else {
-          console.log('[auth:init] No valid stored token - attempting silent refresh');
+          initLog.debug('No valid stored token - attempting silent refresh');
           // Try silent refresh - race against a 5s timeout
           token = await Promise.race([
             refreshAccessToken(),
             new Promise<null>((resolve) => setTimeout(() => resolve(null), AUTH_REFRESH_TIMEOUT_MS)),
           ]);
           if (token) {
-            console.log('[auth:init] Silent refresh succeeded');
+            initLog.debug('Silent refresh succeeded');
           } else {
-            console.warn('[auth:init] Silent refresh failed or timed out - user stays unauthenticated');
+            initLog.debug('Silent refresh failed or timed out - user stays unauthenticated');
           }
         }
         if (token) {
@@ -113,19 +119,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               ),
             ]);
             setUser(me);
-            console.log('[auth:init] User loaded:', me.email ?? me.name);
+            initLog.debug('User loaded:', me.email ?? me.name);
             window.dispatchEvent(new CustomEvent('windom-auth-login', { detail: { name: me.name } }));
           } catch (err) {
-            console.error('[auth:init] /me failed - clearing token:', err);
+            initLog.error('/me failed - clearing token:', err);
             await clearAccessToken();
           }
         }
       } catch (err) {
         // Silently fail - user stays unauthenticated
-        console.error('[auth:init] Unexpected error:', err);
+        initLog.error('Unexpected error:', err);
       }
       setLoading(false);
-      console.log('[auth:init] Done');
+      initLog.debug('Done');
     }
     init();
   }, []);

@@ -3,6 +3,9 @@ import { syncStorage, localStore } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { migrateFlatToSectioned, isLegacySettings } from '../lib/migrateSettings';
 import { getAccessToken, apiGet, apiPut } from '../lib/api';
+import { createLogger } from '../lib/logger';
+
+const log = createLogger('settings');
 
 // ── External store for per-section subscriptions ──────────────────────────
 // Holds a mutable snapshot of the current settings so useSyncExternalStore
@@ -45,13 +48,20 @@ async function getLocalUpdatedAt(): Promise<number> {
   try {
     const result = await chrome.storage.local.get([LOCAL_UPDATED_AT_KEY]);
     return (result[LOCAL_UPDATED_AT_KEY] as number | undefined) ?? 0;
-  } catch { return 0; }
+  } catch (err) {
+    // 0 means "never updated locally", so the backend copy wins the next sync.
+    log.warn('Could not read the local settings timestamp:', err);
+    return 0;
+  }
 }
 
 async function setLocalUpdatedAt(): Promise<void> {
   try {
     await chrome.storage.local.set({ [LOCAL_UPDATED_AT_KEY]: Date.now() });
-  } catch { /* best-effort */ }
+  } catch (err) {
+    // Best effort: a missed stamp only makes the next sync prefer the backend.
+    log.warn('Could not write the local settings timestamp:', err);
+  }
 }
 
 interface SettingsContextValue {
@@ -94,7 +104,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         const token = await getAccessToken();
         if (token) await apiPut('/settings', withTimestamp(pickSyncable(toSend)));
       } catch (err) {
-        console.error('[settings] Failed to push settings to backend:', err);
+        log.error('Failed to push settings to backend:', err);
       }
     }, 5000);
   }, []);
@@ -153,7 +163,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       );
       await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
     } catch (err) {
-      console.error('[settings] Backend sync failed - staying on local:', err);
+      log.warn('Backend sync failed - staying on local:', err);
     }
   }, []);
 
@@ -163,7 +173,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       let raw: Record<string, unknown>;
       try {
         raw = await chrome.storage.sync.get(null) as Record<string, unknown>;
-      } catch {
+      } catch (err) {
+        // Fall back to defaults rather than leave the new tab blank.
+        log.error('Could not read chrome.storage.sync - loading defaults:', err);
         raw = {};
       }
 
