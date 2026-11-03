@@ -57,6 +57,13 @@
       "when": 1777315637392,
       "tag": "0007_simple_purifiers",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793731692458,
+      "tag": "0008_bright_kingpin",
+      "breakpoints": true
     }
   ]
 }
