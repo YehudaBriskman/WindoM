@@ -14,6 +14,7 @@
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "typecheck": "tsc -b --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
     "prerender": "vite build --ssr src/prerender.tsx --outDir dist-prerender && node scripts/prerender.mjs && node scripts/sitemap.mjs"
   },
   "dependencies": {
