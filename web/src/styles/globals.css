@@ -1,7 +1,17 @@
 /* ============================================================
-   Spring easing tokens - shared across all expanding elements
+   Design tokens - radius, spacing, ink, glass, motion, ...
+
+   Declared on `:host` as well as `:root`: the content script
+   (src/content/index.tsx) injects this sheet into a shadow root,
+   where `:root` matches nothing. Custom properties set on the
+   shadow host inherit into the tree, so the search overlay on an
+   ordinary web page resolves the same tokens as the new tab.
+   Before #440 only the --z-* block below did this, and every
+   other `var(--...)` in the overlay was invalid at computed-value
+   time - square corners, no blur, no motion durations.
    ============================================================ */
-:root {
+:root,
+:host {
   /* Keyboard focus ring: two-tone, because the wallpaper is any photograph
      the user picks. White alone vanishes on a white sky, dark alone on a night
      one. The white outline sits 2px out; the halo is a dark spread wider than
@@ -4090,6 +4100,23 @@ body.focus-exiting .sidebar-container {
    Replaces translucent glass with opaque dark styles that work
    on any page background, including bright/white pages.
    ============================================================ */
+
+/* The new tab's `body` rule never matches inside the shadow root, so
+   inherited text properties came from the host page instead: a serif
+   article font, and the page's dark `color`, which made currentColor
+   icons (the command-mode prompt) disappear on the dark input row.
+   Reset the inherited ones here so the overlay matches the new tab. */
+.windom-content {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: start;
+  color: white;
+}
 
 .windom-content .search-overlay-backdrop {
   background: rgba(0, 0, 0, 0.65);
