@@ -147,6 +147,11 @@
      the interior is visibly being resized. */
   --dur-content: 180ms;
   --delay-content: 200ms;
+
+  /* Under prefers-reduced-motion a pane cross-fades instead of morphing.
+     Short, because it replaces a movement rather than decorating one. See
+     the reduced-motion block in glass.css. */
+  --dur-fade: 150ms;
 }
 
 /* ── Stacking ──────────────────────────────────────────────────────────────
