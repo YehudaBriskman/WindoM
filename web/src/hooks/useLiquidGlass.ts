@@ -248,19 +248,19 @@ export function useLiquidGlass<T extends HTMLElement>(
 
       const img = new Image();
       img.src = field.href;
-      void img
-        .decode()
-        .then(() => {
+      void (async () => {
+        try {
+          await img.decode();
           if (cancelled) return;
           el.style.setProperty('--glass-refract', `url(#${surface.id})`);
           el.style.setProperty('--glass-lens', '1');
           paint();
           start();
-        })
-        .catch(() => {
+        } catch {
           // A field that will not decode is not worth retrying; the pane keeps
           // its drawn edge and loses only the lensing.
-        });
+        }
+      })();
     };
 
     /**

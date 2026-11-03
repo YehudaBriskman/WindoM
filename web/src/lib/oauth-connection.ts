@@ -37,6 +37,11 @@ export interface OAuthProvider<A = void> {
   start(redirectUri: string, args: A): Promise<OAuthStart> | OAuthStart;
 }
 
+/** The chromiumapp.org redirect URL Chrome intercepts for this extension. */
+export function getAuthRedirectUrl(): string {
+  return chrome.identity.getRedirectURL();
+}
+
 /** Opens the provider consent window and resolves with the redirect URL. */
 export function launchWebAuth(url: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -60,7 +65,7 @@ export function launchWebAuth(url: string): Promise<string> {
 
 /** Runs the whole connect flow; resolves once the backend reports the account linked. */
 export async function runOAuthFlow<A>(provider: OAuthProvider<A>, args: A): Promise<void> {
-  const redirectUri = chrome.identity.getRedirectURL();
+  const redirectUri = getAuthRedirectUrl();
   const start = await provider.start(redirectUri, args);
   const { authUrl } = await apiPost<{ authUrl: string }>(start.path, start.body);
 

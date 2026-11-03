@@ -1,6 +1,14 @@
 /** Typed wrappers for chrome.storage.sync and chrome.storage.local */
 
 export const syncStorage = {
+  /**
+   * Every key in sync storage. Unlike `get`, this rejects on failure: callers
+   * decide what an unreadable store means (empty, or defaults).
+   */
+  async getAll(): Promise<Record<string, unknown>> {
+    return await chrome.storage.sync.get(null) as Record<string, unknown>;
+  },
+
   async get<T>(key: string, defaultValue: T): Promise<T> {
     try {
       const result = await chrome.storage.sync.get<Record<string, T>>([key]);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { localStore } from '../lib/chrome-storage';
+import { localStore, syncStorage } from '../lib/chrome-storage';
 
 const ONBOARDING_KEY = 'windom_onboarding';
 
@@ -29,7 +29,7 @@ export function useOnboarding(): UseOnboardingReturn {
 
       // First time this key exists - detect new vs existing user by whether
       // they already have synced settings from a previous session.
-      const syncData = await chrome.storage.sync.get(null);
+      const syncData = await syncStorage.getAll();
       const isExistingUser = Object.keys(syncData).length > 0;
 
       const initial: OnboardingState = {

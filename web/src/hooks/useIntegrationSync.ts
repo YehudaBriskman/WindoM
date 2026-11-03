@@ -56,8 +56,9 @@ export function useIntegrationSync() {
 
     let cancelled = false;
 
-    apiGet<IntegrationsResponse>('/integrations')
-      .then(({ google, spotify, github, features }) => {
+    void (async () => {
+      try {
+        const { google, spotify, github, features } = await apiGet<IntegrationsResponse>('/integrations');
         if (cancelled) return;
         // A server with Gmail off never grants the scope, so a stale `connected`
         // flag from before it was turned off would keep the widget polling an
@@ -77,10 +78,10 @@ export function useIntegrationSync() {
             github: { ...current.github, connected: github.connected },
           },
         });
-      })
-      .catch((err: unknown) => {
+      } catch (err: unknown) {
         log.error('Failed to sync integration status:', err);
-      });
+      }
+    })();
 
     return () => { cancelled = true; };
   }, [userId, settingsLoaded, authLoading, updateMultiple]);

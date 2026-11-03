@@ -3,6 +3,8 @@ import { Plus } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { isOwnExtensionSender, isTabSnapshotList, parseTabsChanged, type TabSnapshot } from '../../lib/runtime-messages';
 import { useLiquidGlass } from '../../hooks/useLiquidGlass';
+import { hasChromeApi, isContentScript, onRuntimeMessage } from '../../lib/chrome-runtime';
+import { canQueryTabs, createTab, focusTab, onTabsChanged, queryTabs, readTabsSnapshot } from '../../lib/chrome-tabs';
 
 interface TabEntry {
   id: number;
@@ -13,8 +15,6 @@ interface TabEntry {
   windowId: number;
 }
 
-const hasChromeApi = typeof chrome !== 'undefined';
-const isContentScript = window.location.protocol !== 'chrome-extension:';
 
 export function TabSidebar() {
   const glassRef = useLiquidGlass<HTMLDivElement>('sidebar');
@@ -38,9 +38,9 @@ export function TabSidebar() {
   }, []);
 
   const loadTabs = useCallback(async () => {
-    if (!hasChromeApi || !chrome.tabs?.query) return;
+    if (!canQueryTabs()) return;
     try {
-      const chromeTabs = await chrome.tabs.query({});
+      const chromeTabs = await queryTabs();
       setTabs(normalizeTabs(chromeTabs));
     } catch { /* ignore */ }
   }, [normalizeTabs]);
@@ -50,20 +50,7 @@ export function TabSidebar() {
     if (isContentScript) return;
     loadTabs();
     if (!hasChromeApi) return;
-
-    const onActivated = () => loadTabs();
-    const onUpdated = () => loadTabs();
-    const onRemoved = () => loadTabs();
-
-    chrome.tabs.onActivated?.addListener(onActivated);
-    chrome.tabs.onUpdated?.addListener(onUpdated);
-    chrome.tabs.onRemoved?.addListener(onRemoved);
-
-    return () => {
-      chrome.tabs.onActivated?.removeListener(onActivated);
-      chrome.tabs.onUpdated?.removeListener(onUpdated);
-      chrome.tabs.onRemoved?.removeListener(onRemoved);
-    };
+    return onTabsChanged(() => loadTabs());
   }, [loadTabs]);
 
   // Content script mode: read from storage and listen for messages from background
@@ -73,8 +60,7 @@ export function TabSidebar() {
     let receivedUpdate = false;
 
     // Initial load from storage snapshot set by background worker
-    chrome.storage.local.get('_windom_tabs').then((result) => {
-      const stored: unknown = result['_windom_tabs'];
+    readTabsSnapshot().then((stored) => {
       if (active && !receivedUpdate && isTabSnapshotList(stored)) setTabs(normalizeTabs(stored));
     }).catch(() => {});
 
@@ -86,10 +72,10 @@ export function TabSidebar() {
       receivedUpdate = true;
       setTabs(normalizeTabs(updated));
     };
-    chrome.runtime.onMessage.addListener(onMessage);
+    const unsubscribe = onRuntimeMessage(onMessage);
     return () => {
       active = false;
-      chrome.runtime.onMessage.removeListener(onMessage);
+      unsubscribe();
     };
   }, [normalizeTabs]);
 
@@ -104,14 +90,13 @@ export function TabSidebar() {
 
   const handleTabClick = (tab: TabEntry) => {
     if (!hasChromeApi) return;
-    chrome.tabs.update(tab.id, { active: true });
-    chrome.windows.update(tab.windowId, { focused: true });
+    focusTab(tab.id, tab.windowId);
     setVisible(false);
   };
 
   const handleNewTab = () => {
     if (!hasChromeApi) return;
-    chrome.tabs.create({});
+    createTab();
     setVisible(false);
   };
 

@@ -13,7 +13,7 @@ export function ContentSettingsProvider({ children }: { children: ReactNode }) {
     (async () => {
       let raw: Record<string, unknown>;
       try {
-        raw = await chrome.storage.sync.get(null) as Record<string, unknown>;
+        raw = await syncStorage.getAll();
       } catch {
         raw = {};
       }
