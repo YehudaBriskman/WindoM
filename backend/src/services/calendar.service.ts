@@ -121,15 +121,14 @@ export async function getCalendarEvents(
 
   // Fan-out: fetch events from all calendars with max 5 concurrent requests
   const results = await batchRequests(
-    calendarIds.map(({ id, color }) => () =>
-      fetchWithTimeout(`${CALENDAR_API}/calendars/${encodeURIComponent(id)}/events?${params}`, {
+    calendarIds.map(({ id, color }) => async () => {
+      const r = await fetchWithTimeout(`${CALENDAR_API}/calendars/${encodeURIComponent(id)}/events?${params}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
-      }).then(async (r) => {
-        if (!r.ok) return { items: [] as GoogleCalendarEvent[], color, calendarId: id };
-        const d = (await r.json()) as GoogleCalendarEventsResponse;
-        return { items: d.items ?? [], color, calendarId: id };
-      }),
-    ),
+      });
+      if (!r.ok) return { items: [] as GoogleCalendarEvent[], color, calendarId: id };
+      const d = (await r.json()) as GoogleCalendarEventsResponse;
+      return { items: d.items ?? [], color, calendarId: id };
+    }),
     5,
   );
 
