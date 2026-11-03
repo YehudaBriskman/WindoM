@@ -46,7 +46,7 @@ web/                               (repo root for the extension)
     ├── types/                     (Settings, WeatherData, Quote, CalendarEvent, TodoItem)
     ├── lib/chrome-storage.ts      (typed wrappers for chrome.storage.sync/local)
     ├── contexts/
-    │   ├── SettingsContext.tsx    (settings state + cross-tab sync)
+    │   ├── SettingsContext.tsx    (settings state container; sync lives in hooks/useSettingsCrossTab, hooks/useSettingsBackendSync)
     │   ├── BackgroundContext.tsx  (background image state)
     │   └── FocusTimerContext.tsx  (focus timer + overlay state)
     ├── hooks/                     (one hook per feature: useClock, useWeather, useLinks, useTodos, useCalendar, etc.)
@@ -72,7 +72,7 @@ web/                               (repo root for the extension)
 - **State**: React Context wraps the entire app in order: `SettingsProvider → BackgroundProvider → FocusTimerProvider`. Settings sync with `chrome.storage.sync` and propagate across tabs via `chrome.storage.onChanged`.
 - **One hook per feature**: Each module (weather, quotes, links, etc.) has a dedicated custom hook encapsulating all logic, API calls, and caching.
 - **Liquid glass**: plain classes (`glass-panel`, `glass-sidebar`, `glass-dock`, ...) in `glass.css`. Each pane blurs its backdrop lightly and refracts the wallpaper through a generated displacement field along its rim - `src/lib/liquid-glass.ts` computes the optics, `useLiquidGlass` measures panes and drives the light. The refraction is applied with `filter:` to a copy of the wallpaper, *not* `backdrop-filter`, which silently erases the backdrop when given a displacement map.
-- **Chrome APIs**: Typed wrappers in `src/lib/chrome-storage.ts` for async get/set/onChange on both sync and local storage.
+- **Chrome APIs**: only `src/lib` (and the background worker) touch `chrome.*`; components, hooks and contexts import wrappers (#250) - `chrome-storage.ts` (sync/local storage), `chrome-runtime.ts` (context detection, `extensionUrl`, runtime messages), `chrome-tabs.ts` (tabs/windows and the content-script-aware tab commands), `oauth-connection.ts` (`chrome.identity`), `history-permission.ts` (`chrome.permissions`, `chrome.history`). ESLint's `no-restricted-syntax` enforces it.
 - **Manifest V3**: Extension uses `chrome.storage` (not `localStorage`) and `host_permissions` for external APIs (Unsplash, Open-Meteo, Quotable, Yahoo Finance, CoinGecko, GitHub).
 - **`history` is an optional permission** (#256): requested from the History app's toggle, given back when it is turned off. Gate every `chrome.history` call on `hasHistoryPermission()` (`src/lib/history-permission.ts`), not on `showHistory` (it syncs across devices) or on `chrome.history` existing (Chrome leaves the binding in place after a revoke).
 - **Location is opt-in** (#449): a new tab never calls `navigator.geolocation` by itself. The weather widget's passive `useLocation().getLocation()` reads coordinates only when the Permissions API already reports `granted`; the one call that can make Chrome prompt is `requestCurrentLocation()`, from the "Use my current location" button in Settings → Weather. Without a city or a grant, the widget shows "Set location".
@@ -80,7 +80,7 @@ web/                               (repo root for the extension)
 ## Key Patterns
 
 - Settings changes trigger re-renders through `SettingsContext` - no manual DOM manipulation
-- Cross-tab sync happens automatically via `chrome.storage.onChanged` listener in `SettingsContext`
+- `SettingsContext` holds the state and the write paths; cross-tab sync (`chrome.storage.onChanged`) is `useSettingsCrossTab`, backend sync is `useSettingsBackendSync`, startup load + legacy migration is `src/lib/settings-load.ts`
 - Backend sync (#251) decides conflicts by the server's revision (`updatedAt` on GET/PUT `/settings`), compared for equality, never against `Date.now()`. See `src/lib/settings-sync.ts`; per-device state lives in `chrome.storage.local` (`windom_settings_server_rev`, `windom_settings_dirty`)
 - Weather/background data cached in `chrome.storage.local` (larger quota) rather than sync storage
 - Focus timer uses `body.focus-active` CSS class to hide all UI except the overlay

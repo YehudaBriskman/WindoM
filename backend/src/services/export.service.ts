@@ -1,7 +1,7 @@
-import { eq, getTableColumns } from 'drizzle-orm';
+import { desc, eq, getTableColumns } from 'drizzle-orm';
 import type { PgColumn, PgTable } from 'drizzle-orm/pg-core';
 import { db } from '../db/client.js';
-import { users, refreshSessions, oauthAccounts, oauthStates, emailTokens, userSettings } from '../db/schema.js';
+import { users, refreshSessions, oauthAccounts, oauthStates, emailTokens, userSettings, auditLogs } from '../db/schema.js';
 
 /**
  * GDPR data export (GET /me/export, #265).
@@ -88,6 +88,15 @@ export const EXPORT_POLICY = {
       userId: { kind: 'internal', reason: 'always the requesting user' },
     },
   }),
+  auditLogs: policy({
+    table: auditLogs,
+    // Holds no IP, user agent, email or token by design, so every event column is the user's.
+    exported: ['action', 'createdAt', 'sessionId', 'deviceLabel'],
+    withheld: {
+      id: { kind: 'internal', reason: 'row key' },
+      userId: { kind: 'internal', reason: 'always the requesting user' },
+    },
+  }),
 } as const;
 
 /**
@@ -137,13 +146,14 @@ export interface UserExport {
   sessions: Record<string, unknown>[];
   integrations: Record<string, unknown>[];
   emailTokens: Record<string, unknown>[];
+  securityLog: Record<string, unknown>[];
   withheld: string[];
 }
 
 export async function buildUserExport(userId: string): Promise<UserExport> {
   const P = EXPORT_POLICY;
 
-  const [profileRows, passwordRows, sessionRows, deviceRows, accountRows, tokenRows, settingsRows] = await Promise.all([
+  const [profileRows, passwordRows, sessionRows, deviceRows, accountRows, tokenRows, settingsRows, auditRows] = await Promise.all([
     db.select(pickColumns(P.users)).from(users).where(eq(users.id, userId)).limit(1),
     // Read only to derive the hasPassword flag; the hash itself never leaves this function.
     db.select({ hasPassword: users.passwordHash }).from(users).where(eq(users.id, userId)).limit(1),
@@ -152,6 +162,7 @@ export async function buildUserExport(userId: string): Promise<UserExport> {
     db.select(pickColumns(P.oauthAccounts)).from(oauthAccounts).where(eq(oauthAccounts.userId, userId)),
     db.select(pickColumns(P.emailTokens)).from(emailTokens).where(eq(emailTokens.userId, userId)),
     db.select(pickColumns(P.userSettings)).from(userSettings).where(eq(userSettings.userId, userId)).limit(1),
+    db.select(pickColumns(P.auditLogs)).from(auditLogs).where(eq(auditLogs.userId, userId)).orderBy(desc(auditLogs.createdAt)),
   ]);
 
   // Same anonymous prefix GET /me/sessions shows as deviceId: a digest prefix, not the UA.
@@ -178,6 +189,7 @@ export async function buildUserExport(userId: string): Promise<UserExport> {
     sessions: sessionRows.map((s) => ({ ...s, deviceId: deviceIds.get(s['id'] as string) ?? '' })),
     integrations: accountRows,
     emailTokens: tokenRows,
+    securityLog: auditRows,
     withheld,
   };
 }

@@ -46,6 +46,28 @@ export default tseslint.config(
     },
   },
 
+  // ── Chrome APIs only through src/lib (#250) ────────────────────────────────
+  // Components, hooks and contexts import the wrappers (chrome-storage,
+  // chrome-runtime, chrome-tabs, oauth-connection, history-permission) so they
+  // stay testable outside the extension. Type references (chrome.tabs.Tab) and
+  // `typeof chrome` checks are not member expressions and stay allowed.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      'src/lib/**',
+      'src/background/**', // the service worker is the chrome.tabs boundary
+      'src/test-setup.ts',
+      '**/__tests__/**',
+      '**/*.test.{ts,tsx}',
+    ],
+    rules: {
+      'no-restricted-syntax': ['error', {
+        selector: "MemberExpression[object.type='Identifier'][object.name='chrome']",
+        message: 'Call chrome.* through a wrapper in src/lib (chrome-storage, chrome-runtime, chrome-tabs, ...), not directly (#250).',
+      }],
+    },
+  },
+
   // ── Prettier must be last - disables conflicting formatting rules ───────────
   prettier,
 );

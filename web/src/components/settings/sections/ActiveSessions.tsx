@@ -49,10 +49,16 @@ export function ActiveSessions() {
     let active = true;
     setLoading(true);
     setError('');
-    apiGet<{ sessions: Session[] }>('/me/sessions')
-      .then((data) => { if (active) setSessions(orderSessions(data.sessions)); })
-      .catch(() => { if (active) setError('Could not load sessions. Please try again.'); })
-      .finally(() => { if (active) setLoading(false); });
+    void (async () => {
+      try {
+        const data = await apiGet<{ sessions: Session[] }>('/me/sessions');
+        if (active) setSessions(orderSessions(data.sessions));
+      } catch {
+        if (active) setError('Could not load sessions. Please try again.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
     return () => { active = false; };
   }, [reload]);
 

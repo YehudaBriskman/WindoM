@@ -25,16 +25,17 @@ export function useCalendar() {
       // calendarConnected got reset by backend sync while token is still valid).
       const token = calendarConnected ? 'skip-check' : await getAccessToken();
       if (!token) {
-        syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
+        setEvents(await syncStorage.get<CalendarEvent[]>('localEvents', []));
         return;
       }
 
-      apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`)
-        .then((data) => setEvents(data.events))
-        .catch((err) => {
-          console.warn('[calendar] Fetch failed, using cached:', err);
-          syncStorage.get<CalendarEvent[]>('localEvents', []).then(setEvents);
-        });
+      try {
+        const data = await apiGet<{ events: CalendarEvent[] }>(`/calendar/events?days=${calendarDays}`);
+        setEvents(data.events);
+      } catch (err) {
+        console.warn('[calendar] Fetch failed, using cached:', err);
+        setEvents(await syncStorage.get<CalendarEvent[]>('localEvents', []));
+      }
     }, CALENDAR_FETCH_DEBOUNCE_MS);
 
     return () => {

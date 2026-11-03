@@ -110,12 +110,13 @@ export async function getGmailSummary(userId: string): Promise<Result<GmailSumma
 
   // Fetch each message's metadata in parallel
   const messageResults = await Promise.allSettled(
-    messageIds.map(({ id }) =>
-      fetchWithTimeout(
+    messageIds.map(async ({ id }) => {
+      const r = await fetchWithTimeout(
         `${GMAIL_API}/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
         { headers }
-      ).then((r) => r.json() as Promise<GmailMessageResponse>)
-    )
+      );
+      return (await r.json()) as GmailMessageResponse;
+    })
   );
 
   const messages: GmailMessage[] = messageResults

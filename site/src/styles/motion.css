@@ -192,10 +192,19 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
   .reveal,
   .feature-card,
   .orb,
-  .trace,
-  .stage-wallpaper {
+  .trace {
     animation: none !important;
     opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Not in the list above: forcing `opacity: 1` on every wallpaper stacked all
+     four at full strength, so the last in the DOM - night - covered the rest
+     and a reduced-motion visitor saw the night photograph at any hour, beside
+     their real clock and greeting. The active one is chosen by opacity, so
+     only the motion is removed here. */
+  .stage-wallpaper {
+    animation: none !important;
     transform: none !important;
   }
 }

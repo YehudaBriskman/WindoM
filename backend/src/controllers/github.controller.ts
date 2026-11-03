@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import * as githubService from '../services/github.service.js';
+import { recordAudit } from '../services/audit.service.js';
+import { extractSessionMeta } from '../lib/request.js';
 
 const savePatBodySchema = z.object({
   pat: z.string().min(1).max(200),
@@ -23,6 +25,7 @@ export async function savePatController(req: FastifyRequest, reply: FastifyReply
     return;
   }
 
+  await recordAudit('integration_connected_github', { userId: req.user.sub, sessionId: req.user.sid, meta: extractSessionMeta(req) });
   void reply.send({ connected: true, username: result.data.username });
 }
 

@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import * as integrationsService from '../services/integrations.service.js';
+import { recordAudit } from '../services/audit.service.js';
+import { extractSessionMeta } from '../lib/request.js';
 import { savePatController as saveGithubPatController } from './github.controller.js';
 
 export { saveGithubPatController };
@@ -21,5 +23,6 @@ export async function deleteIntegrationController(req: FastifyRequest, reply: Fa
   }
 
   await integrationsService.unlinkProvider(req.user.sub, parsed.data);
+  await recordAudit(`integration_disconnected_${parsed.data}`, { userId: req.user.sub, sessionId: req.user.sid, meta: extractSessionMeta(req) });
   void reply.send({ success: true });
 }

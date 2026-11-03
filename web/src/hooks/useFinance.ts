@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
+import { localStore } from '../lib/chrome-storage';
 
 export interface StockQuote {
   symbol: string;
@@ -152,11 +153,7 @@ export function useFinance() {
     const tickers   = tickersKey.split(',').filter(Boolean);
     const cryptoIds = cryptoKey.split(',').filter(Boolean);
 
-    const cached = await new Promise<FinanceCache | null>((resolve) => {
-      chrome.storage.local.get(CACHE_KEY, (r) =>
-        resolve((r[CACHE_KEY] as FinanceCache | undefined) ?? null)
-      );
-    });
+    const cached = await localStore.get<FinanceCache | null>(CACHE_KEY, null);
 
     if (!force && cached && Date.now() - cached.timestamp < TTL) {
       setStocks(cached.stocks);
@@ -173,9 +170,7 @@ export function useFinance() {
       ]);
       setStocks(newStocks);
       setCrypto(newCrypto);
-      chrome.storage.local.set({
-        [CACHE_KEY]: { stocks: newStocks, crypto: newCrypto, timestamp: Date.now() },
-      });
+      void localStore.set(CACHE_KEY, { stocks: newStocks, crypto: newCrypto, timestamp: Date.now() });
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Fetch failed');
     } finally {

@@ -13,6 +13,7 @@ import {
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
 import { captureTokenReuse } from '../lib/sentry.js';
+import { recordAudit } from './audit.service.js';
 import type { Result, TokenPair, RegisterResult, SessionMeta, AuthError } from '../types/auth.types.js';
 
 /** Register a new user with email + password. Returns RegisterResult or EMAIL_TAKEN. */
@@ -37,6 +38,7 @@ export async function register(
     signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false, sid: sessionId }),
     createSession(user.id, meta, undefined, 0, sessionId),
   ]);
+  await recordAudit('account_created', { userId: user.id, sessionId, meta });
 
   return { ok: true, data: { accessToken, rawRefreshToken, emailSent } };
 }
@@ -51,15 +53,23 @@ export async function login(
 
   // Constant-time rejection - prevents timing attacks that reveal whether email exists
   const dummyHash = '$2b$12$invalidhashpadding000000000000000000000000000000000000';
-  const passwordOk = user?.passwordHash
-    ? await verifyPassword(password, user.passwordHash)
-    : await verifyPassword(password, dummyHash).then(() => false);
+  let passwordOk = false;
+  if (user?.passwordHash) {
+    passwordOk = await verifyPassword(password, user.passwordHash);
+  } else {
+    // Burn the same bcrypt time as a real check; the result is irrelevant.
+    await verifyPassword(password, dummyHash);
+  }
 
-  if (!user || !passwordOk) return { ok: false, error: 'INVALID_CREDENTIALS' };
+  if (!user || !passwordOk) {
+    await recordAudit('sign_in_failed', { userId: user?.id ?? null, meta });
+    return { ok: false, error: 'INVALID_CREDENTIALS' };
+  }
 
   const sessionId = crypto.randomUUID();
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified, sid: sessionId });
   const rawRefreshToken = await createSession(user.id, meta, undefined, 0, sessionId);
+  await recordAudit('sign_in', { userId: user.id, sessionId, meta });
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
 
@@ -100,6 +110,7 @@ export async function refresh(
     if (rotation.error === 'TOKEN_REUSE_DETECTED') {
       logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
       captureTokenReuse({ userId: session.userId, sessionId: session.id });
+      await recordAudit('token_reuse_detected', { userId: session.userId, sessionId: session.id, meta });
     } else {
       logger.warn({ sessionId: session.id }, `refresh: ${rotation.error}`);
     }
@@ -112,9 +123,11 @@ export async function refresh(
 }
 
 /** Revoke the session matching the given raw token (best-effort - no error if not found). */
-export async function logout(rawToken: string): Promise<void> {
+export async function logout(rawToken: string, meta?: SessionMeta): Promise<void> {
   const session = await findSessionByToken(rawToken);
-  if (session) await revokeSession(session.id);
+  if (!session) return;
+  await revokeSession(session.id);
+  await recordAudit('sign_out', { userId: session.userId, sessionId: session.id, meta });
 }
 
 /**
@@ -143,5 +156,6 @@ export async function loginWithGoogle(
   const sessionId = crypto.randomUUID();
   const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: true, sid: sessionId });
   const rawRefreshToken = await createSession(user.id, meta, undefined, 0, sessionId);
+  await recordAudit('sign_in_google', { userId: user.id, sessionId, meta });
   return { accessToken, rawRefreshToken };
 }

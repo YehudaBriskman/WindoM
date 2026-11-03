@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { apiGet, apiPost } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { mapOAuthError } from '../../lib/oauth-errors';
+import { getAuthRedirectUrl, launchWebAuth } from '../../lib/oauth-connection';
 
 interface Props {
   onSuccess?: () => void;
@@ -17,34 +18,15 @@ export function LoginWithGoogle({ onSuccess, onError, label = 'Continue with Goo
     setLoading(true);
     try {
       // Get the chromiumapp.org redirect URL Chrome auto-intercepts for this extension
-      const redirectUri = chrome.identity.getRedirectURL();
+      const redirectUri = getAuthRedirectUrl();
 
       const { authUrl } = await apiGet<{ authUrl: string }>(
         `/auth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`,
       );
 
-      // Open Google consent - launchWebAuthFlow captures the redirect to chromiumapp.org.
-      // Wrap in a 2-minute timeout so a hanging popup doesn't block the UI forever.
-      const redirectUrl = await new Promise<string>((resolve, reject) => {
-        let settled = false;
-        const timer = setTimeout(() => {
-          settled = true;
-          reject(new Error('Sign-in timed out. Please try again.'));
-        }, 120_000);
-
-        chrome.identity.launchWebAuthFlow(
-          { url: authUrl, interactive: true },
-          (url) => {
-            clearTimeout(timer);
-            if (settled) return;
-            if (chrome.runtime.lastError || !url) {
-              reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
-            } else {
-              resolve(url);
-            }
-          },
-        );
-      });
+      // Open Google consent - launchWebAuthFlow captures the redirect to chromiumapp.org,
+      // with a 2-minute timeout so a hanging popup doesn't block the UI forever.
+      const redirectUrl = await launchWebAuth(authUrl);
 
       // Google redirects to chromiumapp.org?code=...&state=...
       const params = new URL(redirectUrl).searchParams;
