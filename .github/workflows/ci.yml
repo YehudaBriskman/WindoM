@@ -214,6 +214,12 @@ jobs:
       - name: Type check
         run: npm run typecheck
 
+      # Plain `node --test` over src/**/*.test.ts: Node strips the types itself
+      # (unflagged from 22.18, which setup-node's `22` resolves past), so the
+      # site needs no test runner as a dependency.
+      - name: Test
+        run: npm test
+
       - name: Build
         run: npm run build
 
