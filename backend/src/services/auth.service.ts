@@ -53,9 +53,13 @@ export async function login(
 
   // Constant-time rejection - prevents timing attacks that reveal whether email exists
   const dummyHash = '$2b$12$invalidhashpadding000000000000000000000000000000000000';
-  const passwordOk = user?.passwordHash
-    ? await verifyPassword(password, user.passwordHash)
-    : await verifyPassword(password, dummyHash).then(() => false);
+  let passwordOk = false;
+  if (user?.passwordHash) {
+    passwordOk = await verifyPassword(password, user.passwordHash);
+  } else {
+    // Burn the same bcrypt time as a real check; the result is irrelevant.
+    await verifyPassword(password, dummyHash);
+  }
 
   if (!user || !passwordOk) {
     await recordAudit('sign_in_failed', { userId: user?.id ?? null, meta });
