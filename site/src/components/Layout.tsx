@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { STORE_URL, GITHUB_URL, CONTACT_EMAIL } from '../lib/site';
 import { SiteNav } from './SiteNav';
 
@@ -63,12 +64,17 @@ export function Layout({
 
       <footer className="site-footer">
         <div className="wrap">
+          {/* Router links at the clean paths. The `.html` addresses still exist,
+              but only for the URLs registered outside this repo (the store
+              listing, the extension's guide link) - linking to them from inside
+              the site reloaded the whole document and flipped the address bar
+              to the legacy shape mid-session. */}
           <nav aria-label="Footer">
-            <a href="/">Home</a>
-            <a href="/guide.html">User Guide</a>
-            <a href="/local-setup.html">Local Setup</a>
-            <a href="/privacy.html">Privacy</a>
-            <a href="/terms.html">Terms</a>
+            <Link to="/">Home</Link>
+            <Link to="/guide">User Guide</Link>
+            <Link to="/local-setup">Local Setup</Link>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
             <a href={STORE_URL}>Chrome Web Store</a>
             <a href={GITHUB_URL}>GitHub</a>
           </nav>
