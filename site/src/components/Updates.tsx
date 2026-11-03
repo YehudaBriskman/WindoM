@@ -1,27 +1,39 @@
 import { useEffect, useState } from 'react';
-import { fetchUpdates, formatDate, type UpdatesResult } from '../lib/updates';
-import { BLOG_URL } from '../lib/site';
+import releases from 'virtual:release-feed';
+import { fetchUpdates, formatDate, type Update } from '../lib/updates';
+import { BLOG_URL, GITHUB_URL } from '../lib/site';
+
+const CHANGELOG_URL = `${GITHUB_URL}/blob/main/CHANGELOG.md`;
 
 /**
  * Replaces the hand-maintained changelog that previously lived inline in the
  * landing page and had drifted about six months out of date.
  *
- * Updates are written once on the personal site's blog, tagged to this project,
- * and read from here - so there is one place to write and nothing to keep in
- * sync by hand.
+ * Two sources, in order of preference:
+ *
+ * 1. Posts in the personal site's `windom` blog collection, when that API
+ *    answers this origin with any. Written prose, so it wins when it exists.
+ * 2. The newest releases from CHANGELOG.md, parsed at build time
+ *    (`virtual:release-feed`). Always present, because the changelog is written
+ *    as part of cutting a release.
+ *
+ * Until #374 the blog was the only source, and it has never once answered -
+ * no CORS header for windom.app, a response shape this did not parse, and an
+ * empty collection - so eleven releases shipped and the section showed none of
+ * them. The changelog is the floor that keeps that from recurring: the section
+ * renders real releases in the prerendered HTML, before any script runs, and a
+ * blog that is unreachable or empty changes nothing visible.
  */
 export function Updates() {
-  const [result, setResult] = useState<UpdatesResult | null>(null);
+  const [posts, setPosts] = useState<Update[] | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    void fetchUpdates(4, controller.signal).then(setResult);
+    void fetchUpdates(4, controller.signal).then((r) => {
+      if (r.status === 'ok') setPosts(r.updates);
+    });
     return () => controller.abort();
   }, []);
-
-  // Render nothing at all while in flight. A skeleton would be more motion than
-  // a four-item list deserves, and this section sits below the fold.
-  if (result === null) return null;
 
   return (
     /* `id="updates"` is what the nav's "Changelog" item points at, and nothing
@@ -37,10 +49,10 @@ export function Updates() {
           What&rsquo;s <span className="gradient-text">new</span>
         </h2>
 
-        {result.status === 'ok' ? (
+        {posts ? (
           <>
             <ul className="updates-list">
-              {result.updates.map((u) => (
+              {posts.map((u) => (
                 <li key={u.slug}>
                   <a className="update" href={`${BLOG_URL}/${u.slug}`}>
                     <time className="update-date" dateTime={u.publishedAt}>
@@ -57,14 +69,22 @@ export function Updates() {
             </a>
           </>
         ) : (
-          // Covers both 'empty' and 'unavailable'. Neither is worth an error
-          // message on a marketing page - the useful action is the same either way.
           <>
-            <p className="lede">
-              Release notes and write-ups are published on the blog.
-            </p>
-            <a className="btn btn-secondary" href={BLOG_URL}>
-              Read the blog
+            <ul className="updates-list">
+              {releases.map((r) => (
+                <li key={r.version}>
+                  <a className="update" href={`${CHANGELOG_URL}#${r.anchor}`}>
+                    <time className="update-date" dateTime={r.date}>
+                      {formatDate(r.date)}
+                    </time>
+                    <h3>Version {r.version}</h3>
+                    <p className="muted">{r.summary}</p>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <a className="btn btn-secondary" href={CHANGELOG_URL}>
+              Full changelog
             </a>
           </>
         )}

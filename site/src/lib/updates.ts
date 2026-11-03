@@ -1,4 +1,5 @@
-import { UPDATES_API } from './site';
+// With the extension so `node --test` can load this file; see changelog.test.ts.
+import { UPDATES_API } from './site.ts';
 
 /**
  * A post as the personal site's blog API returns it.
@@ -34,28 +35,39 @@ function isUpdate(value: unknown): value is Update {
 }
 
 /**
+ * The list inside an API response, or null for a shape this does not know.
+ *
+ * The live endpoint answers `{ ok: true, items: [...] }` (queried 2026-11-03).
+ * This used to accept only a bare array or `{ posts: [...] }`, neither of which
+ * the API has ever returned, so even a successful response was read as
+ * 'unavailable' (#374). The older two shapes stay accepted; they cost nothing.
+ */
+export function postsOf(body: unknown): unknown[] | null {
+  if (Array.isArray(body)) return body;
+  if (typeof body !== 'object' || body === null) return null;
+  for (const key of ['items', 'posts'] as const) {
+    const list = (body as Record<string, unknown>)[key];
+    if (Array.isArray(list)) return list;
+  }
+  return null;
+}
+
+/**
  * Fetches WindoM's posts from the personal site.
  *
- * Deliberately never throws and never rejects. The API's CORS allowlist does not
- * yet include this origin, so in production today this returns 'unavailable' and
- * the section falls back to a plain link to the blog. A marketing page must not
- * show a broken state because a cross-origin request was refused, and the
- * section is decorative - the rest of the page does not depend on it.
+ * Deliberately never throws and never rejects. As of 2026-11-03 the API's CORS
+ * allowlist does not include https://windom.app (that fix lives in the
+ * portfolio_site repo) and the `windom` collection is empty, so in production
+ * this returns 'unavailable' and the section shows the changelog's releases
+ * instead. A marketing page must not show a broken state because a
+ * cross-origin request was refused.
  */
 export async function fetchUpdates(limit = 4, signal?: AbortSignal): Promise<UpdatesResult> {
   try {
     const res = await fetch(UPDATES_API, { signal, headers: { Accept: 'application/json' } });
     if (!res.ok) return { status: 'unavailable' };
 
-    const body: unknown = await res.json();
-    // The endpoint returns either a bare array or { posts: [...] } depending on
-    // version; accept both rather than coupling to one.
-    const raw = Array.isArray(body)
-      ? body
-      : typeof body === 'object' && body !== null && Array.isArray((body as { posts?: unknown }).posts)
-        ? (body as { posts: unknown[] }).posts
-        : null;
-
+    const raw = postsOf(await res.json());
     if (!raw) return { status: 'unavailable' };
 
     const updates = raw
@@ -74,5 +86,13 @@ export async function fetchUpdates(limit = 4, signal?: AbortSignal): Promise<Upd
 export function formatDate(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  // UTC, because the changelog's dates are bare `YYYY-MM-DD`, which parse as UTC
+  // midnight: in local time every reader west of Greenwich saw the day before,
+  // and the prerendered HTML (built in UTC) would disagree with the hydrated page.
+  return d.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 }
