@@ -59,4 +59,16 @@ describe('EditableName', () => {
     expect(screen.getByRole('status').textContent).toBe('Couldn’t save. Try again.');
     expect(field.textContent).toBe('Ada');
   });
+
+  // #437: chrome-storage reports a failed write by resolving false, not throwing.
+  it('reports a write that resolved false as a failed save', async () => {
+    update.mockResolvedValueOnce(false);
+    render(<EditableName />);
+    const field = screen.getByRole('textbox', { name: 'Your name' });
+    field.focus();
+    field.textContent = 'Grace';
+    await act(async () => fireEvent.keyDown(field, { key: 'Enter' }));
+    expect(screen.getByRole('status').textContent).toBe('Couldn’t save. Try again.');
+    expect(field.textContent).toBe('Ada');
+  });
 });

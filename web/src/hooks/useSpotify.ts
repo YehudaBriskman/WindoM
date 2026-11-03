@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { apiGet, apiFetch } from '../lib/api';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettingsSection } from '../contexts/SettingsContext';
 import { SPOTIFY_TICKER_INTERVAL_MS, SPOTIFY_CONTROL_REFETCH_DELAY_MS } from '../lib/timing-constants';
 
 export interface SpotifyTrack {
@@ -21,8 +21,8 @@ export interface NowPlayingState {
 const POLL_INTERVAL_MS = 60_000;
 
 export function useSpotify() {
-  const { settings } = useSettings();
-  const spotifyConnected = settings.integrations.spotify.connected;
+  const integrations = useSettingsSection('integrations');
+  const spotifyConnected = integrations.spotify.connected;
   const [state, setState] = useState<NowPlayingState>({ isPlaying: false, progressMs: 0, track: null });
   const [error, setError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -129,8 +129,8 @@ export function useSpotify() {
 }
 
 export function useSpotifyTopTracks() {
-  const { settings } = useSettings();
-  const spotifyConnected = settings.integrations.spotify.connected;
+  const integrations = useSettingsSection('integrations');
+  const spotifyConnected = integrations.spotify.connected;
   const [tracks, setTracks] = useState<SpotifyTrack[]>([]);
 
   useEffect(() => {

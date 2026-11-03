@@ -56,7 +56,7 @@ export function ContentSettingsProvider({ children }: { children: ReactNode }) {
 
   const update = useCallback(async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => {
     const merged = { ...(settings[section] as object), ...(patch as object) } as Settings[S];
-    await syncStorage.set(section as string, merged);
+    return syncStorage.set(section as string, merged);
   }, [settings]);
 
   const updateMultiple = useCallback(async (patches: Partial<Settings>) => {
@@ -66,7 +66,7 @@ export function ContentSettingsProvider({ children }: { children: ReactNode }) {
         storageUpdate[k] = { ...((settings as unknown as Record<string, object>)[k]), ...(v as object) };
       }
     }
-    await syncStorage.setMultiple(storageUpdate);
+    return syncStorage.setMultiple(storageUpdate);
   }, [settings]);
 
   const reset = useCallback(async () => {}, []);
