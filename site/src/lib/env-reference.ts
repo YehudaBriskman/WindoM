@@ -1,4 +1,3 @@
-
 /**
  * What the backend needs to boot.
  *
@@ -179,9 +178,10 @@ export const ENV_VARS: EnvVar[] = [
 
 /** The example `.env`, which is identical in both languages bar its comments. */
 export const EXAMPLE_ENV = (locale: 'en' | 'he'): string => {
-  const comment = locale === 'he'
-    ? '# אימייל - אופציונלי. אם יושמט, הודעות אימות ואיפוס מודפסות לקונסול.'
-    : '# Email - optional. If omitted, verification/reset emails are printed to the console.';
+  const comment =
+    locale === 'he'
+      ? '# אימייל - אופציונלי. אם יושמט, הודעות אימות ואיפוס מודפסות לקונסול.'
+      : '# Email - optional. If omitted, verification/reset emails are printed to the console.';
 
   return `PORT=8080
 NODE_ENV=development
@@ -204,4 +204,3 @@ ${comment}
 # FROM_EMAIL=noreply@windom.app
 # APP_URL=http://localhost:8080`;
 };
-

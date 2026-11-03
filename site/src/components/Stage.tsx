@@ -49,10 +49,7 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
   const lit = (p: Pane) => (active.spotlight.includes(p) ? ' is-lit' : ' is-dim');
 
   return (
-    <div
-      className={`stage-pin${animated && !cycle.live ? ' is-scrubbing' : ''}`}
-      data-focus={focus.phase}
-    >
+    <div className={`stage-pin${animated && !cycle.live ? ' is-scrubbing' : ''}`} data-focus={focus.phase}>
       {/* All four wallpapers stay mounted and crossfade. Swapping `src`
           mid-scroll leaves a blank frame; at 524 KB total, holding them is
           cheaper than the flicker.
@@ -295,9 +292,7 @@ function PaneContents({ body }: { body: PaneBody }) {
           <span className="pane-row" key={row.name}>
             <span className="pane-row-name">{row.name}</span>
             <span className="pane-row-value">{row.value}</span>
-            {row.delta && (
-              <span className={`pane-row-delta${row.up ? ' is-up' : ''}`}>{row.delta}</span>
-            )}
+            {row.delta && <span className={`pane-row-delta${row.up ? ' is-up' : ''}`}>{row.delta}</span>}
           </span>
         ))}
       </>

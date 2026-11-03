@@ -541,7 +541,9 @@
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   background: var(--surface);
-  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    background var(--dur-fast) var(--ease);
 }
 
 .feature-card:hover {

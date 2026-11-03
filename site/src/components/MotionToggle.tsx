@@ -70,12 +70,7 @@ export function useMotionPaused(): [boolean, () => void] {
 
 export function MotionToggle({ paused, onToggle }: { paused: boolean; onToggle: () => void }) {
   return (
-    <button
-      type="button"
-      className="motion-toggle"
-      onClick={onToggle}
-      aria-pressed={paused}
-    >
+    <button type="button" className="motion-toggle" onClick={onToggle} aria-pressed={paused}>
       <span aria-hidden="true">{paused ? '▶' : '❙❙'}</span>
       {paused ? 'Play motion' : 'Pause motion'}
     </button>

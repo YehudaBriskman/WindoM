@@ -61,8 +61,8 @@ export function Hero({ cycle, animated }: HeroProps) {
           </h1>
 
           <p className="lede">
-            Your calendar, the weather and what you meant to do today - waiting on the tab you
-            already open fifty times a day, on a wallpaper that moves with the hour.
+            Your calendar, the weather and what you meant to do today - waiting on the tab you already open fifty times
+            a day, on a wallpaper that moves with the hour.
           </p>
 
           <div className="btn-row">

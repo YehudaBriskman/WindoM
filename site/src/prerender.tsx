@@ -58,11 +58,7 @@ function legacyFile(path: string): string {
 }
 
 function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 /**
@@ -80,9 +76,7 @@ function headFor(route: SiteRoute): string {
   const twins = route.twinOf ? ROUTES.filter((r) => r.twinOf === route.twinOf) : [];
   const alternates = twins.length
     ? [
-        ...twins.map(
-          (r) => `    <link rel="alternate" hreflang="${r.locale}" href="${ORIGIN}${r.path}" />`,
-        ),
+        ...twins.map((r) => `    <link rel="alternate" hreflang="${r.locale}" href="${ORIGIN}${r.path}" />`),
         `    <link rel="alternate" hreflang="x-default" href="${ORIGIN}${
           twins.find((r) => r.locale === 'en')?.path ?? route.path
         }" />`,
@@ -111,8 +105,7 @@ function headFor(route: SiteRoute): string {
             url: AUTHOR.url,
             sameAs: AUTHOR.sameAs,
           },
-          downloadUrl:
-            'https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb',
+          downloadUrl: 'https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb',
           privacyPolicy: `${ORIGIN}/privacy`,
         })}</script>`
       : '';
@@ -147,10 +140,9 @@ function headFor(route: SiteRoute): string {
  * reference the hashed bundle and would be a dead page with no styling.
  */
 function renderNotFound(): Rendered {
-  const router = createMemoryRouter(
-    [{ element: <RouteChrome />, children: [{ path: '*', element: <NotFound /> }] }],
-    { initialEntries: ['/not-found'] },
-  );
+  const router = createMemoryRouter([{ element: <RouteChrome />, children: [{ path: '*', element: <NotFound /> }] }], {
+    initialEntries: ['/not-found'],
+  });
 
   return {
     files: ['404.html'],

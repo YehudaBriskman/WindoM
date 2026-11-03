@@ -200,8 +200,7 @@ export function DocsSearch({ locale }: { locale: Locale }) {
   useEffect(() => {
     if (!open) return;
     const silenced = [...document.body.children].filter(
-      (node): node is HTMLElement =>
-        node instanceof HTMLElement && node !== overlay.current && !node.inert,
+      (node): node is HTMLElement => node instanceof HTMLElement && node !== overlay.current && !node.inert,
     );
     for (const node of silenced) node.inert = true;
     document.documentElement.classList.add(SCROLL_LOCK);
@@ -327,13 +326,7 @@ export function DocsSearch({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <button
-        type="button"
-        ref={trigger}
-        className="docs-search-trigger"
-        onClick={show}
-        aria-label={t.open}
-      >
+      <button type="button" ref={trigger} className="docs-search-trigger" onClick={show} aria-label={t.open}>
         <SearchGlyph />
         <span className="docs-search-trigger-label">{t.short}</span>
         {/* Decorative: the shortcut is announced by the button's label already,
@@ -351,58 +344,58 @@ export function DocsSearch({ locale }: { locale: Locale }) {
       */}
       {open &&
         createPortal(
-        <div className="docs-search" role="presentation" ref={overlay} onClick={hide}>
-          <div
-            className="docs-search-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label={t.open}
-            ref={panel}
-            // Focusable only programmatically: somewhere for focus to rest if
-            // the panel ever has no control of its own to hold it.
-            tabIndex={-1}
-            onKeyDown={onPanelKeyDown}
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="docs-search-field">
-              <SearchGlyph />
-              <input
-                ref={input}
-                type="search"
-                className="docs-search-input"
-                placeholder={t.placeholder}
-                value={query}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setActive(0);
-                }}
-                role="combobox"
-                aria-expanded={results.length > 0}
-                aria-controls="docs-search-results"
-                aria-activedescendant={results[active] ? `docs-search-${active}` : undefined}
-                autoComplete="off"
-                spellCheck={false}
-              />
-            </div>
+          <div className="docs-search" role="presentation" ref={overlay} onClick={hide}>
+            <div
+              className="docs-search-panel"
+              role="dialog"
+              aria-modal="true"
+              aria-label={t.open}
+              ref={panel}
+              // Focusable only programmatically: somewhere for focus to rest if
+              // the panel ever has no control of its own to hold it.
+              tabIndex={-1}
+              onKeyDown={onPanelKeyDown}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="docs-search-field">
+                <SearchGlyph />
+                <input
+                  ref={input}
+                  type="search"
+                  className="docs-search-input"
+                  placeholder={t.placeholder}
+                  value={query}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setActive(0);
+                  }}
+                  role="combobox"
+                  aria-expanded={results.length > 0}
+                  aria-controls="docs-search-results"
+                  aria-activedescendant={results[active] ? `docs-search-${active}` : undefined}
+                  autoComplete="off"
+                  spellCheck={false}
+                />
+              </div>
 
-            {status === 'failed' ? (
-              <p className="docs-search-note">{t.failed}</p>
-            ) : status === 'loading' ? (
-              <p className="docs-search-note">{t.loading}</p>
-            ) : query.trim() && !results.length ? (
-              <p className="docs-search-note">{t.empty}</p>
-            ) : (
-              <ul
-                className="docs-search-results"
-                id="docs-search-results"
-                role="listbox"
-                ref={list}
-                aria-label={t.results}
-              >
-                {results.map((result, i) => {
-                  const [before, match, after] = highlight(result.excerpt, tokens);
-                  return (
-                    /*
+              {status === 'failed' ? (
+                <p className="docs-search-note">{t.failed}</p>
+              ) : status === 'loading' ? (
+                <p className="docs-search-note">{t.loading}</p>
+              ) : query.trim() && !results.length ? (
+                <p className="docs-search-note">{t.empty}</p>
+              ) : (
+                <ul
+                  className="docs-search-results"
+                  id="docs-search-results"
+                  role="listbox"
+                  ref={list}
+                  aria-label={t.results}
+                >
+                  {results.map((result, i) => {
+                    const [before, match, after] = highlight(result.excerpt, tokens);
+                    return (
+                      /*
                       An option, not a button. A listbox row is selected by
                       `aria-activedescendant` from the input that owns the
                       listbox, so making each row a tab stop would put focus
@@ -410,34 +403,34 @@ export function DocsSearch({ locale }: { locale: Locale }) {
                       pattern exists to avoid. The click handler is for the
                       mouse; the keyboard gets here through Enter on the panel.
                     */
-                    <li
-                      key={result.to + i}
-                      id={`docs-search-${i}`}
-                      role="option"
-                      aria-selected={i === active}
-                      className={`docs-search-result${i === active ? ' is-active' : ''}`}
-                      onMouseEnter={() => setActive(i)}
-                      onClick={() => go(result)}
-                    >
-                      <span className="docs-search-crumb">
-                        {result.page.g ? `${result.page.g} · ` : ''}
-                        {result.page.t}
-                      </span>
-                      <span className="docs-search-heading">{result.heading}</span>
-                      <span className="docs-search-excerpt">
-                        {before}
-                        {match && <mark>{match}</mark>}
-                        {after}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>
-        </div>,
-        document.body,
-      )}
+                      <li
+                        key={result.to + i}
+                        id={`docs-search-${i}`}
+                        role="option"
+                        aria-selected={i === active}
+                        className={`docs-search-result${i === active ? ' is-active' : ''}`}
+                        onMouseEnter={() => setActive(i)}
+                        onClick={() => go(result)}
+                      >
+                        <span className="docs-search-crumb">
+                          {result.page.g ? `${result.page.g} · ` : ''}
+                          {result.page.t}
+                        </span>
+                        <span className="docs-search-heading">{result.heading}</span>
+                        <span className="docs-search-excerpt">
+                          {before}
+                          {match && <mark>{match}</mark>}
+                          {after}
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }

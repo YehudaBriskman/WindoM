@@ -33,9 +33,7 @@ export function useTilt<T extends HTMLElement>({ max = 7, reach = 320 }: TiltOpt
     const el = ref.current;
     if (!el) return;
 
-    const query = typeof matchMedia === 'function'
-      ? matchMedia('(prefers-reduced-motion: reduce)')
-      : null;
+    const query = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
 
     let frame = 0;
     /** The last known pointer position, kept so the lean can be recomputed
@@ -55,8 +53,7 @@ export function useTilt<T extends HTMLElement>({ max = 7, reach = 320 }: TiltOpt
      * that this hook would otherwise never hear about. The old version checked
      * `matches` a single time at mount and ignored the pause entirely.
      */
-    const suppressed = () =>
-      query?.matches === true || document.body.classList.contains('motion-paused');
+    const suppressed = () => query?.matches === true || document.body.classList.contains('motion-paused');
 
     const apply = () => {
       frame = 0;

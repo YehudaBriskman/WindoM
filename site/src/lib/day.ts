@@ -16,16 +16,7 @@ export const STAGES = ['morning', 'afternoon', 'evening', 'night'] as const;
 export type Stage = (typeof STAGES)[number];
 
 /** Every widget the stage can show. Each maps to a real part of the extension. */
-export type Pane =
-  | 'weather'
-  | 'todos'
-  | 'calendar'
-  | 'spotify'
-  | 'finance'
-  | 'github'
-  | 'gmail'
-  | 'recent'
-  | 'focus';
+export type Pane = 'weather' | 'todos' | 'calendar' | 'spotify' | 'finance' | 'github' | 'gmail' | 'recent' | 'focus';
 
 export interface DayStage {
   stage: Stage;
@@ -124,11 +115,7 @@ function minutesOf(clock: string): number {
  * anchors sit at stage midpoints, so the first and last half-stage need
  * something to interpolate towards. In practice the scroll runs 07:30 to 23:37.
  */
-const CLOCK_STOPS = [
-  minutesOf('06:40'),
-  ...STAGES.map((s) => minutesOf(STAGE_CLOCK[s])),
-  minutesOf('23:59'),
-];
+const CLOCK_STOPS = [minutesOf('06:40'), ...STAGES.map((s) => minutesOf(STAGE_CLOCK[s])), minutesOf('23:59')];
 
 /**
  * The time of day at a point in the scroll, as a continuous value.
@@ -163,4 +150,3 @@ export function clockForProgress(progress: number): string {
   date.setMinutes(minutes);
   return formatClock(date);
 }
-

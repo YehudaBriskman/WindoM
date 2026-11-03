@@ -25,9 +25,7 @@ const guide = page('/guide', 'User Guide', [
     'Click the button and wait.',
   ]),
 ]);
-const setup = page('/local-setup', 'Local Setup', [
-  ['', '', 'Run it yourself. This guide assumes Node 22.'],
-]);
+const setup = page('/local-setup', 'Local Setup', [['', '', 'Run it yourself. This guide assumes Node 22.']]);
 const index: SearchIndex = { v: 1, pages: [guide, setup] };
 
 describe('search: a page title does not qualify every section (#401)', () => {

@@ -17,10 +17,7 @@ export interface Update {
 }
 
 /** Everything the UI needs to decide what to render, with no thrown errors. */
-export type UpdatesResult =
-  | { status: 'ok'; updates: Update[] }
-  | { status: 'empty' }
-  | { status: 'unavailable' };
+export type UpdatesResult = { status: 'ok'; updates: Update[] } | { status: 'empty' } | { status: 'unavailable' };
 
 function isUpdate(value: unknown): value is Update {
   if (typeof value !== 'object' || value === null) return false;

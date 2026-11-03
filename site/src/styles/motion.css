@@ -29,10 +29,18 @@ body:not(.motion-paused) .rise {
   animation: rise 0.7s var(--ease) both;
 }
 
-body:not(.motion-paused) .rise-1 { animation-delay: 0.05s; }
-body:not(.motion-paused) .rise-2 { animation-delay: 0.15s; }
-body:not(.motion-paused) .rise-3 { animation-delay: 0.25s; }
-body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
+body:not(.motion-paused) .rise-1 {
+  animation-delay: 0.05s;
+}
+body:not(.motion-paused) .rise-2 {
+  animation-delay: 0.15s;
+}
+body:not(.motion-paused) .rise-3 {
+  animation-delay: 0.25s;
+}
+body:not(.motion-paused) .rise-4 {
+  animation-delay: 0.35s;
+}
 
 /* ── Scroll-driven reveals ──────────────────────────────────────────── */
 
@@ -137,13 +145,23 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
   }
 
   @keyframes orb-drift {
-    from { transform: translate(0, 0) scale(1); }
-    to   { transform: translate(70px, -160px) scale(1.18); }
+    from {
+      transform: translate(0, 0) scale(1);
+    }
+    to {
+      transform: translate(70px, -160px) scale(1.18);
+    }
   }
 
   @keyframes orb-drift-2 {
-    from { transform: translate(0, 0) scale(1); opacity: 1; }
-    to   { transform: translate(-90px, -140px) scale(0.82); opacity: 0.45; }
+    from {
+      transform: translate(0, 0) scale(1);
+      opacity: 1;
+    }
+    to {
+      transform: translate(-90px, -140px) scale(0.82);
+      opacity: 0.45;
+    }
   }
 
   body:not(.motion-paused) .trace {
@@ -153,8 +171,12 @@ body:not(.motion-paused) .rise-4 { animation-delay: 0.35s; }
   }
 
   @keyframes trace-draw {
-    from { stroke-dashoffset: 3000; }
-    to   { stroke-dashoffset: 0; }
+    from {
+      stroke-dashoffset: 3000;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
   }
 }
 

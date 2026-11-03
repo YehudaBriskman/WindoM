@@ -82,12 +82,7 @@ const PREFIX_BONUS = 6;
  * Searching a page by its name still works: `pageResult` gives such a page
  * exactly one row instead of all of them.
  */
-export function search(
-  index: SearchIndex,
-  query: string,
-  locale: Locale,
-  limit = 8,
-): Result[] {
+export function search(index: SearchIndex, query: string, locale: Locale, limit = 8): Result[] {
   const tokens = tokenize(query);
   const [first] = tokens;
   if (first === undefined) return [];
@@ -160,12 +155,7 @@ export function search(
  * Null for a page the index recorded with no sections at all - it has no
  * excerpt to show, and a row with an empty body reads as a broken result.
  */
-function pageResult(
-  page: IndexedPage,
-  title: string,
-  tokenCount: number,
-  first: string,
-): Result | null {
+function pageResult(page: IndexedPage, title: string, tokenCount: number, first: string): Result | null {
   const [intro] = page.s;
   if (!intro) return null;
 

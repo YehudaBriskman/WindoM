@@ -24,14 +24,7 @@ interface LayoutProps {
  * all five pages, so a change to any of them meant five edits and usually got
  * four. The legal pages alone shared about 91% of their CSS.
  */
-export function Layout({
-  children,
-  eyebrow,
-  title,
-  subtitle,
-  variant = 'page',
-  dir = 'ltr',
-}: LayoutProps) {
+export function Layout({ children, eyebrow, title, subtitle, variant = 'page', dir = 'ltr' }: LayoutProps) {
   return (
     <div dir={dir}>
       <a className="skip-link" href="#content">
@@ -80,8 +73,10 @@ export function Layout({
           </nav>
           <p>
             MIT License © {new Date().getFullYear()}{' '}
-            <a href={AUTHOR.url} rel="author">{AUTHOR.name}</a> &nbsp;·&nbsp;{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <a href={AUTHOR.url} rel="author">
+              {AUTHOR.name}
+            </a>{' '}
+            &nbsp;·&nbsp; <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </p>
         </div>
       </footer>

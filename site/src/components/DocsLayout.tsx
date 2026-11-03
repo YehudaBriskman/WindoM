@@ -10,14 +10,7 @@ import {
 } from 'react';
 import { Link } from 'react-router';
 import { STORE_URL, GITHUB_URL, CONTACT_EMAIL, AUTHOR } from '../lib/site';
-import {
-  docsGroups,
-  docsNeighbours,
-  headingId,
-  localeOf,
-  translatedPath,
-  type SiteRoute,
-} from '../lib/docs';
+import { docsGroups, docsNeighbours, headingId, localeOf, translatedPath, type SiteRoute } from '../lib/docs';
 import { SiteNav } from './SiteNav';
 import { DocsSearch } from './DocsSearch';
 import { useActiveHeading, useKeepActiveInView } from '../hooks/useActiveHeading';
@@ -56,12 +49,32 @@ let rememberedCollapsed: boolean | undefined;
  */
 const UI = {
   en: {
-    home: 'Home', onPage: 'On this page', sections: 'Sections of this page', more: 'More documentation', prev: 'Previous', next: 'Next', toggle: 'Toggle navigation',
-    guide: 'User Guide', support: 'Support', localSetup: 'Local Setup', privacy: 'Privacy', terms: 'Terms',
+    home: 'Home',
+    onPage: 'On this page',
+    sections: 'Sections of this page',
+    more: 'More documentation',
+    prev: 'Previous',
+    next: 'Next',
+    toggle: 'Toggle navigation',
+    guide: 'User Guide',
+    support: 'Support',
+    localSetup: 'Local Setup',
+    privacy: 'Privacy',
+    terms: 'Terms',
   },
   he: {
-    home: 'דף הבית', onPage: 'בעמוד הזה', sections: 'הסעיפים בעמוד הזה', more: 'תיעוד נוסף', prev: 'הקודם', next: 'הבא', toggle: 'הצגה או הסתרה של הניווט',
-    guide: 'מדריך למשתמש', support: 'תמיכה', localSetup: 'הרצה מקומית', privacy: 'פרטיות', terms: 'תנאים',
+    home: 'דף הבית',
+    onPage: 'בעמוד הזה',
+    sections: 'הסעיפים בעמוד הזה',
+    more: 'תיעוד נוסף',
+    prev: 'הקודם',
+    next: 'הבא',
+    toggle: 'הצגה או הסתרה של הניווט',
+    guide: 'מדריך למשתמש',
+    support: 'תמיכה',
+    localSetup: 'הרצה מקומית',
+    privacy: 'פרטיות',
+    terms: 'תנאים',
   },
 } as const;
 
@@ -146,7 +159,9 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
       rememberedCollapsed = next;
       try {
         localStorage.setItem(SIDEBAR_KEY, next ? 'collapsed' : 'open');
-      } catch { /* not worth failing the click over */ }
+      } catch {
+        /* not worth failing the click over */
+      }
       return next;
     });
   };
@@ -325,8 +340,10 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
           </nav>
           <p>
             MIT License © {new Date().getFullYear()}{' '}
-            <a href={AUTHOR.url} rel="author">{locale === 'he' ? AUTHOR.nameHe : AUTHOR.name}</a> &nbsp;·&nbsp;{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            <a href={AUTHOR.url} rel="author">
+              {locale === 'he' ? AUTHOR.nameHe : AUTHOR.name}
+            </a>{' '}
+            &nbsp;·&nbsp; <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
           </p>
         </div>
       </footer>
@@ -347,20 +364,18 @@ function SidebarGlyph() {
 function ChevronGlyph() {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <path d="M4.5 2.5 8 6l-3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M4.5 2.5 8 6l-3.5 3.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-function NeighbourLink({
-  page,
-  rel,
-  label,
-}: {
-  page: SiteRoute;
-  rel: 'prev' | 'next';
-  label: string;
-}) {
+function NeighbourLink({ page, rel, label }: { page: SiteRoute; rel: 'prev' | 'next'; label: string }) {
   return (
     <Link className={`docs-neighbour is-${rel}`} to={page.path} rel={rel} viewTransition>
       <span className="docs-neighbour-label">{label}</span>
@@ -395,9 +410,8 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
     if (!isValidElement(node)) return node;
 
     const element = node as ReactElement<{ children?: ReactNode; id?: string }>;
-    const walked = element.props.children !== undefined
-      ? cloneElement(element, undefined, walk(element.props.children))
-      : element;
+    const walked =
+      element.props.children !== undefined ? cloneElement(element, undefined, walk(element.props.children)) : element;
 
     const level = element.type === 'h2' ? 2 : element.type === 'h3' ? 3 : 0;
     if (level === 0) return walked;
