@@ -1,11 +1,10 @@
-import { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSettings } from '../../../contexts/SettingsContext';
-import { apiPost, apiFetch } from '../../../lib/api';
-import { mapOAuthError } from '../../../lib/oauth-errors';
+import { useOAuthConnection } from '../../../hooks/useOAuthConnection';
+import { GOOGLE_CALENDAR_OAUTH } from '../../../lib/google-oauth';
+import { mapIntegrationError } from '../../../lib/oauth-connection';
 import { GlassSelect } from '../../ui/GlassSelect';
 import { SETTINGS_EVENT } from '../../../lib/settings-events';
-import { clearOAuthState, rememberOAuthState, validateAndConsumeOAuthState } from '../../../lib/oauth-state';
 
 function GoogleCalendarIcon() {
   return (
@@ -18,85 +17,28 @@ function GoogleCalendarIcon() {
   );
 }
 
-function launchWebAuth(url: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    const timer = setTimeout(() => {
-      settled = true;
-      reject(new Error('Sign-in timed out. Please try again.'));
-    }, 120_000);
-    chrome.identity.launchWebAuthFlow({ url, interactive: true }, (redirectUrl) => {
-      clearTimeout(timer);
-      if (settled) return;
-      if (chrome.runtime.lastError || !redirectUrl) {
-        reject(new Error(mapOAuthError(chrome.runtime.lastError?.message ?? 'Auth cancelled')));
-      } else {
-        resolve(redirectUrl);
-      }
-    });
-  });
-}
-
-function mapIntegrationError(err: unknown): string {
-  const msg = err instanceof Error ? err.message : String(err);
-  if (/already.linked|account already linked/i.test(msg)) return 'This account is already linked to a different user.';
-  if (/network|fetch|connection|failed to fetch/i.test(msg)) return 'Connection failed. Check your internet and try again.';
-  if (msg === 'access_denied' || msg.includes('access_denied')) return mapOAuthError(msg);
-  if (msg && msg !== 'Failed') return msg;
-  return 'Something went wrong. Please try again.';
-}
-
 export function CalendarSettings() {
   const { user } = useAuth();
   const { settings, update } = useSettings();
   const { calendar } = settings.integrations;
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  async function connectGoogle() {
-    setBusy(true);
-    setError('');
-    try {
-      const redirectUri = chrome.identity.getRedirectURL();
-      const { authUrl } = await apiPost<{ authUrl: string }>(
-        `/oauth/google/start?redirectUri=${encodeURIComponent(redirectUri)}`
-      );
-      rememberOAuthState(authUrl, 'google');
-      try {
-        const redirectUrl = await launchWebAuth(authUrl);
-        const params = new URL(redirectUrl).searchParams;
-        const oauthError = params.get('error');
-        if (oauthError) throw new Error(mapOAuthError(oauthError));
-        const code = params.get('code');
-        const state = params.get('state');
-        if (!code) throw new Error('No auth code returned');
-        validateAndConsumeOAuthState(state, 'google');
-        const { status } = await apiPost<{ status: string }>('/oauth/google/exchange', { code, state, redirectUri });
-        if (status !== 'linked') throw new Error('Linking failed');
-      } finally {
-        clearOAuthState('google');
-      }
-      await update('integrations', { calendar: { ...calendar, connected: true } });
-    } catch (err) {
-      setError(mapIntegrationError(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function disconnectGoogle() {
-    setBusy(true);
-    setError('');
-    try {
-      const res = await apiFetch('/integrations/google', { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to disconnect Google Calendar');
-      await update('integrations', { calendar: { ...calendar, connected: false } });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Disconnect failed');
-    } finally {
-      setBusy(false);
-    }
-  }
+  const { gmail } = settings.integrations;
+  const {
+    busy,
+    error,
+    connect: connectGoogle,
+    disconnect: disconnectGoogle,
+  } = useOAuthConnection({
+    provider: GOOGLE_CALENDAR_OAUTH,
+    onConnected: () => update('integrations', { calendar: { ...calendar, connected: true } }),
+    // The backend unlinks the whole Google account, Gmail scope included.
+    onDisconnected: () =>
+      update('integrations', {
+        calendar: { ...calendar, connected: false },
+        gmail: { ...gmail, connected: false },
+      }),
+    mapConnectError: mapIntegrationError,
+    disconnectFailedMessage: 'Failed to disconnect Google Calendar',
+  });
 
   // Not signed in - prompt to log in first
   if (!user) {
@@ -145,7 +87,7 @@ export function CalendarSettings() {
             <button
               className="integration-disconnect-btn"
               disabled={busy}
-              onClick={disconnectGoogle}
+              onClick={() => void disconnectGoogle()}
             >
               {busy ? '…' : 'Disconnect'}
             </button>
@@ -153,7 +95,7 @@ export function CalendarSettings() {
             <button
               className="integration-connect-btn"
               disabled={busy}
-              onClick={connectGoogle}
+              onClick={() => void connectGoogle()}
             >
               {busy ? 'Connecting…' : 'Connect'}
             </button>
