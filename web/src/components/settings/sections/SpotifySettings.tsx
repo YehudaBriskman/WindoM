@@ -137,7 +137,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
               href="https://developer.spotify.com/dashboard"
               target="_blank"
               rel="noreferrer"
-              style={{ color: '#1DB954' }}
+              style={{ color: 'var(--brand-spotify)' }}
             >
               developer.spotify.com/dashboard
             </a>{' '}

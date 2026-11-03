@@ -107,7 +107,7 @@ export function GmailSettings() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="integration-card">
-          <div className="integration-icon" style={{ background: 'rgba(234,67,53,0.12)' }}>
+          <div className="integration-icon" style={{ background: 'var(--brand-gmail-tint)' }}>
             <GmailIcon />
           </div>
           <div className="integration-info">
@@ -135,7 +135,7 @@ export function GmailSettings() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div>
         <div className="integration-card">
-          <div className="integration-icon" style={{ background: 'rgba(234,67,53,0.12)' }}>
+          <div className="integration-icon" style={{ background: 'var(--brand-gmail-tint)' }}>
             <GmailIcon />
           </div>
           <div className="integration-info">

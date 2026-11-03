@@ -152,7 +152,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: -1;
+  z-index: var(--z-below);
 }
 
 /* ── The refracted rim ────────────────────────────────────────────────────
@@ -184,7 +184,7 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  z-index: 0;
+  z-index: var(--z-base);
 
   background-image: var(--glass-wall, none);
   background-size: var(--glass-wall-size, cover);
@@ -357,7 +357,7 @@
 .glass-quote > *,
 .glass-credit > *,
 .glass-dock > * {
-  z-index: 1;
+  z-index: var(--z-raised);
 }
 
 /* Reduced motion keeps the material and stops the light. The highlight is
