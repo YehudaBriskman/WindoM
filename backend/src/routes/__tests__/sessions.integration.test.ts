@@ -49,9 +49,9 @@ describe('session management with PostgreSQL and production routes', () => {
     const { sessions } = response.json<{ sessions: Record<string, unknown>[] }>();
     expect(sessions).toHaveLength(1);
     expect(Object.keys(sessions[0] ?? {}).sort()).toEqual(
-      ['id', 'deviceId', 'createdAt', 'lastUsedAt', 'expiresAt', 'renewalCount'].sort(),
+      ['id', 'deviceId', 'device', 'current', 'createdAt', 'lastUsedAt', 'expiresAt', 'renewalCount'].sort(),
     );
-    expect(sessions[0]).toMatchObject({ id, deviceId: 'a'.repeat(12), renewalCount: 0 });
+    expect(sessions[0]).toMatchObject({ id, deviceId: 'a'.repeat(12), renewalCount: 0, device: null, current: false });
     for (const field of ['createdAt', 'lastUsedAt', 'expiresAt']) {
       expect(typeof sessions[0]?.[field]).toBe('string');
       expect(Number.isFinite(Date.parse(sessions[0]?.[field] as string))).toBe(true);
@@ -111,6 +111,47 @@ describe('session management with PostgreSQL and production routes', () => {
       method: 'POST', url: '/auth/refresh', cookies: { windom_refresh: token },
     });
     expect(response.statusCode).toBe(401);
+  });
+
+  it('labels a session from the sign-in User-Agent and marks the caller\'s own session current', async () => {
+    const chromeOnMac = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36';
+    const login = await app.inject({
+      method: 'POST', url: '/auth/refresh',
+      cookies: { windom_refresh: await createSession(userId, { ip: '10.0.0.1', userAgent: chromeOnMac }) },
+      headers: { 'user-agent': chromeOnMac, 'sec-ch-ua': '"Chromium";v="130", "Brave";v="130"', 'sec-ch-ua-platform': '"macOS"' },
+    });
+    expect(login.statusCode).toBe(200);
+    const { accessToken } = login.json<{ accessToken: string }>();
+    await seed({ deviceLabel: 'Firefox · Windows' });
+
+    const response = await app.inject({ method: 'GET', url: '/me/sessions', headers: { authorization: `Bearer ${accessToken}` } });
+    const { sessions } = response.json<{ sessions: Array<{ device: string | null; current: boolean }> }>();
+    expect(sessions.map((s) => [s.device, s.current])).toEqual([
+      ['Brave · macOS', true],
+      ['Firefox · Windows', false],
+    ]);
+    // Only the coarse label is stored; the raw UA and IP remain digests.
+    const rows = await db.select().from(refreshSessions).where(eq(refreshSessions.userId, userId));
+    for (const row of rows) {
+      expect(row.userAgent).not.toContain('Mozilla');
+      expect(row.ip).not.toContain('10.0.0.1');
+    }
+  });
+
+  it('signs out every other session and keeps the caller\'s', async () => {
+    const mine = await seed();
+    const other = await seed();
+    const foreign = await seed({ userId: otherUserId });
+    const token = await signAccessToken({ sub: userId, email: 'test@example.com', name: '', emailVerified: true, sid: mine });
+    const response = await app.inject({
+      method: 'DELETE', url: '/me/sessions?others=true', headers: { authorization: `Bearer ${token}` },
+    });
+    expect(response.json()).toEqual({ revoked: 1 });
+    const rows = await db.select().from(refreshSessions);
+    const revokedAt = (id: string) => rows.find((row) => row.id === id)?.revokedAt;
+    expect(revokedAt(mine)).toBeNull();
+    expect(revokedAt(other)).not.toBeNull();
+    expect(revokedAt(foreign)).toBeNull();
   });
 
   it('never reports successful revocation while a concurrent rotation survives', async () => {

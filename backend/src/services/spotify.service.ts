@@ -2,8 +2,9 @@ import { eq, and } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { oauthAccounts } from '../db/schema.js';
 import { getValidAccessToken } from './token-refresh.service.js';
+import { spotifyPkceRefreshStrategy, spotifySharedAppRefreshStrategy } from './token-refresh.strategies.js';
 import { config } from '../config.js';
-import { SPOTIFY_TOKEN_URL, SPOTIFY_API, MAX_TOP_TRACKS, DEFAULT_TOP_TRACKS } from '../types/constants.js';
+import { SPOTIFY_API, MAX_TOP_TRACKS, DEFAULT_TOP_TRACKS } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
 import { fetchWithTimeout } from '../lib/external-fetch.js';
@@ -63,10 +64,6 @@ const COMMAND_CONFIG: Record<PlaybackCommand, { method: 'PUT' | 'POST'; endpoint
   previous: { method: 'POST', endpoint: '/me/player/previous' },
 };
 
-function spotifyBasicAuth(): string {
-  return `Basic ${Buffer.from(`${config.SPOTIFY_CLIENT_ID}:${config.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`;
-}
-
 function normalizeTrack(item: RawSpotifyTrack): SpotifyTrack {
   return {
     name: item.name,
@@ -89,9 +86,10 @@ async function getSpotifyToken(userId: string): Promise<Result<string, SpotifyEr
 
   // PKCE (BYOA) mode: use the user's own client_id in the token body - no shared Authorization header.
   // Legacy mode: use the shared app's Basic auth header.
-  const tokenResult = account.providerClientId
-    ? await getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, pkceClientId: account.providerClientId, extraBody: {} })
-    : await getValidAccessToken(account, { tokenUrl: SPOTIFY_TOKEN_URL, authHeader: spotifyBasicAuth(), extraBody: {} });
+  const strategy = account.providerClientId
+    ? spotifyPkceRefreshStrategy(account.providerClientId)
+    : spotifySharedAppRefreshStrategy({ clientId: config.SPOTIFY_CLIENT_ID, clientSecret: config.SPOTIFY_CLIENT_SECRET });
+  const tokenResult = await getValidAccessToken(account, strategy);
 
   if (!tokenResult.ok) return { ok: false, error: tokenResult.error };
   return { ok: true, data: tokenResult.data };

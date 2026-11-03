@@ -3,4 +3,5 @@ export const SETTINGS_EVENT = {
   TOGGLE: 'toggle-settings',
   CLOSE: 'close-settings',
   OPEN_ACCOUNT: 'open-settings-account',
+  OPEN_WEATHER: 'open-settings-weather',
 } as const;

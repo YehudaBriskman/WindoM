@@ -1,15 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
-import { useLocation } from './useLocation';
+import { useLocation, watchGeolocationPermission } from './useLocation';
 import { localStore as ls } from '../lib/chrome-storage';
 import { convertTemperature } from '../utils/temperature';
 import type { WeatherData } from '../types/weather';
 
 const CACHE_EXPIRY = 30 * 60 * 1000;
 
-type WeatherState =
+export type WeatherState =
   | { status: 'loading' }
-  | { status: 'placeholder'; message: string }
+  // needsLocation: no city typed and location not granted - the widget offers "Set location".
+  | { status: 'placeholder'; message: string; needsLocation?: boolean }
   | { status: 'error' }
   | { status: 'ready'; data: WeatherData; displayTemp: number };
 
@@ -60,6 +61,11 @@ export function useWeather() {
   // Each effect run gets a unique ID. fetchWeather checks this before every setState
   // so a stale in-flight request from a previous run can never overwrite fresh state.
   const runIdRef = useRef(0);
+  // Bumped when the geolocation permission changes (granted from Settings →
+  // Weather, or revoked in Chrome) so the widget refetches without a reload.
+  const [permissionEpoch, setPermissionEpoch] = useState(0);
+
+  useEffect(() => watchGeolocationPermission(() => setPermissionEpoch((n) => n + 1)), []);
 
   // runId is passed in so fetchWeather can guard against being stale
   const fetchWeather = useCallback(async (runId: number) => {
@@ -87,7 +93,8 @@ export function useWeather() {
       const coords = await getLocation();
       if (runIdRef.current !== runId) return;
       if (!coords) {
-        setState({ status: 'placeholder', message: 'Set location in settings' });
+        // Location was not granted (and is never asked for here - see useLocation).
+        setState({ status: 'placeholder', message: 'Set location', needsLocation: true });
         return;
       }
       lat = coords.lat;
@@ -183,7 +190,8 @@ export function useWeather() {
     return () => clearInterval(intervalRef.current);
     // settings.weather.unit is listed directly so the cache conversion in the effect
     // body always runs with the current unit, not just when fetchWeather recreates.
-  }, [fetchWeather, settings.weather.unit]);
+    // permissionEpoch: refetch once location is granted or revoked.
+  }, [fetchWeather, settings.weather.unit, permissionEpoch]);
 
   return state;
 }

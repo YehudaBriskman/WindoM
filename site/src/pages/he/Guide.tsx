@@ -271,7 +271,7 @@ export function Guide() {
             <div className="step-num">3</div>
             <div className="step-body">
                 <p>מתחילים להקליד שם עיר בשדה <strong>Location</strong> (למשל <code>Tel Aviv</code> או <code>New York</code>). ערים מתאימות מופיעות מתחת לשדה עם האזור והמדינה שלהן - לוחצים על זו שהתכוונת אליה.</p>
-                <p>אם משאירים את השדה ריק, WindoM מבקש את המיקום שלך מהדפדפן.</p>
+                <p>או לוחצים על <strong>Use my current location</strong> - רק אז הדפדפן שואל אם לאפשר ל-WindoM לדעת את מיקומך. WindoM לעולם לא שואל מיוזמתו; עד שמגדירים מיקום, הווידג'ט מציג <strong>Set location</strong>, שפותח את הלשונית הזו. אם חוסמים את הבקשה, מקלידים עיר במקום.</p>
             </div>
           </div>
           <div className="step">
@@ -281,7 +281,7 @@ export function Guide() {
             </div>
           </div>
           <div className="callout">
-            <strong>מוצג מקום שגוי?</strong> כששדה המיקום ריק והדפדפן אינו מספק נקודות ציון, WindoM נופל בחזרה לזיהוי גס לפי כתובת ה-IP, שיכול להיות רחוק למדי ב-VPN או ברשת סלולרית. הקלדת עיר ידנית מקבעת את המיקום.
+            <strong>מוצג מקום שגוי?</strong> כשמשתמשים במיקום הנוכחי והדפדפן אינו מספק נקודות ציון, WindoM נופל בחזרה לזיהוי גס לפי כתובת ה-IP, שיכול להיות רחוק למדי ב-VPN או ברשת סלולרית. הקלדת עיר ידנית מקבעת את המיקום.
           </div>
           <div className="callout tip">
             <strong>מתרענן כל 30 דקות</strong> -

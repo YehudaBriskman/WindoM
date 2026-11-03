@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { users } from '../db/schema.js';
@@ -11,6 +12,7 @@ import {
 } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
+import { captureTokenReuse } from '../lib/sentry.js';
 import type { Result, TokenPair, RegisterResult, SessionMeta, AuthError } from '../types/auth.types.js';
 
 /** Register a new user with email + password. Returns RegisterResult or EMAIL_TAKEN. */
@@ -26,13 +28,14 @@ export async function register(
   const passwordHash = await hashPassword(password);
   const [user] = await db.insert(users).values({ email, name, passwordHash }).returning();
 
+  const sessionId = crypto.randomUUID();
   const [emailSent, accessToken, rawRefreshToken] = await Promise.all([
     sendVerification(user.id).then(() => true).catch((err: unknown) => {
       logger.error({ err, userId: user.id }, 'register: verification email failed');
       return false;
     }),
-    signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false }),
-    createSession(user.id, meta),
+    signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: false, sid: sessionId }),
+    createSession(user.id, meta, undefined, 0, sessionId),
   ]);
 
   return { ok: true, data: { accessToken, rawRefreshToken, emailSent } };
@@ -54,8 +57,9 @@ export async function login(
 
   if (!user || !passwordOk) return { ok: false, error: 'INVALID_CREDENTIALS' };
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
-  const rawRefreshToken = await createSession(user.id, meta);
+  const sessionId = crypto.randomUUID();
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified, sid: sessionId });
+  const rawRefreshToken = await createSession(user.id, meta, undefined, 0, sessionId);
   return { ok: true, data: { accessToken, rawRefreshToken } };
 }
 
@@ -95,13 +99,14 @@ export async function refresh(
   if (!rotation.ok) {
     if (rotation.error === 'TOKEN_REUSE_DETECTED') {
       logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
+      captureTokenReuse({ userId: session.userId, sessionId: session.id });
     } else {
       logger.warn({ sessionId: session.id }, `refresh: ${rotation.error}`);
     }
     return rotation;
   }
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified });
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: user.emailVerified, sid: rotation.sessionId });
   logger.warn({ userId: user.id }, 'refresh: new session created');
   return { ok: true, data: { accessToken, rawRefreshToken: rotation.rawRefreshToken } };
 }
@@ -135,7 +140,8 @@ export async function loginWithGoogle(
     })
     .returning();
 
-  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: true });
-  const rawRefreshToken = await createSession(user.id, meta);
+  const sessionId = crypto.randomUUID();
+  const accessToken = await signAccessToken({ sub: user.id, email: user.email, name: user.name, emailVerified: true, sid: sessionId });
+  const rawRefreshToken = await createSession(user.id, meta, undefined, 0, sessionId);
   return { accessToken, rawRefreshToken };
 }

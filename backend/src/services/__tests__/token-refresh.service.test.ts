@@ -9,6 +9,7 @@ vi.mock('../../lib/crypto.js', () => ({
 import { db } from '../../db/client.js';
 import { decryptToken, encryptToken } from '../../lib/crypto.js';
 import { getValidAccessToken } from '../token-refresh.service.js';
+import { githubPatStrategy, parseStandardTokenResponse, type RefreshableTokenStrategy } from '../token-refresh.strategies.js';
 import { TOKEN_REFRESH_BUFFER_MS } from '../../types/constants.js';
 
 const mockDb = db as unknown as { update: ReturnType<typeof vi.fn> };
@@ -28,9 +29,15 @@ function makeAccount(overrides: Record<string, unknown> = {}): Parameters<typeof
   } as Parameters<typeof getValidAccessToken>[0];
 }
 
-const refreshConfig = {
-  tokenUrl: 'https://example.com/token',
-  extraBody: { client_id: 'id', client_secret: 'secret' },
+// A generic test strategy - the service must not care which provider it is.
+const strategy: RefreshableTokenStrategy = {
+  provider: 'google',
+  refreshable: true,
+  refreshUrl: 'https://example.com/token',
+  buildHeaders: () => ({}),
+  buildBody: (refreshToken) =>
+    new URLSearchParams({ grant_type: 'refresh_token', refresh_token: refreshToken, client_id: 'id', client_secret: 'secret' }),
+  parseResponse: parseStandardTokenResponse,
 };
 
 beforeEach(() => {
@@ -42,7 +49,7 @@ describe('getValidAccessToken', () => {
   it('returns decrypted access token when still valid', async () => {
     mockDecrypt.mockResolvedValue('plain-access-token');
 
-    const result = await getValidAccessToken(makeAccount(), refreshConfig);
+    const result = await getValidAccessToken(makeAccount(), strategy);
 
     expect(result).toEqual({ ok: true, data: 'plain-access-token' });
     expect(mockDecrypt).toHaveBeenCalledWith('encrypted-access');
@@ -56,7 +63,7 @@ describe('getValidAccessToken', () => {
       refreshTokenEnc: null,
     });
 
-    const result = await getValidAccessToken(account, refreshConfig);
+    const result = await getValidAccessToken(account, strategy);
 
     expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
   });
@@ -67,7 +74,7 @@ describe('getValidAccessToken', () => {
       refreshTokenEnc: null,
     });
 
-    const result = await getValidAccessToken(account, refreshConfig);
+    const result = await getValidAccessToken(account, strategy);
 
     expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
   });
@@ -87,7 +94,7 @@ describe('getValidAccessToken', () => {
     const setBuildMock = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
     mockDb.update.mockReturnValue({ set: setBuildMock });
 
-    const result = await getValidAccessToken(account, refreshConfig);
+    const result = await getValidAccessToken(account, strategy);
 
     expect(result).toEqual({ ok: true, data: 'new-access-token' });
     expect(mockDecrypt).toHaveBeenCalledWith('encrypted-refresh');
@@ -103,7 +110,7 @@ describe('getValidAccessToken', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 401 });
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await getValidAccessToken(account, refreshConfig);
+    const result = await getValidAccessToken(account, strategy);
 
     expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_REVOKED' });
   });
@@ -116,7 +123,7 @@ describe('getValidAccessToken', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: false, status: 500 });
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await getValidAccessToken(account, refreshConfig);
+    const result = await getValidAccessToken(account, strategy);
 
     expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_NETWORK_ERROR' });
   });
@@ -124,12 +131,12 @@ describe('getValidAccessToken', () => {
   it('returns TOKEN_REFRESH_FAILED when tokenExpiresAt is null and no refresh token', async () => {
     const account = makeAccount({ tokenExpiresAt: null, refreshTokenEnc: null });
 
-    const result = await getValidAccessToken(account, refreshConfig);
+    const result = await getValidAccessToken(account, strategy);
 
     expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
   });
 
-  it('passes authHeader when provided in refreshConfig', async () => {
+  it('sends the strategy headers alongside the form Content-Type', async () => {
     const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
 
     mockDecrypt.mockResolvedValue('refresh-token');
@@ -149,10 +156,78 @@ describe('getValidAccessToken', () => {
 
     await getValidAccessToken(
       account,
-      { ...refreshConfig, authHeader: 'Basic abc123' },
+      { ...strategy, buildHeaders: () => ({ Authorization: 'Basic abc123' }) },
     );
 
-    expect(capturedHeaders['Authorization']).toBe('Basic abc123');
+    expect(capturedHeaders).toEqual({
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Authorization: 'Basic abc123',
+    });
+  });
+
+  it('posts the strategy body to the strategy URL', async () => {
+    const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
+    mockDecrypt.mockResolvedValue('refresh-token');
+    mockEncrypt.mockResolvedValue('enc');
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ access_token: 'tok', expires_in: 3600 }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+    mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
+    const buildBody = vi.fn((refreshToken: string) => strategy.buildBody(refreshToken));
+
+    await getValidAccessToken(account, { ...strategy, buildBody });
+
+    expect(buildBody).toHaveBeenCalledWith('refresh-token');
+    const [url, init] = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe('https://example.com/token');
+    expect(init.method).toBe('POST');
+    expect((init.body as URLSearchParams).toString()).toBe('grant_type=refresh_token&refresh_token=refresh-token&client_id=id&client_secret=secret');
+  });
+
+  it('writes the encrypted token and an expiry from the strategy-parsed lifetime', async () => {
+    const account = makeAccount({ tokenExpiresAt: new Date(Date.now() - 5000) });
+    mockDecrypt.mockResolvedValue('refresh-token');
+    mockEncrypt.mockResolvedValue('enc-custom');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ whatever: true }) }));
+    const set = vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) });
+    mockDb.update.mockReturnValue({ set });
+
+    const before = Date.now();
+    const result = await getValidAccessToken(account, {
+      ...strategy,
+      parseResponse: () => ({ accessToken: 'custom-token', expiresInSec: 60 }),
+    });
+
+    expect(result).toEqual({ ok: true, data: 'custom-token' });
+    expect(mockEncrypt).toHaveBeenCalledWith('custom-token');
+    const written = set.mock.calls[0][0] as { accessTokenEnc: string; tokenExpiresAt: Date; updatedAt: Date };
+    expect(Object.keys(written).sort()).toEqual(['accessTokenEnc', 'tokenExpiresAt', 'updatedAt']);
+    expect(written.accessTokenEnc).toBe('enc-custom');
+    expect(written.tokenExpiresAt.getTime()).toBeGreaterThanOrEqual(before + 60_000);
+    expect(written.tokenExpiresAt.getTime()).toBeLessThanOrEqual(Date.now() + 60_000);
+  });
+
+  it('fails a non-refreshable strategy without decrypting or calling the network', async () => {
+    const mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    const account = makeAccount({ provider: 'github', tokenExpiresAt: null, refreshTokenEnc: 'encrypted-refresh' });
+
+    const result = await getValidAccessToken(account, githubPatStrategy);
+
+    expect(result).toEqual({ ok: false, error: 'TOKEN_REFRESH_FAILED' });
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockDecrypt).not.toHaveBeenCalled();
+    expect(mockDb.update).not.toHaveBeenCalled();
+  });
+
+  it('still returns the stored token for a non-refreshable strategy while it is unexpired', async () => {
+    mockDecrypt.mockResolvedValue('plain-pat');
+
+    const result = await getValidAccessToken(makeAccount({ provider: 'github' }), githubPatStrategy);
+
+    expect(result).toEqual({ ok: true, data: 'plain-pat' });
   });
 
   it('deduplicates concurrent refreshes for the same account', async () => {
@@ -168,8 +243,8 @@ describe('getValidAccessToken', () => {
     vi.stubGlobal('fetch', mockFetch);
     mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
 
-    const first = getValidAccessToken(account, refreshConfig);
-    const second = getValidAccessToken(account, refreshConfig);
+    const first = getValidAccessToken(account, strategy);
+    const second = getValidAccessToken(account, strategy);
     await vi.waitFor(() => expect(mockFetch).toHaveBeenCalledOnce());
 
     resolveFetch({
@@ -200,7 +275,7 @@ describe('getValidAccessToken', () => {
       json: () => Promise.resolve(payload),
     }));
 
-    await expect(getValidAccessToken(account, refreshConfig)).resolves.toEqual({
+    await expect(getValidAccessToken(account, strategy)).resolves.toEqual({
       ok: false,
       error: 'TOKEN_REFRESH_FAILED',
     });
@@ -212,7 +287,7 @@ describe('getValidAccessToken', () => {
     mockDecrypt.mockResolvedValue('refresh-token');
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('timed out', 'TimeoutError')));
 
-    await expect(getValidAccessToken(account, refreshConfig)).resolves.toEqual({
+    await expect(getValidAccessToken(account, strategy)).resolves.toEqual({
       ok: false,
       error: 'TOKEN_REFRESH_NETWORK_ERROR',
     });
@@ -228,8 +303,8 @@ describe('getValidAccessToken', () => {
     mockDb.update.mockReturnValue({ set: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue(undefined) }) });
 
     await Promise.all([
-      getValidAccessToken(makeAccount({ id: 'account-a', tokenExpiresAt: new Date(0) }), refreshConfig),
-      getValidAccessToken(makeAccount({ id: 'account-b', tokenExpiresAt: new Date(0) }), refreshConfig),
+      getValidAccessToken(makeAccount({ id: 'account-a', tokenExpiresAt: new Date(0) }), strategy),
+      getValidAccessToken(makeAccount({ id: 'account-b', tokenExpiresAt: new Date(0) }), strategy),
     ]);
 
     expect(global.fetch).toHaveBeenCalledTimes(2);
