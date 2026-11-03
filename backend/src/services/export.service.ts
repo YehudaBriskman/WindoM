@@ -35,7 +35,7 @@ export const EXPORT_POLICY = {
   }),
   refreshSessions: policy({
     table: refreshSessions,
-    exported: ['id', 'createdAt', 'expiresAt', 'revokedAt', 'renewalCount'],
+    exported: ['id', 'createdAt', 'expiresAt', 'revokedAt', 'renewalCount', 'deviceLabel'],
     withheld: {
       userId: { kind: 'internal', reason: 'always the requesting user' },
       tokenHash: { kind: 'secret', reason: 'refresh-token hash' },

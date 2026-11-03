@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { envSchema } from '../../config.js';
 import { assertRefreshCookieSecurity, createRefreshCookieOptions } from '../cookies.js';
-import { buildApp, requestLogSerializer } from '../../app.js';
+import { buildApp, redactUrlQuery, requestLogSerializer } from '../../app.js';
 import { COOKIE_MAX_AGE_SECONDS } from '../../types/constants.js';
 
 const validEnv = {
@@ -86,6 +86,27 @@ describe('backend security baseline', () => {
         url: '/health',
         remoteAddress: '127.0.0.1',
       });
+  });
+
+  it('never logs query-string values, which carry single-use tokens and OAuth codes', () => {
+    const token = 'a3f9c2e1d4b5a6978877665544332211';
+    const logged = requestLogSerializer({
+      id: 'req-43',
+      method: 'GET',
+      url: `/auth/reset-password?token=${token}`,
+      ip: '127.0.0.1',
+    });
+    expect(logged.url).toBe('/auth/reset-password?token=[redacted]');
+    expect(JSON.stringify(logged)).not.toContain(token);
+  });
+
+  it('keeps parameter names but redacts every value, including on OAuth callbacks', () => {
+    expect(redactUrlQuery('/auth/google/callback?code=4%2F0Ab&state=xyz&scope=email'))
+      .toBe('/auth/google/callback?code=[redacted]&state=[redacted]&scope=[redacted]');
+    expect(redactUrlQuery('/auth/verify-email?token=abc#frag')).toBe('/auth/verify-email?token=[redacted]');
+    expect(redactUrlQuery('/search?flag&x=1')).toBe('/search?flag&x=[redacted]');
+    expect(redactUrlQuery('/health')).toBe('/health');
+    expect(redactUrlQuery('/health?')).toBe('/health?');
   });
 
   it('sets the default request timeout', async () => {

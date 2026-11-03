@@ -39,7 +39,7 @@ export function Privacy() {
             <li>Your email address and a bcrypt-hashed password</li>
             <li>Your display name</li>
             <li>Your dashboard settings - synced so preferences are consistent across your devices</li>
-            <li>Active session records (used to manage login sessions and detect unauthorized access)</li>
+            <li>Active session records (used to manage login sessions and detect unauthorized access). For each signed-in session we store the browser and operating system name (for example &ldquo;Chrome &middot; Windows&rdquo;, no versions) so you can recognise it under Active sessions; it is deleted with the session or your account</li>
           </ul>
           <p>
             You can delete your account and all associated server-side data at any time from
