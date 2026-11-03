@@ -11,9 +11,13 @@
 import { vi } from 'vitest';
 import { config as loadDotenv } from 'dotenv';
 
-// Load base env then overlay .env.test so DATABASE_URL_TEST is available
+// Precedence: the real environment > .env.test > .env. dotenv never overrides a variable
+// that is already set, so loading .env.test first lets it win over .env, and a
+// DATABASE_URL_TEST from the shell or CI wins over both. .env.test used to load with
+// `override: true`, which silently replaced an explicit DATABASE_URL_TEST with
+// localhost:5433 - whatever happens to own that port, which truncateAll() then wipes.
+loadDotenv({ path: '.env.test' });
 loadDotenv();
-loadDotenv({ path: '.env.test', override: true });
 
 const testUrl = process.env['DATABASE_URL_TEST'];
 if (testUrl) {
