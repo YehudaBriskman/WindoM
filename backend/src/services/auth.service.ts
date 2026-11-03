@@ -12,6 +12,7 @@ import {
 } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
+import { captureTokenReuse } from '../lib/sentry.js';
 import type { Result, TokenPair, RegisterResult, SessionMeta, AuthError } from '../types/auth.types.js';
 
 /** Register a new user with email + password. Returns RegisterResult or EMAIL_TAKEN. */
@@ -98,6 +99,7 @@ export async function refresh(
   if (!rotation.ok) {
     if (rotation.error === 'TOKEN_REUSE_DETECTED') {
       logger.error({ sessionId: session.id, userId: session.userId }, 'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user');
+      captureTokenReuse({ userId: session.userId, sessionId: session.id });
     } else {
       logger.warn({ sessionId: session.id }, `refresh: ${rotation.error}`);
     }
