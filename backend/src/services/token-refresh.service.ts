@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { oauthAccounts } from '../db/schema.js';
@@ -7,65 +6,40 @@ import { TOKEN_REFRESH_BUFFER_MS } from '../types/constants.js';
 import type { Result } from '../types/auth.types.js';
 import type { OAuthError } from '../types/oauth.types.js';
 import { fetchWithTimeout } from '../lib/external-fetch.js';
+import type { TokenRefreshStrategy } from './token-refresh.strategies.js';
 
 type OAuthAccountRow = typeof oauthAccounts.$inferSelect;
 type RefreshError = Extract<OAuthError, 'TOKEN_REFRESH_FAILED' | 'TOKEN_REFRESH_REVOKED' | 'TOKEN_REFRESH_NETWORK_ERROR'>;
-
-export interface TokenRefreshConfig {
-  tokenUrl: string;
-  /** Additional body fields merged alongside grant_type + refresh_token. */
-  extraBody: Record<string, string>;
-  /** Optional Authorization header (e.g. Basic auth for Spotify legacy shared-app). */
-  authHeader?: string;
-  /** For PKCE (BYOA) Spotify connections - the user's own Spotify app client_id. When set, omits Authorization header and sends client_id in body instead. */
-  pkceClientId?: string;
-}
-
-const refreshResponseSchema = z.object({
-  access_token: z.string().min(1),
-  expires_in: z.number().positive(),
-});
 
 // Deduplicates concurrent refresh calls for the same account - the second caller
 // awaits the first refresh rather than triggering a parallel token rotation race.
 const inflight = new Map<string, Promise<Result<string, RefreshError>>>();
 
 /**
- * Return a valid decrypted access token for the given account.
- * Automatically refreshes using the stored refresh token if the current one
- * expires within TOKEN_REFRESH_BUFFER_MS. Updates the DB on refresh.
+ * Refresh the account's access token with the provider's strategy and persist it.
+ * Provider-agnostic: everything that differs per provider comes from `strategy`.
  *
  * Error codes:
  * - TOKEN_REFRESH_REVOKED: provider returned 401/403 - user must re-authorize
  * - TOKEN_REFRESH_NETWORK_ERROR: network/5xx failure - transient, safe to retry
- * - TOKEN_REFRESH_FAILED: malformed provider response or missing refresh token
+ * - TOKEN_REFRESH_FAILED: malformed provider response, missing refresh token,
+ *   or a provider whose credential cannot be refreshed
  */
 async function doRefresh(
   account: OAuthAccountRow,
-  refreshConfig: TokenRefreshConfig,
+  strategy: TokenRefreshStrategy,
 ): Promise<Result<string, RefreshError>> {
+  if (!strategy.refreshable) return { ok: false, error: 'TOKEN_REFRESH_FAILED' };
   if (!account.refreshTokenEnc) return { ok: false, error: 'TOKEN_REFRESH_FAILED' };
 
   const refreshToken = await decryptToken(account.refreshTokenEnc);
 
-  const headers: Record<string, string> = { 'Content-Type': 'application/x-www-form-urlencoded' };
-  if (refreshConfig.pkceClientId) {
-    // PKCE (BYOA) mode: no Authorization header; client_id goes in body
-  } else if (refreshConfig.authHeader) {
-    headers['Authorization'] = refreshConfig.authHeader;
-  }
-
   let res: Response;
   try {
-    res = await fetchWithTimeout(refreshConfig.tokenUrl, {
+    res = await fetchWithTimeout(strategy.refreshUrl, {
       method: 'POST',
-      headers,
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        ...(refreshConfig.pkceClientId ? { client_id: refreshConfig.pkceClientId } : {}),
-        ...refreshConfig.extraBody,
-      }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...strategy.buildHeaders() },
+      body: strategy.buildBody(refreshToken),
     });
   } catch {
     return { ok: false, error: 'TOKEN_REFRESH_NETWORK_ERROR' };
@@ -80,30 +54,30 @@ async function doRefresh(
     };
   }
 
-  const parsed = refreshResponseSchema.safeParse(await res.json());
-  if (!parsed.success) return { ok: false, error: 'TOKEN_REFRESH_FAILED' };
+  const parsed = strategy.parseResponse(await res.json());
+  if (!parsed) return { ok: false, error: 'TOKEN_REFRESH_FAILED' };
 
-  const { access_token, expires_in } = parsed.data;
-  const newAccessEnc = await encryptToken(access_token);
-  const newExpiry = new Date(Date.now() + expires_in * 1000);
+  const { accessToken, expiresInSec } = parsed;
+  const newAccessEnc = await encryptToken(accessToken);
+  const newExpiry = new Date(Date.now() + expiresInSec * 1000);
 
   await db
     .update(oauthAccounts)
     .set({ accessTokenEnc: newAccessEnc, tokenExpiresAt: newExpiry, updatedAt: new Date() })
     .where(eq(oauthAccounts.id, account.id));
 
-  return { ok: true, data: access_token };
+  return { ok: true, data: accessToken };
 }
 
 /**
  * Return a valid decrypted access token for the given account.
- * Automatically refreshes using the stored refresh token if the current one
+ * Automatically refreshes, via the provider's strategy, if the current one
  * expires within TOKEN_REFRESH_BUFFER_MS. Updates the DB on refresh.
  * Concurrent calls for the same account share a single in-flight refresh promise.
  */
 export async function getValidAccessToken(
   account: OAuthAccountRow,
-  refreshConfig: TokenRefreshConfig,
+  strategy: TokenRefreshStrategy,
 ): Promise<Result<string, RefreshError>> {
   const expiresAt = account.tokenExpiresAt ? new Date(account.tokenExpiresAt) : null;
   const isStillValid = expiresAt && expiresAt.getTime() - Date.now() > TOKEN_REFRESH_BUFFER_MS;
@@ -113,7 +87,7 @@ export async function getValidAccessToken(
   const existing = inflight.get(account.id);
   if (existing) return existing;
 
-  const promise = doRefresh(account, refreshConfig).finally(() => inflight.delete(account.id));
+  const promise = doRefresh(account, strategy).finally(() => inflight.delete(account.id));
   inflight.set(account.id, promise);
   return promise;
 }
