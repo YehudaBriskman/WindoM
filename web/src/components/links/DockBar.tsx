@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useId } from 'react';
 import { Plus, X } from 'lucide-react';
 import { useLinks } from '../../hooks/useLinks';
 import { useSettings } from '../../contexts/SettingsContext';
@@ -23,6 +23,9 @@ export function DockBar() {
   const containerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const rowsRef = useRef<HTMLDivElement>(null);
+  const nameId = useId();
+  const urlId = useId();
+  const urlErrorId = useId();
 
   // Chunk links into rows of ITEMS_PER_ROW
   const rows: typeof links[] = [];
@@ -158,23 +161,28 @@ export function DockBar() {
             <button type="button" className="dock-form-close" onClick={handleClose} aria-label="Close">
               <X size={16} />
             </button>
+            <label htmlFor={nameId} className="sr-only">Link name</label>
             <input
               ref={nameInputRef}
+              id={nameId}
               className="dock-form-input glass-input"
               type="text"
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
+            <label htmlFor={urlId} className="sr-only">Link URL</label>
             <input
+              id={urlId}
               className="dock-form-input glass-input"
               type="text"
               placeholder="https://..."
               aria-invalid={!!urlError}
+              aria-describedby={urlError ? urlErrorId : undefined}
               value={url}
               onChange={(e) => { setUrl(e.target.value); setUrlError(''); }}
             />
-            {urlError && <p role="alert" className="auth-field-error">{urlError}</p>}
+            {urlError && <p id={urlErrorId} role="alert" className="auth-field-error">{urlError}</p>}
             <button type="submit" className="dock-form-submit">
               Add
             </button>

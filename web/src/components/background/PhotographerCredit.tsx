@@ -20,6 +20,8 @@ export function PhotographerCredit() {
         className={`photo-credit-like-btn ${isLiked ? "liked" : ""}`}
         onClick={() => currentPhotoId && toggleLike(currentPhotoId)}
         title={isLiked ? "Unlike photo" : "Like photo"}
+        aria-label="Like photo"
+        aria-pressed={isLiked}
       >
         <Heart size={13} fill={isLiked ? "currentColor" : "none"} />
       </button>

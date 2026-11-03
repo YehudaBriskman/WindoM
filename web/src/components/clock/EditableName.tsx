@@ -14,12 +14,20 @@ export function EditableName() {
     }
   }, [settings.general.userName, update]);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      ref.current?.blur();
-    }
-  }, []);
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        ref.current?.blur();
+      } else if (e.key === 'Escape') {
+        // Cancel: restore the saved name, then blur (handleBlur sees no change).
+        e.preventDefault();
+        if (ref.current) ref.current.textContent = settings.general.userName;
+        ref.current?.blur();
+      }
+    },
+    [settings.general.userName],
+  );
 
   const handleFocus = useCallback(() => {
     if (!ref.current) return;
@@ -35,6 +43,9 @@ export function EditableName() {
       ref={ref}
       contentEditable
       suppressContentEditableWarning
+      role="textbox"
+      aria-label="Your name"
+      aria-multiline="false"
       onBlur={handleBlur}
       onKeyDown={handleKeyDown}
       onFocus={handleFocus}

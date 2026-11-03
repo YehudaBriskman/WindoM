@@ -34,9 +34,10 @@ export function TodoSection() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Add a new task..."
+          aria-label="New task"
           className="todo-input glass-input"
         />
-        <button onClick={handleAdd} className="todo-add-btn">
+        <button onClick={handleAdd} className="todo-add-btn" aria-label="Add task">
           +
         </button>
       </div>

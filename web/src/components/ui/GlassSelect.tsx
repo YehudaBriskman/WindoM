@@ -11,15 +11,18 @@ interface GlassSelectProps {
   onChange: (value: string) => void;
   options: Option[];
   className?: string;
+  /** id of the visible label element, so the trigger and listbox are announced with it */
+  labelledBy?: string;
 }
 
-export function GlassSelect({ value, onChange, options, className = '' }: GlassSelectProps) {
+export function GlassSelect({ value, onChange, options, className = '', labelledBy }: GlassSelectProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const optionRefs = useRef<Array<HTMLLIElement | null>>([]);
   const listboxId = useId();
+  const valueId = useId();
 
   const selected = options.find((o) => o.value === value);
   const selectedIndex = Math.max(
@@ -137,13 +140,14 @@ export function GlassSelect({ value, onChange, options, className = '' }: GlassS
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listboxId}
+        aria-labelledby={labelledBy ? `${labelledBy} ${valueId}` : undefined}
       >
-        <span>{selected?.label ?? value}</span>
+        <span id={valueId}>{selected?.label ?? value}</span>
         <ChevronDown size={15} className={`glass-select-chevron ${open ? 'open' : ''}`} />
       </button>
 
       {open && (
-        <ul id={listboxId} className="glass-select-dropdown" role="listbox">
+        <ul id={listboxId} className="glass-select-dropdown" role="listbox" aria-labelledby={labelledBy}>
           {options.map((opt, index) => (
             <li
               ref={(node) => {

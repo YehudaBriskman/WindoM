@@ -38,3 +38,19 @@ describe('DockBar URL entry', () => {
     expect(addLink).toHaveBeenCalledWith({ name: 'My link', url: 'HTTPS://example.com', icon: '' });
   });
 });
+
+describe('DockBar form labelling', () => {
+  it('names both link fields with a label, not only a placeholder', () => {
+    render(<DockBar />);
+    expect(screen.getByLabelText('Link name')).toBe(screen.getByPlaceholderText('Name'));
+    expect(screen.getByLabelText('Link URL')).toBe(screen.getByPlaceholderText('https://...'));
+  });
+
+  it('ties the URL error to the URL field', () => {
+    render(<DockBar />);
+    fireEvent.change(screen.getByLabelText('Link URL'), { target: { value: 'javascript:alert(1)' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }));
+    const error = screen.getByRole('alert');
+    expect(screen.getByLabelText('Link URL').getAttribute('aria-describedby')).toBe(error.id);
+  });
+});
