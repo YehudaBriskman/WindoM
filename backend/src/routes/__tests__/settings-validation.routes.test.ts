@@ -2,9 +2,13 @@ import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildApp } from '../../app.js';
 import { signAccessToken } from '../../lib/jwt.js';
-import { getSettings, saveSettings } from '../../services/settings.service.js';
+import { updateSettings } from '../../services/settings.service.js';
 
-vi.mock('../../services/settings.service.js', () => ({ getSettings: vi.fn(), saveSettings: vi.fn() }));
+vi.mock('../../services/settings.service.js', () => ({ updateSettings: vi.fn(), getSettingsRecord: vi.fn() }));
+
+// The stored blob the locked read-modify-write sees, and a spy on what it writes.
+let stored: Record<string, unknown> = {};
+const saveSettings = vi.fn();
 
 let app: FastifyInstance;
 let authorization: string;
@@ -14,8 +18,13 @@ beforeAll(async () => {
 });
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(getSettings).mockResolvedValue(null);
-  vi.mocked(saveSettings).mockImplementation((_userId, data) => Promise.resolve(data));
+  stored = {};
+  saveSettings.mockReset();
+  vi.mocked(updateSettings).mockImplementation((userId, merge) => {
+    const data = merge(stored);
+    saveSettings(userId, data);
+    return Promise.resolve({ data, updatedAt: 1, previousUpdatedAt: null });
+  });
 });
 afterAll(async () => app.close());
 
@@ -44,7 +53,7 @@ describe('settings link validation', () => {
   ].map((value) => [value]))('rejects invalid destination %j before touching stored settings', async (url) => {
     const response = await saveLink(url);
     expect(response.statusCode).toBe(400);
-    expect(getSettings).not.toHaveBeenCalled();
+    expect(updateSettings).not.toHaveBeenCalled();
     expect(saveSettings).not.toHaveBeenCalled();
   });
 
@@ -57,7 +66,7 @@ describe('settings link validation', () => {
   });
 
   it('preserves unrelated settings when saving valid links', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ clock: { showSeconds: true }, widgets: { showLinks: false } });
+    stored = { clock: { showSeconds: true }, widgets: { showLinks: false } };
     expect((await saveLink('https://example.com')).statusCode).toBe(200);
     expect(saveSettings).toHaveBeenCalledWith('user-1', {
       clock: { showSeconds: true }, widgets: { showLinks: false, quickLinks: [{ name: 'Example', url: 'https://example.com' }] },
