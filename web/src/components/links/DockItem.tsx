@@ -13,6 +13,7 @@ export function DockItem({ link, onRemove }: { link: QuickLink; onRemove?: () =>
         aria-disabled={!safe || undefined}
         target="_self"
         className="dock-item"
+        aria-label={link.name}
         title={safe ? link.name : `${link.name}: enter an HTTP or HTTPS URL in Settings`}
       >
         <span className="dock-item-icon">
@@ -41,6 +42,7 @@ export function DockItem({ link, onRemove }: { link: QuickLink; onRemove?: () =>
             onRemove();
           }}
           title="Remove"
+          aria-label={`Remove ${link.name}`}
         >
           <X size={9} />
         </button>

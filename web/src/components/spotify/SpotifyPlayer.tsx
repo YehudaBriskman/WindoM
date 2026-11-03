@@ -23,6 +23,7 @@ export function SpotifyPlayer() {
         className="spotify-dock-disc-btn"
         onClick={() => control(isPlaying ? 'pause' : 'play')}
         title={isPlaying ? 'Pause' : 'Play'}
+        aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         <div className={`spotify-dock-disc${isPlaying ? ' spinning' : ''}`}>
           {track?.albumArt ? (
@@ -49,6 +50,7 @@ export function SpotifyPlayer() {
             className="spotify-dock-ctrl"
             onClick={() => control('previous')}
             title="Previous"
+            aria-label="Previous track"
           >
             <PrevIcon />
           </button>
@@ -56,6 +58,7 @@ export function SpotifyPlayer() {
             className="spotify-dock-ctrl"
             onClick={() => control('next')}
             title="Next"
+            aria-label="Next track"
           >
             <NextIcon />
           </button>

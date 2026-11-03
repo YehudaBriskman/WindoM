@@ -40,6 +40,8 @@ export function PhotoGrid({ photos, onLike, onSelect, onDelete }: PhotoGridProps
               className={`photo-like-btn ${photo.liked ? 'liked' : ''}`}
               onClick={(e) => { e.stopPropagation(); onLike(photo.id); }}
               title={photo.liked ? 'Unlike' : 'Like'}
+              aria-label={`Like photo by ${photo.photographer}`}
+              aria-pressed={!!photo.liked}
             >
               <Heart size={14} fill={photo.liked ? 'currentColor' : 'none'} />
             </button>
@@ -49,6 +51,7 @@ export function PhotoGrid({ photos, onLike, onSelect, onDelete }: PhotoGridProps
               className="photo-delete-btn"
               onClick={(e) => { e.stopPropagation(); onDelete(photo.id); }}
               title="Delete"
+              aria-label={`Delete photo by ${photo.photographer}`}
             >
               <Trash2 size={13} />
             </button>

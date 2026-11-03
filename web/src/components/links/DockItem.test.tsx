@@ -19,3 +19,11 @@ describe('DockItem saved URL safety', () => {
     expect(screen.getByRole('link').hasAttribute('aria-disabled')).toBe(false);
   });
 });
+
+describe('DockItem accessible names', () => {
+  it('names the icon-only remove button and the link after the saved link', () => {
+    render(<DockItem link={{ name: 'Mail', url: 'https://mail.example.com', icon: '' }} onRemove={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Remove Mail' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Mail' })).toBeTruthy();
+  });
+});
