@@ -37,6 +37,8 @@ export const refreshSessions = pgTable(
     rotatedFromId: uuid('rotated_from_id'),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     userAgent: text('user_agent').notNull().default(''),
+    /** Coarse "Browser · OS" parsed at sign-in/renewal; null for rows that predate it. */
+    deviceLabel: text('device_label'),
     /** SHA-256 hex of the client IP - stored hashed for anomaly detection, never as plaintext. */
     ip: text('ip').notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
