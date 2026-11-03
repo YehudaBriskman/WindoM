@@ -59,8 +59,6 @@ export default tseslint.config(
       'src/test-setup.ts',
       '**/__tests__/**',
       '**/*.test.{ts,tsx}',
-      // Temporary: its startup load moves to src/lib/settings-load.ts in #462.
-      'src/contexts/SettingsContext.tsx',
     ],
     rules: {
       'no-restricted-syntax': ['error', {
