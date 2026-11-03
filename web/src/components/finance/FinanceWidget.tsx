@@ -22,7 +22,10 @@ export function FinanceWidget() {
   const { finance } = settings.integrations;
   const { stocks, loading, error } = useFinance();
 
-  if (!finance.showStocks || finance.watchlistTickers.length === 0) return null;
+  // Hidden only when the user switched stocks off. An empty watchlist with
+  // stocks on gets an empty state rather than silently vanishing.
+  if (!finance.showStocks) return null;
+  const empty = finance.watchlistTickers.length === 0;
 
   return (
     <div className="sidebar-section">
@@ -31,11 +34,15 @@ export function FinanceWidget() {
         <span>Stocks</span>
       </div>
 
-      {loading && stocks.length === 0 && (
+      {empty && (
+        <p className="finance-loading">No stocks added. Add tickers in Settings → Finance.</p>
+      )}
+
+      {!empty && loading && stocks.length === 0 && (
         <p className="finance-loading">Loading…</p>
       )}
 
-      {!loading && error && stocks.length === 0 && (
+      {!empty && !loading && error && stocks.length === 0 && (
         <p className="finance-loading" style={{ color: 'rgba(248,113,113,0.8)' }}>Unable to load prices</p>
       )}
 

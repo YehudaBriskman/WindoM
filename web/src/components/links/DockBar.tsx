@@ -5,6 +5,7 @@ import { useSettings } from '../../contexts/SettingsContext';
 import { DockItem } from './DockItem';
 import { isValidUrl } from '../../utils/url';
 import { useLiquidGlass } from '../../hooks/useLiquidGlass';
+import '../ui/feedback.css';
 
 const ITEMS_PER_ROW = 9;
 const ROW_HEIGHT = 44;
@@ -109,12 +110,16 @@ export function DockBar() {
   }, [showForm]);
 
   if (!settings.widgets.showLinks) return null;
-  if (!links.length) return null;
 
   return (
     <div className="dock-wrapper">
       <div ref={glassRef} className="dock-bar glass-dock">
-        <div className="dock-rows" ref={rowsRef}>
+        {links.length === 0 && (
+          // Empty state: keep the dock (and its add button below) visible
+          // instead of vanishing, which left no way to add a first link here.
+          <p className="dock-empty">No links yet. Use + below to add one.</p>
+        )}
+        <div className="dock-rows" ref={rowsRef} hidden={links.length === 0}>
           {rows.map((row, rowIndex) => (
             <div key={rowIndex} className="dock-row">
               {row.map((link, i) => (
