@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { ContentApp } from './ContentApp';
 import styles from '../styles/globals.css?inline';
 import glassStyles from '../styles/glass.css?inline';
+import { remToPx } from './rem-to-px';
 
 const host = document.createElement('div');
 host.id = 'windom-overlay';
@@ -19,7 +20,9 @@ document.body.appendChild(host);
 const shadow = host.attachShadow({ mode: 'open' });
 
 const styleEl = document.createElement('style');
-styleEl.textContent = styles + glassStyles;
+// rem would resolve against the host page's <html> font size here (#451);
+// the injected copy is sized from a fixed 16px root instead.
+styleEl.textContent = remToPx(styles + glassStyles);
 shadow.appendChild(styleEl);
 
 const container = document.createElement('div');
