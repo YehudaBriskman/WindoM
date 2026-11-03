@@ -46,7 +46,7 @@ web/                               (repo root for the extension)
     ├── types/                     (Settings, WeatherData, Quote, CalendarEvent, TodoItem)
     ├── lib/chrome-storage.ts      (typed wrappers for chrome.storage.sync/local)
     ├── contexts/
-    │   ├── SettingsContext.tsx    (settings state + cross-tab sync)
+    │   ├── SettingsContext.tsx    (settings state container; sync lives in hooks/useSettingsCrossTab, hooks/useSettingsBackendSync)
     │   ├── BackgroundContext.tsx  (background image state)
     │   └── FocusTimerContext.tsx  (focus timer + overlay state)
     ├── hooks/                     (one hook per feature: useClock, useWeather, useLinks, useTodos, useCalendar, etc.)
@@ -79,7 +79,7 @@ web/                               (repo root for the extension)
 ## Key Patterns
 
 - Settings changes trigger re-renders through `SettingsContext` - no manual DOM manipulation
-- Cross-tab sync happens automatically via `chrome.storage.onChanged` listener in `SettingsContext`
+- `SettingsContext` holds the state and the write paths; cross-tab sync (`chrome.storage.onChanged`) is `useSettingsCrossTab`, backend sync is `useSettingsBackendSync`, startup load + legacy migration is `src/lib/settings-load.ts`
 - Backend sync (#251) decides conflicts by the server's revision (`updatedAt` on GET/PUT `/settings`), compared for equality, never against `Date.now()`. See `src/lib/settings-sync.ts`; per-device state lives in `chrome.storage.local` (`windom_settings_server_rev`, `windom_settings_dirty`)
 - Weather/background data cached in `chrome.storage.local` (larger quota) rather than sync storage
 - Focus timer uses `body.focus-active` CSS class to hide all UI except the overlay
