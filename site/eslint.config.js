@@ -2,6 +2,7 @@ import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
+import prettier from 'eslint-config-prettier';
 
 /** Mirrors web/eslint.config.js so there is one idiom across the repo. */
 export default tseslint.config(
@@ -23,4 +24,7 @@ export default tseslint.config(
       'react-hooks/set-state-in-effect': 'off',
     },
   },
+
+  // ── Prettier must be last - disables conflicting formatting rules ───────────
+  prettier,
 );
