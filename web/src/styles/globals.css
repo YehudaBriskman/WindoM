@@ -2,6 +2,13 @@
    Spring easing tokens - shared across all expanding elements
    ============================================================ */
 :root {
+  /* Keyboard focus ring: two-tone, because the wallpaper is any photograph
+     the user picks. White alone vanishes on a white sky, dark alone on a night
+     one. The white outline sits 2px out; the halo is a dark spread wider than
+     outline + offset, so it shows as a dark band either side of the white. */
+  --focus-ring: 2px solid rgba(255, 255, 255, 0.9);
+  --focus-halo: 0 0 0 6px rgba(0, 0, 0, 0.55);
+
   /* Overshoot. Reserved for small elements under direct manipulation - a
      dropdown springing open reads as responsive, the same curve on a 520px
      panel reads as wobble. Large surfaces use --ease-out below. */
@@ -175,14 +182,16 @@ a {
   color: inherit;
 }
 
-/* Keyboard focus is always visible (#242). One ring for every focusable
-   element that does not draw its own; it sits early in the cascade so a
-   component rule that replaces it with a glass ring (inputs, .glass-control,
-   .glass-select-trigger) still wins on source order. Elements that only
-   appear on hover also appear on :focus-within, so the ring is never drawn
-   around something invisible. */
+/* Keyboard focus is always visible (#242). The baseline ring for anything
+   focusable; it sits early in the cascade so a component rule that replaces
+   it with a glass ring (inputs, .glass-control, .glass-select-trigger) still
+   wins on source order. Buttons, links and other controls get the two-tone
+   version (ring + dark halo) from the last rule in glass.css, which has to
+   come after every component box-shadow. Elements that only appear on hover
+   also appear on :focus-within, so the ring is never drawn around something
+   invisible. */
 :focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline: var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -542,9 +551,13 @@ input[type="file"]::file-selector-button:hover {
   cursor: pointer;
   display: block;
 }
-.clock-size-slider:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.85);
-  outline-offset: 6px;
+/* The track is 4px tall under an 18px thumb, so the ring stands further off
+   and the halo is widened to match. `input.` outranks the generic control
+   rule at the end of glass.css. */
+input.clock-size-slider:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 10px;
+  box-shadow: 0 0 0 14px rgba(0, 0, 0, 0.55);
 }
 .clock-size-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -602,6 +615,10 @@ input[type="file"]::file-selector-button:hover {
 }
 .editable-name:focus-visible {
   border-color: rgba(255, 255, 255, 0.85);
+  border-radius: var(--r-xs);
+  outline: var(--focus-ring);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.55);
 }
 
 
@@ -2379,8 +2396,9 @@ input[type="checkbox"]:checked::after {
   transform: rotate(45deg);
 }
 input[type="checkbox"]:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline: var(--focus-ring);
   outline-offset: 2px;
+  box-shadow: var(--focus-halo);
 }
 
 .settings-hint {

@@ -12,6 +12,10 @@ on:
     branches: [main]
     paths:
       - 'site/**'
+      # The home page's release feed is built from it (#374): without this, a
+      # release's changelog entry would not reach windom.app until some
+      # unrelated site change happened to redeploy it.
+      - 'CHANGELOG.md'
       - '.github/workflows/deploy-site.yml'
   # Lets the site be redeployed without a content change, for example after
   # flipping the Pages source over.

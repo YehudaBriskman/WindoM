@@ -31,9 +31,15 @@ test('the local Postgres setup belongs to the backend', () => {
 });
 
 test('files no build reads select nothing', () => {
-  assert.deepEqual(changedComponents(['README.md', 'CHANGELOG.md', 'docs/ci-optimization-plan.md', 'LICENSE']), none);
+  assert.deepEqual(changedComponents(['README.md', 'docs/ci-optimization-plan.md', 'LICENSE']), none);
   assert.deepEqual(changedComponents(['README.md', '.github/assets/preview.webp']), none);
   assert.deepEqual(changedComponents([]), none);
+});
+
+// The site's release feed is parsed from it at build time (#374), so a
+// changelog edit can break the site build.
+test('the changelog belongs to the site', () => {
+  assert.deepEqual(changedComponents(['CHANGELOG.md']), { ...none, site: true });
 });
 
 // A prefix match on "web" would also catch "website/"; it must be the directory.
