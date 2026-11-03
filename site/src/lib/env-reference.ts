@@ -151,6 +151,30 @@ export const ENV_VARS: EnvVar[] = [
     he: 'כתובת הבסיס הציבורית של השרת. משמשת לבניית קישורי אימות אימייל ואיפוס סיסמה. לדוגמה: http://localhost:8080.',
     required: 'no',
   },
+  {
+    name: 'SENTRY_DSN',
+    en: 'Sentry project DSN for error monitoring and security alerts. Leave unset locally: Sentry is then never initialised and sends nothing. When set, 5xx errors, crashes, database pool exhaustion and refresh-token reuse are reported, with request bodies, cookies, auth headers, tokens, passwords, emails and IPs removed first.',
+    he: 'ה-DSN של פרויקט Sentry לניטור שגיאות והתראות אבטחה. מקומית יש להשאיר ריק: Sentry אז לא מאותחל כלל ולא שולח דבר. כשהוא מוגדר, מדווחים שגיאות 5xx, קריסות, מיצוי מאגר החיבורים למסד הנתונים ושימוש חוזר באסימון רענון, ולפני השליחה מוסרים גוף הבקשה, עוגיות, כותרות הרשאה, אסימונים, סיסמאות, כתובות אימייל וכתובות IP.',
+    required: 'no',
+  },
+  {
+    name: 'SENTRY_ENVIRONMENT',
+    en: 'Environment name shown in Sentry, such as production or staging. Defaults to NODE_ENV.',
+    he: 'שם הסביבה שמוצג ב-Sentry, למשל production או staging. ברירת המחדל היא NODE_ENV.',
+    required: 'no',
+  },
+  {
+    name: 'SENTRY_RELEASE',
+    en: 'Release name attached to every event. Defaults to the package version plus the deployed commit, which Fly exposes through FLY_IMAGE_REF.',
+    he: 'שם הגרסה שמצורף לכל אירוע. ברירת המחדל היא גרסת החבילה יחד עם ה-commit שנפרס, ש-Fly חושף דרך FLY_IMAGE_REF.',
+    required: 'no',
+  },
+  {
+    name: 'SENTRY_TRACES_SAMPLE_RATE',
+    en: 'Fraction of requests traced for performance, from 0 to 1. Default: 0, which reports errors only.',
+    he: 'החלק היחסי של הבקשות שנמדדות לביצועים, בין 0 ל-1. ברירת מחדל: 0, כלומר דיווח על שגיאות בלבד.',
+    required: 'no',
+  },
 ];
 
 /** The example `.env`, which is identical in both languages bar its comments. */
