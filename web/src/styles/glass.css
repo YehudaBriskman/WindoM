@@ -515,3 +515,24 @@
   transition-duration: 0.07s;
 }
 
+/* Two-tone keyboard focus for buttons, links and option-like controls (#242,
+   WCAG 1.4.11). Last in the last stylesheet, and at (0,2,0), so it beats both
+   the components' resting box-shadows and the shared glass :hover/:active
+   rules above - otherwise those would silently drop the halo. The trade-off:
+   while focused, a control's own glass edge is replaced by the generic one
+   below. Every control's resting shadow is a variant of that same pair of
+   insets, so the material still reads; a per-component copy of ~20 shadow
+   values was the alternative, and it would rot on the next restyle.
+   Controls that draw their own focus ring - text inputs, .glass-control,
+   .glass-select-trigger - are not matched and keep it. */
+:where(button, a[href], [role="button"], [role="option"], [role="tab"], summary):focus-visible:not(
+    .glass-control,
+    .glass-select-trigger
+  ) {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+  box-shadow:
+    var(--focus-halo),
+    inset 2px 2px 0 -2px rgba(255, 255, 255, 0.5),
+    inset 0 0 2px 1px rgba(255, 255, 255, 0.2);
+}

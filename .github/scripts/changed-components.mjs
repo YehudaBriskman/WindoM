@@ -12,8 +12,9 @@ import { pathToFileURL } from 'node:url';
  * The rules lean towards running. Anything under .github/ (the workflows, and
  * the release scripts whose tests run in the backend job) runs everything. So
  * does a change no rule recognises inside a component's tree. Only files no
- * build reads (README, CHANGELOG, docs/, LICENSE...) select nothing; nothing
- * in backend/, web/ or site/ reads a file outside its own directory.
+ * build reads (README, docs/, LICENSE...) select nothing. The one file outside
+ * a component's own directory that a build reads is CHANGELOG.md: the site
+ * parses its release feed from it (#374).
  *
  * A skipped job counts as passing for a required status check, so the
  * required "Backend" and "Web" checks still gate every PR.
@@ -31,7 +32,7 @@ export function componentsOf(file) {
   if (file.startsWith('.github/') || file === '.gitattributes') return COMPONENTS;
   if (file.startsWith('backend/') || file === 'docker-compose.yml' || file === '.env.example') return ['backend'];
   if (file.startsWith('web/')) return ['web'];
-  if (file.startsWith('site/')) return ['site'];
+  if (file.startsWith('site/') || file === 'CHANGELOG.md') return ['site'];
   return [];
 }
 

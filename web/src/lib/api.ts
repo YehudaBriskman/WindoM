@@ -1,4 +1,8 @@
 import { localStore as chromeLocal } from './chrome-storage';
+import { createLogger } from './logger';
+
+const log = createLogger('auth');
+const refreshLog = createLogger('auth:refresh');
 
 // Injected at build time via vite.config.ts define
 declare const __BACKEND_URL__: string;
@@ -18,6 +22,8 @@ export function parseJwtExpMs(token: string): number | null {
     const payload = JSON.parse(json) as { exp?: number };
     return typeof payload.exp === 'number' ? payload.exp * 1000 : null;
   } catch {
+    // Silent on purpose: a malformed token is an expected input here, not a
+    // fault. null means "unknown expiry" and callers treat it as expired.
     return null;
   }
 }
@@ -40,7 +46,7 @@ export async function getAccessToken(): Promise<string | null> {
   if (!token) return null;
 
   if (isTokenExpired(token)) {
-    console.log('[auth] Stored access token is expired - treating as null');
+    log.debug('Stored access token is expired - treating as null');
     return null;
   }
 
@@ -133,14 +139,14 @@ async function doRefresh(): Promise<string | null> {
   // refreshing, wait for it to finish and use its token instead.
   const won = await acquireRefreshLock();
   if (!won) {
-    console.log('[auth:refresh] Another tab holds the refresh lock - polling...');
+    refreshLog.debug('Another tab holds the refresh lock - polling...');
     const POLL_MS = 200;
     const POLL_DEADLINE = Date.now() + REFRESH_LOCK_TTL_MS;
     while (Date.now() < POLL_DEADLINE) {
       await new Promise<void>((r) => setTimeout(r, POLL_MS));
       const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
       if (stored && !isTokenExpired(stored)) {
-        console.log('[auth:refresh] Using token stored by winning tab');
+        refreshLog.debug('Using token stored by winning tab');
         return stored;
       }
       const lock = await chromeLocal.get<number | null>(REFRESH_LOCK_KEY, null);
@@ -149,10 +155,10 @@ async function doRefresh(): Promise<string | null> {
     const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
     if (stored && !isTokenExpired(stored)) return stored;
     // Winning tab failed - fall through and try ourselves
-    console.warn('[auth:refresh] Winning tab did not produce a fresh token - proceeding');
+    refreshLog.debug('Winning tab did not produce a fresh token - proceeding');
   }
 
-  console.log('[auth:refresh] Sending refresh request...');
+  refreshLog.debug('Sending refresh request...');
   try {
     const res = await fetch(`${BASE_URL}/auth/refresh`, {
       method: 'POST',
@@ -160,14 +166,14 @@ async function doRefresh(): Promise<string | null> {
     });
 
     if (!res.ok) {
-      console.warn(`[auth:refresh] Failed with HTTP ${res.status}`);
+      refreshLog.warn(`Failed with HTTP ${res.status}`);
 
       // Being throttled says nothing about whether the session is still good, so
       // it must not raise session-expired. Returning null still fails this
       // attempt - callers simply must not read that as "log out".
       if (res.status === 429) {
         lastRefreshRateLimited = true;
-        console.warn('[auth:refresh] Rate limited - keeping the session and backing off');
+        refreshLog.warn('Rate limited - keeping the session and backing off');
         return null;
       }
 
@@ -177,20 +183,24 @@ async function doRefresh(): Promise<string | null> {
         await new Promise<void>((r) => setTimeout(r, 250));
         const stored = await chromeLocal.get<string | null>(ACCESS_TOKEN_KEY, null);
         if (stored && !isTokenExpired(stored)) {
-          console.log('[auth:refresh] Found valid token stored by another tab - using it');
+          refreshLog.debug('Found valid token stored by another tab - using it');
           return stored;
         }
       }
 
       try {
         const err = (await res.json()) as { code?: string };
-        console.warn('[auth:refresh] Error code:', err.code);
+        refreshLog.warn('Error code:', err.code);
         if (err.code === 'SESSION_LIMIT_REACHED') {
           window.dispatchEvent(new CustomEvent('windom-session-limit'));
         } else {
           window.dispatchEvent(new CustomEvent('windom-session-expired'));
         }
-      } catch { /* ignore parse errors */ }
+      } catch (parseErr) {
+        // A non-JSON error body (a proxy page, an empty 502) carries no code to
+        // act on; the null return below still fails this refresh.
+        refreshLog.debug('Error body was not JSON:', parseErr);
+      }
 
       // Do NOT call clearAccessToken() here - another tab may have just
       // stored a fresh token. The expired-token guard in getAccessToken()
@@ -200,10 +210,10 @@ async function doRefresh(): Promise<string | null> {
 
     const data = (await res.json()) as { accessToken: string };
     await setAccessToken(data.accessToken);
-    console.log('[auth:refresh] Success - new access token stored');
+    refreshLog.debug('Success - new access token stored');
     return data.accessToken;
   } catch (err) {
-    console.error('[auth:refresh] Network error:', err);
+    refreshLog.error('Network error:', err);
     return null;
   } finally {
     await releaseRefreshLock();
@@ -250,7 +260,12 @@ export async function apiFetch(path: string, options: RequestInit = {}, _retry =
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
     });
-  } catch {
+  } catch (err) {
+    // The caller reports the friendly message below; keep the raw failure for
+    // debugging. It cannot ride along as `cause`: tsconfig's lib is ES2020,
+    // which predates the Error options argument.
+    log.debug(`Network error on ${path}:`, err);
+    // eslint-disable-next-line preserve-caught-error -- see above
     throw new Error('Network error - check your connection and try again.');
   }
 
@@ -270,25 +285,25 @@ export async function apiFetch(path: string, options: RequestInit = {}, _retry =
     // a session revoked server-side still parses as valid, and that case must
     // keep its refresh-then-logout path.
     if (isProviderRoute(path)) {
-      console.warn(`[auth] 401 on ${path} - provider token, not a session problem`);
+      log.debug(`401 on ${path} - provider token, not a session problem`);
       return res;
     }
 
-    console.warn(`[auth] 401 on ${path} - attempting token refresh`);
+    log.debug(`401 on ${path} - attempting token refresh`);
     const newToken = await refreshAccessToken();
     if (newToken) {
-      console.log(`[auth] Refresh succeeded - retrying ${path}`);
+      log.debug(`Refresh succeeded - retrying ${path}`);
       return apiFetch(path, options, false);
     }
 
     // Throttled is not expired. Logging out here would end the session over a
     // limit that clears on its own.
     if (refreshWasRateLimited()) {
-      console.warn('[auth] Refresh is rate limited - keeping the session');
+      log.warn('Refresh is rate limited - keeping the session');
       return res;
     }
 
-    console.warn(`[auth] Refresh failed - triggering logout`);
+    log.warn(`Refresh failed - triggering logout`);
     triggerLogout();
   }
 

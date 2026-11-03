@@ -9,7 +9,13 @@ import { App } from './App';
 import './styles/globals.css';
 import './styles/glass.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  // newtab.html ships <div id="root">; without it there is nothing to mount into.
+  throw new Error('WindoM: #root element not found in newtab.html');
+}
+
+ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
