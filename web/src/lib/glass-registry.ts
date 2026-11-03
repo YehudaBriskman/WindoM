@@ -126,11 +126,7 @@ const maskCache = new Map<string, string>();
 export function rimMaskFor(surface: GlassSurface, id: string): string {
   const hit = maskCache.get(id);
   if (hit !== undefined) return hit;
-  const url = rasterToDataURL(
-    buildRimMask(surface),
-    Math.round(surface.width),
-    Math.round(surface.height),
-  );
+  const url = rasterToDataURL(buildRimMask(surface), Math.round(surface.width), Math.round(surface.height));
   maskCache.set(id, url);
   return url;
 }

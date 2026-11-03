@@ -1,9 +1,4 @@
-import {
-  type Settings,
-  type LegacySettings,
-  defaultSettings,
-  defaultLegacySettings,
-} from '../types/settings';
+import { type Settings, type LegacySettings, defaultSettings, defaultLegacySettings } from '../types/settings';
 
 /**
  * Returns true if `raw` looks like a v1 flat settings object.
@@ -16,12 +11,7 @@ export function isLegacySettings(raw: unknown): raw is LegacySettings {
   // A sectioned object has `general` / `clock` sub-objects
   if (typeof obj.general === 'object' && typeof obj.clock === 'object') return false;
   // A legacy flat object has at least one of the known flat keys
-  return (
-    'clockSize' in obj ||
-    'timeFormat' in obj ||
-    'backgroundSource' in obj ||
-    'tabSidebarSide' in obj
-  );
+  return 'clockSize' in obj || 'timeFormat' in obj || 'backgroundSource' in obj || 'tabSidebarSide' in obj;
 }
 
 /**
@@ -35,44 +25,45 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
 
   return {
     general: {
-      userName:     typeof l.userName === 'string'     ? l.userName     : d.general.userName,
+      userName: typeof l.userName === 'string' ? l.userName : d.general.userName,
       searchEngine: isValidSearchEngine(l.searchEngine) ? l.searchEngine : d.general.searchEngine,
-      sidebarSide:  isValidSidebarSide(l.tabSidebarSide) ? l.tabSidebarSide : d.general.sidebarSide,
+      sidebarSide: isValidSidebarSide(l.tabSidebarSide) ? l.tabSidebarSide : d.general.sidebarSide,
       showGreeting: typeof l.showGreeting === 'boolean' ? l.showGreeting : d.general.showGreeting,
-      showHistory:  d.general.showHistory,
-      showTodo:     d.general.showTodo,
+      showHistory: d.general.showHistory,
+      showTodo: d.general.showTodo,
     },
     clock: {
-      timeFormat:  isValidTimeFormat(l.timeFormat)   ? l.timeFormat   : d.clock.timeFormat,
-      showSeconds: typeof l.showSeconds === 'boolean' ? l.showSeconds  : d.clock.showSeconds,
+      timeFormat: isValidTimeFormat(l.timeFormat) ? l.timeFormat : d.clock.timeFormat,
+      showSeconds: typeof l.showSeconds === 'boolean' ? l.showSeconds : d.clock.showSeconds,
       leadingZero: typeof l.clockLeadingZero === 'boolean' ? l.clockLeadingZero : d.clock.leadingZero,
-      style:       isValidClockStyle(l.clockStyle)   ? l.clockStyle   : d.clock.style,
-      color:       typeof l.clockColor === 'string'  ? l.clockColor   : d.clock.color,
-      size:        typeof l.clockSize === 'number'   ? l.clockSize    : d.clock.size,
-      weight:      isValidClockWeight(l.clockWeight) ? l.clockWeight  : d.clock.weight,
-      showDate:    typeof l.showDate === 'boolean'   ? l.showDate     : d.clock.showDate,
-      dateFormat:  isValidDateFormat(l.dateFormat)   ? l.dateFormat   : d.clock.dateFormat,
+      style: isValidClockStyle(l.clockStyle) ? l.clockStyle : d.clock.style,
+      color: typeof l.clockColor === 'string' ? l.clockColor : d.clock.color,
+      size: typeof l.clockSize === 'number' ? l.clockSize : d.clock.size,
+      weight: isValidClockWeight(l.clockWeight) ? l.clockWeight : d.clock.weight,
+      showDate: typeof l.showDate === 'boolean' ? l.showDate : d.clock.showDate,
+      dateFormat: isValidDateFormat(l.dateFormat) ? l.dateFormat : d.clock.dateFormat,
     },
     background: {
-      source:               isValidBgSource(l.backgroundSource) ? l.backgroundSource : d.background.source,
-      unsplashApiKey:       typeof l.unsplashApiKey === 'string'       ? l.unsplashApiKey       : d.background.unsplashApiKey,
-      unsplashCollectionId: typeof l.unsplashCollectionId === 'string' ? l.unsplashCollectionId : d.background.unsplashCollectionId,
+      source: isValidBgSource(l.backgroundSource) ? l.backgroundSource : d.background.source,
+      unsplashApiKey: typeof l.unsplashApiKey === 'string' ? l.unsplashApiKey : d.background.unsplashApiKey,
+      unsplashCollectionId:
+        typeof l.unsplashCollectionId === 'string' ? l.unsplashCollectionId : d.background.unsplashCollectionId,
     },
     weather: {
-      show:     typeof l.showWeather === 'boolean' ? l.showWeather : d.weather.show,
-      unit:     isValidTempUnit(l.temperatureUnit) ? l.temperatureUnit : d.weather.unit,
-      location: typeof l.location === 'string'     ? l.location     : d.weather.location,
-      apiKey:   d.weather.apiKey, // legacy had no weather apiKey field
+      show: typeof l.showWeather === 'boolean' ? l.showWeather : d.weather.show,
+      unit: isValidTempUnit(l.temperatureUnit) ? l.temperatureUnit : d.weather.unit,
+      location: typeof l.location === 'string' ? l.location : d.weather.location,
+      apiKey: d.weather.apiKey, // legacy had no weather apiKey field
     },
     widgets: {
-      showLinks:  typeof l.showLinks === 'boolean'  ? l.showLinks  : d.widgets.showLinks,
-      showFocus:  typeof l.showFocus === 'boolean'  ? l.showFocus  : d.widgets.showFocus,
+      showLinks: typeof l.showLinks === 'boolean' ? l.showLinks : d.widgets.showLinks,
+      showFocus: typeof l.showFocus === 'boolean' ? l.showFocus : d.widgets.showFocus,
       showQuotes: typeof l.quotesEnabled === 'boolean' ? l.quotesEnabled : d.widgets.showQuotes,
       quoteSource: isValidQuoteSource(l.quoteSource) ? l.quoteSource : d.widgets.quoteSource,
-      quickLinks:  Array.isArray(l.quickLinks) ? l.quickLinks : d.widgets.quickLinks,
+      quickLinks: Array.isArray(l.quickLinks) ? l.quickLinks : d.widgets.quickLinks,
     },
     focus: {
-      mainFocus: typeof l.mainFocus === 'string'      ? l.mainFocus    : d.focus.mainFocus,
+      mainFocus: typeof l.mainFocus === 'string' ? l.mainFocus : d.focus.mainFocus,
       completed: typeof l.focusCompleted === 'boolean' ? l.focusCompleted : d.focus.completed,
     },
     integrations: {

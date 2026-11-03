@@ -66,9 +66,11 @@ export function WeatherWidget() {
     return (
       <div ref={glassRef} className="weather-widget glass-dock text-shadow-sm">
         <div className="weather-circle">
-          {state.status === 'error'
-            ? <AlertTriangle size={18} style={{ opacity: 0.6 }} />
-            : <Thermometer size={18} style={{ opacity: 0.5 }} />}
+          {state.status === 'error' ? (
+            <AlertTriangle size={18} style={{ opacity: 0.6 }} />
+          ) : (
+            <Thermometer size={18} style={{ opacity: 0.5 }} />
+          )}
         </div>
       </div>
     );
@@ -98,7 +100,13 @@ export function WeatherWidget() {
       </div>
       <div className="weather-expand">
         <div className="weather-expand-inner">
-          <WeatherIcon iconCode={state.data.iconCode} condition={state.data.condition} isDay={state.data.isDay} size={22} className="weather-icon" />
+          <WeatherIcon
+            iconCode={state.data.iconCode}
+            condition={state.data.condition}
+            isDay={state.data.isDay}
+            size={22}
+            className="weather-icon"
+          />
           <div className="weather-detail">
             <span className="weather-city">{state.data.city}</span>
             <span className="weather-condition">{state.data.condition}</span>

@@ -13,16 +13,10 @@ export function QuoteDisplay() {
       title="Click for new quote"
       aria-label="Show a new quote"
     >
-      <p
-        className="quote-text text-shadow-sm"
-        style={{ opacity: fading ? 0 : 1 }}
-      >
+      <p className="quote-text text-shadow-sm" style={{ opacity: fading ? 0 : 1 }}>
         {quote ? `"${quote.text}"` : ''}
       </p>
-      <p
-        className="quote-author text-shadow-sm"
-        style={{ opacity: fading ? 0 : 1 }}
-      >
+      <p className="quote-author text-shadow-sm" style={{ opacity: fading ? 0 : 1 }}>
         {quote ? `\u2014 ${quote.author}` : ''}
       </p>
     </button>

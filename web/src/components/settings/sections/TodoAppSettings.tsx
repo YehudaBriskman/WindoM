@@ -19,7 +19,9 @@ export function TodoAppSettings() {
               checked={show}
               onChange={(e) => void update('general', { showTodo: e.target.checked })}
             />
-            <span className="toggle-track"><span className="toggle-knob" /></span>
+            <span className="toggle-track">
+              <span className="toggle-knob" />
+            </span>
           </label>
         </label>
       </div>

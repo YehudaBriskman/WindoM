@@ -15,10 +15,10 @@ const ALLOWED_TYPES = new Set(['EQUITY', 'ETF', 'INDEX', 'MUTUALFUND']);
 
 async function searchYahoo(q: string): Promise<SearchResult[]> {
   const res = await fetch(
-    `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0&enableFuzzyQuery=true`
+    `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0&enableFuzzyQuery=true`,
   );
   if (!res.ok) return [];
-  const data = await res.json() as {
+  const data = (await res.json()) as {
     quotes?: Array<{ symbol: string; shortname?: string; longname?: string; quoteType?: string }>;
   };
   return (data.quotes ?? [])
@@ -41,7 +41,11 @@ export function StockSearch({ selected, onChange }: Props) {
 
   useEffect(() => {
     const q = query.trim();
-    if (!q) { setResults([]); setOpen(false); return; }
+    if (!q) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
     const timer = setTimeout(async () => {
       setSearching(true);
       const hits = await searchYahoo(q);
@@ -64,11 +68,7 @@ export function StockSearch({ selected, onChange }: Props) {
   }, []);
 
   function toggle(symbol: string) {
-    onChange(
-      selected.includes(symbol)
-        ? selected.filter((s) => s !== symbol)
-        : [...selected, symbol]
-    );
+    onChange(selected.includes(symbol) ? selected.filter((s) => s !== symbol) : [...selected, symbol]);
     setQuery('');
     setResults([]);
     setOpen(false);
@@ -123,7 +123,16 @@ export function StockSearch({ selected, onChange }: Props) {
           onKeyDown={handleKeyDown}
         />
         {searching && (
-          <span style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '11px', color: 'var(--ink-tertiary)' }}>
+          <span
+            style={{
+              position: 'absolute',
+              right: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              fontSize: '11px',
+              color: 'var(--ink-tertiary)',
+            }}
+          >
             …
           </span>
         )}
@@ -137,7 +146,10 @@ export function StockSearch({ selected, onChange }: Props) {
                   key={r.symbol}
                   type="button"
                   className={`stock-dropdown-item${isSelected ? ' selected' : ''}${i === activeIndex ? ' active' : ''}`}
-                  onMouseDown={(e) => { e.preventDefault(); toggle(r.symbol); }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    toggle(r.symbol);
+                  }}
                   onMouseEnter={() => setActiveIndex(i)}
                 >
                   <span className="stock-dropdown-symbol">{r.symbol}</span>

@@ -83,6 +83,8 @@ export function useIntegrationSync() {
       }
     })();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [userId, settingsLoaded, authLoading, updateMultiple]);
 }

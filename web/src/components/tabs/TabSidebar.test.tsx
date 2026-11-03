@@ -23,7 +23,10 @@ beforeEach(() => {
     storage: { local: { get } },
   });
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('TabSidebar message boundary', () => {
   it('renders validated stored snapshots and accepts live updates', async () => {
@@ -42,27 +45,49 @@ describe('TabSidebar message boundary', () => {
     expect(screen.queryByText('Example tab')).toBeNull();
   });
 
-  it.each([null, false, {}, [], { type: 'OTHER', tabs: [tab] },
-    { type: 'WINDOM_TABS_CHANGED', tabs: {} },
-    ...[null, {}, { ...tab, id: -1 }, { ...tab, id: 1.5 }, { ...tab, windowId: '0' },
-      { ...tab, active: 'true' }, { ...tab, title: {} }, { ...tab, url: 42 }, { ...tab, favIconUrl: [] }]
-      .map((invalid) => ({ type: 'WINDOM_TABS_CHANGED', tabs: [invalid] })),
-  ].map((value) => [value]))('ignores malformed messages %j', (message) => {
+  it.each(
+    [
+      null,
+      false,
+      {},
+      [],
+      { type: 'OTHER', tabs: [tab] },
+      { type: 'WINDOM_TABS_CHANGED', tabs: {} },
+      ...[
+        null,
+        {},
+        { ...tab, id: -1 },
+        { ...tab, id: 1.5 },
+        { ...tab, windowId: '0' },
+        { ...tab, active: 'true' },
+        { ...tab, title: {} },
+        { ...tab, url: 42 },
+        { ...tab, favIconUrl: [] },
+      ].map((invalid) => ({ type: 'WINDOM_TABS_CHANGED', tabs: [invalid] })),
+    ].map((value) => [value]),
+  )('ignores malformed messages %j', (message) => {
     render(<TabSidebar />);
     send(message);
     expect(screen.queryByText('Example tab')).toBeNull();
   });
 
-  it.each([{}, [null], [{ ...tab, url: {} }]].map((value) => [value]))('ignores corrupted stored snapshots %j', async (stored) => {
-    get.mockResolvedValue({ _windom_tabs: stored });
-    render(<TabSidebar />);
-    await act(async () => {});
-    expect(screen.queryByText('Example tab')).toBeNull();
-  });
+  it.each([{}, [null], [{ ...tab, url: {} }]].map((value) => [value]))(
+    'ignores corrupted stored snapshots %j',
+    async (stored) => {
+      get.mockResolvedValue({ _windom_tabs: stored });
+      render(<TabSidebar />);
+      await act(async () => {});
+      expect(screen.queryByText('Example tab')).toBeNull();
+    },
+  );
 
   it('does not overwrite a live update with a slower storage snapshot', async () => {
     let resolve!: (result: unknown) => void;
-    get.mockReturnValue(new Promise((done) => { resolve = done; }));
+    get.mockReturnValue(
+      new Promise((done) => {
+        resolve = done;
+      }),
+    );
     render(<TabSidebar />);
     send({ type: 'WINDOM_TABS_CHANGED', tabs: [tab] });
     await act(async () => resolve({ _windom_tabs: [] }));

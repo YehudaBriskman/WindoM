@@ -19,9 +19,7 @@ beforeEach(() => {
   vi.mocked(useAuth).mockImplementation(
     () => ({ user: { name: 'Ada' }, updateUser }) as unknown as ReturnType<typeof useAuth>,
   );
-  vi.mocked(useSettings).mockImplementation(
-    () => ({ update }) as unknown as ReturnType<typeof useSettings>,
-  );
+  vi.mocked(useSettings).mockImplementation(() => ({ update }) as unknown as ReturnType<typeof useSettings>);
 });
 
 describe('useDisplayName', () => {

@@ -19,7 +19,9 @@ const photo: PhotoRecord = {
 
 function deferred() {
   let resolve!: (v: boolean) => void;
-  const promise = new Promise<boolean>((r) => { resolve = r; });
+  const promise = new Promise<boolean>((r) => {
+    resolve = r;
+  });
   return { promise, resolve };
 }
 

@@ -80,7 +80,11 @@ export function LoginScreen({ onSuccess }: Props) {
     setLoading(true);
     try {
       if (mode === 'register') {
-        const data = await apiPost<{ accessToken: string }>('/auth/register', { email: email.trim(), password, name: name.trim() });
+        const data = await apiPost<{ accessToken: string }>('/auth/register', {
+          email: email.trim(),
+          password,
+          name: name.trim(),
+        });
         await loginWithToken(data.accessToken);
         onSuccess?.();
       } else {
@@ -107,7 +111,10 @@ export function LoginScreen({ onSuccess }: Props) {
               type="email"
               placeholder="Email address"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setFieldErrors({}); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors({});
+              }}
               autoComplete="email"
               className="settings-input"
               style={{ fontFamily: 'inherit', fontSize: '14px' }}
@@ -146,7 +153,10 @@ export function LoginScreen({ onSuccess }: Props) {
               type="text"
               placeholder="Your name"
               value={name}
-              onChange={(e) => { setName(e.target.value); setFieldErrors((f) => ({ ...f, name: undefined })); }}
+              onChange={(e) => {
+                setName(e.target.value);
+                setFieldErrors((f) => ({ ...f, name: undefined }));
+              }}
               className="settings-input"
               style={{ fontFamily: 'inherit', fontSize: '14px' }}
             />
@@ -157,7 +167,10 @@ export function LoginScreen({ onSuccess }: Props) {
           type="email"
           placeholder="Email address"
           value={email}
-          onChange={(e) => { setEmail(e.target.value); setFieldErrors((f) => ({ ...f, email: undefined })); }}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            setFieldErrors((f) => ({ ...f, email: undefined }));
+          }}
           autoComplete="email"
           className="settings-input"
           style={{ fontFamily: 'inherit', fontSize: '14px' }}
@@ -167,7 +180,10 @@ export function LoginScreen({ onSuccess }: Props) {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => { setPassword(e.target.value); setFieldErrors((f) => ({ ...f, password: undefined })); }}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            setFieldErrors((f) => ({ ...f, password: undefined }));
+          }}
           autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
           className="settings-input"
           style={{ fontFamily: 'inherit', fontSize: '14px' }}
@@ -182,11 +198,7 @@ export function LoginScreen({ onSuccess }: Props) {
 
         {error && <p className="auth-error">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="settings-save-btn"
-        >
+        <button type="submit" disabled={loading} className="settings-save-btn">
           {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
         </button>
       </form>

@@ -35,14 +35,9 @@ export function FocusOverlay() {
   if (phase === 'idle') return null;
 
   return (
-    <div
-      className={`focus-overlay ${phase}`}
-      onClick={dismissible ? stop : undefined}
-    >
+    <div className={`focus-overlay ${phase}`} onClick={dismissible ? stop : undefined}>
       <Clock />
-      <div className="focus-remaining text-shadow-sm">
-        {remaining}
-      </div>
+      <div className="focus-remaining text-shadow-sm">{remaining}</div>
       <button
         // The click already bubbles to the overlay, which stops focus mode. Left
         // explicit so the button still works from the keyboard, and stopped from

@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-  buildDisplacementField,
-  fieldToDataURL,
-  type GlassSurface,
-} from '../lib/liquid-glass';
+import { buildDisplacementField, fieldToDataURL, type GlassSurface } from '../lib/liquid-glass';
 import { subscribeGlassSurfaces, type GlassKey } from '../lib/glass-registry';
 
 /**
@@ -34,10 +30,7 @@ export function GlassFilters() {
   );
 
   return (
-    <svg
-      aria-hidden="true"
-      style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}
-    >
+    <svg aria-hidden="true" style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
       <defs>
         {filters.map(({ id, href, width, height, scale }) => (
           // sRGB rather than the linearRGB default: the field was authored in
@@ -60,13 +53,7 @@ export function GlassFilters() {
             colorInterpolationFilters="sRGB"
           >
             <feImage href={href} x="0" y="0" width={width} height={height} result="map" />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="map"
-              scale={scale}
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
+            <feDisplacementMap in="SourceGraphic" in2="map" scale={scale} xChannelSelector="R" yChannelSelector="G" />
           </filter>
         ))}
       </defs>

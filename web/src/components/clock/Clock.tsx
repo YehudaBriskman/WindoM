@@ -16,8 +16,8 @@ export function Clock({ id }: { id?: string }) {
     ...(style === 'outline'
       ? { color: 'transparent', WebkitTextStroke: `2px ${color}` }
       : style === 'glass'
-      ? { color: 'transparent', '--glass-tint': color }
-      : { color }),
+        ? { color: 'transparent', '--glass-tint': color }
+        : { color }),
   } as CSSProperties;
 
   const className = [

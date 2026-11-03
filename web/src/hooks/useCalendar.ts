@@ -68,10 +68,7 @@ export function useCalendar() {
     [events, save],
   );
 
-  const removeEvent = useCallback(
-    (id: string) => save(events.filter((e) => e.id !== id)),
-    [events, save],
-  );
+  const removeEvent = useCallback((id: string) => save(events.filter((e) => e.id !== id)), [events, save]);
 
   // Upcoming events: sorted by date, within look-ahead window, max 5
   const now = new Date();

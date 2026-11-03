@@ -22,9 +22,7 @@ beforeEach(() => {
   redirect = `${REDIRECT}?code=c&state=s-1`;
   sessionStorage.clear();
   vi.mocked(useAuth).mockReturnValue({ user: { id: 'u1' } } as unknown as ReturnType<typeof useAuth>);
-  vi.mocked(useSettings).mockImplementation(
-    () => ({ settings, update }) as unknown as ReturnType<typeof useSettings>,
-  );
+  vi.mocked(useSettings).mockImplementation(() => ({ settings, update }) as unknown as ReturnType<typeof useSettings>);
   vi.mocked(apiPost).mockImplementation(async (path: string) =>
     path.endsWith('/start') ? { authUrl: AUTH_URL } : { status: 'linked' },
   );

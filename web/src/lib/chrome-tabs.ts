@@ -66,28 +66,40 @@ export function openNewTab(): void {
 
 /** Outside the extension (no chrome API) this falls back to `window.open`. */
 export function openUrlInNewTab(url: string): void {
-  if (!hasChromeApi) { window.open(url, '_blank'); return; }
+  if (!hasChromeApi) {
+    window.open(url, '_blank');
+    return;
+  }
   if (isContentScript) sendTabCommand({ type: 'WINDOM_CMD_OPEN_URL', url });
   else createTab(url);
 }
 
 export async function closeActiveTab(): Promise<void> {
   if (!hasChromeApi) return;
-  if (isContentScript) { sendTabCommand({ type: 'WINDOM_CMD_CLOSE_TAB' }); return; }
+  if (isContentScript) {
+    sendTabCommand({ type: 'WINDOM_CMD_CLOSE_TAB' });
+    return;
+  }
   const tab = await activeTab();
   if (tab?.id) chrome.tabs.remove(tab.id);
 }
 
 export async function duplicateActiveTab(): Promise<void> {
   if (!hasChromeApi) return;
-  if (isContentScript) { sendTabCommand({ type: 'WINDOM_CMD_DUPLICATE_TAB' }); return; }
+  if (isContentScript) {
+    sendTabCommand({ type: 'WINDOM_CMD_DUPLICATE_TAB' });
+    return;
+  }
   const tab = await activeTab();
   if (tab?.id) chrome.tabs.duplicate(tab.id);
 }
 
 export async function togglePinActiveTab(): Promise<void> {
   if (!hasChromeApi) return;
-  if (isContentScript) { sendTabCommand({ type: 'WINDOM_CMD_PIN_TAB' }); return; }
+  if (isContentScript) {
+    sendTabCommand({ type: 'WINDOM_CMD_PIN_TAB' });
+    return;
+  }
   const tab = await activeTab();
   if (tab?.id) chrome.tabs.update(tab.id, { pinned: !tab.pinned });
 }

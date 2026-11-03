@@ -170,9 +170,7 @@ function bindPointer(): void {
   // API - jsdom under test has neither matchMedia nor ResizeObserver. The
   // material is decoration, so it degrades to a fixed light rather than
   // taking the component down with it.
-  const query = typeof matchMedia === 'function'
-    ? matchMedia('(prefers-reduced-motion: reduce)')
-    : null;
+  const query = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
 
   const apply = (): void => {
     reduced = query?.matches ?? true;
@@ -293,9 +291,7 @@ export function useLiquidGlass<T extends HTMLElement>(
 
     scheduleRegenerate();
 
-    const observer = typeof ResizeObserver === 'function'
-      ? new ResizeObserver(scheduleRegenerate)
-      : null;
+    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(scheduleRegenerate) : null;
     observer?.observe(el);
 
     // Scrolling moves a pane under a light that has not moved, so the cache

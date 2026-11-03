@@ -19,14 +19,20 @@ describe('ErrorBoundary', () => {
 
   it('renders its children when nothing throws', () => {
     shouldThrow = false;
-    render(<ErrorBoundary name="Tasks"><Bomb /></ErrorBoundary>);
+    render(
+      <ErrorBoundary name="Tasks">
+        <Bomb />
+      </ErrorBoundary>,
+    );
     expect(screen.getByText('widget body')).toBeTruthy();
   });
 
   it('contains a crash to the widget and keeps its siblings on screen', () => {
     render(
       <>
-        <ErrorBoundary name="Tasks"><Bomb /></ErrorBoundary>
+        <ErrorBoundary name="Tasks">
+          <Bomb />
+        </ErrorBoundary>
         <p>sibling widget</p>
       </>,
     );
@@ -36,7 +42,11 @@ describe('ErrorBoundary', () => {
   });
 
   it('retries the widget from the fallback', () => {
-    render(<ErrorBoundary name="Tasks"><Bomb /></ErrorBoundary>);
+    render(
+      <ErrorBoundary name="Tasks">
+        <Bomb />
+      </ErrorBoundary>,
+    );
     shouldThrow = false;
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     expect(screen.getByText('widget body')).toBeTruthy();
@@ -44,7 +54,11 @@ describe('ErrorBoundary', () => {
   });
 
   it('renders nothing when silent', () => {
-    const { container } = render(<ErrorBoundary name="Top bar" silent><Bomb /></ErrorBoundary>);
+    const { container } = render(
+      <ErrorBoundary name="Top bar" silent>
+        <Bomb />
+      </ErrorBoundary>,
+    );
     expect(container.innerHTML).toBe('');
   });
 });

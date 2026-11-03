@@ -61,7 +61,7 @@ export function useSettingsCrossTab(setSettings: SetSettings): SettingsCrossTab 
         for (const [key, value] of Object.entries(toApply)) {
           if (key in next && value && typeof value === 'object') {
             (next as Record<string, unknown>)[key] = {
-              ...((prev as unknown as Record<string, object>)[key]),
+              ...(prev as unknown as Record<string, object>)[key],
               ...(value as object),
             };
           }

@@ -22,14 +22,12 @@ export function SettingsMessage() {
       setMsg(m);
       setTimeout(() => setMsg(null), MESSAGE_DISMISS_MS);
     };
-    return () => { _show = () => {}; };
+    return () => {
+      _show = () => {};
+    };
   }, []);
 
   if (!msg) return null;
 
-  return (
-    <div className={`settings-message ${msg.type}`}>
-      {msg.text}
-    </div>
-  );
+  return <div className={`settings-message ${msg.type}`}>{msg.text}</div>;
 }

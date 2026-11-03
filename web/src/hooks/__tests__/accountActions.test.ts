@@ -21,9 +21,13 @@ describe('useEmailVerificationResend', () => {
 
     expect(apiPost).toHaveBeenCalledWith('/auth/resend-verification', {});
     expect(result.current).toMatchObject({ sent: true, sending: false });
-    act(() => { vi.advanceTimersByTime(RESEND_COOLDOWN_MS - 1); });
+    act(() => {
+      vi.advanceTimersByTime(RESEND_COOLDOWN_MS - 1);
+    });
     expect(result.current.sent).toBe(true);
-    act(() => { vi.advanceTimersByTime(1); });
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
     expect(result.current.sent).toBe(false);
   });
 
@@ -38,14 +42,24 @@ describe('useEmailVerificationResend', () => {
 describe('useSignOut', () => {
   it('reports signingOut while logout is in flight', async () => {
     let finish!: () => void;
-    const logout = vi.fn(() => new Promise<void>((r) => { finish = r; }));
+    const logout = vi.fn(
+      () =>
+        new Promise<void>((r) => {
+          finish = r;
+        }),
+    );
     vi.mocked(useAuth).mockImplementation(() => ({ logout }) as unknown as ReturnType<typeof useAuth>);
     const { result } = renderHook(() => useSignOut());
 
     let pending!: Promise<void>;
-    act(() => { pending = result.current.signOut(); });
+    act(() => {
+      pending = result.current.signOut();
+    });
     expect(result.current.signingOut).toBe(true);
-    await act(async () => { finish(); await pending; });
+    await act(async () => {
+      finish();
+      await pending;
+    });
     expect(logout).toHaveBeenCalledTimes(1);
     expect(result.current.signingOut).toBe(false);
   });

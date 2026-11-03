@@ -110,7 +110,9 @@ describe('login', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
 
-    await act(async () => { await result.current.login('a@a.com', 'pass'); });
+    await act(async () => {
+      await result.current.login('a@a.com', 'pass');
+    });
 
     expect(setAccessToken).toHaveBeenCalledWith('at');
     expect(result.current.user).toEqual(mockUser);
@@ -128,7 +130,9 @@ describe('login', () => {
 
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
-    await act(async () => { await result.current.login('a@a.com', 'pass'); });
+    await act(async () => {
+      await result.current.login('a@a.com', 'pass');
+    });
 
     window.removeEventListener('windom-auth-login', listener);
     expect(received).toContain('Alice');
@@ -144,7 +148,9 @@ describe('loginWithToken', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
 
-    await act(async () => { await result.current.loginWithToken('at'); });
+    await act(async () => {
+      await result.current.loginWithToken('at');
+    });
 
     expect(setAccessToken).toHaveBeenCalledWith('at');
     expect(result.current.user).toEqual(mockUser);
@@ -162,7 +168,9 @@ describe('logout', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.user).toEqual(mockUser));
 
-    await act(async () => { await result.current.logout(); });
+    await act(async () => {
+      await result.current.logout();
+    });
 
     expect(apiPost).toHaveBeenCalledWith('/auth/logout');
     expect(clearAccessToken).toHaveBeenCalled();
@@ -179,7 +187,9 @@ describe('logout', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.user).toEqual(mockUser));
 
-    await act(async () => { await result.current.logout(); });
+    await act(async () => {
+      await result.current.logout();
+    });
 
     expect(result.current.user).toBeNull();
     expect(clearAccessToken).toHaveBeenCalled();
@@ -196,7 +206,9 @@ describe('updateUser', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.user).toEqual(mockUser));
 
-    act(() => { result.current.updateUser({ name: 'Bob' }); });
+    act(() => {
+      result.current.updateUser({ name: 'Bob' });
+    });
 
     expect(result.current.user?.name).toBe('Bob');
     expect(result.current.user?.email).toBe('a@a.com'); // unchanged
@@ -205,7 +217,9 @@ describe('updateUser', () => {
   it('does nothing when user is null', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
 
-    act(() => { result.current.updateUser({ name: 'Bob' }); });
+    act(() => {
+      result.current.updateUser({ name: 'Bob' });
+    });
 
     expect(result.current.user).toBeNull();
   });
@@ -218,7 +232,9 @@ describe('session events', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
 
-    act(() => { window.dispatchEvent(new CustomEvent('windom-session-expired')); });
+    act(() => {
+      window.dispatchEvent(new CustomEvent('windom-session-expired'));
+    });
 
     expect(result.current.sessionExpired).toBe(true);
     expect(result.current.user).toBeNull();
@@ -229,7 +245,9 @@ describe('session events', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
 
-    act(() => { window.dispatchEvent(new CustomEvent('windom-session-limit')); });
+    act(() => {
+      window.dispatchEvent(new CustomEvent('windom-session-limit'));
+    });
 
     expect(result.current.sessionLimitReached).toBe(true);
     expect(result.current.user).toBeNull();
@@ -246,7 +264,9 @@ describe('session events', () => {
     // Retrieve the callback that AuthProvider registered with the api module
     const [registeredCb] = vi.mocked(setLogoutCallback).mock.calls[0] as [() => void];
 
-    act(() => { registeredCb(); });
+    act(() => {
+      registeredCb();
+    });
 
     expect(result.current.user).toBeNull();
     expect(result.current.accessToken).toBeNull();
@@ -256,13 +276,17 @@ describe('session events', () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await waitFor(() => expect(result.current.authLoading).toBe(false));
 
-    act(() => { window.dispatchEvent(new CustomEvent('windom-session-expired')); });
+    act(() => {
+      window.dispatchEvent(new CustomEvent('windom-session-expired'));
+    });
     expect(result.current.sessionExpired).toBe(true);
 
     vi.mocked(apiPost).mockResolvedValue({ accessToken: 'at', refreshToken: 'rt' });
     vi.mocked(apiGet).mockResolvedValue(mockUser);
 
-    await act(async () => { await result.current.login('a@a.com', 'pass'); });
+    await act(async () => {
+      await result.current.login('a@a.com', 'pass');
+    });
 
     expect(result.current.sessionExpired).toBe(false);
   });

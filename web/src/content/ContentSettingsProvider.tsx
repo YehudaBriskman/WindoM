@@ -38,7 +38,7 @@ export function ContentSettingsProvider({ children }: { children: ReactNode }) {
         for (const [key, change] of Object.entries(changes)) {
           if (key in next && change.newValue && typeof change.newValue === 'object') {
             (next as Record<string, unknown>)[key] = {
-              ...((prev as unknown as Record<string, object>)[key]),
+              ...(prev as unknown as Record<string, object>)[key],
               ...(change.newValue as object),
             };
           }
@@ -49,25 +49,28 @@ export function ContentSettingsProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
-  const get = useCallback(
-    <S extends keyof Settings>(section: S): Settings[S] => settings[section],
+  const get = useCallback(<S extends keyof Settings>(section: S): Settings[S] => settings[section], [settings]);
+
+  const update = useCallback(
+    async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => {
+      const merged = { ...(settings[section] as object), ...(patch as object) } as Settings[S];
+      return syncStorage.set(section as string, merged);
+    },
     [settings],
   );
 
-  const update = useCallback(async <S extends keyof Settings>(section: S, patch: Partial<Settings[S]>) => {
-    const merged = { ...(settings[section] as object), ...(patch as object) } as Settings[S];
-    return syncStorage.set(section as string, merged);
-  }, [settings]);
-
-  const updateMultiple = useCallback(async (patches: Partial<Settings>) => {
-    const storageUpdate: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(patches)) {
-      if (v && typeof v === 'object') {
-        storageUpdate[k] = { ...((settings as unknown as Record<string, object>)[k]), ...(v as object) };
+  const updateMultiple = useCallback(
+    async (patches: Partial<Settings>) => {
+      const storageUpdate: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(patches)) {
+        if (v && typeof v === 'object') {
+          storageUpdate[k] = { ...(settings as unknown as Record<string, object>)[k], ...(v as object) };
+        }
       }
-    }
-    return syncStorage.setMultiple(storageUpdate);
-  }, [settings]);
+      return syncStorage.setMultiple(storageUpdate);
+    },
+    [settings],
+  );
 
   const reset = useCallback(async () => {}, []);
 

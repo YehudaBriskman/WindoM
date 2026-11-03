@@ -9,10 +9,10 @@ import { SETTINGS_EVENT } from '../../../lib/settings-events';
 function GoogleCalendarIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="4" width="18" height="17" rx="2" stroke="#4285F4" strokeWidth="1.5"/>
-      <path d="M3 9h18" stroke="#4285F4" strokeWidth="1.5"/>
-      <path d="M8 2v4M16 2v4" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round"/>
-      <rect x="7" y="13" width="4" height="3" rx="0.5" fill="#4285F4" opacity="0.7"/>
+      <rect x="3" y="4" width="18" height="17" rx="2" stroke="#4285F4" strokeWidth="1.5" />
+      <path d="M3 9h18" stroke="#4285F4" strokeWidth="1.5" />
+      <path d="M8 2v4M16 2v4" stroke="#4285F4" strokeWidth="1.5" strokeLinecap="round" />
+      <rect x="7" y="13" width="4" height="3" rx="0.5" fill="#4285F4" opacity="0.7" />
     </svg>
   );
 }
@@ -84,19 +84,11 @@ export function CalendarSettings() {
             </div>
           </div>
           {calendar.connected ? (
-            <button
-              className="integration-disconnect-btn"
-              disabled={busy}
-              onClick={() => void disconnectGoogle()}
-            >
+            <button className="integration-disconnect-btn" disabled={busy} onClick={() => void disconnectGoogle()}>
               {busy ? '…' : 'Disconnect'}
             </button>
           ) : (
-            <button
-              className="integration-connect-btn"
-              disabled={busy}
-              onClick={() => void connectGoogle()}
-            >
+            <button className="integration-connect-btn" disabled={busy} onClick={() => void connectGoogle()}>
               {busy ? 'Connecting…' : 'Connect'}
             </button>
           )}
@@ -110,9 +102,7 @@ export function CalendarSettings() {
           <label className="settings-label">Look-ahead window</label>
           <GlassSelect
             value={String(calendar.days)}
-            onChange={(v) =>
-              void update('integrations', { calendar: { ...calendar, days: Number(v) as 7 | 14 | 30 } })
-            }
+            onChange={(v) => void update('integrations', { calendar: { ...calendar, days: Number(v) as 7 | 14 | 30 } })}
             options={[
               { value: '7', label: '7 days' },
               { value: '14', label: '14 days' },

@@ -51,10 +51,13 @@ export async function releaseHistoryPermission(): Promise<void> {
 export function onHistoryPermissionChange(cb: (granted: boolean) => void): () => void {
   const api = permissionsApi();
   if (!api?.onAdded || !api.onRemoved) return () => {};
-  const touchesHistory = (p: chrome.permissions.Permissions) =>
-    p.permissions?.includes('history') ?? false;
-  const added = (p: chrome.permissions.Permissions) => { if (touchesHistory(p)) cb(true); };
-  const removed = (p: chrome.permissions.Permissions) => { if (touchesHistory(p)) cb(false); };
+  const touchesHistory = (p: chrome.permissions.Permissions) => p.permissions?.includes('history') ?? false;
+  const added = (p: chrome.permissions.Permissions) => {
+    if (touchesHistory(p)) cb(true);
+  };
+  const removed = (p: chrome.permissions.Permissions) => {
+    if (touchesHistory(p)) cb(false);
+  };
   api.onAdded.addListener(added);
   api.onRemoved.addListener(removed);
   return () => {

@@ -7,7 +7,12 @@ let onChangeCb: ChangeCb | null = null;
 vi.mock('../../lib/chrome-storage', () => ({
   syncStorage: {
     get: vi.fn(),
-    onChange: vi.fn((cb: ChangeCb) => { onChangeCb = cb; return () => { onChangeCb = null; }; }),
+    onChange: vi.fn((cb: ChangeCb) => {
+      onChangeCb = cb;
+      return () => {
+        onChangeCb = null;
+      };
+    }),
   },
 }));
 
@@ -31,21 +36,27 @@ beforeEach(() => {
 describe('useSettingsCrossTab', () => {
   it('merges a newer remote section into state', () => {
     const { current } = setup();
-    act(() => onChangeCb?.({
-      general: { newValue: { userName: 'Remote' } },
-      [KEY_TIMESTAMPS_STORAGE_KEY]: { newValue: { general: 10 } },
-    }));
+    act(() =>
+      onChangeCb?.({
+        general: { newValue: { userName: 'Remote' } },
+        [KEY_TIMESTAMPS_STORAGE_KEY]: { newValue: { general: 10 } },
+      }),
+    );
     expect(current().general.userName).toBe('Remote');
     expect(current().general.searchEngine).toBe(defaultSettings.general.searchEngine);
   });
 
-  it('ignores a remote write older than this tab\'s stamp', () => {
+  it("ignores a remote write older than this tab's stamp", () => {
     const { hook, setSettings } = setup();
-    act(() => { hook.result.current.stamp(['general']); });
-    act(() => onChangeCb?.({
-      general: { newValue: { userName: 'Stale' } },
-      [KEY_TIMESTAMPS_STORAGE_KEY]: { newValue: { general: 1 } },
-    }));
+    act(() => {
+      hook.result.current.stamp(['general']);
+    });
+    act(() =>
+      onChangeCb?.({
+        general: { newValue: { userName: 'Stale' } },
+        [KEY_TIMESTAMPS_STORAGE_KEY]: { newValue: { general: 1 } },
+      }),
+    );
     expect(setSettings).not.toHaveBeenCalled();
   });
 

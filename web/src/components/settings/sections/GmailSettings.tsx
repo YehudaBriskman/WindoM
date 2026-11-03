@@ -8,8 +8,12 @@ import { SETTINGS_EVENT } from '../../../lib/settings-events';
 function GmailIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" strokeWidth="1.5"/>
-      <polyline points="22,6 12,13 2,6" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round"/>
+      <path
+        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+        stroke="#EA4335"
+        strokeWidth="1.5"
+      />
+      <polyline points="22,6 12,13 2,6" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -94,8 +98,8 @@ export function GmailSettings() {
       {!gmail.connected && calendar.connected && (
         <div className="auth-required-notice">
           <p>
-            Your Google account is connected for Calendar but doesn&apos;t include Gmail access.
-            Click <strong>Connect</strong> above to grant Gmail permission (you&apos;ll see a Google consent screen).
+            Your Google account is connected for Calendar but doesn&apos;t include Gmail access. Click{' '}
+            <strong>Connect</strong> above to grant Gmail permission (you&apos;ll see a Google consent screen).
           </p>
         </div>
       )}
@@ -111,7 +115,9 @@ export function GmailSettings() {
                 checked={gmail.show}
                 onChange={(e) => void update('integrations', { gmail: { ...gmail, show: e.target.checked } })}
               />
-              <span className="toggle-track"><span className="toggle-knob" /></span>
+              <span className="toggle-track">
+                <span className="toggle-knob" />
+              </span>
             </label>
           </label>
         </div>

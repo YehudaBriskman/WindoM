@@ -20,10 +20,14 @@ import { OnboardingModal } from './components/onboarding/OnboardingModal';
 import { SpotifyNotice } from './components/onboarding/SpotifyNotice';
 
 // Heavy non-critical chunks - loaded after the initial paint
-const SettingsPanel  = lazy(() => import('./components/settings/SettingsPanel').then(m => ({ default: m.SettingsPanel })));
-const FocusOverlay   = lazy(() => import('./components/focus/FocusOverlay').then(m => ({ default: m.FocusOverlay })));
-const SearchOverlay  = lazy(() => import('./components/search/SearchOverlay').then(m => ({ default: m.SearchOverlay })));
-const TabSidebar     = lazy(() => import('./components/tabs/TabSidebar').then(m => ({ default: m.TabSidebar })));
+const SettingsPanel = lazy(() =>
+  import('./components/settings/SettingsPanel').then((m) => ({ default: m.SettingsPanel })),
+);
+const FocusOverlay = lazy(() => import('./components/focus/FocusOverlay').then((m) => ({ default: m.FocusOverlay })));
+const SearchOverlay = lazy(() =>
+  import('./components/search/SearchOverlay').then((m) => ({ default: m.SearchOverlay })),
+);
+const TabSidebar = lazy(() => import('./components/tabs/TabSidebar').then((m) => ({ default: m.TabSidebar })));
 
 // Dashboard is always accessible - auth is optional.
 // Sign-in lives in Settings → Account tab.
@@ -41,16 +45,28 @@ function Dashboard(): React.ReactElement {
       {/* Each region is its own boundary: one widget throwing must not blank
           the whole new tab. Regions are absolutely placed, so they fail
           silently; the widgets inside them carry visible fallbacks. */}
-      <ErrorBoundary name="Top bar" silent><TopBar /></ErrorBoundary>
+      <ErrorBoundary name="Top bar" silent>
+        <TopBar />
+      </ErrorBoundary>
       <div className="top-dock-area">
-        <ErrorBoundary name="Links" silent><DockBar /></ErrorBoundary>
+        <ErrorBoundary name="Links" silent>
+          <DockBar />
+        </ErrorBoundary>
         <div className="spotify-anchor">
-          <ErrorBoundary name="Spotify" silent><SpotifyPlayer /></ErrorBoundary>
+          <ErrorBoundary name="Spotify" silent>
+            <SpotifyPlayer />
+          </ErrorBoundary>
         </div>
       </div>
-      <ErrorBoundary name="Center" silent><CenterContent /></ErrorBoundary>
-      <ErrorBoundary name="Quote" silent><BottomSection /></ErrorBoundary>
-      <ErrorBoundary name="Sidebar" silent><RightSidebar /></ErrorBoundary>
+      <ErrorBoundary name="Center" silent>
+        <CenterContent />
+      </ErrorBoundary>
+      <ErrorBoundary name="Quote" silent>
+        <BottomSection />
+      </ErrorBoundary>
+      <ErrorBoundary name="Sidebar" silent>
+        <RightSidebar />
+      </ErrorBoundary>
       <ErrorBoundary name="Settings" silent>
         <Suspense>
           <SettingsPanel />
@@ -63,7 +79,9 @@ function Dashboard(): React.ReactElement {
           <TabSidebar />
         </Suspense>
       </ErrorBoundary>
-      <ErrorBoundary name="Photo credit" silent><PhotographerCredit /></ErrorBoundary>
+      <ErrorBoundary name="Photo credit" silent>
+        <PhotographerCredit />
+      </ErrorBoundary>
 
       {showOnboarding && <OnboardingModal onComplete={completeOnboarding} />}
       {showSpotifyNotice && <SpotifyNotice onDismiss={dismissSpotifyNotice} />}

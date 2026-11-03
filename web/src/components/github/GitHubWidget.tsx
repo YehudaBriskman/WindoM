@@ -11,7 +11,16 @@ function GitHubIcon() {
 
 function BellIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
@@ -20,7 +29,16 @@ function BellIcon() {
 
 function PRIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="18" cy="18" r="3" />
       <circle cx="6" cy="6" r="3" />
       <path d="M13 6h3a2 2 0 0 1 2 2v7" />
@@ -31,7 +49,16 @@ function PRIcon() {
 
 function IssueIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="10" />
       <line x1="12" y1="8" x2="12" y2="12" />
       <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -45,26 +72,28 @@ export function GitHubWidget() {
 
   if (!settings.integrations.github.connected || !settings.integrations.github.show) return null;
 
-  const rows = summary ? [
-    {
-      icon: <BellIcon />,
-      label: 'Notifications',
-      count: summary.notificationCount,
-      href: 'https://github.com/notifications',
-    },
-    {
-      icon: <PRIcon />,
-      label: 'Review Requests',
-      count: summary.reviewRequested,
-      href: 'https://github.com/pulls/review-requested',
-    },
-    {
-      icon: <IssueIcon />,
-      label: 'Assigned Issues',
-      count: summary.assignedIssues,
-      href: 'https://github.com/issues/assigned',
-    },
-  ] : [];
+  const rows = summary
+    ? [
+        {
+          icon: <BellIcon />,
+          label: 'Notifications',
+          count: summary.notificationCount,
+          href: 'https://github.com/notifications',
+        },
+        {
+          icon: <PRIcon />,
+          label: 'Review Requests',
+          count: summary.reviewRequested,
+          href: 'https://github.com/pulls/review-requested',
+        },
+        {
+          icon: <IssueIcon />,
+          label: 'Assigned Issues',
+          count: summary.assignedIssues,
+          href: 'https://github.com/issues/assigned',
+        },
+      ]
+    : [];
 
   return (
     <div className="github-widget">
@@ -76,24 +105,14 @@ export function GitHubWidget() {
         )}
       </div>
 
-      {loading && !summary && (
-        <div className="github-widget-empty">Loading…</div>
-      )}
+      {loading && !summary && <div className="github-widget-empty">Loading…</div>}
 
-      {error && (
-        <div className="github-widget-error">{error}</div>
-      )}
+      {error && <div className="github-widget-error">{error}</div>}
 
       {summary && (
         <div className="github-stat-list">
           {rows.map((row) => (
-            <a
-              key={row.label}
-              href={row.href}
-              target="_blank"
-              rel="noreferrer"
-              className="github-stat-row"
-            >
+            <a key={row.label} href={row.href} target="_blank" rel="noreferrer" className="github-stat-row">
               <span className="github-stat-icon">{row.icon}</span>
               <span className="github-stat-label">{row.label}</span>
               <span className="github-stat-count">{row.count}</span>

@@ -28,7 +28,8 @@ const SECTIONS: GuideSection[] = [
     blocks: [
       {
         type: 'note',
-        content: 'WindoM uses your own Spotify app so your account stays private. It\'s free and takes about 2 minutes to set up.',
+        content:
+          "WindoM uses your own Spotify app so your account stays private. It's free and takes about 2 minutes to set up.",
       },
       {
         type: 'steps',
@@ -43,7 +44,8 @@ const SECTIONS: GuideSection[] = [
       },
       {
         type: 'tip',
-        content: 'Getting "Invalid Client"? The Redirect URI wasn\'t saved in your Spotify app, or the Client ID is wrong. Use the Copy button - don\'t type the URI by hand.',
+        content:
+          'Getting "Invalid Client"? The Redirect URI wasn\'t saved in your Spotify app, or the Client ID is wrong. Use the Copy button - don\'t type the URI by hand.',
       },
     ],
   },
@@ -83,7 +85,8 @@ const SECTIONS: GuideSection[] = [
       },
       {
         type: 'note',
-        content: 'Gmail access requires the Gmail API to be enabled in your Google Cloud project. If you see an "API access denied" error, go to console.cloud.google.com → APIs & Services → Library → search "Gmail API" → Enable.',
+        content:
+          'Gmail access requires the Gmail API to be enabled in your Google Cloud project. If you see an "API access denied" error, go to console.cloud.google.com → APIs & Services → Library → search "Gmail API" → Enable.',
       },
       {
         type: 'tip',
@@ -120,7 +123,7 @@ const SECTIONS: GuideSection[] = [
         type: 'steps',
         content: [
           'Click the focus input in the center of your tab.',
-          'Type what you\'re working on and press Enter.',
+          "Type what you're working on and press Enter.",
           'Click anywhere or press Escape to exit focus mode.',
         ],
       },
@@ -160,7 +163,8 @@ const SECTIONS: GuideSection[] = [
       },
       {
         type: 'note',
-        content: 'Weather comes from Open-Meteo, which needs no API key and no account. Readings are cached for 30 minutes, and there is no Save button - a change applies as soon as you make it.',
+        content:
+          'Weather comes from Open-Meteo, which needs no API key and no account. Readings are cached for 30 minutes, and there is no Save button - a change applies as soon as you make it.',
       },
     ],
   },
@@ -187,7 +191,9 @@ function renderBlock(block: GuideBlock, idx: number): React.ReactElement {
   if (block.type === 'steps' && Array.isArray(block.content)) {
     return (
       <ol className="guide-block-steps" key={idx}>
-        {block.content.map((step, i) => <li key={i}>{step}</li>)}
+        {block.content.map((step, i) => (
+          <li key={i}>{step}</li>
+        ))}
       </ol>
     );
   }
@@ -207,7 +213,13 @@ function renderBlock(block: GuideBlock, idx: number): React.ReactElement {
   );
 }
 
-function GuideSectionItem({ section, defaultOpen = false }: { section: GuideSection; defaultOpen?: boolean }): React.ReactElement {
+function GuideSectionItem({
+  section,
+  defaultOpen = false,
+}: {
+  section: GuideSection;
+  defaultOpen?: boolean;
+}): React.ReactElement {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className={`guide-section${open ? ' open' : ''}`}>
@@ -216,15 +228,9 @@ function GuideSectionItem({ section, defaultOpen = false }: { section: GuideSect
           <span className="guide-section-title">{section.title}</span>
           <span className="guide-section-summary">{section.summary}</span>
         </div>
-        <span className="guide-section-chevron">
-          {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        </span>
+        <span className="guide-section-chevron">{open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</span>
       </button>
-      {open && (
-        <div className="guide-section-body">
-          {section.blocks.map((block, i) => renderBlock(block, i))}
-        </div>
-      )}
+      {open && <div className="guide-section-body">{section.blocks.map((block, i) => renderBlock(block, i))}</div>}
     </div>
   );
 }
@@ -255,13 +261,14 @@ export function GuidePanel(): React.ReactElement {
       {isOpen && (
         <>
           <div className="guide-panel" role="dialog" aria-modal="true" aria-label="WindoM Guide">
-
             <div className="guide-panel-header">
               <div>
                 <div className="guide-panel-title">Help &amp; Guide</div>
                 <div className="guide-panel-subtitle">
                   Settings are in the{' '}
-                  <button className="guide-inline-link" onClick={openSettings}>gear icon</button>
+                  <button className="guide-inline-link" onClick={openSettings}>
+                    gear icon
+                  </button>
                   , bottom-left.
                 </div>
               </div>
@@ -287,7 +294,6 @@ export function GuidePanel(): React.ReactElement {
                 <GuideSectionItem key={section.id} section={section} defaultOpen={i === 0} />
               ))}
             </div>
-
           </div>
         </>
       )}

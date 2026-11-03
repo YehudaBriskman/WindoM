@@ -14,20 +14,37 @@ export function usePasswordChange() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  function setCurrentPw(value: string) { setCurrentPwState(value); setError(''); }
-  function setNewPw(value: string) { setNewPwState(value); setError(''); }
-  function setConfirmPw(value: string) { setConfirmPwState(value); setError(''); }
+  function setCurrentPw(value: string) {
+    setCurrentPwState(value);
+    setError('');
+  }
+  function setNewPw(value: string) {
+    setNewPwState(value);
+    setError('');
+  }
+  function setConfirmPw(value: string) {
+    setConfirmPwState(value);
+    setError('');
+  }
 
   async function save() {
     if (saving) return;
     setError('');
     setMessage('');
-    if (newPw.length < 8) { setError('New password must be at least 8 characters'); return; }
-    if (newPw !== confirmPw) { setError('Passwords do not match'); return; }
+    if (newPw.length < 8) {
+      setError('New password must be at least 8 characters');
+      return;
+    }
+    if (newPw !== confirmPw) {
+      setError('Passwords do not match');
+      return;
+    }
     setSaving(true);
     try {
       await apiPatch('/me', { currentPassword: currentPw, newPassword: newPw });
-      setCurrentPwState(''); setNewPwState(''); setConfirmPwState('');
+      setCurrentPwState('');
+      setNewPwState('');
+      setConfirmPwState('');
       setMessage('Password updated');
       setTimeout(() => setMessage(''), PW_SAVE_MSG_DURATION_MS);
     } catch (err) {
@@ -38,9 +55,15 @@ export function usePasswordChange() {
   }
 
   return {
-    currentPw, newPw, confirmPw,
-    setCurrentPw, setNewPw, setConfirmPw,
-    saving, message, error,
+    currentPw,
+    newPw,
+    confirmPw,
+    setCurrentPw,
+    setNewPw,
+    setConfirmPw,
+    saving,
+    message,
+    error,
     canSubmit: !saving && !!currentPw && !!newPw && !!confirmPw,
     save,
   };

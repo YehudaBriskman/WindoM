@@ -42,13 +42,7 @@
    dropped the panel into the flow. `:where()` contributes nothing to
    specificity, so any component rule wins and this only applies to panes that
    have not said otherwise. */
-:where(
-  .glass-panel,
-  .glass-sidebar,
-  .glass-quote,
-  .glass-credit,
-  .glass-dock
-) {
+:where(.glass-panel, .glass-sidebar, .glass-quote, .glass-credit, .glass-dock) {
   position: relative;
 }
 
@@ -83,8 +77,7 @@
      cursor rather than just brightening under it. */
   background-image:
     radial-gradient(
-      calc(28% - 10% * var(--glass-prox)) calc(26% - 9% * var(--glass-prox))
-        at var(--glass-lx) var(--glass-ly),
+      calc(28% - 10% * var(--glass-prox)) calc(26% - 9% * var(--glass-prox)) at var(--glass-lx) var(--glass-ly),
       rgba(255, 255, 255, calc(0.3 * var(--glass-prox) * var(--glass-lit))) 0%,
       rgba(255, 255, 255, calc(0.08 * var(--glass-prox) * var(--glass-lit))) 55%,
       transparent 100%
@@ -117,13 +110,7 @@
 
    Only discrete state changes belong here anyway; the continuous light values
    are sprung in the hook. */
-:where(
-  .glass-panel,
-  .glass-sidebar,
-  .glass-quote,
-  .glass-credit,
-  .glass-dock
-) {
+:where(.glass-panel, .glass-sidebar, .glass-quote, .glass-credit, .glass-dock) {
   transition:
     border-color 0.3s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
@@ -250,7 +237,6 @@
   box-shadow: -10px 0 34px rgba(0, 0, 0, 0.22);
 }
 
-
 .glass-quote::after {
 }
 .glass-quote {
@@ -342,13 +328,7 @@
 
    `:where()` contributes no specificity, so this applies only to children that
    have not positioned themselves, and the z-index lands either way. */
-:where(
-  .glass-panel > *,
-  .glass-sidebar > *,
-  .glass-quote > *,
-  .glass-credit > *,
-  .glass-dock > *
-) {
+:where(.glass-panel > *, .glass-sidebar > *, .glass-quote > *, .glass-credit > *, .glass-dock > *) {
   position: relative;
 }
 
@@ -397,11 +377,17 @@
    Opacity must not be in these panes' `transition` lists here - a running
    transition outranks an animation in the cascade and would replace it. */
 @keyframes glass-rm-in {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 @keyframes glass-rm-out {
-  0%   { opacity: 1; }
-  50%  { opacity: 0; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
   /* 100% is the closed state's own opacity (0.8 for the gear, 0.45 for the
      dock's add button). */
 }
@@ -560,7 +546,7 @@
 .auth-user-card {
   background-image: linear-gradient(
     135deg,
-    rgba(255, 255, 255, calc(0.10 * var(--glass-lit, 0.8))) 0%,
+    rgba(255, 255, 255, calc(0.1 * var(--glass-lit, 0.8))) 0%,
     rgba(255, 255, 255, 0.02) 42%,
     transparent 75%
   );
@@ -621,7 +607,7 @@
    values was the alternative, and it would rot on the next restyle.
    Controls that draw their own focus ring - text inputs, .glass-control,
    .glass-select-trigger - are not matched and keep it. */
-:where(button, a[href], [role="button"], [role="option"], [role="tab"], summary):focus-visible:not(
+:where(button, a[href], [role='button'], [role='option'], [role='tab'], summary):focus-visible:not(
     .glass-control,
     .glass-select-trigger
   ) {

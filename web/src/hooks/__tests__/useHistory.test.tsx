@@ -21,11 +21,18 @@ let removedListeners: Listener[] = [];
 const permissions = {
   contains: vi.fn(async () => granted),
   request: vi.fn(async () => granted),
-  remove: vi.fn(async () => { granted = false; return true; }),
+  remove: vi.fn(async () => {
+    granted = false;
+    return true;
+  }),
   onAdded: { addListener: vi.fn(), removeListener: vi.fn() },
   onRemoved: {
-    addListener: vi.fn((l: Listener) => { removedListeners.push(l); }),
-    removeListener: vi.fn((l: Listener) => { removedListeners = removedListeners.filter((x) => x !== l); }),
+    addListener: vi.fn((l: Listener) => {
+      removedListeners.push(l);
+    }),
+    removeListener: vi.fn((l: Listener) => {
+      removedListeners = removedListeners.filter((x) => x !== l);
+    }),
   },
 };
 const history = {
@@ -40,7 +47,9 @@ g.chrome.history = history;
 
 beforeEach(() => {
   update.mockClear();
-  Object.values(permissions).forEach((f) => { if (typeof f === 'function') f.mockClear(); });
+  Object.values(permissions).forEach((f) => {
+    if (typeof f === 'function') f.mockClear();
+  });
   history.search.mockClear();
   granted = false;
   showHistory = false;

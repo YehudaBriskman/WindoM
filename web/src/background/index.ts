@@ -3,7 +3,9 @@ import { isOwnExtensionSender, isTabId, parseTabCommand } from '../lib/runtime-m
 import { TABS_SNAPSHOT_KEY } from '../lib/chrome-tabs';
 
 let suspended = false;
-chrome.runtime.onSuspend.addListener(() => { suspended = true; });
+chrome.runtime.onSuspend.addListener(() => {
+  suspended = true;
+});
 
 async function broadcastTabsChanged() {
   if (suspended) return;
@@ -35,43 +37,40 @@ chrome.tabs.onCreated.addListener(() => broadcastTabsChanged());
 
 // Handle tab-management commands forwarded from content scripts.
 // Content scripts in MV3 cannot call chrome.tabs.* directly.
-chrome.runtime.onMessage.addListener(
-  (payload: unknown, sender, sendResponse) => {
-    if (!isOwnExtensionSender(sender)) return;
-    const message = parseTabCommand(payload);
-    if (!message) return;
+chrome.runtime.onMessage.addListener((payload: unknown, sender, sendResponse) => {
+  if (!isOwnExtensionSender(sender)) return;
+  const message = parseTabCommand(payload);
+  if (!message) return;
 
-    const tabId = sender.tab?.id;
-    if (message.type !== 'WINDOM_CMD_NEW_TAB' && message.type !== 'WINDOM_CMD_OPEN_URL'
-      && !isTabId(tabId)) return;
+  const tabId = sender.tab?.id;
+  if (message.type !== 'WINDOM_CMD_NEW_TAB' && message.type !== 'WINDOM_CMD_OPEN_URL' && !isTabId(tabId)) return;
 
-    const handle = async () => {
-      switch (message.type) {
-        case 'WINDOM_CMD_NEW_TAB':
-          await chrome.tabs.create({});
-          break;
-        case 'WINDOM_CMD_CLOSE_TAB':
-          if (isTabId(tabId)) await chrome.tabs.remove(tabId);
-          break;
-        case 'WINDOM_CMD_DUPLICATE_TAB':
-          if (isTabId(tabId)) await chrome.tabs.duplicate(tabId);
-          break;
-        case 'WINDOM_CMD_PIN_TAB':
-          if (isTabId(tabId)) {
-            const tab = await chrome.tabs.get(tabId);
-            await chrome.tabs.update(tabId, { pinned: !tab.pinned });
-          }
-          break;
-        case 'WINDOM_CMD_OPEN_URL':
-          await chrome.tabs.create({ url: message.url });
-          break;
-        default:
-          return; // not our message
-      }
-      sendResponse({ ok: true });
-    };
+  const handle = async () => {
+    switch (message.type) {
+      case 'WINDOM_CMD_NEW_TAB':
+        await chrome.tabs.create({});
+        break;
+      case 'WINDOM_CMD_CLOSE_TAB':
+        if (isTabId(tabId)) await chrome.tabs.remove(tabId);
+        break;
+      case 'WINDOM_CMD_DUPLICATE_TAB':
+        if (isTabId(tabId)) await chrome.tabs.duplicate(tabId);
+        break;
+      case 'WINDOM_CMD_PIN_TAB':
+        if (isTabId(tabId)) {
+          const tab = await chrome.tabs.get(tabId);
+          await chrome.tabs.update(tabId, { pinned: !tab.pinned });
+        }
+        break;
+      case 'WINDOM_CMD_OPEN_URL':
+        await chrome.tabs.create({ url: message.url });
+        break;
+      default:
+        return; // not our message
+    }
+    sendResponse({ ok: true });
+  };
 
-    handle().catch(() => sendResponse({ ok: false }));
-    return true; // keep channel open for async response
-  },
-);
+  handle().catch(() => sendResponse({ ok: false }));
+  return true; // keep channel open for async response
+});

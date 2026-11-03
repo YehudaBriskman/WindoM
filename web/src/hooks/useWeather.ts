@@ -68,83 +68,81 @@ export function useWeather() {
   useEffect(() => watchGeolocationPermission(() => setPermissionEpoch((n) => n + 1)), []);
 
   // runId is passed in so fetchWeather can guard against being stale
-  const fetchWeather = useCallback(async (runId: number) => {
-    const manualLocation = settings.weather.location.trim();
-    let lat: number;
-    let lon: number;
-    let resolvedCity: string;
+  const fetchWeather = useCallback(
+    async (runId: number) => {
+      const manualLocation = settings.weather.location.trim();
+      let lat: number;
+      let lon: number;
+      let resolvedCity: string;
 
-    if (manualLocation) {
-      const geoRes = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(manualLocation)}&count=1&language=en&format=json`
+      if (manualLocation) {
+        const geoRes = await fetch(
+          `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(manualLocation)}&count=1&language=en&format=json`,
+        );
+        if (runIdRef.current !== runId) return;
+        if (!geoRes.ok) throw new Error(`Geocoding error: ${geoRes.status}`);
+        const geoData = await geoRes.json();
+        if (runIdRef.current !== runId) return;
+        if (!geoData.results?.length) {
+          setState({ status: 'placeholder', message: 'City not found' });
+          return;
+        }
+        lat = geoData.results[0].latitude;
+        lon = geoData.results[0].longitude;
+        resolvedCity = geoData.results[0].name;
+      } else {
+        const coords = await getLocation();
+        if (runIdRef.current !== runId) return;
+        if (!coords) {
+          // Location was not granted (and is never asked for here - see useLocation).
+          setState({ status: 'placeholder', message: 'Set location', needsLocation: true });
+          return;
+        }
+        lat = coords.lat;
+        lon = coords.lon;
+
+        try {
+          const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`, {
+            headers: { 'Accept-Language': 'en' },
+          });
+          const revData = await revRes.json();
+          resolvedCity =
+            revData.address?.city ?? revData.address?.town ?? revData.address?.village ?? revData.address?.county ?? '';
+        } catch {
+          resolvedCity = '';
+        }
+        if (runIdRef.current !== runId) return;
+      }
+
+      setState({ status: 'loading' });
+
+      const tempUnit = settings.weather.unit === 'C' ? 'celsius' : 'fahrenheit';
+      const weatherRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&temperature_unit=${tempUnit}&timezone=auto`,
       );
       if (runIdRef.current !== runId) return;
-      if (!geoRes.ok) throw new Error(`Geocoding error: ${geoRes.status}`);
-      const geoData = await geoRes.json();
+      if (!weatherRes.ok) throw new Error(`Weather error: ${weatherRes.status}`);
+      const weatherData = await weatherRes.json();
       if (runIdRef.current !== runId) return;
-      if (!geoData.results?.length) {
-        setState({ status: 'placeholder', message: 'City not found' });
-        return;
-      }
-      lat = geoData.results[0].latitude;
-      lon = geoData.results[0].longitude;
-      resolvedCity = geoData.results[0].name;
-    } else {
-      const coords = await getLocation();
+
+      const current = weatherData.current;
+      const weatherRecord: WeatherData = {
+        temp: Math.round(current.temperature_2m),
+        condition: mapWmoCode(current.weather_code),
+        description: wmoDescription(current.weather_code),
+        iconCode: undefined,
+        isDay: current.is_day === 1,
+        city: resolvedCity,
+        unit: settings.weather.unit,
+        timestamp: Date.now(),
+      };
+
+      await ls.set('weatherCache', weatherRecord);
       if (runIdRef.current !== runId) return;
-      if (!coords) {
-        // Location was not granted (and is never asked for here - see useLocation).
-        setState({ status: 'placeholder', message: 'Set location', needsLocation: true });
-        return;
-      }
-      lat = coords.lat;
-      lon = coords.lon;
-
-      try {
-        const revRes = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-          { headers: { 'Accept-Language': 'en' } }
-        );
-        const revData = await revRes.json();
-        resolvedCity =
-          revData.address?.city ??
-          revData.address?.town ??
-          revData.address?.village ??
-          revData.address?.county ??
-          '';
-      } catch {
-        resolvedCity = '';
-      }
-      if (runIdRef.current !== runId) return;
-    }
-
-    setState({ status: 'loading' });
-
-    const tempUnit = settings.weather.unit === 'C' ? 'celsius' : 'fahrenheit';
-    const weatherRes = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&temperature_unit=${tempUnit}&timezone=auto`
-    );
-    if (runIdRef.current !== runId) return;
-    if (!weatherRes.ok) throw new Error(`Weather error: ${weatherRes.status}`);
-    const weatherData = await weatherRes.json();
-    if (runIdRef.current !== runId) return;
-
-    const current = weatherData.current;
-    const weatherRecord: WeatherData = {
-      temp: Math.round(current.temperature_2m),
-      condition: mapWmoCode(current.weather_code),
-      description: wmoDescription(current.weather_code),
-      iconCode: undefined,
-      isDay: current.is_day === 1,
-      city: resolvedCity,
-      unit: settings.weather.unit,
-      timestamp: Date.now(),
-    };
-
-    await ls.set('weatherCache', weatherRecord);
-    if (runIdRef.current !== runId) return;
-    setState({ status: 'ready', data: weatherRecord, displayTemp: weatherRecord.temp });
-  }, [settings.weather.location, settings.weather.unit, getLocation]);
+      setState({ status: 'ready', data: weatherRecord, displayTemp: weatherRecord.temp });
+    },
+    [settings.weather.location, settings.weather.unit, getLocation],
+  );
 
   useEffect(() => {
     // Claim this run; any prior in-flight fetch will see a stale runId and bail out
@@ -155,9 +153,10 @@ export function useWeather() {
       if (runIdRef.current !== runId) return;
 
       if (cached && Date.now() - cached.timestamp < CACHE_EXPIRY) {
-        const displayTemp = cached.unit !== settings.weather.unit
-          ? convertTemperature(cached.temp, cached.unit, settings.weather.unit)
-          : cached.temp;
+        const displayTemp =
+          cached.unit !== settings.weather.unit
+            ? convertTemperature(cached.temp, cached.unit, settings.weather.unit)
+            : cached.temp;
         setState({ status: 'ready', data: cached, displayTemp });
       }
 
@@ -168,9 +167,10 @@ export function useWeather() {
         console.error('Error fetching weather:', error);
         const fallback = await ls.get<WeatherData | null>('weatherCache', null);
         if (fallback) {
-          const displayTemp = fallback.unit !== settings.weather.unit
-            ? convertTemperature(fallback.temp, fallback.unit, settings.weather.unit)
-            : fallback.temp;
+          const displayTemp =
+            fallback.unit !== settings.weather.unit
+              ? convertTemperature(fallback.temp, fallback.unit, settings.weather.unit)
+              : fallback.temp;
           setState({ status: 'ready', data: fallback, displayTemp });
         } else {
           setState({ status: 'error' });

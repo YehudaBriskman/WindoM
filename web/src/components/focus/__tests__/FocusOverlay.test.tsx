@@ -56,16 +56,13 @@ describe('leaving focus mode', () => {
     expect(stop).not.toHaveBeenCalled();
   });
 
-  it.each(['exiting-overlay', 'exiting'])(
-    'does not restart the exit sequence during %s',
-    (p) => {
-      phase = p;
-      render(<FocusOverlay />);
-      fireEvent.keyDown(window, { key: 'Escape' });
-      fireEvent.click(screen.getByText('12:34'));
-      expect(stop).not.toHaveBeenCalled();
-    },
-  );
+  it.each(['exiting-overlay', 'exiting'])('does not restart the exit sequence during %s', (p) => {
+    phase = p;
+    render(<FocusOverlay />);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.click(screen.getByText('12:34'));
+    expect(stop).not.toHaveBeenCalled();
+  });
 
   it.each(['entering', 'entering-overlay'])('can be abandoned during %s', (p) => {
     phase = p;

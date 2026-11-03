@@ -57,7 +57,8 @@ export function FinanceDashboards() {
                     <span className="finance-dashboard-sym">{s.symbol}</span>
                     <span className="finance-dashboard-price">{fmt(s.price)}</span>
                     <span className={`finance-dashboard-change${positive ? ' positive' : ' negative'}`}>
-                      {positive ? '+' : ''}{s.changePercent.toFixed(2)}%
+                      {positive ? '+' : ''}
+                      {s.changePercent.toFixed(2)}%
                     </span>
                   </div>
                 );
@@ -87,7 +88,8 @@ export function FinanceDashboards() {
                     <span className="finance-dashboard-sym">{c.symbol}</span>
                     <span className="finance-dashboard-price">{fmt(c.price)}</span>
                     <span className={`finance-dashboard-change${positive ? ' positive' : ' negative'}`}>
-                      {positive ? '+' : ''}{c.change24h.toFixed(2)}%
+                      {positive ? '+' : ''}
+                      {c.change24h.toFixed(2)}%
                     </span>
                   </div>
                 );

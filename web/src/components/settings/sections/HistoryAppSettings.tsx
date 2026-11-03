@@ -20,7 +20,10 @@ export function HistoryAppSettings() {
         // `request` must run inside this change handler: Chrome only shows
         // its permission prompt during a user gesture.
         const ok = await request();
-        if (!ok) { setDenied(true); return; }
+        if (!ok) {
+          setDenied(true);
+          return;
+        }
         await update('general', { showHistory: true });
       } else {
         await update('general', { showHistory: false });
@@ -38,10 +41,9 @@ export function HistoryAppSettings() {
       <div className="settings-group">
         <label className="settings-label">Browsing History</label>
         <p className="settings-hint" style={{ marginBottom: '12px' }}>
-          Shows your 10 most-recent unique sites in the sidebar, and suggests pages you visited
-          as you type in search. Turning it on asks Chrome for permission to read your browsing
-          history; turning it off gives that permission back. Uses Chrome's local history -
-          nothing leaves your device.
+          Shows your 10 most-recent unique sites in the sidebar, and suggests pages you visited as you type in search.
+          Turning it on asks Chrome for permission to read your browsing history; turning it off gives that permission
+          back. Uses Chrome's local history - nothing leaves your device.
         </p>
         <label className="visibility-row" style={{ cursor: 'pointer' }}>
           <span className="visibility-row-label">Show in sidebar and search</span>
@@ -52,13 +54,15 @@ export function HistoryAppSettings() {
               disabled={busy || granted === null}
               onChange={(e) => void handleChange(e.target.checked)}
             />
-            <span className="toggle-track"><span className="toggle-knob" /></span>
+            <span className="toggle-track">
+              <span className="toggle-knob" />
+            </span>
           </label>
         </label>
         {denied && (
           <p role="alert" className="settings-hint" style={{ marginTop: '8px' }}>
-            Chrome did not grant access to your browsing history, so this stays off. You can turn
-            it on again at any time.
+            Chrome did not grant access to your browsing history, so this stays off. You can turn it on again at any
+            time.
           </p>
         )}
         {settings.general.showHistory && granted === false && !denied && (

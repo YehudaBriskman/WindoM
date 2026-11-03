@@ -142,10 +142,7 @@ describe('legacy migration', () => {
 
     await mountAndWait();
 
-    expect(localStore.set).toHaveBeenCalledWith(
-      'windom_focus',
-      expect.objectContaining({ mainFocus: 'Finish tests' }),
-    );
+    expect(localStore.set).toHaveBeenCalledWith('windom_focus', expect.objectContaining({ mainFocus: 'Finish tests' }));
   });
 });
 
@@ -229,7 +226,9 @@ describe('reset', () => {
     });
     expect(result.current.settings.general.userName).toBe('Temp');
 
-    await act(async () => { await result.current.reset(); });
+    await act(async () => {
+      await result.current.reset();
+    });
 
     expect(result.current.settings.general.userName).toBe(defaultSettings.general.userName);
     expect(result.current.settings.clock).toEqual(defaultSettings.clock);
@@ -240,11 +239,11 @@ describe('reset', () => {
     const { result } = await mountAndWait();
     vi.mocked(syncStorage.setMultiple).mockClear();
 
-    await act(async () => { await result.current.reset(); });
+    await act(async () => {
+      await result.current.reset();
+    });
 
-    expect(syncStorage.setMultiple).toHaveBeenCalledWith(
-      expect.objectContaining({ general: defaultSettings.general }),
-    );
+    expect(syncStorage.setMultiple).toHaveBeenCalledWith(expect.objectContaining({ general: defaultSettings.general }));
   });
 });
 
@@ -313,20 +312,14 @@ describe('get', () => {
 
 describe('useSettingsSection', () => {
   it('returns the current value of the subscribed section', async () => {
-    const { result } = renderHook(
-      () => ({ section: useSettingsSection('general'), ctx: useSettings() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ section: useSettingsSection('general'), ctx: useSettings() }), { wrapper });
 
     await waitFor(() => expect(result.current.ctx.loaded).toBe(true));
     expect(result.current.section).toEqual(defaultSettings.general);
   });
 
   it('reflects updates to the subscribed section', async () => {
-    const { result } = renderHook(
-      () => ({ section: useSettingsSection('general'), ctx: useSettings() }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ section: useSettingsSection('general'), ctx: useSettings() }), { wrapper });
     await waitFor(() => expect(result.current.ctx.loaded).toBe(true));
 
     await act(async () => {
@@ -432,9 +425,13 @@ describe('backend sync under clock skew (#251)', () => {
     local = new Map();
     server = { data: null, updatedAt: null };
     puts = [];
-    vi.mocked(localStore.get).mockImplementation((k, def) =>
-      Promise.resolve(local.has(k) ? local.get(k) : def) as never);
-    vi.mocked(localStore.set).mockImplementation((k, v) => { local.set(k, v); return Promise.resolve(true); });
+    vi.mocked(localStore.get).mockImplementation(
+      (k, def) => Promise.resolve(local.has(k) ? local.get(k) : def) as never,
+    );
+    vi.mocked(localStore.set).mockImplementation((k, v) => {
+      local.set(k, v);
+      return Promise.resolve(true);
+    });
     vi.mocked(getAccessToken).mockResolvedValue('token');
     vi.mocked(apiGet).mockImplementation(() => Promise.resolve({ ...server }));
     vi.mocked(apiPut).mockImplementation((_path, body) => {
@@ -459,7 +456,8 @@ describe('backend sync under clock skew (#251)', () => {
 
   function storeLocal(general: Partial<typeof defaultSettings.general>) {
     vi.mocked(syncStorage.getMultiple).mockResolvedValueOnce({
-      ...defaultSettings, general: { ...defaultSettings.general, ...general },
+      ...defaultSettings,
+      general: { ...defaultSettings.general, ...general },
     } as unknown as Record<string, unknown>);
   }
 
@@ -559,7 +557,9 @@ describe('backend sync under clock skew (#251)', () => {
 
   it('an edit marks its section dirty so it survives a push that never happens', async () => {
     const { result } = await mountAndWait();
-    await act(async () => { await result.current.update('clock', { timeFormat: '24h' }); });
+    await act(async () => {
+      await result.current.update('clock', { timeFormat: '24h' });
+    });
     expect(Object.keys(local.get(DIRTY_KEY) as object)).toEqual(['clock']);
   });
 });

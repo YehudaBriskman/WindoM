@@ -1,19 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
-import { Settings } from "lucide-react";
-import { useSettings } from "../../contexts/SettingsContext";
-import { SETTINGS_EVENT } from "../../lib/settings-events";
-import { SettingsNav, type SettingsTab } from "./SettingsNav";
-import { SettingsMessage } from "./SettingsMessage";
-import { GeneralSettings } from "./sections/GeneralSettings";
-import { ClockSettings } from "./sections/ClockSettings";
-import { BackgroundSettings } from "./sections/BackgroundSettings";
-import { WeatherSettings } from "./sections/WeatherSettings";
-import { QuotesSettings } from "./sections/QuotesSettings";
-import { LinksSettings } from "./sections/LinksSettings";
-import { AppHub, type AppId } from "./sections/AppHub";
-import { AppCenterPanel } from "./sections/AppCenterPanel";
-import { TemplatesGallery } from "./sections/TemplatesGallery";
-import { AccountSettings } from "./sections/AccountSettings";
+import { useState, useEffect, useCallback } from 'react';
+import { Settings } from 'lucide-react';
+import { useSettings } from '../../contexts/SettingsContext';
+import { SETTINGS_EVENT } from '../../lib/settings-events';
+import { SettingsNav, type SettingsTab } from './SettingsNav';
+import { SettingsMessage } from './SettingsMessage';
+import { GeneralSettings } from './sections/GeneralSettings';
+import { ClockSettings } from './sections/ClockSettings';
+import { BackgroundSettings } from './sections/BackgroundSettings';
+import { WeatherSettings } from './sections/WeatherSettings';
+import { QuotesSettings } from './sections/QuotesSettings';
+import { LinksSettings } from './sections/LinksSettings';
+import { AppHub, type AppId } from './sections/AppHub';
+import { AppCenterPanel } from './sections/AppCenterPanel';
+import { TemplatesGallery } from './sections/TemplatesGallery';
+import { AccountSettings } from './sections/AccountSettings';
 import { useLiquidGlass } from '../../hooks/useLiquidGlass';
 import { shouldDismissPanel } from '../../lib/panel-dismissal';
 
@@ -21,23 +21,23 @@ export function SettingsPanel() {
   const glassRef = useLiquidGlass<HTMLDivElement>('panel');
   const { reset } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<SettingsTab>("general");
+  const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [openAppId, setOpenAppId] = useState<AppId | null>(null);
 
   useEffect(() => {
     const toggleHandler = () => {
       setIsOpen((prev) => {
-        if (!prev) setActiveTab("general");
+        if (!prev) setActiveTab('general');
         return !prev;
       });
     };
     const closeHandler = () => setIsOpen(false);
     const accountHandler = () => {
-      setActiveTab("account");
+      setActiveTab('account');
       setIsOpen(true);
     };
     const weatherHandler = () => {
-      setActiveTab("weather");
+      setActiveTab('weather');
       setIsOpen(true);
     };
     document.addEventListener(SETTINGS_EVENT.TOGGLE, toggleHandler);
@@ -75,7 +75,7 @@ export function SettingsPanel() {
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
+      if (event.key !== 'Escape') return;
       // Escape dismisses the topmost thing, which is the app centre when one is
       // open - closing the panel out from under it would take both at once.
       if (openAppId) {
@@ -88,34 +88,28 @@ export function SettingsPanel() {
     // `mousedown` rather than `click`: a click whose target React unmounts
     // mid-gesture - deleting a row, switching a tab - fails the `contains`
     // check afterwards and would close the panel as a side effect.
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
     };
   }, [isOpen, glassRef, openAppId]);
 
   const closeApp = useCallback(() => setOpenAppId(null), []);
 
   const handleReset = useCallback(async () => {
-    if (
-      !confirm(
-        "Are you sure you want to reset all settings to defaults? This cannot be undone.",
-      )
-    )
-      return;
+    if (!confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) return;
     await reset();
     setTimeout(() => window.location.reload(), 500);
   }, [reset]);
 
   return (
     <>
-
       {/* Single container: gear button when collapsed, full panel when expanded */}
       <div
         ref={glassRef}
-        className={`settings-container glass-panel${isOpen ? " open" : ""}`}
+        className={`settings-container glass-panel${isOpen ? ' open' : ''}`}
         onClick={!isOpen ? () => setIsOpen(true) : undefined}
       >
         {/* Collapsed state: gear icon - direct child so it's always visible */}
@@ -130,28 +124,22 @@ export function SettingsPanel() {
             <div className="settings-body">
               <SettingsMessage />
 
-              {activeTab === "general" && (
-                <GeneralSettings onReset={handleReset} />
-              )}
-              {activeTab === "clock" && <ClockSettings />}
-              {activeTab === "background" && <BackgroundSettings />}
-              {activeTab === "weather" && <WeatherSettings />}
-              {activeTab === "quotes" && <QuotesSettings />}
-              {activeTab === "links" && <LinksSettings />}
-              {activeTab === "apps" && (
-                <AppHub onOpenApp={setOpenAppId} />
-              )}
-              {activeTab === "templates" && <TemplatesGallery />}
-              {activeTab === "account" && <AccountSettings />}
+              {activeTab === 'general' && <GeneralSettings onReset={handleReset} />}
+              {activeTab === 'clock' && <ClockSettings />}
+              {activeTab === 'background' && <BackgroundSettings />}
+              {activeTab === 'weather' && <WeatherSettings />}
+              {activeTab === 'quotes' && <QuotesSettings />}
+              {activeTab === 'links' && <LinksSettings />}
+              {activeTab === 'apps' && <AppHub onOpenApp={setOpenAppId} />}
+              {activeTab === 'templates' && <TemplatesGallery />}
+              {activeTab === 'account' && <AccountSettings />}
             </div>
           </div>
         </div>
       </div>
 
       {/* App center panel - centered overlay above settings */}
-      {openAppId && (
-        <AppCenterPanel appId={openAppId} onClose={closeApp} />
-      )}
+      {openAppId && <AppCenterPanel appId={openAppId} onClose={closeApp} />}
     </>
   );
 }

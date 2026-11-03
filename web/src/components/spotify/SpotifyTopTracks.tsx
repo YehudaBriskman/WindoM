@@ -10,13 +10,7 @@ export function SpotifyTopTracks() {
       <div className="spotify-top-tracks-title">Top Tracks</div>
       <div className="spotify-top-tracks-list">
         {tracks.map((track, i) => (
-          <a
-            key={track.url}
-            href={track.url}
-            target="_blank"
-            rel="noreferrer"
-            className="spotify-top-track-item"
-          >
+          <a key={track.url} href={track.url} target="_blank" rel="noreferrer" className="spotify-top-track-item">
             <span className="spotify-top-track-num">{i + 1}</span>
             {track.albumArt ? (
               <img src={track.albumArt} alt={track.album} className="spotify-top-track-art" />

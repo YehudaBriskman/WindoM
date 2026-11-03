@@ -13,8 +13,7 @@
  * `VITE_DEBUG=true`.
  */
 
-export const DEBUG: boolean =
-  import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
+export const DEBUG: boolean = import.meta.env.DEV || import.meta.env.VITE_DEBUG === 'true';
 
 export interface Logger {
   debug: (...args: unknown[]) => void;

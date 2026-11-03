@@ -131,11 +131,17 @@ export function GitHubSettings() {
               placeholder="ghp_..."
               value={pat}
               onChange={(e) => setPat(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') void connectGitHub(); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') void connectGitHub();
+              }}
               disabled={busy}
               style={{ flex: 1 }}
             />
-            <button className="integration-connect-btn" disabled={busy || !pat.trim()} onClick={() => void connectGitHub()}>
+            <button
+              className="integration-connect-btn"
+              disabled={busy || !pat.trim()}
+              onClick={() => void connectGitHub()}
+            >
               {busy ? 'Connecting…' : 'Connect'}
             </button>
           </div>
@@ -153,7 +159,9 @@ export function GitHubSettings() {
                 checked={github.show}
                 onChange={(e) => void update('integrations', { github: { ...github, show: e.target.checked } })}
               />
-              <span className="toggle-track"><span className="toggle-knob" /></span>
+              <span className="toggle-track">
+                <span className="toggle-knob" />
+              </span>
             </label>
           </label>
         </div>

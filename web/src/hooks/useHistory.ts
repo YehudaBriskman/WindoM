@@ -26,9 +26,16 @@ export function useHistoryPermission() {
 
   useEffect(() => {
     let alive = true;
-    void hasHistoryPermission().then((g) => { if (alive) setGranted(g); });
-    const off = onHistoryPermissionChange((g) => { if (alive) setGranted(g); });
-    return () => { alive = false; off(); };
+    void hasHistoryPermission().then((g) => {
+      if (alive) setGranted(g);
+    });
+    const off = onHistoryPermissionChange((g) => {
+      if (alive) setGranted(g);
+    });
+    return () => {
+      alive = false;
+      off();
+    };
   }, []);
 
   // Call `request` straight from a click/change handler: Chrome only shows
@@ -57,7 +64,10 @@ export function useHistory(enabled: boolean) {
   const [items, setItems] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    if (!enabled || granted !== true || !hasHistoryApi()) { setItems([]); return; }
+    if (!enabled || granted !== true || !hasHistoryApi()) {
+      setItems([]);
+      return;
+    }
 
     let alive = true;
     const startTime = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -73,11 +83,15 @@ export function useHistory(enabled: boolean) {
           seen.add(hostname);
           filtered.push({ url: r.url, title: r.title, lastVisitTime: r.lastVisitTime ?? 0, hostname });
           if (filtered.length === 10) break;
-        } catch { continue; }
+        } catch {
+          continue;
+        }
       }
       setItems(filtered);
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [enabled, granted]);
 
   return { items, granted, request };

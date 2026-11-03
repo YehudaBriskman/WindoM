@@ -59,7 +59,10 @@ export function BackgroundSettings() {
       await update('background', { source: 'local' });
       showSettingsMessage('Background image uploaded successfully', 'success');
     };
-    reader.onerror = () => { setUploading(false); showSettingsMessage('Error reading image file', 'error'); };
+    reader.onerror = () => {
+      setUploading(false);
+      showSettingsMessage('Error reading image file', 'error');
+    };
     reader.readAsDataURL(file);
   };
 
@@ -104,8 +107,8 @@ export function BackgroundSettings() {
               Get a free key at{' '}
               <a href="https://unsplash.com/developers" target="_blank" rel="noopener noreferrer">
                 unsplash.com/developers
-              </a>
-              {' '}→ create an app → copy the Access Key.
+              </a>{' '}
+              → create an app → copy the Access Key.
             </small>
           </div>
           <div className="settings-group">
@@ -124,12 +127,16 @@ export function BackgroundSettings() {
             <h3 className="settings-section-heading">Unsplash Photos</h3>
             {unsplashLiked.length > 0 && (
               <div className="settings-group">
-                <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
+                <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>
+                  Liked
+                </label>
                 <PhotoGrid photos={unsplashLiked} onLike={toggleLike} onSelect={setFromPhoto} />
               </div>
             )}
             <div className="settings-group">
-              <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Recent</label>
+              <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>
+                Recent
+              </label>
               <PhotoGrid photos={unsplashHistory} onLike={toggleLike} onSelect={setFromPhoto} />
             </div>
           </section>
@@ -141,10 +148,21 @@ export function BackgroundSettings() {
         <>
           <div className="settings-group">
             <div className="upload-row">
-              <span className="settings-label" style={{ margin: 0 }}>Upload local background</span>
-              <label className={`upload-circle-btn${uploading ? ' uploading' : ''}`} title={uploading ? 'Uploading…' : 'Choose image'}>
+              <span className="settings-label" style={{ margin: 0 }}>
+                Upload local background
+              </span>
+              <label
+                className={`upload-circle-btn${uploading ? ' uploading' : ''}`}
+                title={uploading ? 'Uploading…' : 'Choose image'}
+              >
                 <Upload size={15} />
-                <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} style={{ display: 'none' }} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUpload}
+                  disabled={uploading}
+                  style={{ display: 'none' }}
+                />
               </label>
             </div>
             {uploading && <p className="settings-hint">Uploading…</p>}
@@ -161,13 +179,27 @@ export function BackgroundSettings() {
             <h3 className="settings-section-heading">Local Photos</h3>
             {localLiked.length > 0 && (
               <div className="settings-group">
-                <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Liked</label>
-                <PhotoGrid photos={localLiked} onLike={toggleLike} onSelect={setFromPhoto} onDelete={deleteLocalPhoto} />
+                <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>
+                  Liked
+                </label>
+                <PhotoGrid
+                  photos={localLiked}
+                  onLike={toggleLike}
+                  onSelect={setFromPhoto}
+                  onDelete={deleteLocalPhoto}
+                />
               </div>
             )}
             <div className="settings-group">
-              <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>Recent (up to 5)</label>
-              <PhotoGrid photos={localHistory} onLike={toggleLike} onSelect={setFromPhoto} onDelete={deleteLocalPhoto} />
+              <label className="settings-label" style={{ fontSize: 13, opacity: 0.7 }}>
+                Recent (up to 5)
+              </label>
+              <PhotoGrid
+                photos={localHistory}
+                onLike={toggleLike}
+                onSelect={setFromPhoto}
+                onDelete={deleteLocalPhoto}
+              />
             </div>
           </section>
         </>

@@ -4,8 +4,12 @@ import { useSettings } from '../../contexts/SettingsContext';
 function GmailIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#EA4335" strokeWidth="1.5"/>
-      <polyline points="22,6 12,13 2,6" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round"/>
+      <path
+        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+        stroke="#EA4335"
+        strokeWidth="1.5"
+      />
+      <polyline points="22,6 12,13 2,6" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
@@ -21,9 +25,7 @@ function formatDate(dateStr: string): string {
   if (isNaN(d.getTime())) return '';
   const now = new Date();
   const sameDay =
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate();
+    d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
   if (sameDay) return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
@@ -44,13 +46,9 @@ export function GmailWidget() {
         )}
       </div>
 
-      {loading && !summary && (
-        <div className="gmail-widget-empty">Loading…</div>
-      )}
+      {loading && !summary && <div className="gmail-widget-empty">Loading…</div>}
 
-      {error && (
-        <div className="gmail-widget-error">{error}</div>
-      )}
+      {error && <div className="gmail-widget-error">{error}</div>}
 
       {summary && summary.messages.length === 0 && !error && (
         <div className="gmail-widget-empty">No unread messages</div>
@@ -65,9 +63,7 @@ export function GmailWidget() {
                 <span className="gmail-message-date">{formatDate(msg.date)}</span>
               </div>
               <div className="gmail-message-subject">{msg.subject}</div>
-              {msg.snippet && (
-                <div className="gmail-message-snippet">{msg.snippet}</div>
-              )}
+              {msg.snippet && <div className="gmail-message-snippet">{msg.snippet}</div>}
             </div>
           ))}
         </div>

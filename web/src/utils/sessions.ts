@@ -42,14 +42,13 @@ export function summarise(sessions: Session[]): string {
   const total = plural(sessions.length, 'active session', 'active sessions');
   if (!sessions.some((session) => session.current)) return total;
   const others = sessions.length - 1;
-  return others === 0
-    ? `${total} · this device`
-    : `${total} · this device + ${plural(others, 'other', 'others')}`;
+  return others === 0 ? `${total} · this device` : `${total} · this device + ${plural(others, 'other', 'others')}`;
 }
 
 /** Current session first, then the most recently renewed. Does not trust the server's order. */
 export function orderSessions(sessions: Session[]): Session[] {
-  return [...sessions].sort((a, b) =>
-    Number(Boolean(b.current)) - Number(Boolean(a.current))
-    || Date.parse(b.lastUsedAt) - Date.parse(a.lastUsedAt));
+  return [...sessions].sort(
+    (a, b) =>
+      Number(Boolean(b.current)) - Number(Boolean(a.current)) || Date.parse(b.lastUsedAt) - Date.parse(a.lastUsedAt),
+  );
 }

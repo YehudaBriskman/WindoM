@@ -28,7 +28,10 @@ export function LinksSettings() {
                     src={faviconUrl}
                     className="link-favicon-preview"
                     alt=""
-                    onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('style'); }}
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                      (e.currentTarget.nextElementSibling as HTMLElement | null)?.removeAttribute('style');
+                    }}
                   />
                 ) : null}
                 <div className="link-favicon-fallback" style={faviconUrl ? { display: 'none' } : {}}>
@@ -51,23 +54,14 @@ export function LinksSettings() {
                 onChange={(e) => updateLink(i, { ...link, url: e.target.value })}
                 className={`link-editor-input glass-input${urlInvalid ? ' url-invalid' : ''}`}
               />
-              <button
-                type="button"
-                onClick={() => removeLink(i)}
-                className="link-remove-btn"
-                aria-label="Remove link"
-              >
+              <button type="button" onClick={() => removeLink(i)} className="link-remove-btn" aria-label="Remove link">
                 &times;
               </button>
             </div>
           );
         })}
       </div>
-      <button
-        type="button"
-        onClick={() => addLink()}
-        className="link-add-btn"
-      >
+      <button type="button" onClick={() => addLink()} className="link-add-btn">
         + Add Link
       </button>
     </div>

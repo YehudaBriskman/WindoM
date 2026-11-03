@@ -2,7 +2,9 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DockBar } from './DockBar';
 
-vi.mock('../../contexts/SettingsContext', () => ({ useSettings: () => ({ settings: { widgets: { showLinks: true } } }) }));
+vi.mock('../../contexts/SettingsContext', () => ({
+  useSettings: () => ({ settings: { widgets: { showLinks: true } } }),
+}));
 vi.mock('../../hooks/useLinks', () => ({
   useLinks: () => ({ links: [], addLink: vi.fn(), removeLink: vi.fn() }),
 }));
