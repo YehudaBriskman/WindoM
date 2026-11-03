@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useId } from 'react';
 import { useSettings } from '../../../contexts/SettingsContext';
 import { GlassSelect } from '../../ui/GlassSelect';
 
@@ -16,6 +16,8 @@ export function WeatherSettings() {
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
+  const unitLabelId = useId();
+  const locationInputId = useId();
 
   const search = useCallback(async (value: string) => {
     if (value.trim().length < 2) {
@@ -69,8 +71,9 @@ export function WeatherSettings() {
   return (
     <div>
       <div className="settings-group">
-        <label className="settings-label">Temperature Unit:</label>
+        <span id={unitLabelId} className="settings-label">Temperature Unit:</span>
         <GlassSelect
+          labelledBy={unitLabelId}
           value={settings.weather.unit}
           onChange={(value) => update('weather', { unit: value as 'F' | 'C' })}
           options={[
@@ -80,8 +83,9 @@ export function WeatherSettings() {
         />
       </div>
       <div className="settings-group" ref={containerRef} style={{ position: 'relative' }}>
-        <label className="settings-label">Location:</label>
+        <label htmlFor={locationInputId} className="settings-label">Location:</label>
         <input
+          id={locationInputId}
           type="text"
           value={query}
           placeholder="City name or leave empty for auto-detect"

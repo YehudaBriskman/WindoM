@@ -45,4 +45,17 @@ describe('GlassSelect keyboard navigation', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
     expect(document.activeElement).toBe(trigger);
   });
+
+  it('takes its accessible name from an external label plus the current value', () => {
+    render(
+      <>
+        <span id="unit-label">Temperature Unit:</span>
+        <GlassSelect value="two" onChange={vi.fn()} options={options} labelledBy="unit-label" />
+      </>,
+    );
+
+    const trigger = screen.getByRole('button', { name: 'Temperature Unit: Two' });
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+    expect(screen.getByRole('listbox', { name: 'Temperature Unit:' })).toBeTruthy();
+  });
 });
