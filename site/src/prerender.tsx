@@ -3,6 +3,10 @@ import { RouterProvider, createMemoryRouter } from 'react-router';
 import { ROUTES, legacyPathOf, titleFor, type SiteRoute } from './routes';
 import { RouteChrome } from './components/RouteChrome';
 import { NotFound } from './pages/NotFound';
+import { AUTHOR } from './lib/site';
+// The extension's own version, so the structured data cannot lag a release.
+// It was a hardcoded string that every release had to remember to bump.
+import manifest from '../../web/manifest.json' with { type: 'json' };
 
 /**
  * Renders every route to static HTML at build time.
@@ -95,14 +99,17 @@ function headFor(route: SiteRoute): string {
           operatingSystem: 'Chrome',
           url: ORIGIN,
           description: route.description,
-          softwareVersion: '1.5.1',
+          softwareVersion: manifest.version,
           license: 'https://opensource.org/licenses/MIT',
           isAccessibleForFree: true,
           offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
           author: {
             '@type': 'Person',
-            name: 'Yehuda Briskman',
-            url: 'https://yehudabriskman.com',
+            '@id': AUTHOR.id,
+            name: AUTHOR.name,
+            alternateName: AUTHOR.alternateName,
+            url: AUTHOR.url,
+            sameAs: AUTHOR.sameAs,
           },
           downloadUrl:
             'https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb',
