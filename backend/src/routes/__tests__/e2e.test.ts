@@ -600,6 +600,71 @@ describe('Journey 5 - settings persistence and cross-user isolation', () => {
   });
 });
 
+describe('Journey 5b - server-assigned settings revisions (#251)', () => {
+  type Rev = { data: Record<string, Record<string, unknown>> | null; updatedAt: number | null; previousUpdatedAt?: number | null };
+  async function put(token: string, payload: object): Promise<Rev> {
+    const res = await app.inject({ method: 'PUT', url: '/settings', headers: authHeader(token), payload });
+    expect(res.statusCode).toBe(200);
+    return res.json<Rev>();
+  }
+  async function get(token: string): Promise<Rev> {
+    return (await app.inject({ method: 'GET', url: '/settings', headers: authHeader(token) })).json<Rev>();
+  }
+
+  it('GET reports a null revision before the first write', async () => {
+    const { accessToken } = await fullRegister();
+    expect(await get(accessToken)).toEqual({ data: null, updatedAt: null });
+  });
+
+  it('each PUT returns a fresh, strictly increasing revision and the one it replaced', async () => {
+    const { accessToken } = await fullRegister();
+    const first = await put(accessToken, { general: { userName: 'one' } });
+    expect(first.previousUpdatedAt).toBeNull();
+    expect(typeof first.updatedAt).toBe('number');
+
+    const second = await put(accessToken, { general: { userName: 'two' } });
+    expect(second.previousUpdatedAt).toBe(first.updatedAt);
+    expect(second.updatedAt!).toBeGreaterThan(first.updatedAt!);
+    expect((await get(accessToken)).updatedAt).toBe(second.updatedAt);
+  });
+
+  it('ignores the client-clock _updatedAt an older extension sends', async () => {
+    const { accessToken } = await fullRegister();
+    const hoursAhead = Date.now() + 5 * 60 * 60 * 1000;
+    const res = await put(accessToken, { general: { userName: 'old-client' }, _updatedAt: hoursAhead });
+    expect(res.updatedAt!).toBeLessThan(hoursAhead);
+    expect(res.data).not.toHaveProperty('_updatedAt');
+  });
+
+  it('revisions stay unique when writes land in the same millisecond', async () => {
+    const { accessToken } = await fullRegister();
+    await put(accessToken, { general: { userName: 'seed' } });
+    const now = Date.now();
+    const spy = vi.spyOn(Date, 'now').mockReturnValue(now);
+    try {
+      const a = await put(accessToken, { clock: { showSeconds: true } });
+      const b = await put(accessToken, { clock: { showSeconds: false } });
+      expect(b.updatedAt!).toBeGreaterThan(a.updatedAt!);
+      expect(b.previousUpdatedAt).toBe(a.updatedAt);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('concurrent PUTs of different sections both survive', async () => {
+    const { accessToken } = await fullRegister();
+    await Promise.all([
+      put(accessToken, { general: { userName: 'device-a' } }),
+      put(accessToken, { clock: { showSeconds: true } }),
+      put(accessToken, { weather: { unit: 'C' } }),
+    ]);
+    const { data } = await get(accessToken);
+    expect(data?.general?.userName).toBe('device-a');
+    expect(data?.clock?.showSeconds).toBe(true);
+    expect(data?.weather?.unit).toBe('C');
+  });
+});
+
 // ══════════════════════════════════════════════════════════════════════════
 // 6. ACCOUNT DELETION AND CASCADING DB CLEANUP
 // ══════════════════════════════════════════════════════════════════════════

@@ -3,6 +3,11 @@ import { syncStorage, localStore } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
 import { migrateFlatToSectioned, isLegacySettings } from '../lib/migrateSettings';
 import { getAccessToken, apiGet, apiPut } from '../lib/api';
+import {
+  type DirtyMap, type ServerRev, type SettingsResponse,
+  planSync, revisionAfterPush, getBaseRev, setBaseRev, getDirty, markDirty, clearDirty,
+  clearAllDirty, getLegacyLocalUpdatedAt,
+} from '../lib/settings-sync';
 import { createLogger } from '../lib/logger';
 
 const log = createLogger('settings');
@@ -31,7 +36,6 @@ function notifyStore(next: Settings): void {
 // Sections excluded from backend sync (ephemeral / device-specific state)
 const SYNC_EXCLUDE = new Set<keyof Settings>(['focus']);
 
-const LOCAL_UPDATED_AT_KEY = 'windom_settings_updated_at';
 const KEY_TIMESTAMPS_STORAGE_KEY = 'windom_key_timestamps';
 
 function pickSyncable(s: Partial<Settings>): Partial<Settings> {
@@ -40,28 +44,24 @@ function pickSyncable(s: Partial<Settings>): Partial<Settings> {
   ) as Partial<Settings>;
 }
 
-function withTimestamp(s: Partial<Settings>): Partial<Settings> & { _updatedAt: number } {
-  return { ...s, _updatedAt: Date.now() };
+function pickSections<T extends object>(source: T, keys: string[]): Partial<T> {
+  const src = source as Record<string, unknown>;
+  return Object.fromEntries(keys.filter((k) => k in src).map((k) => [k, src[k]])) as Partial<T>;
 }
 
-async function getLocalUpdatedAt(): Promise<number> {
-  try {
-    const result = await chrome.storage.local.get([LOCAL_UPDATED_AT_KEY]);
-    return (result[LOCAL_UPDATED_AT_KEY] as number | undefined) ?? 0;
-  } catch (err) {
-    // 0 means "never updated locally", so the backend copy wins the next sync.
-    log.warn('Could not read the local settings timestamp:', err);
-    return 0;
-  }
-}
-
-async function setLocalUpdatedAt(): Promise<void> {
-  try {
-    await chrome.storage.local.set({ [LOCAL_UPDATED_AT_KEY]: Date.now() });
-  } catch (err) {
-    // Best effort: a missed stamp only makes the next sync prefer the backend.
-    log.warn('Could not write the local settings timestamp:', err);
-  }
+/**
+ * Upload sections and, when the server confirms nothing else landed in between,
+ * record its new revision. `sent` is the dirty-map snapshot for these sections.
+ */
+async function pushSections(
+  sections: Partial<Settings>,
+  expectedBase: ServerRev | undefined,
+  sent: DirtyMap,
+): Promise<void> {
+  const res = await apiPut<SettingsResponse<Partial<Settings>>>('/settings', pickSyncable(sections));
+  const rev = revisionAfterPush(expectedBase, res);
+  if (rev !== undefined) await setBaseRev(rev);
+  await clearDirty(sent);
 }
 
 interface SettingsContextValue {
@@ -100,43 +100,70 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const keyTimestampsRef = useRef<Record<string, number>>({});
 
   // Debounced push to backend - accumulates changed sections and pushes only the delta.
+  // A push that never happens (tab closed, offline) leaves its sections dirty, and
+  // the next load pushes them.
   const debouncedPush = useCallback((delta: Partial<Settings>) => {
     pendingDeltaRef.current = { ...pendingDeltaRef.current, ...delta };
     if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
     pushTimerRef.current = setTimeout(async () => {
-      const toSend = pendingDeltaRef.current;
+      const toSend = pickSyncable(pendingDeltaRef.current);
       pendingDeltaRef.current = {};
+      if (Object.keys(toSend).length === 0) return;
       try {
         const token = await getAccessToken();
-        if (token) await apiPut('/settings', withTimestamp(pickSyncable(toSend)));
+        if (!token) return;
+        const [base, dirty] = await Promise.all([getBaseRev(), getDirty()]);
+        await pushSections(toSend, base, pickSections(dirty, Object.keys(toSend)) as DirtyMap);
       } catch (err) {
         log.error('Failed to push settings to backend:', err);
       }
     }, 5000);
   }, []);
 
+  /**
+   * Reconcile with the backend. Who wins is decided by the server's revision
+   * (see lib/settings-sync.ts), never by comparing this device's clock with it.
+   */
   const syncWithBackend = useCallback(async (localSettings: Settings, backendWins = false) => {
     try {
       const token = await getAccessToken();
       if (!token) return;
 
-      const { data } = await apiGet<{ data: (Partial<Settings> & { _updatedAt?: number }) | null }>('/settings');
+      const res = await apiGet<SettingsResponse<Partial<Settings> & { _updatedAt?: number }>>('/settings');
+      const data = res.data;
+      const serverRev = res.updatedAt;
+      const syncableSections = Object.keys(pickSyncable(localSettings));
+      const [baseRev, dirty, legacyLocalUpdatedAt] = await Promise.all([
+        getBaseRev(), getDirty(), getLegacyLocalUpdatedAt(),
+      ]);
+      const dirtySections = Object.keys(dirty).filter((k) => syncableSections.includes(k));
 
-      if (!data || Object.keys(data).length === 0) {
-        await apiPut('/settings', withTimestamp(pickSyncable(localSettings)));
+      const plan = planSync({
+        backendEmpty: !data || Object.keys(data).length === 0,
+        backendWins,
+        serverRev,
+        baseRev,
+        dirtySections,
+        legacyLocalUpdatedAt,
+        syncableSections,
+      });
+
+      if (plan.kind === 'push-all') {
+        await pushSections(pickSyncable(localSettings), serverRev ?? null, dirty);
         return;
       }
 
-      const localUpdatedAt = await getLocalUpdatedAt();
-      const backendUpdatedAt = data._updatedAt ?? 0;
-
-      if (!backendWins && localUpdatedAt > backendUpdatedAt) {
-        await apiPut('/settings', withTimestamp(pickSyncable(localSettings)));
+      if (plan.kind === 'push-dirty') {
+        if (dirtySections.length > 0) {
+          await pushSections(pickSections(localSettings, dirtySections), serverRev, pickSections(dirty, dirtySections) as DirtyMap);
+        }
         return;
       }
 
+      // pull: adopt the server copy, except the sections this device must keep.
+      const keepLocal = new Set(plan.keepLocal);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { _updatedAt: _, ...rawBackendSettings } = data;
+      const { _updatedAt: _, ...rawBackendSettings } = data ?? {};
       const backendSettings = Object.fromEntries(
         Object.entries(rawBackendSettings).filter(([k]) => k in defaultSettings),
       ) as Partial<Settings>;
@@ -146,7 +173,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       for (const [sectionKey, sectionVal] of Object.entries(backendSettings)) {
         if (sectionVal && typeof sectionVal === 'object' && sectionKey in merged) {
           const k = sectionKey as keyof Settings;
-          if (!SYNC_EXCLUDE.has(k)) {
+          if (!SYNC_EXCLUDE.has(k) && !keepLocal.has(sectionKey)) {
             (merged as unknown as Record<string, unknown>)[k] = {
               ...(localSettings as unknown as Record<string, object>)[k],
               ...(sectionVal as object),
@@ -168,10 +195,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
       );
       await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
+
+      // We have now seen everything up to serverRev.
+      if (typeof serverRev === 'number') await setBaseRev(serverRev);
+      if (backendWins) await clearAllDirty();
+
+      if (keepLocal.size > 0) {
+        const keys = [...keepLocal];
+        await pushSections(pickSections(localSettings, keys), serverRev, pickSections(dirty, keys) as DirtyMap);
+      }
     } catch (err) {
       log.warn('Backend sync failed - staying on local:', err);
     }
-  }, []);
+  }, [setSettings]);
 
   // Load settings on mount, running legacy migration if needed
   useEffect(() => {
@@ -260,7 +296,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         if (s.general.userName !== defaultSettings.general.userName) return s;
         const firstName = authName.split(' ')[0];
         void syncStorage.set('general', { ...s.general, userName: firstName });
-        void setLocalUpdatedAt();
+        void markDirty(['general']);
         return { ...s, general: { ...s.general, userName: firstName } };
       });
     };
@@ -316,6 +352,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         return localStore.set('windom_focus', next);
       }
 
+      // Orders writes between tabs only; backend conflicts use the server revision.
       keyTimestampsRef.current[section as string] = Date.now();
 
       const mergedSection = { ...(settingsRef.current[section] as object), ...(patch as object) } as Settings[S];
@@ -332,7 +369,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
           [section]: mergedSection,
           [KEY_TIMESTAMPS_STORAGE_KEY]: { ...keyTimestampsRef.current },
         } as Record<string, unknown>),
-        setLocalUpdatedAt(),
+        markDirty([section as string]),
       ]);
       return saved;
     },
@@ -373,7 +410,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       const [saved] = await Promise.all([
         syncStorage.setMultiple(storageUpdate),
-        setLocalUpdatedAt(),
+        markDirty(Object.keys(pickSyncable(patches))),
       ]);
       return saved;
     },
@@ -386,6 +423,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     await syncStorage.clear();
     await syncStorage.setMultiple(defaultSettings as unknown as Record<string, unknown>);
     await localStore.set('windom_focus', defaultSettings.focus);
+    // A reset is an edit like any other: the next sync uploads the defaults.
+    await markDirty(Object.keys(pickSyncable(defaultSettings)));
   }, []);
 
   return (

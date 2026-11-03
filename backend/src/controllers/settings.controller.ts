@@ -74,27 +74,11 @@ export const settingsSectionSchema = z.object({
   _updatedAt: z.number().optional(),
 });
 
-export async function getSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const data = await settingsService.getSettings(req.user.sub);
-  void reply.send({ data });
-}
-
-export async function putSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const parsed = settingsSectionSchema.safeParse(req.body);
-  if (!parsed.success) {
-    void reply.status(400).send({
-      statusCode: 400, error: 'Bad Request', message: 'Invalid settings: links must use HTTP or HTTPS and fields must match the settings schema',
-    });
-    return;
-  }
-  const incoming = parsed.data;
-
-  // Strip _updatedAt from stored data (sync metadata, not settings)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { _updatedAt: _, ...incomingSections } = incoming;
-
-  const existing = (await settingsService.getSettings(req.user.sub)) ?? {};
-
+/** Deep-merge (one level) incoming sections over the stored blob; unrelated sections survive. */
+export function mergeSections(
+  existing: Record<string, unknown>,
+  incomingSections: Record<string, unknown>,
+): Record<string, unknown> {
   const merged: Record<string, unknown> = { ...existing };
   for (const [section, value] of Object.entries(incomingSections)) {
     if (value !== undefined) {
@@ -106,7 +90,34 @@ export async function putSettingsController(req: FastifyRequest, reply: FastifyR
       };
     }
   }
+  return merged;
+}
 
-  const saved = await settingsService.saveSettings(req.user.sub, merged);
-  void reply.send({ data: saved });
+/**
+ * Both responses carry `updatedAt`, the server-assigned revision (epoch ms) the
+ * extension compares for conflict resolution (#251). It sits beside `data`,
+ * not inside it, so extension versions that predate it see the shape they know.
+ */
+export async function getSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const record = await settingsService.getSettingsRecord(req.user.sub);
+  void reply.send({ data: record?.data ?? null, updatedAt: record?.updatedAt ?? null });
+}
+
+export async function putSettingsController(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const parsed = settingsSectionSchema.safeParse(req.body);
+  if (!parsed.success) {
+    void reply.status(400).send({
+      statusCode: 400, error: 'Bad Request', message: 'Invalid settings: links must use HTTP or HTTPS and fields must match the settings schema',
+    });
+    return;
+  }
+
+  // `_updatedAt` is the client-clock stamp older extension versions still send.
+  // It is accepted and ignored: the server assigns the revision.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { _updatedAt: _, ...incomingSections } = parsed.data;
+
+  const saved = await settingsService.updateSettings(req.user.sub, (existing) =>
+    mergeSections(existing, incomingSections));
+  void reply.send({ data: saved.data, updatedAt: saved.updatedAt, previousUpdatedAt: saved.previousUpdatedAt });
 }
