@@ -7,6 +7,73 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.6.0] - 2026-11-04
+
+A privacy and reliability release. WindoM now asks for your location and your
+browsing history only when you choose a feature that needs them, settings stop
+overwriting each other between devices, and your account gains a sessions
+table, a data export and a security log.
+
+Carries two additive schema migrations (`0008`, `0009`): a device label on
+sessions and the new `audit_logs` table. Both are backward-compatible with
+1.5.1, so an automatic rollback leaves the database usable.
+
+### Added
+- **Active sessions as a table.** Every signed-in device on one row: browser
+  and system (for example "Chrome · Windows", never a version), with a mark on
+  the device you are using. Sign out one device, or every device but this one.
+- **Download your data.** `GET /me/export` returns a JSON copy of everything
+  stored about your account, with passwords, tokens and API keys left out.
+- **A security log.** Sign-ins, failed sign-ins, password and email changes,
+  session sign-outs, connected and disconnected apps, and data exports are
+  recorded with the time and device only - never an IP address, an email or a
+  token. Entries expire after 180 days and are deleted with the account.
+
+### Changed
+- **Location is asked for only when you ask.** A new tab never prompts for
+  location and never looks up your position from your IP address. Weather
+  shows "Set location" until you type a city or press **Use my current
+  location** in Settings → Weather.
+- **History access is opt-in.** WindoM no longer requests your browsing
+  history on install; the switch in Settings asks for it when you turn it on,
+  and gives it back to Chrome when you turn it off.
+- **The privacy policy says what deletion covers.** Deleting your account
+  removes your data from the database at once; copies in server logs and
+  database backups expire within 30 days.
+- **Animations respect reduced motion** as short fades instead of no
+  transition at all.
+
+### Fixed
+- **Settings from one device overwrote another's.** Every new tab on a device
+  that had ever changed a setting replaced the copy on your account, because
+  the server's timestamp never reached the extension. Settings now sync by a
+  revision number the server assigns, so a device with a wrong clock can no
+  longer win, and two devices saving at the same moment no longer lose one
+  save.
+- **A failed save looked like it worked.** Settings that could not be written
+  now say so.
+- **Disconnecting Calendar left Gmail showing "Connected"** until the next
+  sync, although both were already disconnected on the server.
+- **The search overlay on web pages** picked up the page's font and colours,
+  and lost its rounded glass look. It now looks the same on every site.
+- **Panels that failed to load** show an error instead of a blank space, and
+  empty lists say they are empty.
+- **Accessibility:** every icon button has a name, every form field a label,
+  and the focus ring is visible on light wallpapers as well as dark ones.
+
+### Security
+- **Request logs no longer contain one-time links.** Password-reset and
+  email-verification tokens, and OAuth codes, were written to the server logs
+  in full. Every query-string value is now logged as `[redacted]`.
+- **Error monitoring** (Sentry) is available for the server: errors, reused
+  sign-in tokens and database-pool exhaustion, with request bodies, cookies,
+  headers, query strings and emails stripped before anything is sent. It is
+  off until a DSN is configured.
+- **A failed server deploy rolls back by itself** to the previous release and
+  stops the extension from publishing.
+- **Dependencies:** the five open advisories (minimatch, glob, esbuild) are
+  resolved; `npm audit` reports none in any workspace.
+
 ## [1.5.1] - 2026-10-26
 
 A fix release. Signing in with Google succeeded and then immediately undid
