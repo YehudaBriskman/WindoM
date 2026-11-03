@@ -63,7 +63,7 @@ export function GitHubSettings() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         <div className="integration-card">
-          <div className="integration-icon" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="integration-icon" style={{ background: 'var(--tile-neutral)' }}>
             <GitHubIcon />
           </div>
           <div className="integration-info">
@@ -91,7 +91,7 @@ export function GitHubSettings() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <div>
         <div className="integration-card">
-          <div className="integration-icon" style={{ background: 'rgba(255,255,255,0.08)' }}>
+          <div className="integration-icon" style={{ background: 'var(--tile-neutral)' }}>
             <GitHubIcon />
           </div>
           <div className="integration-info">

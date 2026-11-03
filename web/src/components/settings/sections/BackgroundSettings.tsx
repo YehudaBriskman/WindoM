@@ -87,8 +87,8 @@ export function BackgroundSettings() {
             </div>
           )}
           {unsplashError && unsplashError !== 'no-key' && (
-            <div className="auth-required-notice" style={{ marginBottom: '8px', borderColor: 'rgba(248,113,113,0.4)' }}>
-              <p style={{ color: 'rgba(248,113,113,0.9)' }}>{unsplashError}</p>
+            <div className="auth-required-notice" style={{ marginBottom: '8px', borderColor: 'var(--error-edge)' }}>
+              <p style={{ color: 'var(--error-ink)' }}>{unsplashError}</p>
             </div>
           )}
           <div className="settings-group">
