@@ -155,7 +155,7 @@ const SECTIONS: GuideSection[] = [
         content: [
           'Open Settings → Weather tab.',
           'Choose °C or °F under Temperature Unit.',
-          'Start typing a city under Location and pick it from the list - or leave it empty to use the location your browser reports.',
+          'Start typing a city under Location and pick it from the list - or press "Use my current location". The browser asks for permission only then; WindoM never asks on its own.',
         ],
       },
       {
