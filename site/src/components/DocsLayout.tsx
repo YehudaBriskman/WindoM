@@ -353,6 +353,10 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
  * like `<h2>Connect Spotify <span class="badge">BYOA</span></h2>` is separate
  * nodes with no whitespace between them in the tree, so joining with nothing
  * produced "Connect SpotifyBYOA" in the contents rail.
+ *
+ * Badges are skipped outright. They are decoration on the heading, not part of
+ * its name: with them the rail read "Create a WindoM Account Optional" and the
+ * self-link was announced as "Link to Connect Spotify BYOA".
  */
 function textOf(node: ReactNode): string {
   return flatten(node).replace(/\s+/g, ' ').trim();
@@ -363,7 +367,9 @@ function flatten(node: ReactNode): string {
   if (typeof node === 'string' || typeof node === 'number') return String(node);
   if (Array.isArray(node)) return node.map(flatten).join(' ');
   if (isValidElement(node)) {
-    return flatten((node as ReactElement<{ children?: ReactNode }>).props.children);
+    const { className, children } = (node as ReactElement<{ className?: string; children?: ReactNode }>).props;
+    if (typeof className === 'string' && className.split(/\s+/).includes('badge')) return '';
+    return flatten(children);
   }
   return '';
 }

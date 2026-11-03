@@ -63,7 +63,9 @@ function sectionsOf(content) {
   headings.forEach((match, i) => {
     const bodyStart = match.index + match[0].length;
     const bodyEnd = i + 1 < headings.length ? headings[i + 1].index : content.length;
-    const heading = textOf(match[3]);
+    // Badges ("Optional", "BYOA") decorate a heading rather than name it, so
+    // they are dropped here as the contents rail drops them.
+    const heading = textOf(match[3].replace(/<span\b[^>]*class="badge\b[^"]*"[^>]*>[\s\S]*?<\/span>/g, ' '));
     if (!heading) return;
     sections.push({
       id: match[2],
