@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { Stage } from './Stage';
 import { useTilt } from '../hooks/useTilt';
 import { STORE_URL } from '../lib/site';
@@ -68,9 +69,9 @@ export function Hero({ cycle, animated }: HeroProps) {
             <a className="btn btn-primary" href={STORE_URL}>
               Add to Chrome
             </a>
-            <a className="btn btn-secondary" href="/guide.html">
+            <Link className="btn btn-secondary" to="/guide">
               See what it does
-            </a>
+            </Link>
           </div>
 
           {/* A specification strip rather than loose tags: bracketed, on one
