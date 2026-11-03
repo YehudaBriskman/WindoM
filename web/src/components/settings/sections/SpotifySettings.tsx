@@ -3,6 +3,7 @@ import { useSettings } from '../../../contexts/SettingsContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSpotifyConnection, useSpotifySetup } from '../../../hooks/useSpotifyConnection';
 import { COPY_CONFIRM_DURATION_MS } from '../../../lib/timing-constants';
+import { getAuthRedirectUrl } from '../../../lib/oauth-connection';
 
 // ── Spotify icon ────────────────────────────────────────────────────────────
 
@@ -22,7 +23,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
   const [copied, setCopied] = useState(false);
   const { busy, error, setError, connect } = useSpotifyConnection({ afterConnect: onSaved, saveClientId: true });
 
-  const redirectUri = chrome.identity.getRedirectURL();
+  const redirectUri = getAuthRedirectUrl();
 
   async function handleCopy() {
     await navigator.clipboard.writeText(redirectUri);

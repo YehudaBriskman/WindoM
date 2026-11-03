@@ -62,3 +62,15 @@ export function onHistoryPermissionChange(cb: (granted: boolean) => void): () =>
     api.onRemoved.removeListener(removed);
   };
 }
+
+/** Whether this context has chrome.history at all (it stays bound after a revoke: check the permission too). */
+export function hasHistoryApi(): boolean {
+  return typeof chrome !== 'undefined' && !!chrome.history?.search;
+}
+
+/** chrome.history.search. Call only after `hasHistoryPermission()` resolved true. */
+export function searchHistory(query: chrome.history.HistoryQuery): Promise<chrome.history.HistoryItem[]> {
+  return new Promise((resolve) => {
+    chrome.history.search(query, (results) => resolve(results ?? []));
+  });
+}
