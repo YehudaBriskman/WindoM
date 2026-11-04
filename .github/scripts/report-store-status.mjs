@@ -250,10 +250,25 @@ async function accessToken(env) {
   return body.access_token;
 }
 
+/**
+ * The version the store's draft must hold, or '' for no comparison.
+ *
+ * `STORE_CHECK=login` is the pre-deploy credential check (release.yml's `store-login`
+ * job and the rehearsal). It runs BEFORE anything is uploaded, so the store still holds
+ * the previous version and comparing would always fail. v1.7.0's first release attempt
+ * failed exactly that way: release.yml sets RELEASE_TAG for every job, and the login
+ * check inherited it. Only the post-upload checks compare.
+ */
+export function expectedVersionFrom(env) {
+  if (env.STORE_CHECK === 'login') return '';
+  return (env.RELEASE_TAG ?? '').replace(/^refs\/tags\//, '').replace(/^v/, '');
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const env = process.env;
   const id = env.CHROME_EXTENSION_ID;
-  const expectedVersion = (env.RELEASE_TAG ?? '').replace(/^refs\/tags\//, '').replace(/^v/, '');
+  const expectedVersion = expectedVersionFrom(env);
+  if (env.STORE_CHECK === 'login') console.log('Login check: the draft version is not compared with the release.');
 
   try {
     const token = await accessToken(env);
