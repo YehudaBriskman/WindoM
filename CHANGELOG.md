@@ -7,6 +7,28 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.7.0] - 2026-11-04
+
+A server-side release. The extension is unchanged apart from its version number.
+No schema migrations.
+
+### Added
+- **Monitoring built on OpenTelemetry**, the open standard. The server can send
+  its logs, request traces and metrics to any OpenTelemetry-compatible service,
+  so security events (a reused sign-in token), error spikes and database
+  exhaustion raise an alert. It is off unless configured, and personal data
+  (emails, IP addresses, tokens, cookies, query values) is removed before
+  anything leaves the server. See `docs/monitoring.md`. (#476)
+
+### Changed
+- **Deploys no longer cut requests off.** On shutdown the server now finishes
+  the requests already in progress, closes its database connections and only
+  then exits, instead of being killed mid-request on every deploy. (#478)
+
+### Removed
+- The dormant Sentry integration. It was never switched on and is replaced by
+  OpenTelemetry. (#476)
+
 ## [1.6.0] - 2026-11-04
 
 A privacy and reliability release. WindoM now asks for your location and your
