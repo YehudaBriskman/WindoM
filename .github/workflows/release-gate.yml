@@ -331,6 +331,28 @@ jobs:
             'test -f dist/db/migrate.js && test -d drizzle && test -f dist/index.js'
           echo "Image contains the migration entrypoint and migration files."
 
+      # Trivy is installed here, not by the action. The action's installer fetches the
+      # binary from get.trivy.dev only, and that host stopped resolving (2026-11-04,
+      # v1.6.0's gate failed twice on curl exit 6). The same file is on Trivy's GitHub
+      # release; it is checked against a SHA-256 pinned in this file, so neither a
+      # moved download host nor a replaced asset can change what runs here.
+      # To upgrade: bump TRIVY_VERSION and take the Linux-64bit line from that
+      # release's trivy_<version>_checksums.txt.
+      - name: Install Trivy from its GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRIVY_VERSION: 0.70.0
+          TRIVY_SHA256: 8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9
+        run: |
+          dir="$RUNNER_TEMP/trivy"
+          mkdir -p "$dir"
+          tarball="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          gh release download "v${TRIVY_VERSION}" -R aquasecurity/trivy -p "$tarball" -D "$dir"
+          echo "${TRIVY_SHA256}  ${dir}/${tarball}" | sha256sum -c -
+          tar -xzf "${dir}/${tarball}" -C "$dir" trivy
+          echo "$dir" >> "$GITHUB_PATH"
+          "$dir/trivy" --version
+
       # Pinned to the immutable commit behind signed release v0.36.0.
       - name: Scan image for vulnerabilities
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -339,6 +361,7 @@ jobs:
           format: table
           severity: CRITICAL,HIGH
           exit-code: '1'
+          skip-setup-trivy: true
 
       # The deploy ships THIS image - the one built, entrypoint-checked and scanned
       # above - instead of letting Fly build the Dockerfile again remotely. The ID
