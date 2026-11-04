@@ -416,3 +416,58 @@ jobs:
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+  # ── GitHub Release ─────────────────────────────────────────────────────────
+  # The Releases page is the public record of what shipped. Until 2026-11-04 no
+  # job created it, so only the three releases made by hand existed (v1.3.3,
+  # v1.5.0, v1.5.1) and every other tag had none.
+  #
+  # Runs after what this run released succeeded: the deploy, the publish, or
+  # both. Nothing failed or was cancelled. Idempotent: a re-run (for example
+  # `targets=extension` after a failed publish) updates the notes and asset
+  # instead of failing on "already exists".
+  github-release:
+    name: GitHub release
+    needs: [gate, deploy, publish]
+    if: >-
+      always() && needs.gate.result == 'success' &&
+      (needs.deploy.result == 'success' || needs.publish.result == 'success') &&
+      !contains(fromJSON('["failure", "cancelled"]'), needs.deploy.result) &&
+      !contains(fromJSON('["failure", "cancelled"]'), needs.publish.result)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.sha }}
+          sparse-checkout: |
+            .github/scripts
+            CHANGELOG.md
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Download the package the gate checked
+        uses: actions/download-artifact@v7
+        with:
+          name: release-extension-${{ needs.gate.outputs.sha }}
+          path: release-package
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          node .github/scripts/changelog-section.mjs "$RELEASE_TAG" CHANGELOG.md > notes.md
+          asset="windom-${RELEASE_TAG}.zip"
+          cp release-package/extension.zip "$asset"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" --title "$RELEASE_TAG" --notes-file notes.md --draft=false --prerelease=false
+            gh release upload "$RELEASE_TAG" "$asset" --clobber
+          else
+            # --verify-tag: never let the release create a tag the gate did not check.
+            gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" --notes-file notes.md "$asset"
+          fi
+          gh release view "$RELEASE_TAG" --json url,isLatest --jq '"\(.url) latest=\(.isLatest)"'
