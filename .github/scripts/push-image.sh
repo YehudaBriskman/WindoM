@@ -22,7 +22,15 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 docker tag "$LOCAL" "$REF"
 docker push "$REF" | tee push.log
 PUSHED=$(grep -oE 'digest: sha256:[0-9a-f]{64}' push.log | tail -1 | cut -d' ' -f2 || true)
-REMOTE=$(docker buildx imagetools inspect "$REF" | awk '/^Digest:/ {print $2; exit}')
+# Read the whole output before parsing it. `imagetools inspect ... | awk '...; exit'`
+# under pipefail raced: awk stopped reading at the Digest line while buildx was still
+# writing the platform manifests below it, and buildx exits 255 on the closed pipe -
+# silently, failing the step (15 of 20 local tries; it failed PR #483's rehearsal).
+if ! INSPECT=$(docker buildx imagetools inspect "$REF"); then
+  echo "::error::docker buildx imagetools inspect $REF failed. Nothing has been changed."
+  exit 1
+fi
+REMOTE=$(awk '/^Digest:/ {print $2; exit}' <<<"$INSPECT")
 echo "pushed ${PUSHED:-?} / registry resolves $REF to ${REMOTE:-?}"
 if [ -z "$PUSHED" ] || [ "$PUSHED" != "$REMOTE" ]; then
   echo "::error::Could not confirm the pushed image in the registry. Nothing has been changed."
