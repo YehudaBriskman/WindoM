@@ -16,7 +16,7 @@ account and was not portable. `@sentry/node` and its `SENTRY_*` variables are go
 
 | File | Role |
 |---|---|
-| `backend/src/instrumentation.ts` | Bootstrap, loaded first by `node --import`. Checks the switch, starts the SDK, flushes on SIGTERM/SIGINT |
+| `backend/src/instrumentation.ts` | Bootstrap, loaded first by `node --import`. Checks the switch, starts the SDK, registers its flush (called by the app's SIGTERM/SIGINT shutdown) |
 | `backend/src/telemetry/sdk.ts` | The SDK: OTLP/HTTP exporters, batch processors, instrumentations, resource. Imported only when telemetry is on |
 | `backend/src/telemetry/scrub.ts` | The exporter-side scrubber every span and log record passes through |
 | `backend/src/telemetry/events.ts` | The three `event.name` values and the two app counters. Depends on `@opentelemetry/api` only |
@@ -154,9 +154,11 @@ assert none of them is exported.
   a request never waits for an export.
 - Each export times out after 5 s (`OTEL_EXPORTER_OTLP_TIMEOUT` overrides).
 - Start-up opens no connection.
-- On SIGTERM/SIGINT the bootstrap flushes for at most **3 s** (Fly's default
-  `kill_timeout` is 5 s) and exits with 143/130. Measured against a black-holed
-  endpoint: SIGTERM to exit in 3.0 s, request latency unchanged.
+- On SIGTERM/SIGINT the app's shutdown (`backend/src/lib/shutdown.ts`, #478) drains
+  HTTP, ends the pg pool, and only then flushes telemetry, for at most **3 s**, so
+  the drain's own log lines are exported too. It exits 0, within fly.toml's
+  `kill_timeout` of 15 s. Measured against a black-holed endpoint: SIGTERM to exit
+  in 3.1 s, exit 0, request latency unchanged.
 - Exporter failures are printed to stderr at ERROR level by the OTel diag logger, not
   through pino, so a failing log export cannot feed itself.
 
