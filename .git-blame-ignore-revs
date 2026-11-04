@@ -10,5 +10,7 @@
 # commit's SHA, after the merge, in a follow-up commit. One full 40-character SHA
 # per line, with a comment saying what it was.
 #
-# Prettier across backend/, web/ and site/ (#310) - squash SHA to be appended
-# after the PR merges.
+# Prettier across backend/, web/ and site/ (#310, #471). The squash also carries
+# the CI format check and the pre-commit hook, which add lines rather than
+# reformat them, so ignoring the whole commit costs no real attribution.
+91d8a7ca423429312c3e46f4c70cb85194729bbf
