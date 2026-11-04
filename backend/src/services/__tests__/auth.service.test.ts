@@ -28,14 +28,17 @@ vi.mock('../auth-email.service.js', () => ({
   sendVerification: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../../lib/sentry.js', () => ({
-  captureTokenReuse: vi.fn(),
+vi.mock('../../telemetry/events.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof EventsModule>()),
+  recordTokenReuse: vi.fn(),
 }));
 
 import { db } from '../../db/client.js';
 import * as sessionService from '../session.service.js';
 import { verifyPassword } from '../../lib/password.js';
-import { captureTokenReuse } from '../../lib/sentry.js';
+import type * as EventsModule from '../../telemetry/events.js';
+import { EVENT_TOKEN_REUSE, recordTokenReuse } from '../../telemetry/events.js';
+import { logger } from '../../lib/logger.js';
 import { register, login, refresh, logout, loginWithGoogle } from '../auth.service.js';
 
 const mockDb = db as unknown as { select: ReturnType<typeof vi.fn>; insert: ReturnType<typeof vi.fn> };
@@ -146,7 +149,7 @@ describe('refresh', () => {
 
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'SESSION_LIMIT_REACHED' });
-    expect(captureTokenReuse).not.toHaveBeenCalled();
+    expect(recordTokenReuse).not.toHaveBeenCalled();
   });
 
   it('returns TOKEN_REUSE_DETECTED and revokes all sessions on reuse', async () => {
@@ -163,11 +166,19 @@ describe('refresh', () => {
       error: 'TOKEN_REUSE_DETECTED',
     });
 
+    const logError = vi.spyOn(logger, 'error');
+
     const result = await refresh('token', { ip: '1.1.1.1', userAgent: '' });
     expect(result).toEqual({ ok: false, error: 'TOKEN_REUSE_DETECTED' });
-    // The security alert (#204): opaque ids only - never the email or IP.
-    expect(captureTokenReuse).toHaveBeenCalledOnce();
-    expect(captureTokenReuse).toHaveBeenCalledWith({ userId: validSession.userId, sessionId: validSession.id });
+    // The security alert (#476): counted once, and the log line carries the event.name
+    // the alert matches - with opaque ids only, never the email or IP.
+    expect(recordTokenReuse).toHaveBeenCalledOnce();
+    expect(logError).toHaveBeenCalledWith(
+      { 'event.name': EVENT_TOKEN_REUSE, userId: validSession.userId, sessionId: validSession.id },
+      expect.stringContaining('TOKEN_REUSE_DETECTED'),
+    );
+    expect(JSON.stringify(logError.mock.calls)).not.toMatch(/a@b\.com|1\.1\.1\.1/);
+    logError.mockRestore();
   });
 
   it('returns USER_NOT_FOUND when user is gone from DB', async () => {

@@ -69,16 +69,6 @@ export const envSchema = z
     SMTP_PASS: z.string().optional(),
     FROM_EMAIL: z.string().email().default('noreply@windom.app'),
     APP_URL: z.string().url().default('https://windom-api.fly.dev'),
-    // Sentry error monitoring (#204). Unset = Sentry is never initialised: no client,
-    // no transport, no network. An empty value counts as unset, so a blank
-    // `SENTRY_DSN=` line in .env cannot fail the URL check at boot.
-    SENTRY_DSN: z.preprocess((v) => (v === '' ? undefined : v), z.string().url().optional()),
-    // Defaults to NODE_ENV when unset.
-    SENTRY_ENVIRONMENT: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
-    // Defaults to the deployed commit (from Fly's FLY_IMAGE_REF) plus package.json version.
-    SENTRY_RELEASE: z.preprocess((v) => (v === '' ? undefined : v), z.string().optional()),
-    // Performance tracing is off by default: errors only.
-    SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === 'production' && !env.EXTENSION_REDIRECT_BASE) {

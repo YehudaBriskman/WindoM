@@ -7,7 +7,7 @@ import { signAccessToken } from '../lib/jwt.js';
 import { createSession, findSessionByToken, revokeSession, rotateSessionAtomically } from './session.service.js';
 import { sendVerification } from './auth-email.service.js';
 import { logger } from '../lib/logger.js';
-import { captureTokenReuse } from '../lib/sentry.js';
+import { EVENT_NAME_KEY, EVENT_TOKEN_REUSE, recordTokenReuse } from '../telemetry/events.js';
 import { recordAudit } from './audit.service.js';
 import type { Result, TokenPair, RegisterResult, SessionMeta, AuthError } from '../types/auth.types.js';
 
@@ -100,10 +100,11 @@ export async function refresh(rawToken: string, meta: SessionMeta): Promise<Resu
   if (!rotation.ok) {
     if (rotation.error === 'TOKEN_REUSE_DETECTED') {
       logger.error(
-        { sessionId: session.id, userId: session.userId },
+        // The alert pages on `event.name` (#476). Only opaque ids: no email, IP or user agent.
+        { [EVENT_NAME_KEY]: EVENT_TOKEN_REUSE, sessionId: session.id, userId: session.userId },
         'refresh: TOKEN_REUSE_DETECTED - revoking ALL sessions for user',
       );
-      captureTokenReuse({ userId: session.userId, sessionId: session.id });
+      recordTokenReuse();
       await recordAudit('token_reuse_detected', { userId: session.userId, sessionId: session.id, meta });
     } else {
       logger.warn({ sessionId: session.id }, `refresh: ${rotation.error}`);

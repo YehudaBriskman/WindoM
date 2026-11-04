@@ -1,10 +1,21 @@
-import Fastify, { type FastifyInstance, type FastifyServerOptions, type FastifyError } from 'fastify';
+import Fastify, {
+  type FastifyInstance,
+  type FastifyServerOptions,
+  type FastifyError,
+  type FastifyRequest,
+} from 'fastify';
 import fastifyCookie from '@fastify/cookie';
 import fastifyFormbody from '@fastify/formbody';
 import fastifyHelmet from '@fastify/helmet';
 import { config } from './config.js';
 import { pool } from './db/client.js';
-import { captureDbPoolExhausted, captureRequestError } from './lib/sentry.js';
+import { redactUrlQuery } from './lib/redact.js';
+import {
+  EVENT_DB_POOL_EXHAUSTED,
+  EVENT_HTTP_SERVER_ERROR,
+  EVENT_NAME_KEY,
+  recordPoolExhausted,
+} from './telemetry/events.js';
 import { registerCors } from './plugins/cors.js';
 import { registerSwagger } from './plugins/swagger.js';
 import { registerRateLimit } from './plugins/rate-limit.js';
@@ -27,31 +38,7 @@ export interface BuildAppOptions extends FastifyServerOptions {
   skipRateLimit?: boolean;
 }
 
-/**
- * The request URL with every query-string value replaced, keeping the parameter
- * names so a log line still says which flow it was.
- *
- * Several GET routes carry a credential in the query string: /auth/verify-email
- * and /auth/reset-password take a single-use `token`, and the OAuth callbacks
- * take `code` and `state`. Logging `req.url` verbatim put a still-valid password
- * reset token in Fly's log search for anyone with log access. Redacting every
- * value, not a list of known names, keeps the next such route safe by default.
- */
-export function redactUrlQuery(url: string): string {
-  const q = url.indexOf('?');
-  if (q === -1) return url;
-  const hashAt = url.indexOf('#', q);
-  const query = hashAt === -1 ? url.slice(q + 1) : url.slice(q + 1, hashAt);
-  const redacted = query
-    .split('&')
-    .filter((pair) => pair !== '')
-    .map((pair) => {
-      const eq = pair.indexOf('=');
-      return eq === -1 ? pair : `${pair.slice(0, eq)}=[redacted]`;
-    })
-    .join('&');
-  return `${url.slice(0, q)}?${redacted}`;
-}
+export { redactUrlQuery };
 
 export function requestLogSerializer(req: { id: string; method: string; url: string; ip: string }): {
   id: string;
@@ -126,6 +113,27 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
     done();
   });
 
+  // Requests whose 5xx the error handler already reported, so the onResponse fallback
+  // below makes `http.server.error` exactly one log line per 5xx (#476).
+  const serverErrorReported = new WeakSet<FastifyRequest>();
+
+  // A handler that answers 5xx itself (`reply.status(502).send(...)`) never reaches the
+  // error handler, so it is reported here. Registered before the routes so it covers them.
+  app.addHook('onResponse', (req, reply, done) => {
+    if (reply.statusCode >= 500 && !serverErrorReported.has(req)) {
+      app.log.error(
+        {
+          [EVENT_NAME_KEY]: EVENT_HTTP_SERVER_ERROR,
+          'http.route': req.routeOptions.url,
+          'http.request.method': req.method,
+          statusCode: reply.statusCode,
+        },
+        'Server error response',
+      );
+    }
+    done();
+  });
+
   await registerSwagger(app, !config.isProd);
   await registerCors(app);
   if (!skipRateLimit) await registerRateLimit(app);
@@ -149,18 +157,33 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
   // ── Global error handler ───────────────────────────────────────────────────
 
   app.setErrorHandler((error: FastifyError, req, reply) => {
+    // The route TEMPLATE (`/me/sessions/:id`), never the raw URL: raw URLs carry ids and,
+    // in the query string, one-time secrets.
+    const route = req.routeOptions.url;
+
     // Postgres pool exhaustion: connectionTimeoutMillis exceeded → 503
     const isPoolTimeout =
       error.message === 'timeout expired' ||
       error.message?.includes('Connection terminated') ||
       (error as { code?: string }).code === 'CONNECTION_TIMEOUT';
     if (isPoolTimeout) {
-      app.log.warn('DB pool connection timeout - returning 503');
-      captureDbPoolExhausted(
-        error,
-        { method: req.method, route: req.routeOptions.url, requestId: req.id },
-        { total: pool.totalCount, idle: pool.idleCount, waiting: pool.waitingCount, max: pool.options.max ?? 0 },
+      serverErrorReported.add(req);
+      // `event.name` is what the alert matches (#476); the message text is free to change.
+      app.log.warn(
+        {
+          [EVENT_NAME_KEY]: EVENT_DB_POOL_EXHAUSTED,
+          'http.route': route,
+          'http.request.method': req.method,
+          pool: {
+            total: pool.totalCount,
+            idle: pool.idleCount,
+            waiting: pool.waitingCount,
+            max: pool.options.max ?? 0,
+          },
+        },
+        'DB pool connection timeout - returning 503',
       );
+      recordPoolExhausted(route);
       void reply.status(503).send({
         statusCode: 503,
         error: 'Service Unavailable',
@@ -170,10 +193,22 @@ export async function buildApp({ skipRateLimit, ...overrides }: BuildAppOptions 
     }
 
     const statusCode = error.statusCode ?? 500;
-    app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
-    // 4xx are the client's mistake and would only be noise; 5xx are ours.
+    // 4xx are the client's mistake and would only be noise to an alert; 5xx are ours.
     if (statusCode >= 500) {
-      captureRequestError(error, { method: req.method, route: req.routeOptions.url, statusCode, requestId: req.id });
+      serverErrorReported.add(req);
+      app.log.error(
+        {
+          [EVENT_NAME_KEY]: EVENT_HTTP_SERVER_ERROR,
+          'http.route': route,
+          'http.request.method': req.method,
+          statusCode,
+          message: error.message,
+          stack: error.stack,
+        },
+        'Request error',
+      );
+    } else {
+      app.log.error({ statusCode, message: error.message, stack: error.stack }, 'Request error');
     }
     const isClientError = statusCode >= 400 && statusCode < 500;
     // In production, never send internal error details to clients - log-only.

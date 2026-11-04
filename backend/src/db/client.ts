@@ -6,12 +6,33 @@ import * as schema from './schema.js';
 
 const { Pool } = pg;
 
+/**
+ * host/port/database, repeated from the URL only so the OpenTelemetry pg instrumentation
+ * can name the pool (`db.client.connection.pool.name`, #476): it reads them from the pool
+ * options and would otherwise report `unknown_host:unknown_port/unknown_database`. pg
+ * itself is unaffected - values parsed from connectionString override these. Credentials
+ * are never copied.
+ */
+function poolNameParts(url: string): { host?: string; port?: number; database?: string } {
+  try {
+    const u = new URL(url);
+    return {
+      ...(u.hostname ? { host: decodeURIComponent(u.hostname) } : {}),
+      ...(u.port ? { port: Number(u.port) } : {}),
+      ...(u.pathname.length > 1 ? { database: decodeURIComponent(u.pathname.slice(1)) } : {}),
+    };
+  } catch {
+    return {};
+  }
+}
+
 // 10 connections in production: Fly.io shared-1x machines have ~25 Postgres connection slots.
 // Keeping max at 10 leaves headroom for migrations, drizzle-kit, and pgAdmin.
 // connectionTimeoutMillis: requests that cannot acquire a connection within 5 s
 // will throw - the global error handler converts these to 503 responses.
 export const pool = new Pool({
   connectionString: config.DATABASE_URL,
+  ...poolNameParts(config.DATABASE_URL),
   max: config.isProd ? 10 : 5,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 5_000,
