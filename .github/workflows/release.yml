@@ -439,12 +439,18 @@ jobs:
     permissions:
       contents: write
     steps:
+      # CHANGELOG.md from the gate's commit: the notes of the version being released.
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.gate.outputs.sha }}
-          sparse-checkout: |
-            .github/scripts
-            CHANGELOG.md
+          sparse-checkout: CHANGELOG.md
+          sparse-checkout-cone-mode: false
+      # The scripts from the ref this workflow runs from, as in `deploy`: a tag cut
+      # before a script existed has no copy of it (v1.7.0 failed here on that).
+      - uses: actions/checkout@v7
+        with:
+          path: release-tools
+          sparse-checkout: .github/scripts
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v7
         with:
@@ -460,7 +466,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          node .github/scripts/changelog-section.mjs "$RELEASE_TAG" CHANGELOG.md > notes.md
+          node release-tools/.github/scripts/changelog-section.mjs "$RELEASE_TAG" CHANGELOG.md > notes.md
           asset="windom-${RELEASE_TAG}.zip"
           cp release-package/extension.zip "$asset"
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
