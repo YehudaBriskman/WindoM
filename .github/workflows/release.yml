@@ -1,4 +1,7 @@
 name: Release
+# Shown in the Actions list instead of the bare workflow name, so a run says
+# which version it ships and what it targets.
+run-name: Release ${{ inputs.tag || github.ref_name }}${{ inputs.targets && format(' ({0})', inputs.targets) || '' }}
 
 # One release: the gate runs ONCE, then the backend deploys the image the gate
 # scanned, then the extension publishes the ZIP the gate checked.
@@ -61,13 +64,54 @@ jobs:
       tag: ${{ inputs.tag || github.ref_name }}
     secrets: inherit
 
+  # ── Store login, before anything ships ─────────────────────────────────────
+  # v1.6.0 (2026-11-04): the backend deployed, then the store refused the upload
+  # because its refresh token had been revoked - a half release, server on 1.6.0
+  # and extension on 1.5.1. The store's credentials are now proven first, in
+  # parallel with the gate, and the backend does not deploy unless they work.
+  # Read-only: it logs in and reads the item; it never uploads or submits.
+  store-login:
+    name: Store login
+    if: github.event_name == 'push' || inputs.targets != 'backend'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: chrome-store
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Chrome Web Store accepts the credentials
+        run: node .github/scripts/report-store-status.mjs
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
   # ── Backend ────────────────────────────────────────────────────────────────
   deploy:
     name: Deploy backend
-    needs: gate
-    # A tag push releases everything; a manual run only what it names.
-    if: github.event_name == 'push' || inputs.targets != 'extension'
+    needs: [gate, store-login]
+    # A tag push releases everything; a manual run only what it names. When the
+    # extension ships too, its store login must have passed - store-login is
+    # skipped only for a backend-only run.
+    if: >-
+      !cancelled() && needs.gate.result == 'success' &&
+      (github.event_name == 'push' || inputs.targets != 'extension') &&
+      (needs.store-login.result == 'success' ||
+       (needs.store-login.result == 'skipped' && inputs.targets == 'backend'))
     runs-on: ubuntu-latest
+    # Recorded as a GitHub deployment, so it appears under the repo's
+    # Deployments and its history - like the store (chrome-store) and the site
+    # (github-pages) already did. Without this the backend never showed there.
+    environment:
+      name: production
+      url: https://windom-api.fly.dev/health/ready
     # backup + push + migration + deploy + health check, plus a rollback deploy + health check on failure
     timeout-minutes: 35
     env:
@@ -119,32 +163,12 @@ jobs:
       # again after the deploy.
       - name: Push the image to Fly's registry and confirm the digest
         id: push
+        # push-image.sh is shared with release-rehearsal.yml, which runs it every
+        # week against a local registry - so this step is never run for the first
+        # time on a release day again.
         run: |
-          REF="registry.fly.io/$FLY_APP:release-$SHA"
           flyctl auth docker
-          docker tag "windom-api:$SHA" "$REF"
-          docker push "$REF" | tee push.log
-          PUSHED=$(grep -oE 'digest: sha256:[0-9a-f]{64}' push.log | tail -1 | cut -d' ' -f2)
-          REMOTE=$(docker buildx imagetools inspect "$REF" | awk '/^Digest:/ {print $2; exit}')
-          echo "pushed $PUSHED / registry resolves $REF to $REMOTE"
-          if [ -z "$PUSHED" ] || [ "$PUSHED" != "$REMOTE" ]; then
-            echo "::error::Could not confirm the pushed image in registry.fly.io. Nothing has been changed."
-            exit 1
-          fi
-          # What Fly records per machine is the linux/amd64 image manifest, not the
-          # index docker pushed (containerd image store). Resolve it from the
-          # registry's own bytes; see runtime-digest.mjs. Every later comparison
-          # and the summary use this digest.
-          docker buildx imagetools inspect --raw "$REF" > pushed-manifest.json
-          if ! RUNTIME=$(PUSHED_DIGEST="$PUSHED" node release-tools/.github/scripts/runtime-digest.mjs pushed-manifest.json); then
-            echo "$RUNTIME"
-            echo "::error::Could not resolve the image Fly will run from $PUSHED. Nothing has been changed."
-            exit 1
-          fi
-          echo "pushed $PUSHED / machines will run $RUNTIME"
-          echo "ref=$REF" >> "$GITHUB_OUTPUT"
-          echo "pushed=$PUSHED" >> "$GITHUB_OUTPUT"
-          echo "digest=$RUNTIME" >> "$GITHUB_OUTPUT"
+          bash release-tools/.github/scripts/push-image.sh "windom-api:$SHA" "registry.fly.io/$FLY_APP:release-$SHA"
 
       # ── Pre-deploy database backup ──────────────────────────────────────────
       # Before ANY schema change runs. No backup means no safe rollback, so the
@@ -207,6 +231,7 @@ jobs:
           node release-tools/.github/scripts/check-deployed-image.mjs machines.json
         env:
           EXPECTED_DIGEST: ${{ steps.push.outputs.digest }}
+          PUSHED_DIGEST: ${{ steps.push.outputs.pushed }}
 
       # ── Automatic rollback (#228) ───────────────────────────────────────────
       # Runs when the deploy was attempted and it, readiness or the image check
@@ -295,12 +320,13 @@ jobs:
   # ── Extension ──────────────────────────────────────────────────────────────
   publish:
     name: Publish extension
-    needs: [gate, deploy]
+    needs: [gate, store-login, deploy]
     # Runs only after a SUCCESSFUL deploy, or when this run releases the extension
     # alone (deploy skipped by its own `if`). A failed or cancelled deploy
     # blocks the publish; so does a failed gate, because `deploy` then never ran.
     if: >-
-      always() && needs.gate.result == 'success' && inputs.targets != 'backend' &&
+      always() && needs.gate.result == 'success' && needs.store-login.result == 'success' &&
+      inputs.targets != 'backend' &&
       (needs.deploy.result == 'success' ||
        (needs.deploy.result == 'skipped' && inputs.targets == 'extension'))
     runs-on: ubuntu-latest

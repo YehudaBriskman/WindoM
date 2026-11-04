@@ -80,3 +80,19 @@ test('refuses a resolved value that is not a commit id', () => {
 test('a dry run with no usable event sha has nothing to rehearse', () => {
   assert.equal(decideReleaseRef({ ...dryRun, eventSha: '' }).errors.length, 1);
 });
+
+test('rehearseHead checks the triggering commit even when the tag already exists', () => {
+  const r = decideReleaseRef({ ...dryRun, tagSha: A, tagOnMain: true, rehearseHead: true });
+  assert.deepEqual(r, { sha: B, dryRun: true, errors: [] });
+});
+
+test('rehearseHead is refused on a real release', () => {
+  const r = decideReleaseRef({ ...tagPush, rehearseHead: true });
+  assert.equal(r.sha, null);
+  assert.match(r.errors[0], /cannot rehearse the head/);
+});
+
+test('rehearseHead still validates the tag shape and the event sha', () => {
+  assert.match(decideReleaseRef({ ...dryRun, tag: 'main', rehearseHead: true }).errors[0], /not a release tag/);
+  assert.match(decideReleaseRef({ ...dryRun, eventSha: '', rehearseHead: true }).errors[0], /No commit to rehearse/);
+});

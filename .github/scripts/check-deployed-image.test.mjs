@@ -39,3 +39,23 @@ test('no digest or no list fails closed', () => {
   assert.match(deployedImageErrors([machine('m1', D)], 'latest')[0], /No pushed digest/);
   assert.match(deployedImageErrors(null, D)[0], /no machine list/);
 });
+
+// v1.6.0 (2026-11-04): docker pushed an OCI index; Fly ran its linux/amd64 manifest.
+const INDEX = 'sha256:1f1ebf4d9282ddd928e0c684b1466f108b84cf52d4da6f49927d281eb2172940';
+const PLATFORM = 'sha256:38d7ee506ba881a08dbb9b0029a7c8aff729aced56bdb3dc0b89c1c106707bd9';
+
+test('the v1.6.0 deploy passes: the machine runs the platform manifest of the pushed index', () => {
+  assert.deepEqual(deployedImageErrors([machine('m1', PLATFORM)], PLATFORM, [INDEX]), []);
+});
+
+test('a machine reporting the index digest also passes - it names the same pushed image', () => {
+  assert.deepEqual(deployedImageErrors([machine('m1', INDEX)], PLATFORM, [INDEX]), []);
+});
+
+test('accepting the index does not accept anything else', () => {
+  assert.equal(deployedImageErrors([machine('m1', OTHER)], PLATFORM, [INDEX]).length, 1);
+});
+
+test('a malformed extra digest is ignored rather than widening the check', () => {
+  assert.equal(deployedImageErrors([machine('m1', '')], PLATFORM, ['', 'sha256:short']).length, 1);
+});

@@ -1,0 +1,146 @@
+name: Release Rehearsal
+# Runs everything a release runs that can run without changing production, on a
+# schedule and whenever the release machinery changes - so a broken release is
+# found on an ordinary day, not on tag day.
+#
+# Written after v1.6.0 (2026-11-04), which failed three times in a row on things
+# no test had ever executed:
+#   1. The gate's scanner install fetched from get.trivy.dev, a host that had
+#      stopped resolving. The gate only ran on a tag, so nobody saw it break.
+#   2. The deploy's push step compared the OCI index digest `docker push`
+#      reports with the platform-manifest digest Fly records. The step had never
+#      run before that release, and its unit tests assumed the two were equal.
+#   3. The store's refresh token had been revoked. Store credentials were only
+#      ever used during a release - after the backend had already deployed.
+#
+# What each job proves:
+#   gate        - the full release gate (builds, tests, image scan, preflight) on
+#                 main's head, exactly as a release would run it. Catches (1).
+#   push        - the deploy's own push-image.sh, on the gate's own image, into a
+#                 throwaway registry; asserts the digest it resolves names an
+#                 image manifest, which is what a Fly machine records. Catches (2).
+#   store-login - the store credentials, read-only. Catches (3). Scheduled and
+#                 manual runs only: pull requests do not need the store.
+#
+# A failed scheduled run emails the repository's notification recipients.
+on:
+  schedule:
+    # Mondays 05:17 UTC (07:17 Israel winter time), off the hour to avoid queueing.
+    - cron: '17 5 * * 1'
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - .github/workflows/release-gate.yml
+      - .github/workflows/release-rehearsal.yml
+      - .github/workflows/store-status.yml
+      - .github/scripts/**
+      - backend/Dockerfile
+      - backend/fly.toml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-rehearsal-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  version:
+    name: Version to rehearse
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.v.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: web/manifest.json
+          sparse-checkout-cone-mode: false
+      # The gate compares the tag with every declared version, so the rehearsal
+      # uses the version the code already declares.
+      - id: v
+        run: echo "tag=v$(jq -r .version web/manifest.json)" >> "$GITHUB_OUTPUT"
+
+  gate:
+    name: Release gate
+    needs: version
+    uses: ./.github/workflows/release-gate.yml
+    with:
+      tag: ${{ needs.version.outputs.tag }}
+      release: false
+      rehearse_head: true
+    secrets: inherit
+
+  push:
+    name: Push step (local registry)
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    env:
+      SHA: ${{ needs.gate.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Download the image the gate scanned
+        uses: actions/download-artifact@v7
+        with:
+          name: release-image-${{ needs.gate.outputs.sha }}
+          path: release-image
+      - run: docker load --input release-image/image.tar.gz
+      - name: The deploy's push step, unchanged, against a local registry
+        id: push
+        run: bash .github/scripts/push-image.sh "windom-api:$SHA" "localhost:5000/windom-api:rehearsal-$SHA"
+      - name: The resolved digest names an image manifest, as a Fly machine records
+        run: |
+          RAW=$(docker buildx imagetools inspect --raw "localhost:5000/windom-api@${{ steps.push.outputs.digest }}")
+          TYPE=$(printf '%s' "$RAW" | jq -r '.mediaType')
+          echo "pushed ${{ steps.push.outputs.pushed }} -> runs ${{ steps.push.outputs.digest }} ($TYPE)"
+          case "$TYPE" in
+            application/vnd.oci.image.manifest.v1+json|application/vnd.docker.distribution.manifest.v2+json) ;;
+            *)
+              echo "::error::The digest the deploy would verify is a $TYPE, not an image manifest."
+              exit 1
+              ;;
+          esac
+      - name: The post-deploy check accepts a machine running it
+        run: |
+          printf '[{"id":"rehearsal","region":"local","state":"started","config":{"metadata":{"fly_process_group":"app"}},"image_ref":{"digest":"%s"}}]' \
+            "${{ steps.push.outputs.digest }}" > machines.json
+          node .github/scripts/check-deployed-image.mjs machines.json
+        env:
+          EXPECTED_DIGEST: ${{ steps.push.outputs.digest }}
+          PUSHED_DIGEST: ${{ steps.push.outputs.pushed }}
+
+  store-login:
+    name: Store login (read-only)
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: chrome-store
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Chrome Web Store accepts the credentials
+        run: node .github/scripts/report-store-status.mjs
+        env:
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}

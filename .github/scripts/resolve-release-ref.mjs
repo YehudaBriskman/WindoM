@@ -41,8 +41,12 @@ const SHA_SHAPE = /^[0-9a-f]{40}$/;
  * @param {string} p.refType      github.ref_type of the run ('tag' | 'branch')
  * @param {string} p.eventSha     github.sha of the run
  * @param {boolean} p.requireTag  a real release (true) or a dry run (false)
+ * @param {boolean} [p.rehearseHead]  a dry run of the commit that triggered the
+ *   run even when the tag already exists. The scheduled rehearsal uses it: the
+ *   version on main is usually already tagged, and what needs proving is the
+ *   NEXT release - main's head - not the commit that already shipped.
  */
-export function decideReleaseRef({ tag, tagSha, tagOnMain, refType, eventSha, requireTag }) {
+export function decideReleaseRef({ tag, tagSha, tagOnMain, refType, eventSha, requireTag, rehearseHead = false }) {
   const errors = [];
   const name = typeof tag === 'string' ? tag.trim().replace(/^refs\/tags\//, '') : '';
 
@@ -56,6 +60,16 @@ export function decideReleaseRef({ tag, tagSha, tagOnMain, refType, eventSha, re
   }
   if (tagSha !== null && tagSha !== undefined && !SHA_SHAPE.test(tagSha)) {
     return { sha: null, dryRun: false, errors: [`git resolved ${name} to "${tagSha}", which is not a commit id`] };
+  }
+
+  if (rehearseHead) {
+    if (requireTag) {
+      return { sha: null, dryRun: false, errors: ['A real release cannot rehearse the head commit; it releases the tag.'] };
+    }
+    if (!SHA_SHAPE.test(eventSha ?? '')) {
+      return { sha: null, dryRun: true, errors: [`No commit to rehearse: event sha is "${eventSha}"`] };
+    }
+    return { sha: eventSha, dryRun: true, errors: [] };
   }
 
   if (!tagSha) {
@@ -114,6 +128,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     refType: process.env.GITHUB_REF_TYPE ?? '',
     eventSha: process.env.GITHUB_SHA ?? '',
     requireTag,
+    rehearseHead: process.env.REHEARSE_HEAD === 'true',
   });
 
   for (const error of errors) console.log(`::error::${error}`);

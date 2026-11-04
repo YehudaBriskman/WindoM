@@ -26,6 +26,13 @@ on:
         required: false
         type: boolean
         default: true
+      rehearse_head:
+        # release-rehearsal.yml: check the commit that triggered the run even when
+        # the version's tag already exists - the next release, not the last one.
+        description: Rehearse the triggering commit rather than the existing tag. Rehearsals only.
+        required: false
+        type: boolean
+        default: false
     outputs:
       sha:
         description: The one commit every gate job checked. Deploy and publish check out this.
@@ -90,6 +97,7 @@ jobs:
           # `inputs.release` is true from both callers and null on a direct
           # dispatch; null == true is false, so a rehearsal never requires the tag.
           REQUIRE_TAG: ${{ inputs.release == true }}
+          REHEARSE_HEAD: ${{ inputs.rehearse_head == true }}
 
   # ── Release metadata ───────────────────────────────────────────────────────
   # These checks are deterministic and cost seconds, so a mistyped tag fails
