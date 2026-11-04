@@ -1,5 +1,7 @@
 import { config } from './config.js';
 import { buildApp } from './app.js';
+import { pool } from './db/client.js';
+import { drainHttp, installShutdownHandlers } from './lib/shutdown.js';
 import { shutdownTelemetry } from './telemetry/lifecycle.js';
 
 // OpenTelemetry, when configured, was already started by `node --import
@@ -16,3 +18,11 @@ try {
   await shutdownTelemetry();
   process.exit(1);
 }
+
+// The one SIGTERM/SIGINT path (#478): drain HTTP, end the pool, flush telemetry, exit.
+installShutdownHandlers({
+  closeServer: () => drainHttp(app),
+  closePool: () => pool.end(),
+  flushTelemetry: () => shutdownTelemetry(),
+  log: app.log,
+});

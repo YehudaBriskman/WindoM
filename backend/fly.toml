@@ -1,6 +1,12 @@
 app = "windom-api"
 primary_region = "fra"
 
+# SIGTERM, then SIGKILL after kill_timeout. The app drains HTTP, ends the pg pool and
+# flushes telemetry within 9.5 s (src/lib/shutdown.ts, #478); Fly's default of 5 s
+# would cut that short. Top-level keys: they must stay above the first [table].
+kill_signal = "SIGTERM"
+kill_timeout = "15s"
+
 [build]
   dockerfile = "Dockerfile"
 
