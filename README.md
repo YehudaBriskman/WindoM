@@ -13,10 +13,12 @@ with the hour. Most of it works the moment you install it, with no account.
 [![Install from the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
 [![windom.app](https://img.shields.io/badge/windom.app-Visit-6366f1?style=for-the-badge)](https://windom.app)
 
-[![Version](https://img.shields.io/badge/version-1.5.1-7b9ef5?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/github/v/release/YehudaBriskman/WindoM?style=flat-square&label=version&color=7b9ef5)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=flat-square)](LICENSE)
 [![Users](https://img.shields.io/chrome-web-store/users/comcnbccalbfcegbmaemancbhgpijkpb?style=flat-square&label=users&color=22c55e)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
 [![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=flat-square&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
+
+**Notes & releases:** [yehudabriskman.com/blog/area/windom](https://yehudabriskman.com/blog/area/windom) — what each release changed and why
 
 <br />
 
@@ -128,7 +130,8 @@ extension contacts and what is sent to each.
 
 ## Contributing
 
-Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[Code of Conduct](CODE_OF_CONDUCT.md).
 
 - [Report a bug](https://github.com/YehudaBriskman/WindoM/issues)
 - [Suggest a feature](https://github.com/YehudaBriskman/WindoM/discussions)
@@ -146,6 +149,8 @@ Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 | Local setup | [windom.app/local-setup](https://windom.app/local-setup) |
 | Privacy policy | [windom.app/privacy](https://windom.app/privacy) |
 | Changelog | [CHANGELOG.md](CHANGELOG.md) |
+| Notes & releases | [yehudabriskman.com/blog/area/windom](https://yehudabriskman.com/blog/area/windom) |
+| Project page | [yehudabriskman.com/projects/windom](https://yehudabriskman.com/projects/windom) |
 | LinkedIn | [WindoM](https://www.linkedin.com/company/windom-app/) |
 
 ---
