@@ -131,8 +131,20 @@ jobs:
             echo "::error::Could not confirm the pushed image in registry.fly.io. Nothing has been changed."
             exit 1
           fi
+          # What Fly records per machine is the linux/amd64 image manifest, not the
+          # index docker pushed (containerd image store). Resolve it from the
+          # registry's own bytes; see runtime-digest.mjs. Every later comparison
+          # and the summary use this digest.
+          docker buildx imagetools inspect --raw "$REF" > pushed-manifest.json
+          if ! RUNTIME=$(PUSHED_DIGEST="$PUSHED" node release-tools/.github/scripts/runtime-digest.mjs pushed-manifest.json); then
+            echo "$RUNTIME"
+            echo "::error::Could not resolve the image Fly will run from $PUSHED. Nothing has been changed."
+            exit 1
+          fi
+          echo "pushed $PUSHED / machines will run $RUNTIME"
           echo "ref=$REF" >> "$GITHUB_OUTPUT"
-          echo "digest=$PUSHED" >> "$GITHUB_OUTPUT"
+          echo "pushed=$PUSHED" >> "$GITHUB_OUTPUT"
+          echo "digest=$RUNTIME" >> "$GITHUB_OUTPUT"
 
       # ── Pre-deploy database backup ──────────────────────────────────────────
       # Before ANY schema change runs. No backup means no safe rollback, so the
