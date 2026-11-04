@@ -18,7 +18,7 @@ ENV NODE_ENV=production
 
 COPY package*.json ./
 # npm is removed once it has installed the production tree. The runtime only ever runs
-# `node dist/index.js`, so npm is dead weight at best - and the npm bundled in
+# `node dist/index.js` (via entrypoint.sh), so npm is dead weight at best - and the npm bundled in
 # node:22-alpine ships its own vendored copies of sigstore and picomatch that carry
 # HIGH-severity CVEs (CVE-2026-48815, CVE-2026-33671). Those are reported against the
 # image even though nothing in our dependency tree uses them, which blocks the release

@@ -10,4 +10,7 @@ set -e
 # Migrations now run once per deploy via `release_command` in fly.toml. A failing
 # migration fails the *deploy*, which is correct, instead of crash-looping a *running*
 # app, which is not. See issue #303.
-exec node dist/index.js
+#
+# OpenTelemetry (#476) loads first via --import so it can instrument pg, pino and http
+# as they load. It does nothing at all unless OTEL_EXPORTER_OTLP_ENDPOINT is set.
+exec node --import ./dist/instrumentation.js dist/index.js
