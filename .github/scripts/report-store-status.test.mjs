@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
+  expectedVersionFrom,
   fetchPublishedStatus,
   interpretItem,
   interpretPublish,
@@ -278,3 +280,35 @@ test('fetchPublishedStatus survives a network failure', async () => {
   const { warnings } = await fetchPublishedStatus('pub', 'abc', 'tok', { fetchImpl: fake });
   assert.match(warnings[0], /ECONNRESET/);
 });
+
+test('expectedVersionFrom compares after an upload, never in the login check', () => {
+  assert.equal(expectedVersionFrom({ RELEASE_TAG: 'v1.7.0' }), '1.7.0');
+  assert.equal(expectedVersionFrom({ RELEASE_TAG: 'refs/tags/v1.7.0' }), '1.7.0');
+  assert.equal(expectedVersionFrom({}), '');
+  // v1.7.0's first attempt: the login job inherited RELEASE_TAG while the store held 1.6.0.
+  assert.equal(expectedVersionFrom({ RELEASE_TAG: 'v1.7.0', STORE_CHECK: 'login' }), '');
+  assert.deepEqual(
+    interpretItem({ crxVersion: '1.6.0', uploadState: 'NOT_FOUND' }, {
+      expectedVersion: expectedVersionFrom({ RELEASE_TAG: 'v1.7.0', STORE_CHECK: 'login' }),
+    }).errors,
+    [],
+  );
+});
+
+// The pre-deploy login checks run before any upload, in jobs that inherit RELEASE_TAG
+// (release.yml sets it workflow-wide). Each must declare STORE_CHECK: login.
+for (const [file, job] of [
+  ['release.yml', 'store-login'],
+  ['release-rehearsal.yml', 'store-login'],
+]) {
+  test(`${file} ${job} runs the store check in login mode`, () => {
+    const text = readFileSync(new URL(`../workflows/${file}`, import.meta.url), 'utf8');
+    const start = text.indexOf(`\n  ${job}:\n`);
+    assert.notEqual(start, -1, `${file} has no ${job} job`);
+    const rest = text.slice(start + 1);
+    const next = rest.slice(1).search(/\n  [a-z][\w-]*:\n/);
+    const block = next === -1 ? rest : rest.slice(0, next + 1);
+    assert.match(block, /report-store-status\.mjs/);
+    assert.match(block, /^\s+STORE_CHECK: login$/m);
+  });
+}

@@ -139,6 +139,12 @@ jobs:
       - name: Chrome Web Store accepts the credentials
         run: node .github/scripts/report-store-status.mjs
         env:
+          # Login only: nothing is uploaded yet, so the store still holds the previous
+          # version and must not be compared with this release (v1.7.0 failed on that).
+          STORE_CHECK: login
+          # A tag ahead of the store, as in a real release: with STORE_CHECK missing
+          # the version comparison would fail here every week, not on release day.
+          RELEASE_TAG: v999.0.0
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
