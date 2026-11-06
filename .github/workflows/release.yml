@@ -144,7 +144,7 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@ed8efb33836e8b2096c7fd3ba1c8afe303ebbff1 # 1.6
 
       - name: Download the image the gate scanned
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release-image-${{ needs.gate.outputs.sha }}
           path: release-image
@@ -365,7 +365,7 @@ jobs:
           VITE_BACKEND_URL: ${{ secrets.VITE_BACKEND_URL }}
 
       - name: Download the package the gate checked
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release-extension-${{ needs.gate.outputs.sha }}
           path: release-package
@@ -456,7 +456,7 @@ jobs:
         with:
           node-version: 22
       - name: Download the package the gate checked
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release-extension-${{ needs.gate.outputs.sha }}
           path: release-package
