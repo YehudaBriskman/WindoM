@@ -195,6 +195,13 @@ export function WeatherSettings() {
           </div>
         )}
       </div>
+      <p className="settings-hint">
+        Weather data by{' '}
+        <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">
+          Open-Meteo.com
+        </a>{' '}
+        (CC BY 4.0).
+      </p>
     </div>
   );
 }
