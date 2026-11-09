@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { users } from '../db/schema.js';
 import { revokeAllUserSessions } from './session.service.js';
+import { loadRevocableAccounts, revokeAccounts } from './provider-revoke.service.js';
 import type { UserRecord } from '../types/auth.types.js';
 
 export async function getUserById(id: string): Promise<UserRecord | null> {
@@ -56,6 +57,9 @@ export async function updatePassword(
 }
 
 export async function deleteAccount(userId: string): Promise<void> {
+  // Read the tokens before the cascade removes them; revoke only after the account is gone.
+  const toRevoke = await loadRevocableAccounts(userId).catch(() => []);
   await revokeAllUserSessions(userId);
   await db.delete(users).where(eq(users.id, userId));
+  await revokeAccounts(toRevoke);
 }

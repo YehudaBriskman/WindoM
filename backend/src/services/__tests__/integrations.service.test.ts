@@ -58,6 +58,7 @@ describe('getIntegrations', () => {
 
 describe('unlinkProvider', () => {
   it('calls db.delete for the given provider', async () => {
+    mockDb.select.mockReturnValue({ from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }) });
     const whereMock = vi.fn().mockResolvedValue(undefined);
     mockDb.delete.mockReturnValue({ where: whereMock });
 

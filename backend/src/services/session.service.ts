@@ -1,10 +1,11 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import { and, eq, gt, isNull, ne } from 'drizzle-orm';
+import { and, eq, gt, isNull, lt, ne, or } from 'drizzle-orm';
 import { db } from '../db/client.js';
 import { refreshSessions } from '../db/schema.js';
 import { REFRESH_WINDOW_DAYS, MAX_RENEWALS, BCRYPT_ROUNDS } from '../types/constants.js';
 import type { SessionMeta } from '../types/auth.types.js';
+import { config } from '../config.js';
 import { parseDeviceLabel } from '../lib/device-label.js';
 
 type SessionRow = typeof refreshSessions.$inferSelect;
@@ -32,6 +33,36 @@ function sha256Hex(token: string): string {
 }
 
 /**
+ * Keyed digest for client metadata (IP, User-Agent): HMAC-SHA-256 under a server secret.
+ * Unsalted SHA-256 of an IPv4 address is brute-forceable (2^32 inputs); without the key
+ * the stored value cannot be reversed. The key is derived from REFRESH_TOKEN_SECRET with a
+ * domain-separation label so it is never used raw for another purpose.
+ *
+ * Compatibility: rows written before this change hold plain SHA-256 digests and are not
+ * migrated; they will not match new digests. Only correlation of old sessions is affected.
+ */
+function metaDigest(value: string): string {
+  const key = crypto.createHmac('sha256', config.REFRESH_TOKEN_SECRET).update('windom:meta-digest:v1').digest();
+  return crypto.createHmac('sha256', key).update(value).digest('hex');
+}
+
+/**
+ * Grace period after a session expires or is revoked before its row is deleted. Keeps
+ * recently ended rows around for token-reuse detection and support, then drops them.
+ */
+export const SESSION_PURGE_GRACE_DAYS = 30;
+
+/** Delete sessions that expired or were revoked more than the grace period ago. */
+export async function purgeStaleSessions(now = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - SESSION_PURGE_GRACE_DAYS * 24 * 60 * 60 * 1000);
+  const deleted = await db
+    .delete(refreshSessions)
+    .where(or(lt(refreshSessions.expiresAt, cutoff), lt(refreshSessions.revokedAt, cutoff)))
+    .returning({ id: refreshSessions.id });
+  return deleted.length;
+}
+
+/**
  * Create a new refresh session in the DB and return the raw (un-hashed) token.
  * The raw token is set in the HttpOnly cookie; only its hashes are stored.
  * Pass `id` to choose the row ID up front, so an access token can name its session.
@@ -54,8 +85,8 @@ export async function createSession(
     tokenHash,
     tokenLookup,
     rotatedFromId: rotatedFromId ?? null,
-    ip: sha256Hex(meta.ip),
-    userAgent: sha256Hex(meta.userAgent),
+    ip: metaDigest(meta.ip),
+    userAgent: metaDigest(meta.userAgent),
     deviceLabel: deviceLabelFor(meta),
     expiresAt,
     renewalCount,
@@ -247,8 +278,8 @@ export async function rotateSessionAtomically(
       tokenHash,
       tokenLookup,
       rotatedFromId: session.id,
-      ip: sha256Hex(meta.ip),
-      userAgent: sha256Hex(meta.userAgent),
+      ip: metaDigest(meta.ip),
+      userAgent: metaDigest(meta.userAgent),
       deviceLabel: deviceLabelFor(meta),
       expiresAt,
       renewalCount,

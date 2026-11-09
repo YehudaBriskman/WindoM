@@ -1,6 +1,40 @@
 import 'dotenv/config';
 import { z } from 'zod';
 
+/**
+ * Placeholders shipped in .env.example. Booting production on any of them would mean
+ * signing tokens / encrypting OAuth tokens with a publicly known secret.
+ */
+const PLACEHOLDER_SECRETS = new Set([
+  'change-me-access-secret-32-chars-minimum-x',
+  'change-me-refresh-secret-32-chars-minimum',
+  'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+]);
+
+/** Template markers such as `<your-google-client-id>` or `change-me...` left unedited. */
+function looksLikePlaceholder(value: string): boolean {
+  const v = value.trim().toLowerCase();
+  return PLACEHOLDER_SECRETS.has(value.trim()) || v.startsWith('change-me') || /<[^>]*>/.test(v);
+}
+
+/** True when every byte of the key is identical (all zeros, all 0xFF, ...). */
+function isUniformKey(base64: string): boolean {
+  const raw = Buffer.from(base64, 'base64');
+  return raw.length > 0 && raw.every((b) => b === raw[0]);
+}
+
+const PRODUCTION_SECRET_KEYS = [
+  'JWT_ACCESS_SECRET',
+  'REFRESH_TOKEN_SECRET',
+  'TOKEN_ENC_KEY_BASE64',
+  'GOOGLE_CLIENT_ID',
+  'GOOGLE_CLIENT_SECRET',
+  'SPOTIFY_CLIENT_ID',
+  'SPOTIFY_CLIENT_SECRET',
+  'SMTP_USER',
+  'SMTP_PASS',
+] as const;
+
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -71,6 +105,25 @@ export const envSchema = z
     APP_URL: z.string().url().default('https://windom-api.fly.dev'),
   })
   .superRefine((env, ctx) => {
+    if (env.NODE_ENV === 'production') {
+      for (const key of PRODUCTION_SECRET_KEYS) {
+        const value = env[key];
+        if (value !== undefined && looksLikePlaceholder(value)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: [key],
+            message: `${key} is still a placeholder from .env.example; set a real value in production`,
+          });
+        }
+      }
+      if (isUniformKey(env.TOKEN_ENC_KEY_BASE64)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['TOKEN_ENC_KEY_BASE64'],
+          message: 'TOKEN_ENC_KEY_BASE64 is a uniform (e.g. all-zero) key; generate 32 random bytes',
+        });
+      }
+    }
     if (env.NODE_ENV === 'production' && !env.EXTENSION_REDIRECT_BASE) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
