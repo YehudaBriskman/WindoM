@@ -65,10 +65,10 @@ export function Privacy() {
         <li>
           Active session records (used to manage login sessions and detect unauthorized access). For each signed-in
           session we store the browser and operating system name (for example &ldquo;Chrome &middot; Windows&rdquo;, no
-          versions) so you can recognise it under Active sessions. We also keep a SHA-256 digest of the IP address and
-          of the full browser user-agent string, to spot a stolen sign-in. The raw values are not kept, but an IP
-          address is a small space to guess in, so we treat the digest as personal data. Session records are kept until
-          you delete your account; expired or revoked ones are not purged on a schedule
+          versions) so you can recognise it under Active sessions. We also keep a keyed digest (HMAC-SHA-256) of the IP
+          address and of the full browser user-agent string, to spot a stolen sign-in. The raw values are not kept, but
+          an IP address is a small space to guess in, so we treat the digest as personal data. Session records are kept
+          until you delete your account; expired or revoked ones are deleted automatically after 30 days
         </li>
         <li>
           A security log of sensitive account actions (sign-ins and failed sign-in attempts, sign-outs, password changes
@@ -117,7 +117,8 @@ export function Privacy() {
       </ul>
       <p>
         Disconnecting Google from <strong>Settings → Apps</strong> immediately deletes the tokens we hold and the cached
-        events. It does not by itself cancel the grant on Google's side: to do that as well, remove WindoM at{' '}
+        events, and asks Google to revoke the grant. That request is best-effort: if it fails, the disconnect still
+        completes, so to confirm the grant is gone, check{' '}
         <a href="https://myaccount.google.com/permissions" target="_blank" rel="noreferrer">
           myaccount.google.com/permissions
         </a>
