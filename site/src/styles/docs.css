@@ -808,3 +808,78 @@ html.docs-search-open {
   border-radius: 3px;
   padding: 0 1px;
 }
+
+/* ── Collapsible sections ───────────────────────────────────────────────
+   Each h2 and its body is a native <details>. The summary is the heading, so
+   the whole row toggles; the chevron is drawn here because the default marker
+   is hidden to keep the heading's own spacing. */
+
+.doc-section {
+  border-top: 1px solid var(--border, rgb(128 128 128 / 0.25));
+}
+.doc-section > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2, 0.5rem);
+  cursor: pointer;
+  list-style: none;
+  min-height: 44px;
+}
+.doc-section > summary::-webkit-details-marker {
+  display: none;
+}
+.doc-section > summary::before {
+  content: '';
+  flex: none;
+  inline-size: 0.55em;
+  block-size: 0.55em;
+  border-inline-end: 2px solid currentColor;
+  border-block-end: 2px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.7;
+}
+[dir='rtl'] .doc-section > summary::before {
+  transform: rotate(135deg);
+}
+.doc-section[open] > summary::before {
+  transform: rotate(45deg);
+}
+.doc-section > summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.doc-section > summary h2 {
+  margin: 0;
+  flex: 1;
+  min-inline-size: 0;
+}
+.doc-section-body {
+  padding-block-end: var(--s-4, 1rem);
+}
+.section-tools {
+  display: flex;
+  gap: var(--s-3, 0.75rem);
+  justify-content: flex-end;
+  margin-block-end: var(--s-3, 0.75rem);
+}
+.section-tools button {
+  font: inherit;
+  font-size: 0.875rem;
+  color: inherit;
+  background: none;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  padding: 0.3rem 0.75rem;
+  min-block-size: 32px;
+  cursor: pointer;
+  opacity: 0.85;
+}
+.section-tools button:hover,
+.section-tools button:focus-visible {
+  opacity: 1;
+}
+@media print {
+  .section-tools {
+    display: none;
+  }
+}
