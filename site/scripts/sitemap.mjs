@@ -21,9 +21,7 @@ const urls = ROUTES.map((route) => {
   const twins = route.twinOf ? ROUTES.filter((r) => r.twinOf === route.twinOf) : [];
   const alternates = twins.length
     ? [
-        ...twins.map(
-          (r) => `    <xhtml:link rel="alternate" hreflang="${r.locale}" href="${ORIGIN}${r.path}" />`,
-        ),
+        ...twins.map((r) => `    <xhtml:link rel="alternate" hreflang="${r.locale}" href="${ORIGIN}${r.path}" />`),
         `    <xhtml:link rel="alternate" hreflang="x-default" href="${ORIGIN}${
           twins.find((r) => r.locale === 'en')?.path ?? route.path
         }" />`,
@@ -31,7 +29,8 @@ const urls = ROUTES.map((route) => {
     : '';
 
   // The home page is the entry point; the guide is where people are sent.
-  const priority = route.path === '/' ? '1.0' : route.path.endsWith('/guide') ? '0.9' : '0.7';
+  const priority =
+    route.path === '/' ? '1.0' : route.path.endsWith('/guide') ? '0.9' : route.path.includes('/guide/') ? '0.8' : '0.7';
 
   return ['  <url>', `    <loc>${loc}</loc>`, alternates, `    <priority>${priority}</priority>`, '  </url>']
     .filter(Boolean)

@@ -55,23 +55,23 @@ export function Install() {
       <p>כל מה שברשימה עובד על המכשיר שלך מיד, בלי התחברות:</p>
       <ul>
         <li>
-          <Link to="/he/guide#clock">שעון וברכה</Link>, <Link to="/he/guide#background">רקעים</Link> ו
-          <Link to="/he/guide#weather">מזג אוויר</Link>
+          <Link to="/he/guide/clock">שעון וברכה</Link>, <Link to="/he/guide/background">רקעים</Link> ו
+          <Link to="/he/guide/weather">מזג אוויר</Link>
         </li>
         <li>
-          <Link to="/he/guide#links">קישורים מהירים</Link>, <Link to="/he/guide#todos">משימות</Link> ו
-          <Link to="/he/guide#quotes">ציטוט יומי</Link>
+          <Link to="/he/guide/links">קישורים מהירים</Link>, <Link to="/he/guide/todos">משימות</Link> ו
+          <Link to="/he/guide/quotes">ציטוט יומי</Link>
         </li>
         <li>
-          <Link to="/he/guide#focus">מצב פוקוס</Link>, <Link to="/he/guide#search">חיפוש</Link>,{' '}
-          <Link to="/he/guide#tab-sidebar">סרגל הלשוניות</Link> ו<Link to="/he/guide#history">היסטוריית הגלישה</Link>
+          <Link to="/he/guide/focus">מצב פוקוס</Link>, <Link to="/he/guide/search">חיפוש</Link>,{' '}
+          <Link to="/he/guide/tab-sidebar">סרגל הלשוניות</Link> ו<Link to="/he/guide/history">היסטוריית הגלישה</Link>
         </li>
         <li>
-          <Link to="/he/guide#finance">מחירי מניות וקריפטו</Link> ו<Link to="/he/guide#templates">תבניות פריסה</Link>
+          <Link to="/he/guide/finance">מחירי מניות וקריפטו</Link> ו<Link to="/he/guide/templates">תבניות פריסה</Link>
         </li>
       </ul>
       <p>
-        <Link to="/he/guide#account">חשבון WindoM</Link> חינמי נדרש רק כדי להעביר את ההגדרות בין מחשבים ולחבר את Google
+        <Link to="/he/guide/account">חשבון WindoM</Link> חינמי נדרש רק כדי להעביר את ההגדרות בין מחשבים ולחבר את Google
         Calendar, את GitHub או את Spotify. אפשר להוסיף חשבון בכל שלב בלי לאבד את מה שכבר הוגדר.
       </p>
 

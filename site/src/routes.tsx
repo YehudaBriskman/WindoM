@@ -2,6 +2,38 @@ import type { ReactElement } from 'react';
 import { Home } from './pages/Home';
 import { Install } from './pages/Install';
 import { Guide } from './pages/Guide';
+import { Clock as ClockGuide } from './pages/guide/Clock';
+import { Clock as ClockGuideHe } from './pages/he/guide/Clock';
+import { Background as BackgroundGuide } from './pages/guide/Background';
+import { Background as BackgroundGuideHe } from './pages/he/guide/Background';
+import { Links as LinksGuide } from './pages/guide/Links';
+import { Links as LinksGuideHe } from './pages/he/guide/Links';
+import { Todos as TodosGuide } from './pages/guide/Todos';
+import { Todos as TodosGuideHe } from './pages/he/guide/Todos';
+import { Focus as FocusGuide } from './pages/guide/Focus';
+import { Focus as FocusGuideHe } from './pages/he/guide/Focus';
+import { Quotes as QuotesGuide } from './pages/guide/Quotes';
+import { Quotes as QuotesGuideHe } from './pages/he/guide/Quotes';
+import { Search as SearchGuide } from './pages/guide/Search';
+import { Search as SearchGuideHe } from './pages/he/guide/Search';
+import { TabSidebar as TabSidebarGuide } from './pages/guide/TabSidebar';
+import { TabSidebar as TabSidebarGuideHe } from './pages/he/guide/TabSidebar';
+import { History as HistoryGuide } from './pages/guide/History';
+import { History as HistoryGuideHe } from './pages/he/guide/History';
+import { Weather as WeatherGuide } from './pages/guide/Weather';
+import { Weather as WeatherGuideHe } from './pages/he/guide/Weather';
+import { Finance as FinanceGuide } from './pages/guide/Finance';
+import { Finance as FinanceGuideHe } from './pages/he/guide/Finance';
+import { Templates as TemplatesGuide } from './pages/guide/Templates';
+import { Templates as TemplatesGuideHe } from './pages/he/guide/Templates';
+import { Account as AccountGuide } from './pages/guide/Account';
+import { Account as AccountGuideHe } from './pages/he/guide/Account';
+import { Calendar as CalendarGuide } from './pages/guide/Calendar';
+import { Calendar as CalendarGuideHe } from './pages/he/guide/Calendar';
+import { Github as GithubGuide } from './pages/guide/Github';
+import { Github as GithubGuideHe } from './pages/he/guide/Github';
+import { Spotify as SpotifyGuide } from './pages/guide/Spotify';
+import { Spotify as SpotifyGuideHe } from './pages/he/guide/Spotify';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { Support } from './pages/Support';
@@ -42,6 +74,8 @@ export interface SiteRoute {
   /** `<title>`, without the site suffix. */
   title: string;
   description: string;
+  /** `<title>` when it should say more than the sidebar label does. */
+  headTitle?: string;
   /**
    * The English path this is a translation of, or undefined for pages that
    * exist in one language. Drives the switcher and the hreflang pairs.
@@ -86,6 +120,189 @@ export const ROUTES: SiteRoute[] = [
     title: 'User Guide',
     description: 'Every panel in WindoM and what it does, with setup for Calendar and Spotify.',
     twinOf: '/guide',
+  },
+  {
+    path: '/guide/clock',
+    group: 'Everyday panels',
+    blurb: '12h or 24h, style, date, greeting',
+    element: <ClockGuide />,
+    locale: 'en',
+    title: 'Clock, Date & Greeting',
+    headTitle: 'Clock, Date and Greeting on Your New Tab',
+    description:
+      'Set the clock format, style, colour and size, show the date, and choose the greeting on your WindoM new tab.',
+    twinOf: '/guide/clock',
+  },
+  {
+    path: '/guide/background',
+    group: 'Everyday panels',
+    blurb: 'Built-in, your own, or Unsplash',
+    element: <BackgroundGuide />,
+    locale: 'en',
+    title: 'Backgrounds',
+    headTitle: 'Change Your New Tab Background',
+    description:
+      'Use built-in photos, your own images or Unsplash photography as your Chrome new tab background in WindoM.',
+    twinOf: '/guide/background',
+  },
+  {
+    path: '/guide/links',
+    group: 'Everyday panels',
+    blurb: 'Pin your most-used sites',
+    element: <LinksGuide />,
+    locale: 'en',
+    title: 'Quick Links & Dock',
+    headTitle: 'Quick Links and Dock Bar',
+    description: 'Pin the sites you open most to the dock bar on your WindoM new tab, and add, edit or reorder them.',
+    twinOf: '/guide/links',
+  },
+  {
+    path: '/guide/todos',
+    group: 'Everyday panels',
+    blurb: 'A task list in the sidebar',
+    element: <TodosGuide />,
+    locale: 'en',
+    title: 'Todos',
+    headTitle: 'Todo List in Your New Tab Sidebar',
+    description: 'A task list that lives in the WindoM sidebar. No account needed.',
+    twinOf: '/guide/todos',
+  },
+  {
+    path: '/guide/focus',
+    group: 'Everyday panels',
+    blurb: 'Set an intention, then a timer',
+    element: <FocusGuide />,
+    locale: 'en',
+    title: 'Focus Mode',
+    headTitle: 'Focus Mode and Focus Timer',
+    description:
+      'Set your main focus and a countdown timer from 25 minutes to 4 hours, and WindoM dims everything else until it ends.',
+    twinOf: '/guide/focus',
+  },
+  {
+    path: '/guide/quotes',
+    group: 'Everyday panels',
+    blurb: 'One a day, clickable for another',
+    element: <QuotesGuide />,
+    locale: 'en',
+    title: 'Daily Quotes',
+    headTitle: 'Daily Quote on Your New Tab',
+    description: 'One quote a day on your WindoM new tab, and how to get another.',
+    twinOf: '/guide/quotes',
+  },
+  {
+    path: '/guide/search',
+    group: 'Everyday panels',
+    blurb: 'Tabs, history and the web',
+    element: <SearchGuide />,
+    locale: 'en',
+    title: 'Search',
+    headTitle: 'Search Tabs, History and the Web',
+    description:
+      'One shortcut on any page to search your open tabs, your history and the web with Google, Bing, DuckDuckGo or Brave.',
+    twinOf: '/guide/search',
+  },
+  {
+    path: '/guide/tab-sidebar',
+    group: 'Everyday panels',
+    blurb: 'Your open tabs, from any page',
+    element: <TabSidebarGuide />,
+    locale: 'en',
+    title: 'Tab Sidebar',
+    headTitle: 'Tab Sidebar: Your Open Tabs',
+    description: 'See and jump to your open tabs from the WindoM sidebar, from any page.',
+    twinOf: '/guide/tab-sidebar',
+  },
+  {
+    path: '/guide/history',
+    group: 'Everyday panels',
+    blurb: 'Where you have just been',
+    element: <HistoryGuide />,
+    locale: 'en',
+    title: 'Tab History',
+    headTitle: 'Tab History and Recent Pages',
+    description: 'The Recent list, and browsing history as search suggestions, and how to turn them off.',
+    twinOf: '/guide/history',
+  },
+  {
+    path: '/guide/weather',
+    group: 'Everyday panels',
+    blurb: 'Live conditions, no key',
+    element: <WeatherGuide />,
+    locale: 'en',
+    title: 'Weather',
+    headTitle: 'Weather Widget',
+    description: 'Live temperature and conditions on your WindoM new tab from Open-Meteo. No API key, no account.',
+    twinOf: '/guide/weather',
+  },
+  {
+    path: '/guide/finance',
+    group: 'Everyday panels',
+    blurb: 'Live stocks and crypto',
+    element: <FinanceGuide />,
+    locale: 'en',
+    title: 'Finance',
+    headTitle: 'Stocks and Crypto Prices on Your New Tab',
+    description: 'Live stock and crypto prices on your WindoM new tab, from Yahoo Finance and CoinGecko.',
+    twinOf: '/guide/finance',
+  },
+  {
+    path: '/guide/templates',
+    group: 'Everyday panels',
+    blurb: 'Minimal, Deep Focus, Dashboard',
+    element: <TemplatesGuide />,
+    locale: 'en',
+    title: 'Layout Templates',
+    headTitle: 'Layout Templates: Minimal, Deep Focus, Dashboard',
+    description:
+      'Preset arrangements for your WindoM new tab, such as Minimal, Deep Focus and Dashboard, and how to switch between them.',
+    twinOf: '/guide/templates',
+  },
+  {
+    path: '/guide/account',
+    group: 'Account and integrations',
+    blurb: 'Optional. Sync and integrations',
+    element: <AccountGuide />,
+    locale: 'en',
+    title: 'WindoM Account',
+    headTitle: 'Create a WindoM Account (Optional)',
+    description:
+      'What a free WindoM account adds, how to create one, and how to manage it. Needed only for sync, Calendar, GitHub and Spotify.',
+    twinOf: '/guide/account',
+  },
+  {
+    path: '/guide/calendar',
+    group: 'Account and integrations',
+    blurb: 'Today and what is coming',
+    element: <CalendarGuide />,
+    locale: 'en',
+    title: 'Google Calendar',
+    headTitle: 'Connect Google Calendar to Your New Tab',
+    description: 'Show today and what is coming from Google Calendar in your WindoM sidebar, read-only.',
+    twinOf: '/guide/calendar',
+  },
+  {
+    path: '/guide/github',
+    group: 'Account and integrations',
+    blurb: 'Notifications, reviews, issues',
+    element: <GithubGuide />,
+    locale: 'en',
+    title: 'GitHub',
+    headTitle: 'Connect GitHub: Notifications and Review Requests',
+    description: 'See GitHub notifications, review requests and assigned issues on your WindoM new tab.',
+    twinOf: '/guide/github',
+  },
+  {
+    path: '/guide/spotify',
+    group: 'Account and integrations',
+    blurb: 'Now playing and top tracks',
+    element: <SpotifyGuide />,
+    locale: 'en',
+    title: 'Spotify',
+    headTitle: 'Connect Spotify: Now Playing and Top Tracks',
+    description:
+      'Connect Spotify to WindoM with your own free Spotify Developer app: now playing, playback controls and top tracks.',
+    twinOf: '/guide/spotify',
   },
   {
     path: '/support',
@@ -162,6 +379,184 @@ export const ROUTES: SiteRoute[] = [
     twinOf: '/guide',
   },
   {
+    path: '/he/guide/clock',
+    group: 'פאנלים יומיומיים',
+    blurb: '12/24 שעות, סגנון, תאריך, ברכה',
+    element: <ClockGuideHe />,
+    locale: 'he',
+    title: 'שעון, תאריך וברכה',
+    headTitle: 'שעון, תאריך וברכה בלשונית החדשה',
+    description: 'הגדרת פורמט השעון, הסגנון, הצבע והגודל, הצגת התאריך ובחירת הברכה בלשונית החדשה של WindoM.',
+    twinOf: '/guide/clock',
+  },
+  {
+    path: '/he/guide/background',
+    group: 'פאנלים יומיומיים',
+    blurb: 'מובנים, שלכם, או Unsplash',
+    element: <BackgroundGuideHe />,
+    locale: 'he',
+    title: 'רקעים',
+    headTitle: 'שינוי הרקע של הלשונית החדשה',
+    description: 'רקעים מובנים, תמונות משלכם או צילומי Unsplash כרקע הלשונית החדשה ב-WindoM.',
+    twinOf: '/guide/background',
+  },
+  {
+    path: '/he/guide/links',
+    group: 'פאנלים יומיומיים',
+    blurb: 'נעצו את האתרים שלכם',
+    element: <LinksGuideHe />,
+    locale: 'he',
+    title: 'קישורים מהירים',
+    headTitle: 'קישורים מהירים וסרגל הדוק',
+    description:
+      'נעצו את האתרים שאתם פותחים הכי הרבה לסרגל הדוק בלשונית החדשה של WindoM, והוסיפו, ערכו או סדרו אותם מחדש.',
+    twinOf: '/guide/links',
+  },
+  {
+    path: '/he/guide/todos',
+    group: 'פאנלים יומיומיים',
+    blurb: 'רשימת משימות בסרגל הצד',
+    element: <TodosGuideHe />,
+    locale: 'he',
+    title: 'משימות',
+    headTitle: 'רשימת משימות בסרגל הצד של הלשונית החדשה',
+    description: 'רשימת משימות שחיה בסרגל הצד של WindoM. לא צריך חשבון.',
+    twinOf: '/guide/todos',
+  },
+  {
+    path: '/he/guide/focus',
+    group: 'פאנלים יומיומיים',
+    blurb: 'מיקוד ראשי, ואז טיימר',
+    element: <FocusGuideHe />,
+    locale: 'he',
+    title: 'מצב פוקוס',
+    headTitle: 'מצב פוקוס וטיימר ריכוז',
+    description: 'הגדירו מיקוד ראשי וטיימר ספירה לאחור, מ-25 דקות עד 4 שעות, ו-WindoM מעמעם את כל השאר עד הסיום.',
+    twinOf: '/guide/focus',
+  },
+  {
+    path: '/he/guide/quotes',
+    group: 'פאנלים יומיומיים',
+    blurb: 'אחד ביום, לחיצה לאחר',
+    element: <QuotesGuideHe />,
+    locale: 'he',
+    title: 'ציטוט יומי',
+    headTitle: 'ציטוט יומי בלשונית החדשה',
+    description: 'ציטוט אחד ביום בלשונית החדשה של WindoM, ואיך מקבלים אחר.',
+    twinOf: '/guide/quotes',
+  },
+  {
+    path: '/he/guide/search',
+    group: 'פאנלים יומיומיים',
+    blurb: 'לשוניות, היסטוריה ורשת',
+    element: <SearchGuideHe />,
+    locale: 'he',
+    title: 'חיפוש',
+    headTitle: 'חיפוש בלשוניות, בהיסטוריה וברשת',
+    description: 'קיצור אחד בכל עמוד לחיפוש בלשוניות הפתוחות, בהיסטוריה וברשת עם Google, ‏Bing, ‏DuckDuckGo או Brave.',
+    twinOf: '/guide/search',
+  },
+  {
+    path: '/he/guide/tab-sidebar',
+    group: 'פאנלים יומיומיים',
+    blurb: 'הלשוניות הפתוחות, מכל עמוד',
+    element: <TabSidebarGuideHe />,
+    locale: 'he',
+    title: 'סרגל לשוניות',
+    headTitle: 'סרגל הלשוניות: הלשוניות הפתוחות שלכם',
+    description: 'ראו ועברו ללשוניות הפתוחות מסרגל הצד של WindoM, מכל עמוד.',
+    twinOf: '/guide/tab-sidebar',
+  },
+  {
+    path: '/he/guide/history',
+    group: 'פאנלים יומיומיים',
+    blurb: 'מקומות שביקרתם בהם',
+    element: <HistoryGuideHe />,
+    locale: 'he',
+    title: 'היסטוריית גלישה',
+    headTitle: 'היסטוריית לשוניות ועמודים אחרונים',
+    description: 'רשימת Recent, והיסטוריית הגלישה כהצעות חיפוש, ואיך מכבים אותן.',
+    twinOf: '/guide/history',
+  },
+  {
+    path: '/he/guide/weather',
+    group: 'פאנלים יומיומיים',
+    blurb: 'תנאים בזמן אמת, בלי מפתח',
+    element: <WeatherGuideHe />,
+    locale: 'he',
+    title: 'מזג אוויר',
+    headTitle: "ווידג'ט מזג אוויר",
+    description: 'טמפרטורה ותנאים בזמן אמת בלשונית החדשה של WindoM מ-Open-Meteo. בלי מפתח API ובלי חשבון.',
+    twinOf: '/guide/weather',
+  },
+  {
+    path: '/he/guide/finance',
+    group: 'פאנלים יומיומיים',
+    blurb: 'מניות וקריפטו בזמן אמת',
+    element: <FinanceGuideHe />,
+    locale: 'he',
+    title: 'פיננסים',
+    headTitle: 'מחירי מניות וקריפטו בלשונית החדשה',
+    description: 'מחירי מניות וקריפטו בזמן אמת בלשונית החדשה של WindoM, מ-Yahoo Finance ומ-CoinGecko.',
+    twinOf: '/guide/finance',
+  },
+  {
+    path: '/he/guide/templates',
+    group: 'פאנלים יומיומיים',
+    blurb: 'מינימלי, פוקוס עמוק, לוח מחוונים',
+    element: <TemplatesGuideHe />,
+    locale: 'he',
+    title: 'תבניות פריסה',
+    headTitle: 'תבניות פריסה: מינימלי, פוקוס עמוק, לוח מחוונים',
+    description: 'סידורים מוכנים ללשונית החדשה של WindoM, כמו מינימלי, פוקוס עמוק ולוח מחוונים, ואיך עוברים ביניהם.',
+    twinOf: '/guide/templates',
+  },
+  {
+    path: '/he/guide/account',
+    group: 'חשבון ואינטגרציות',
+    blurb: 'אופציונלי. סנכרון ואינטגרציות',
+    element: <AccountGuideHe />,
+    locale: 'he',
+    title: 'חשבון WindoM',
+    headTitle: 'יצירת חשבון WindoM (אופציונלי)',
+    description:
+      'מה חשבון WindoM חינמי מוסיף, איך יוצרים אותו ואיך מנהלים אותו. נדרש רק לסנכרון, ל-Calendar, ל-GitHub ול-Spotify.',
+    twinOf: '/guide/account',
+  },
+  {
+    path: '/he/guide/calendar',
+    group: 'חשבון ואינטגרציות',
+    blurb: 'היום ומה שמגיע',
+    element: <CalendarGuideHe />,
+    locale: 'he',
+    title: 'Google Calendar',
+    headTitle: 'חיבור Google Calendar ללשונית החדשה',
+    description: 'הציגו את היום ומה שמגיע מ-Google Calendar בסרגל הצד של WindoM, לקריאה בלבד.',
+    twinOf: '/guide/calendar',
+  },
+  {
+    path: '/he/guide/github',
+    group: 'חשבון ואינטגרציות',
+    blurb: 'התראות, סקירות, issues',
+    element: <GithubGuideHe />,
+    locale: 'he',
+    title: 'GitHub',
+    headTitle: 'חיבור GitHub: התראות ובקשות סקירה',
+    description: 'ראו התראות GitHub, בקשות סקירה ו-issues שהוקצו לכם בלשונית החדשה של WindoM.',
+    twinOf: '/guide/github',
+  },
+  {
+    path: '/he/guide/spotify',
+    group: 'חשבון ואינטגרציות',
+    blurb: 'מה מתנגן והשירים המובילים',
+    element: <SpotifyGuideHe />,
+    locale: 'he',
+    title: 'Spotify',
+    headTitle: 'חיבור Spotify: מה מתנגן ומובילי ההשמעה',
+    description: 'חברו את Spotify ל-WindoM עם אפליקציית מפתחים חינמית משלכם: מה מתנגן, בקרי השמעה והשירים המובילים.',
+    twinOf: '/guide/spotify',
+  },
+  {
     path: '/he/support',
     group: 'עזרה',
     blurb: 'פתרונות לתקלות הנפוצות',
@@ -221,7 +616,8 @@ export function areTwins(a: string, b: string): boolean {
 
 /** `<title>` for a route: the home page carries the suffix already. */
 export function titleFor(route: SiteRoute): string {
-  return route.path === '/' ? route.title : `${route.title} - WindoM`;
+  if (route.path === '/') return route.title;
+  return `${route.headTitle ?? route.title} - WindoM`;
 }
 
 /** `/privacy` -> `/privacy.html`, `/` -> `/index.html`. */
