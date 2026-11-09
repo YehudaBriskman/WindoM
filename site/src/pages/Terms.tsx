@@ -1,16 +1,16 @@
 import { DocsLayout } from '../components/DocsLayout';
 import { Link } from 'react-router';
+import { CONTACT_EMAIL } from '../lib/site';
 
 /**
  * Terms governing the hosted service and the published extension.
  *
- * Content is ported verbatim from the previous hand-written page. The wording is
- * legally meaningful and was not edited during the rebuild - the only change is
- * the hostname correction, which named a server that does not exist.
+ * The wording is legally meaningful. The 2026-11-09 revision was drafted from the
+ * code and still needs a lawyer's review; keep the Hebrew twin in step with it.
  */
 export function Terms() {
   return (
-    <DocsLayout path="/terms" eyebrow="Legal" title="Terms of Use" subtitle="Last updated: April 27, 2026">
+    <DocsLayout path="/terms" eyebrow="Legal" title="Terms of Use" subtitle="Last updated: November 9, 2026">
       <div className="callout">
         <strong>Plain-English summary:</strong> WindoM is a free, open-source new tab extension. Use it for lawful
         personal productivity purposes, don't abuse it or try to break things, and understand that it comes without
@@ -57,7 +57,10 @@ export function Terms() {
           You must notify us immediately at <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a> if
           you suspect unauthorized access
         </li>
-        <li>You must be at least 13 years old to create an account</li>
+        <li>
+          You must be at least 13 years old to create an account, and if you are under 18 you confirm that a parent or
+          guardian has allowed you to use WindoM
+        </li>
       </ul>
       <p>We reserve the right to suspend or terminate accounts that violate these Terms.</p>
       <h2>4. Third-party integrations</h2>
@@ -80,7 +83,12 @@ export function Terms() {
           <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">
             Google account permissions
           </a>{' '}
-          or from WindoM's settings.
+          or from WindoM's settings. WindoM's use and transfer to any other app of information received from Google APIs
+          will adhere to the{' '}
+          <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">
+            Google API Services User Data Policy
+          </a>
+          , including the Limited Use requirements.
         </li>
         <li>
           <strong>Spotify:</strong> The Spotify integration uses a Bring Your Own App (BYOA) model - you register a free
@@ -91,8 +99,13 @@ export function Terms() {
           and{' '}
           <a href="https://developer.spotify.com/terms" target="_blank" rel="noopener">
             Spotify Developer Terms
+          </a>{' '}
+          and{' '}
+          <a href="https://developer.spotify.com/policy" target="_blank" rel="noopener">
+            Spotify Developer Policy
           </a>
-          .
+          , which also bind the Spotify app you register. You must not use WindoM to copy, record or redistribute
+          Spotify content, or to train a machine-learning model on it.
         </li>
         <li>
           <strong>GitHub:</strong> The GitHub widget uses a classic personal access token that you create yourself, with
@@ -103,6 +116,14 @@ export function Terms() {
             rel="noopener"
           >
             GitHub's Terms of Service
+          </a>{' '}
+          and{' '}
+          <a
+            href="https://docs.github.com/site-policy/acceptable-use-policies/github-acceptable-use-policies"
+            target="_blank"
+            rel="noopener"
+          >
+            Acceptable Use Policies
           </a>
           . You are responsible for the token you issue and can revoke it at any time from your{' '}
           <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">
@@ -115,13 +136,37 @@ export function Terms() {
           <a href="https://unsplash.com/license" target="_blank" rel="noopener">
             Unsplash License
           </a>
-          .
+          . WindoM shows the photographer's name and a link to Unsplash with each photo, and you supply your own
+          Unsplash access key, so your use of the Unsplash API is under your own agreement with Unsplash and its{' '}
+          <a
+            href="https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines"
+            target="_blank"
+            rel="noopener"
+          >
+            API Guidelines
+          </a>
+          . Do not remove the credit, and do not use the images to build a competing photo service.
         </li>
         <li>
           <strong>Yahoo Finance / CoinGecko:</strong> Financial data is provided for informational purposes only. It is
           not financial advice. These services are subject to their own terms and availability.
         </li>
       </ul>
+      <p>
+        <strong>Attribution.</strong> Weather data by{' '}
+        <a href="https://open-meteo.com/" target="_blank" rel="noopener">
+          Open-Meteo.com
+        </a>{' '}
+        (licensed{' '}
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">
+          CC BY 4.0
+        </a>
+        ). Place names from reverse geocoding are &copy; OpenStreetMap contributors (
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">
+          ODbL
+        </a>
+        ). Cryptocurrency prices are provided by the CoinGecko API.
+      </p>
       <p>WindoM is not responsible for the availability, accuracy, or terms of any third-party service.</p>
       <h2>5. Acceptable use</h2>
       <p>You agree not to:</p>
@@ -211,13 +256,50 @@ export function Terms() {
         amount you have paid us in the twelve months preceding the claim. Since WindoM is free, this means our total
         liability is zero.
       </p>
-      <h2>11. Privacy</h2>
+      <p>
+        Nothing in these Terms excludes or limits a liability, or a right of yours, that cannot be excluded or limited
+        under the law that applies to you, including liability for intent or gross negligence and any mandatory consumer
+        protection right.
+      </p>
+      <p>
+        The MIT License of the source code (section 7) likewise provides that the software is provided &ldquo;as
+        is&rdquo;, without warranty of any kind, and that the authors are not liable for any claim, damages or other
+        liability arising from it. If you run your own copy of WindoM, including your own backend, you are the operator
+        of that copy and are responsible for it, including any personal data it holds.
+      </p>
+      <h2>11. Trademarks and non-affiliation</h2>
+      <p>
+        Google, Google Calendar, Chrome and Chrome Web Store are trademarks of Google LLC. GitHub is a trademark of
+        GitHub, Inc. Spotify is a trademark of Spotify AB. Unsplash is a trademark of Unsplash Inc. Yahoo, CoinGecko,
+        Open-Meteo, OpenStreetMap and DuckDuckGo belong to their respective owners. They are used in WindoM and on this
+        site only to identify the services the extension connects to. WindoM is an independent project made by one
+        individual. It is not affiliated with, sponsored by, or endorsed by any of those companies. The MIT License
+        covers the code; it does not let you present a fork as the official WindoM extension.
+      </p>
+      <h2>12. Copyright and content complaints</h2>
+      <p>
+        WindoM hosts no public user content. Background images and todos stay in your own browser, and the settings you
+        sync are private to your account. The photos shown come from Unsplash, which is responsible for them. If you
+        believe something shown by WindoM, or code in its repository, infringes your copyright, email{' '}
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> with the subject &ldquo;Copyright&rdquo;, identify the
+        work and where it appears, and we will look at it promptly. Open-source dependencies and their licences are
+        listed in the{' '}
+        <a
+          href="https://github.com/YehudaBriskman/WindoM/blob/main/THIRD_PARTY_NOTICES.md"
+          target="_blank"
+          rel="noopener"
+        >
+          third-party notices
+        </a>
+        .
+      </p>
+      <h2>13. Privacy</h2>
       <p>
         Your use of WindoM is also governed by our <Link to="/privacy">Privacy Policy</Link>, which explains what data
         we collect, how we use it, and your rights regarding that data. By using WindoM, you agree to the Privacy
         Policy.
       </p>
-      <h2>12. Termination</h2>
+      <h2>14. Termination</h2>
       <p>
         You may stop using WindoM at any time by uninstalling the extension. If you have an account, you can permanently
         delete it and all associated data from <strong>Settings → Account → Delete account</strong>.
@@ -227,22 +309,28 @@ export function Terms() {
         in cases of serious violations. Termination does not affect any locally stored data - that remains in your
         browser until you uninstall the extension or clear your browser data.
       </p>
-      <h2>13. Changes to these terms</h2>
+      <h2>15. Changes to these terms</h2>
       <p>
         We may update these Terms from time to time. When we do, we will update the "Last updated" date at the top of
         this page. For material changes, we will make reasonable efforts to notify users (for example, via a notice in
         the extension). Continued use of WindoM after changes take effect constitutes acceptance of the updated Terms.
       </p>
-      <h2>14. Governing law</h2>
+      <h2>16. General</h2>
+      <p>
+        If a part of these Terms is found unenforceable, the rest stays in force. Our not enforcing a provision at a
+        given time does not waive it. These Terms and the Privacy Policy are the whole agreement between you and us
+        about WindoM. The English version governs; the Hebrew version is a translation for convenience.
+      </p>
+      <h2>17. Governing law</h2>
       <p>
         These Terms are governed by the laws of the State of Israel, without regard to its conflict-of-law provisions.
         Any disputes arising from these Terms or your use of WindoM shall be subject to the exclusive jurisdiction of
         the competent courts of Israel.
       </p>
-      <h2>15. Contact</h2>
+      <h2>18. Contact</h2>
       <p>
         If you have questions about these Terms, please contact us at
-        <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a>.
+        <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
       </p>
     </DocsLayout>
   );
