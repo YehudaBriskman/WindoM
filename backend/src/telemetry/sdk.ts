@@ -15,7 +15,11 @@
  */
 import { readFileSync } from 'node:fs';
 import { DiagConsoleLogger, DiagLogLevel, diag, metrics as metricsApi, type Attributes } from '@opentelemetry/api';
-import { NodeSDK, logs, metrics, resources, tracing } from '@opentelemetry/sdk-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import * as logs from '@opentelemetry/sdk-logs';
+import * as metrics from '@opentelemetry/sdk-metrics';
+import * as resources from '@opentelemetry/resources';
+import * as tracing from '@opentelemetry/sdk-trace';
 import type { Instrumentation } from '@opentelemetry/instrumentation';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-proto';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-proto';
@@ -135,10 +139,10 @@ export function createTelemetry(options: TelemetryOptions = {}): Telemetry {
 
   // Batch processors queue at most 2048 items and drop beyond that: a backed-up
   // collector costs telemetry, never a request.
-  const spanProcessor = new tracing.BatchSpanProcessor(
-    new ScrubbingSpanExporter(options.spanExporter ?? new OTLPTraceExporter(timeout)),
-    { exportTimeoutMillis: DEFAULT_EXPORT_TIMEOUT_MS },
-  );
+  const spanProcessor = new tracing.BatchSpanProcessor({
+    exporter: new ScrubbingSpanExporter(options.spanExporter ?? new OTLPTraceExporter(timeout)),
+    exportTimeoutMillis: DEFAULT_EXPORT_TIMEOUT_MS,
+  });
   const logProcessor = new logs.BatchLogRecordProcessor({
     exporter: new ScrubbingLogRecordExporter(options.logExporter ?? new OTLPLogExporter(timeout)),
     exportTimeoutMillis: DEFAULT_EXPORT_TIMEOUT_MS,

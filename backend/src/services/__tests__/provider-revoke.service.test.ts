@@ -2,10 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('../../db/client.js', () => ({ db: { select: vi.fn(), delete: vi.fn() } }));
 vi.mock('../../lib/crypto.js', () => ({
-  decryptToken: vi.fn(async (v: string) => `plain:${v}`),
+  decryptToken: vi.fn((v: string) => Promise.resolve(`plain:${v}`)),
 }));
 const warn = vi.fn();
-vi.mock('../../lib/logger.js', () => ({ logger: { warn: (...a: unknown[]) => warn(...a), error: vi.fn() } }));
+vi.mock('../../lib/logger.js', () => ({
+  logger: {
+    warn: (...a: unknown[]) => {
+      warn(...a);
+    },
+    error: vi.fn(),
+  },
+}));
 
 import { db } from '../../db/client.js';
 import { revokeAtProvider, revokeAccounts, GOOGLE_REVOKE_URL } from '../provider-revoke.service.js';
