@@ -33,7 +33,11 @@ export function useMotionPaused(): [boolean, () => void] {
 
   useEffect(() => {
     try {
-      if (localStorage.getItem(KEY) === '1') setPaused(true);
+      const stored = localStorage.getItem(KEY);
+      if (stored === '1') setPaused(true);
+      // No stored choice: start from the OS setting, so the button and the
+      // body class agree with what a reduced-motion visitor already sees.
+      else if (stored === null && window.matchMedia('(prefers-reduced-motion: reduce)').matches) setPaused(true);
     } catch {
       // Private browsing, or site data blocked. Motion simply stays on.
     }
@@ -70,9 +74,11 @@ export function useMotionPaused(): [boolean, () => void] {
 
 export function MotionToggle({ paused, onToggle }: { paused: boolean; onToggle: () => void }) {
   return (
+    // A stable name with aria-pressed carries the state; swapping the label as
+    // well would read as "Play motion, pressed" - the state said twice, backwards.
     <button type="button" className="motion-toggle" onClick={onToggle} aria-pressed={paused}>
       <span aria-hidden="true">{paused ? '▶' : '❙❙'}</span>
-      {paused ? 'Play motion' : 'Pause motion'}
+      Pause motion
     </button>
   );
 }

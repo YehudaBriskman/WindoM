@@ -64,6 +64,7 @@ const UI = {
     about: 'About',
     expandAll: 'Expand all',
     collapseAll: 'Collapse all',
+    accessibility: 'Accessibility',
   },
   he: {
     home: 'דף הבית',
@@ -81,6 +82,7 @@ const UI = {
     about: 'אודות',
     expandAll: 'פתיחת הכול',
     collapseAll: 'סגירת הכול',
+    accessibility: 'נגישות',
   },
 } as const;
 
@@ -356,6 +358,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             <Link to={inThisLanguage('/local-setup')}>{t.localSetup}</Link>
             <Link to={inThisLanguage('/privacy')}>{t.privacy}</Link>
             <Link to={inThisLanguage('/terms')}>{t.terms}</Link>
+            <Link to={inThisLanguage('/accessibility')}>{t.accessibility}</Link>
             <a href={STORE_URL}>Chrome Web Store</a>
             <a href={GITHUB_URL}>GitHub</a>
           </nav>

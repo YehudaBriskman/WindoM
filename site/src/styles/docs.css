@@ -739,6 +739,16 @@ html.docs-search-open {
   outline: none;
 }
 
+/* The input drops its own outline because the whole field is the control; the
+   field draws the ring instead, so focus is never invisible. */
+.docs-search-input:focus-visible {
+  box-shadow: none;
+}
+
+.docs-search-field:focus-within {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
 /* Chrome draws its own clear button on a search field and it lands on top of
    the border. The Escape key and the overlay both already close this. */
 .docs-search-input::-webkit-search-cancel-button {
