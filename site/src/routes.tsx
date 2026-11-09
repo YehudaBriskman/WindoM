@@ -3,6 +3,7 @@ import { Home } from './pages/Home';
 import { Install } from './pages/Install';
 import { Guide } from './pages/Guide';
 import { About } from './pages/About';
+import { Home as HomeHe } from './pages/he/Home';
 import { About as AboutHe } from './pages/he/About';
 import { Clock as ClockGuide } from './pages/guide/Clock';
 import { Clock as ClockGuideHe } from './pages/he/guide/Clock';
@@ -103,6 +104,16 @@ export const ROUTES: SiteRoute[] = [
     title: 'WindoM - a new tab worth opening',
     description:
       'WindoM replaces the Chrome new tab with your calendar, the weather, todos and markets, on a wallpaper that moves with the hour.',
+    twinOf: '/',
+  },
+  {
+    path: '/he',
+    element: <HomeHe />,
+    locale: 'he',
+    title: 'WindoM - לשונית חדשה ששווה לפתוח',
+    description:
+      'WindoM מחליף את הלשונית החדשה ב-Chrome בשעון, מזג אוויר, משימות, קישורים מהירים, פוקוס, ציטוט יומי ומחירי שוק. תוסף חינמי בקוד פתוח מאת יהודה בריסקמן.',
+    twinOf: '/',
   },
   {
     path: '/install',
