@@ -59,3 +59,25 @@ export const BLOG_URL = 'https://yehudabriskman.com/blog';
  * allowlist.
  */
 export const UPDATES_API = 'https://yehudabriskman.com/api/blog/posts?collection=windom';
+
+/**
+ * What WindoM does, as the structured data states it. Each line is in the
+ * README's feature tables and on the home page; nothing here is aspirational,
+ * because a feature list a crawler reads and a visitor cannot find is the
+ * kind of claim a search engine penalises.
+ */
+export const FEATURES = [
+  'Clock and greeting that follow the hour',
+  'Weather from Open-Meteo, no key or sign-up',
+  'Rotating Unsplash backgrounds or your own image',
+  'Todo list in the sidebar',
+  'Focus timer from 25 minutes to 4 hours',
+  'Quick links dock',
+  'Search to Google, Bing, DuckDuckGo or Brave',
+  'Daily quote',
+  'Open tabs sidebar and recent pages',
+  'Layout templates: Minimal, Deep Focus, Dashboard',
+  'Live stocks and crypto',
+  'Google Calendar, Spotify and GitHub with a free account',
+  'Settings sync across browsers',
+] as const;
