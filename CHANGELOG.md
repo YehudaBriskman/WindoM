@@ -7,6 +7,51 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.8.0] - 2026-11-09
+
+The extension and the server both change. No schema migrations. The extension
+asks for one permission fewer.
+
+### Added
+- **Keyboard and screen-reader accessibility in the extension.** The settings
+  gear, sidebar toggle and add-link control are real buttons; closed panels no
+  longer take keyboard focus; dialogs trap focus, close on Escape and return
+  focus; inputs have accessible names; motion respects the reduced-motion
+  setting. Contrast over photo backgrounds and screen-reader behaviour are not
+  yet verified; see `web/ACCESSIBILITY.md`. (#493)
+- **Attribution** for Open-Meteo (CC BY 4.0) and a link to CoinGecko in
+  settings. (#498)
+- **Server hardening.** In production the server refuses to start on
+  placeholder secrets; expired and revoked sessions are deleted after 30
+  days; stored IP and browser digests are keyed (HMAC-SHA-256, so older
+  digests no longer match); disconnecting Google or deleting an account asks
+  Google to revoke the grant. (#497)
+
+### Changed
+- **The Unsplash key stays on your device.** It moves out of synced settings
+  and is no longer sent to the WindoM server; an existing key is migrated.
+  The unused weather key setting is gone. (#502)
+- **Clicking the quote** shows a different quote from the bundled collection
+  instead of re-showing the day's. (#499)
+- **Privacy Policy and Terms** rewritten to match what the code does, with a
+  new Accessibility Statement. (#494)
+
+### Removed
+- **API Quotes.** Its service no longer exists, so the option, its network
+  request and the `api.quotable.io` permission are gone. A saved "API Quotes"
+  choice becomes the bundled collection. (#499)
+
+### Fixed
+- The backend typechecked and linted again after an OpenTelemetry upgrade
+  dropped the namespaces it imported from `sdk-node`. (#497)
+
+### Website
+- The guide is one page per feature in English and Hebrew, plus keyboard
+  shortcuts, About and a Hebrew home page; the docs sidebar groups fold; the
+  site's own accessibility was audited and fixed. (#489-#496)
+
+---
+
 ## [1.7.0] - 2026-11-04
 
 A server-side release. The extension is unchanged apart from its version number.
