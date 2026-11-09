@@ -68,12 +68,23 @@ Fonts at view time. Both are licensed under the SIL Open Font License 1.1.
 ## Not covered by this file
 
 - **Background photos** shown by the extension come from Unsplash at run time
-  under the [Unsplash License](https://unsplash.com/license). Four images are
-  bundled in `web/public/images/` (`bundled-bg*.jpg|png`); **their origin and
-  licence are not recorded in this repository** and should be documented or
-  replaced before relying on them.
-- **Quotes** in `web/public/data/quotes.json` are short attributed sayings of
-  named people; their provenance is not recorded either.
+  under the [Unsplash License](https://unsplash.com/license).
+- **Bundled images.** Four images ship in `web/public/images/`
+  (`bundled-bg.jpg`, `bundled-bg2.jpg`, `bundled-bg3.jpg`, `bundled-bg4.png`).
+  According to the maintainer they came from the wallpapers that ship with the
+  [Omarchy](https://omarchy.org) Linux distribution and from
+  [Pexels](https://www.pexels.com/license/). The repository does not record
+  which image came from where. Pexels' licence permits free use, including
+  commercial use, without attribution. **Omarchy's wallpapers are a mix, and
+  their individual licences have not been checked.** Until each image's source
+  is confirmed, treat these four as unverified and replace any that cannot be
+  traced.
+- **Quotes** in `web/public/data/quotes.json` (75 entries) are short sayings
+  attributed to named people. According to the maintainer they were compiled
+  for this project rather than copied from a licensed dataset, and the
+  repository does not record a source for them. The attributions have not been
+  independently verified; a saying that cannot be traced to its author should be
+  corrected or removed.
 - **Third-party web services** the extension contacts (Open-Meteo, Yahoo
   Finance, CoinGecko and others) are governed by their own terms; see the
   [Privacy Policy](https://windom.app/privacy).
