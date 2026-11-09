@@ -101,7 +101,11 @@ export function FinanceSettings() {
           )}
         </div>
         <p className="settings-hint" style={{ marginBottom: '10px' }}>
-          Free data via CoinGecko.
+          Free data via{' '}
+          <a href="https://www.coingecko.com/" target="_blank" rel="noreferrer">
+            CoinGecko
+          </a>
+          .
         </p>
         <div className="finance-crypto-grid">
           {POPULAR_CRYPTO.map((coin) => {
