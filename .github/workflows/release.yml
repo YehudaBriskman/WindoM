@@ -476,4 +476,8 @@ jobs:
             # --verify-tag: never let the release create a tag the gate did not check.
             gh release create "$RELEASE_TAG" --verify-tag --title "$RELEASE_TAG" --notes-file notes.md "$asset"
           fi
-          gh release view "$RELEASE_TAG" --json url,isLatest --jq '"\(.url) latest=\(.isLatest)"'
+          # `gh release view` has no isLatest field (that is why this step failed after the
+          # release had already been published); `gh release list` does.
+          url=$(gh release view "$RELEASE_TAG" --json url --jq .url)
+          latest=$(gh release list --limit 20 --json tagName,isLatest --jq '.[] | select(.isLatest) | .tagName')
+          echo "$url latest=$([ "$latest" = "$RELEASE_TAG" ] && echo true || echo false)"
