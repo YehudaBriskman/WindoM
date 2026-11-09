@@ -2,6 +2,8 @@ import type { ReactElement } from 'react';
 import { Home } from './pages/Home';
 import { Install } from './pages/Install';
 import { Guide } from './pages/Guide';
+import { About } from './pages/About';
+import { About as AboutHe } from './pages/he/About';
 import { Clock as ClockGuide } from './pages/guide/Clock';
 import { Clock as ClockGuideHe } from './pages/he/guide/Clock';
 import { Background as BackgroundGuide } from './pages/guide/Background';
@@ -13,6 +15,8 @@ import { Todos as TodosGuideHe } from './pages/he/guide/Todos';
 import { Focus as FocusGuide } from './pages/guide/Focus';
 import { Focus as FocusGuideHe } from './pages/he/guide/Focus';
 import { Quotes as QuotesGuide } from './pages/guide/Quotes';
+import { Shortcuts as ShortcutsGuide } from './pages/guide/Shortcuts';
+import { Shortcuts as ShortcutsGuideHe } from './pages/he/guide/Shortcuts';
 import { Quotes as QuotesGuideHe } from './pages/he/guide/Quotes';
 import { Search as SearchGuide } from './pages/guide/Search';
 import { Search as SearchGuideHe } from './pages/he/guide/Search';
@@ -153,7 +157,7 @@ export const ROUTES: SiteRoute[] = [
     locale: 'en',
     title: 'Quick Links & Dock',
     headTitle: 'Quick Links and Dock Bar',
-    description: 'Pin the sites you open most to the dock bar on your WindoM new tab, and add, edit or reorder them.',
+    description: 'Pin the sites you open most to the dock bar on your WindoM new tab, and add, edit or remove them.',
     twinOf: '/guide/links',
   },
   {
@@ -182,13 +186,26 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/guide/quotes',
     group: 'Everyday panels',
-    blurb: 'One a day, clickable for another',
+    blurb: 'One a day, local or from the API',
     element: <QuotesGuide />,
     locale: 'en',
     title: 'Daily Quotes',
     headTitle: 'Daily Quote on Your New Tab',
-    description: 'One quote a day on your WindoM new tab, and how to get another.',
+    description: 'One quote a day on your WindoM new tab, local or from the API, and what clicking it does.',
     twinOf: '/guide/quotes',
+  },
+  {
+    path: '/guide/shortcuts',
+    group: 'Everyday panels',
+    blurb:
+      'Every keyboard shortcut in WindoM, from the global search key to the Escape and Enter keys inside each panel.',
+    element: <ShortcutsGuide />,
+    locale: 'en',
+    title: 'Keyboard Shortcuts',
+    headTitle: 'Keyboard Shortcuts for the WindoM New Tab - WindoM',
+    description:
+      'Every keyboard shortcut in WindoM, from the global search key to the Escape and Enter keys inside each panel.',
+    twinOf: '/guide/shortcuts',
   },
   {
     path: '/guide/search',
@@ -326,6 +343,18 @@ export const ROUTES: SiteRoute[] = [
     twinOf: '/contact',
   },
   {
+    path: '/about',
+    group: 'Help',
+    blurb: 'Who makes WindoM, and why you can read the source',
+    element: <About />,
+    locale: 'en',
+    title: 'About',
+    headTitle: 'About WindoM and Its Author, Yehuda Briskman',
+    description:
+      'WindoM is a free, open-source Chrome new tab extension made by Yehuda Briskman, a full-stack engineer in Tel Aviv. What it is, who makes it, and where to read more.',
+    twinOf: '/about',
+  },
+  {
     path: '/local-setup',
     group: 'Developers',
     blurb: 'Run the whole stack yourself',
@@ -408,8 +437,7 @@ export const ROUTES: SiteRoute[] = [
     locale: 'he',
     title: 'קישורים מהירים',
     headTitle: 'קישורים מהירים וסרגל הדוק',
-    description:
-      'נעצו את האתרים שאתם פותחים הכי הרבה לסרגל הדוק בלשונית החדשה של WindoM, והוסיפו, ערכו או סדרו אותם מחדש.',
+    description: 'נעצו את האתרים שאתם פותחים הכי הרבה לסרגל הדוק בלשונית החדשה של WindoM, והוסיפו, ערכו או הסירו אותם.',
     twinOf: '/guide/links',
   },
   {
@@ -437,13 +465,24 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/he/guide/quotes',
     group: 'פאנלים יומיומיים',
-    blurb: 'אחד ביום, לחיצה לאחר',
+    blurb: 'אחד ביום, מקומי או מה-API',
     element: <QuotesGuideHe />,
     locale: 'he',
     title: 'ציטוט יומי',
     headTitle: 'ציטוט יומי בלשונית החדשה',
     description: 'ציטוט אחד ביום בלשונית החדשה של WindoM, ואיך מקבלים אחר.',
     twinOf: '/guide/quotes',
+  },
+  {
+    path: '/he/guide/shortcuts',
+    group: 'פאנלים יומיומיים',
+    blurb: 'כל קיצורי המקלדת ב-WindoM, ממקש החיפוש הכללי ועד Escape ו-Enter בתוך כל פאנל.',
+    element: <ShortcutsGuideHe />,
+    locale: 'he',
+    title: 'קיצורי מקלדת',
+    headTitle: 'קיצורי מקלדת בלשונית החדשה של WindoM - WindoM',
+    description: 'כל קיצורי המקלדת ב-WindoM, ממקש החיפוש הכללי ועד Escape ו-Enter בתוך כל פאנל.',
+    twinOf: '/guide/shortcuts',
   },
   {
     path: '/he/guide/search',
@@ -575,6 +614,18 @@ export const ROUTES: SiteRoute[] = [
     title: 'יצירת קשר',
     description: 'איך ליצור קשר עם המפתח של WindoM, ולמה לצפות.',
     twinOf: '/contact',
+  },
+  {
+    path: '/he/about',
+    group: 'עזרה',
+    blurb: 'מי מפתח את WindoM, ולמה אפשר לקרוא את הקוד',
+    element: <AboutHe />,
+    locale: 'he',
+    title: 'אודות',
+    headTitle: 'אודות WindoM ומפתחו, יהודה בריסקמן',
+    description:
+      'WindoM הוא תוסף חינמי בקוד פתוח ללשונית החדשה ב-Chrome, שנבנה על ידי יהודה בריסקמן, מהנדס פול־סטאק בתל אביב. מה זה, מי מפתח אותו, ואיפה לקרוא עוד.',
+    twinOf: '/about',
   },
   {
     path: '/he/local-setup',

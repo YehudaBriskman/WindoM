@@ -33,7 +33,11 @@ export const AUTHOR = {
   name: 'Yehuda Briskman',
   nameHe: 'יהודה בריסקמן',
   alternateName: ['יהודה בריסקמן', 'yehuda.br', 'YehudaBriskman', 'Yehuda B.'],
-  sameAs: ['https://github.com/YehudaBriskman', 'https://yehudabriskman.com'],
+  sameAs: [
+    'https://github.com/YehudaBriskman',
+    'https://www.linkedin.com/in/yehuda-briskman-ab923b2b8',
+    'https://yehudabriskman.com',
+  ],
 } as const;
 
 /**
