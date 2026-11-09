@@ -199,12 +199,12 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/guide/quotes',
     group: 'Everyday panels',
-    blurb: 'One a day, local or from the API',
+    blurb: 'One a day, from a bundled collection',
     element: <QuotesGuide />,
     locale: 'en',
     title: 'Daily Quotes',
     headTitle: 'Daily Quote on Your New Tab',
-    description: 'One quote a day on your WindoM new tab, local or from the API, and what clicking it does.',
+    description: 'One quote a day on your WindoM new tab, chosen from a bundled collection, and what clicking it does.',
     twinOf: '/guide/quotes',
   },
   {
@@ -488,7 +488,7 @@ export const ROUTES: SiteRoute[] = [
   {
     path: '/he/guide/quotes',
     group: 'פאנלים יומיומיים',
-    blurb: 'אחד ביום, מקומי או מה-API',
+    blurb: 'אחד ביום, מאוסף מובנה',
     element: <QuotesGuideHe />,
     locale: 'he',
     title: 'ציטוט יומי',

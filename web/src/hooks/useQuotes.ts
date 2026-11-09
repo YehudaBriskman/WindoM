@@ -53,43 +53,36 @@ export function useQuotes() {
     return q;
   }, []);
 
-  const fetchAPIQuote = useCallback(async (): Promise<Quote> => {
-    try {
-      const res = await fetch('https://api.quotable.io/random');
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      const data = await res.json();
-      return { text: data.content, author: data.author, category: data.tags?.[0] || 'wisdom' };
-    } catch {
-      const quotes = await loadLocalQuotes();
-      return quotes[Math.floor(Math.random() * quotes.length)];
-    }
-  }, [loadLocalQuotes]);
-
-  const displayQuote = useCallback(async () => {
-    let nextQuote: Quote;
-    if (settings.widgets.quoteSource === 'api') {
-      nextQuote = await fetchAPIQuote();
-    } else {
-      const quotes = await loadLocalQuotes();
-      nextQuote = await getDailyQuote(quotes);
-    }
+  const showQuote = useCallback((next: Quote) => {
     // Fade animation
     setFading(true);
     setTimeout(() => {
-      setQuote(nextQuote);
+      setQuote(next);
       setFading(false);
     }, QUOTE_FADE_DURATION_MS);
-  }, [settings.widgets.quoteSource, fetchAPIQuote, loadLocalQuotes, getDailyQuote]);
+  }, []);
 
+  const displayQuote = useCallback(async () => {
+    const quotes = await loadLocalQuotes();
+    showQuote(await getDailyQuote(quotes));
+  }, [loadLocalQuotes, getDailyQuote, showQuote]);
+
+  /**
+   * A click shows a different quote from the local list. It is not saved: the
+   * day's quote (the cache above) is untouched, so tomorrow, or the next tab,
+   * starts from the date-seeded pick again.
+   */
   const refresh = useCallback(async () => {
-    await syncStorage.remove('dailyQuote');
-    displayQuote();
-  }, [displayQuote]);
+    const quotes = await loadLocalQuotes();
+    const others = quotes.filter((q) => q.text !== quote?.text);
+    if (others.length === 0) return;
+    showQuote(others[Math.floor(Math.random() * others.length)]);
+  }, [loadLocalQuotes, quote, showQuote]);
 
   // Initial load
   useEffect(() => {
     if (settings.widgets.showQuotes) displayQuote();
-  }, [settings.widgets.showQuotes, settings.widgets.quoteSource]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [settings.widgets.showQuotes]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Schedule midnight rotation
   useEffect(() => {

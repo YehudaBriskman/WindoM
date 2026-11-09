@@ -342,13 +342,6 @@ export function Privacy() {
           </tr>
           <tr>
             <td>
-              <strong>Quotable</strong> (<code>api.quotable.io</code>)
-            </td>
-            <td>דבר</td>
-            <td>משיכת ציטוט. אין מעורבות של נתונים אישיים.</td>
-          </tr>
-          <tr>
-            <td>
               <strong>Yahoo Finance</strong> (<code>query1/query2.finance.yahoo.com</code>)
             </td>
             <td>סימולי המניות שהוספת</td>

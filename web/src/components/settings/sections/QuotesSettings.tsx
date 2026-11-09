@@ -1,5 +1,4 @@
 import { useSettings } from '../../../contexts/SettingsContext';
-import { GlassSelect } from '../../ui/GlassSelect';
 
 export function QuotesSettings() {
   const { settings, update } = useSettings();
@@ -16,17 +15,9 @@ export function QuotesSettings() {
           Show daily quotes
         </label>
       </div>
-      <div className="settings-group">
-        <label className="settings-label">Quote Source:</label>
-        <GlassSelect
-          value={settings.widgets.quoteSource}
-          onChange={(value) => update('widgets', { quoteSource: value as 'local' | 'api' })}
-          options={[
-            { value: 'local', label: 'Local Quotes' },
-            { value: 'api', label: 'API Quotes' },
-          ]}
-        />
-      </div>
+      <p className="settings-hint">
+        Quotes come from a list bundled with WindoM. Nothing about them leaves your device.
+      </p>
     </div>
   );
 }

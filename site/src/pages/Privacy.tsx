@@ -329,13 +329,6 @@ export function Privacy() {
           </tr>
           <tr>
             <td>
-              <strong>Quotable</strong> (<code>api.quotable.io</code>)
-            </td>
-            <td>Nothing</td>
-            <td>Fetch an inspirational quote. No personal data involved.</td>
-          </tr>
-          <tr>
-            <td>
               <strong>Yahoo Finance</strong> (<code>query1/query2.finance.yahoo.com</code>)
             </td>
             <td>Stock ticker symbols you added</td>
