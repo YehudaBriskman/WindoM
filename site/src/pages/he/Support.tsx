@@ -66,7 +66,7 @@ export function Support() {
         כמעט תמיד מדובר באחד משני דברים: ה-Client ID שהודבק ב-WindoM אינו של האפליקציה שלך, או שה-Redirect URI לא נוסף
         ונשמר בהגדרות האפליקציה ב-Spotify Developer Dashboard - מה שמופיע כשגיאת <em>Invalid Client</em>. מעתיקים את
         ה-URI בכפתור <strong>Copy</strong> שב-<strong>Settings → Apps → Spotify</strong> במקום להקליד אותו, וזוכרים שהוא
-        משתנה אחרי התקנה מחדש של Chrome או החלפת פרופיל. <Link to="/he/guide#spotify">החלק על Spotify במדריך</Link> עובר
+        משתנה אחרי התקנה מחדש של Chrome או החלפת פרופיל. <Link to="/he/guide/spotify">החלק על Spotify במדריך</Link> עובר
         על כל שלב, ויש בו רשימת פתרון בעיות משלו.
       </p>
 
@@ -87,7 +87,7 @@ export function Support() {
 
       <h3 id="all-sites">למה WindoM צריך גישה לכל האתרים?</h3>
       <p>
-        בשביל <Link to="/he/guide#search">תיבת החיפוש</Link>. לחיצה על{' '}
+        בשביל <Link to="/he/guide/search">תיבת החיפוש</Link>. לחיצה על{' '}
         <bdi>
           <kbd>Ctrl</kbd> + <kbd>Win</kbd> + <kbd>H</kbd>
         </bdi>{' '}
@@ -117,7 +117,7 @@ export function Support() {
       </ul>
       <p>
         <strong>History</strong> לא מתבקשת בהתקנה. Chrome מבקש אותה רק כשמפעילים את{' '}
-        <Link to="/he/guide#history">היסטוריית הגלישה</Link>, לרשימת Recent ולהיסטוריה כהצעות חיפוש; כיבוי היסטוריית
+        <Link to="/he/guide/history">היסטוריית הגלישה</Link>, לרשימת Recent ולהיסטוריה כהצעות חיפוש; כיבוי היסטוריית
         הגלישה מחזיר אותה.
       </p>
       <p>

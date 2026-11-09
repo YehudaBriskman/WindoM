@@ -58,24 +58,24 @@ export function Install() {
       <p>Everything below works on your device straight away, with no sign-in:</p>
       <ul>
         <li>
-          <Link to="/guide#clock">Clock and greeting</Link>, <Link to="/guide#background">backgrounds</Link> and{' '}
-          <Link to="/guide#weather">weather</Link>
+          <Link to="/guide/clock">Clock and greeting</Link>, <Link to="/guide/background">backgrounds</Link> and{' '}
+          <Link to="/guide/weather">weather</Link>
         </li>
         <li>
-          <Link to="/guide#links">Quick links</Link>, <Link to="/guide#todos">todos</Link> and{' '}
-          <Link to="/guide#quotes">daily quotes</Link>
+          <Link to="/guide/links">Quick links</Link>, <Link to="/guide/todos">todos</Link> and{' '}
+          <Link to="/guide/quotes">daily quotes</Link>
         </li>
         <li>
-          <Link to="/guide#focus">Focus mode</Link>, <Link to="/guide#search">search</Link>, the{' '}
-          <Link to="/guide#tab-sidebar">tab sidebar</Link> and <Link to="/guide#history">tab history</Link>
+          <Link to="/guide/focus">Focus mode</Link>, <Link to="/guide/search">search</Link>, the{' '}
+          <Link to="/guide/tab-sidebar">tab sidebar</Link> and <Link to="/guide/history">tab history</Link>
         </li>
         <li>
-          <Link to="/guide#finance">Stock and crypto prices</Link> and{' '}
-          <Link to="/guide#templates">layout templates</Link>
+          <Link to="/guide/finance">Stock and crypto prices</Link> and{' '}
+          <Link to="/guide/templates">layout templates</Link>
         </li>
       </ul>
       <p>
-        A free <Link to="/guide#account">WindoM account</Link> is needed only to carry your settings between computers
+        A free <Link to="/guide/account">WindoM account</Link> is needed only to carry your settings between computers
         and to connect Google Calendar, GitHub or Spotify. You can add one at any time without losing what you have set
         up.
       </p>

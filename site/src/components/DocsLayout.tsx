@@ -61,6 +61,7 @@ const UI = {
     localSetup: 'Local Setup',
     privacy: 'Privacy',
     terms: 'Terms',
+    about: 'About',
   },
   he: {
     home: 'דף הבית',
@@ -75,6 +76,7 @@ const UI = {
     localSetup: 'הרצה מקומית',
     privacy: 'פרטיות',
     terms: 'תנאים',
+    about: 'אודות',
   },
 } as const;
 
@@ -332,6 +334,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             <Link to={inThisLanguage('/')}>{t.home}</Link>
             <Link to={inThisLanguage('/guide')}>{t.guide}</Link>
             <Link to={inThisLanguage('/support')}>{t.support}</Link>
+            <Link to={inThisLanguage('/about')}>{t.about}</Link>
             <Link to={inThisLanguage('/local-setup')}>{t.localSetup}</Link>
             <Link to={inThisLanguage('/privacy')}>{t.privacy}</Link>
             <Link to={inThisLanguage('/terms')}>{t.terms}</Link>

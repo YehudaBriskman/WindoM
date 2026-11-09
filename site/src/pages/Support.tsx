@@ -72,7 +72,7 @@ export function Support() {
         added and saved in your app's settings on the Spotify Developer Dashboard - which shows up as{' '}
         <em>Invalid Client</em>. Copy the URI with the <strong>Copy</strong> button in{' '}
         <strong>Settings → Apps → Spotify</strong> rather than typing it, and remember it changes if you reinstall
-        Chrome or switch profiles. The <Link to="/guide#spotify">guide's Spotify section</Link> walks through every step
+        Chrome or switch profiles. The <Link to="/guide/spotify">guide's Spotify section</Link> walks through every step
         and its own troubleshooting list.
       </p>
 
@@ -94,7 +94,7 @@ export function Support() {
 
       <h3 id="all-sites">Why does WindoM need access to all websites?</h3>
       <p>
-        For the <Link to="/guide#search">search box</Link>. Pressing <kbd>Ctrl</kbd> + <kbd>Win</kbd> + <kbd>H</kbd> (
+        For the <Link to="/guide/search">search box</Link>. Pressing <kbd>Ctrl</kbd> + <kbd>Win</kbd> + <kbd>H</kbd> (
         <kbd>Ctrl</kbd> + <kbd>Cmd</kbd> + <kbd>H</kbd> on a Mac) opens it over whatever page you are on, and for that
         to work on any site, a small script has to be loaded into every page. Chrome describes that as being able to
         read and change data on all websites.
@@ -119,7 +119,7 @@ export function Support() {
       </ul>
       <p>
         <strong>History</strong> is not asked for at install. Chrome asks for it only when you turn on{' '}
-        <Link to="/guide#history">Tab History</Link>, for the Recent list and history as search suggestions; turning Tab
+        <Link to="/guide/history">Tab History</Link>, for the Recent list and history as search suggestions; turning Tab
         History off gives it back.
       </p>
       <p>

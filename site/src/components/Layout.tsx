@@ -65,6 +65,7 @@ export function Layout({ children, eyebrow, title, subtitle, variant = 'page', d
           <nav aria-label="Footer">
             <Link to="/">Home</Link>
             <Link to="/guide">User Guide</Link>
+            <Link to="/about">About</Link>
             <Link to="/local-setup">Local Setup</Link>
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
