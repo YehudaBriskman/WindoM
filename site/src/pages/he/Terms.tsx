@@ -1,5 +1,6 @@
 import { DocsLayout } from '../../components/DocsLayout';
 import { Link } from 'react-router';
+import { CONTACT_EMAIL } from '../../lib/site';
 
 /**
  * Hebrew terms of use.
@@ -11,7 +12,7 @@ import { Link } from 'react-router';
  */
 export function Terms() {
   return (
-    <DocsLayout path="/he/terms" eyebrow="משפטי" title="תנאי שימוש" subtitle="עודכן לאחרונה: 27 באפריל 2026" dir="rtl">
+    <DocsLayout path="/he/terms" eyebrow="משפטי" title="תנאי שימוש" subtitle="עודכן לאחרונה: 9 בנובמבר 2026" dir="rtl">
       <div className="callout">
         <strong>הנוסח המחייב הוא האנגלי.</strong> תרגום זה ניתן לנוחות הקריאה בלבד. במקרה של סתירה או אי-בהירות,{' '}
         <Link to="/terms">הנוסח האנגלי</Link> הוא הקובע.
@@ -51,7 +52,10 @@ export function Terms() {
           עליך להודיע לנו מיידית בכתובת <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a> אם אתה
           חושד בגישה לא מורשית
         </li>
-        <li>עליך להיות בן 13 לפחות כדי ליצור חשבון</li>
+        <li>
+          עליך להיות בן 13 לפחות כדי ליצור חשבון, ואם אתה מתחת לגיל 18 אתה מאשר שהורה או אפוטרופוס התיר לך להשתמש
+          ב-WindoM
+        </li>
       </ul>
       <p>אנו שומרים על הזכות להשעות או לסגור חשבונות המפרים תנאים אלה.</p>
 
@@ -74,7 +78,14 @@ export function Terms() {
           <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener">
             הרשאות חשבון Google
           </a>{' '}
-          או מתוך ההגדרות של WindoM.
+          או מתוך ההגדרות של WindoM.{' '}
+          <span dir="ltr">
+            WindoM's use and transfer to any other app of information received from Google APIs will adhere to the
+          </span>{' '}
+          <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener">
+            Google API Services User Data Policy
+          </a>
+          , <span dir="ltr">including the Limited Use requirements</span>.
         </li>
         <li>
           <strong>Spotify:</strong> החיבור ל-Spotify משתמש במודל Bring Your Own App (BYOA) - אתה רושם אפליקציית Spotify
@@ -85,8 +96,13 @@ export function Terms() {
           ול
           <a href="https://developer.spotify.com/terms" target="_blank" rel="noopener">
             תנאי המפתחים של Spotify
+          </a>{' '}
+          ול
+          <a href="https://developer.spotify.com/policy" target="_blank" rel="noopener">
+            מדיניות המפתחים של Spotify
           </a>
-          .
+          , החלים גם על אפליקציית Spotify שאתה רושם. אסור להשתמש ב-WindoM כדי להעתיק, להקליט או להפיץ מחדש תוכן של
+          Spotify, או כדי לאמן עליו מודל למידת מכונה.
         </li>
         <li>
           <strong>GitHub:</strong> ווידג'ט GitHub משתמש ב-classic personal access token שאתה יוצר בעצמך, עם ההרשאות{' '}
@@ -97,6 +113,14 @@ export function Terms() {
             rel="noopener"
           >
             תנאי השימוש של GitHub
+          </a>{' '}
+          ו
+          <a
+            href="https://docs.github.com/site-policy/acceptable-use-policies/github-acceptable-use-policies"
+            target="_blank"
+            rel="noopener"
+          >
+            מדיניות השימוש המקובל של GitHub
           </a>
           . האחריות על האסימון שיצרת היא שלך, ואפשר לבטל אותו בכל עת דרך{' '}
           <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">
@@ -109,13 +133,37 @@ export function Terms() {
           <a href="https://unsplash.com/license" target="_blank" rel="noopener">
             רישיון Unsplash
           </a>
-          .
+          . WindoM מציג עם כל תמונה את שם הצלם וקישור אל Unsplash, ואתה מספק מפתח גישה משלך ל-Unsplash, ולכן השימוש שלך
+          בממשק של Unsplash כפוף להסכם שלך עם Unsplash ול
+          <a
+            href="https://help.unsplash.com/en/articles/2511245-unsplash-api-guidelines"
+            target="_blank"
+            rel="noopener"
+          >
+            הנחיות ה-API שלה
+          </a>
+          . אין להסיר את הקרדיט, ואין להשתמש בתמונות כדי לבנות שירות תמונות מתחרה.
         </li>
         <li>
           <strong>Yahoo Finance / CoinGecko:</strong> נתונים פיננסיים מסופקים למטרות מידע בלבד. אין בהם משום ייעוץ
           פיננסי. שירותים אלה כפופים לתנאים ולזמינות שלהם.
         </li>
       </ul>
+      <p>
+        <strong>ייחוס.</strong> נתוני מזג האוויר מאת{' '}
+        <a href="https://open-meteo.com/" target="_blank" rel="noopener">
+          Open-Meteo.com
+        </a>{' '}
+        (ברישיון{' '}
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">
+          CC BY 4.0
+        </a>
+        ). שמות המקומות מהמרת נקודות ציון הם &copy; תורמי OpenStreetMap (
+        <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">
+          ODbL
+        </a>
+        ). מחירי המטבעות הדיגיטליים מסופקים על ידי ה-API של CoinGecko.
+      </p>
       <p>WindoM אינו אחראי לזמינות, לדיוק או לתנאים של שירות צד שלישי כלשהו.</p>
 
       <h2>5. שימוש מותר</h2>
@@ -196,14 +244,49 @@ export function Terms() {
         האחריות הכוללת שלנו בגין תביעה כלשהי הנובעת מתנאים אלה או מ-WindoM לא תעלה על הסכום ששילמת לנו בשנים עשר החודשים
         שקדמו לתביעה. מאחר ש-WindoM חינמי, משמעות הדבר היא שהאחריות הכוללת שלנו היא אפס.
       </p>
+      <p>
+        שום דבר בתנאים אלה אינו שולל או מגביל אחריות, או זכות שלך, שאי אפשר לשלול או להגביל לפי הדין החל עליך, לרבות
+        אחריות בגין כוונה או רשלנות חמורה וכל זכות צרכנית שהיא קוגנטית.
+      </p>
+      <p>
+        גם רישיון MIT של קוד המקור (סעיף 7) קובע שהתוכנה ניתנת &quot;כמות שהיא&quot; (as is), ללא אחריות מכל סוג,
+        ושהכותבים אינם אחראים לכל תביעה, נזק או חבות הנובעים ממנה. אם אתה מריץ עותק משלך של WindoM, לרבות שרת משלך, אתה
+        המפעיל של אותו עותק ואחראי לו, לרבות לכל מידע אישי שהוא מחזיק.
+      </p>
 
-      <h2>11. פרטיות</h2>
+      <h2>11. סימנים מסחריים והיעדר זיקה</h2>
+      <p>
+        Google, Google Calendar, Chrome ו-Chrome Web Store הם סימנים מסחריים של Google LLC. GitHub הוא סימן מסחרי של
+        GitHub, Inc. Spotify הוא סימן מסחרי של Spotify AB. Unsplash הוא סימן מסחרי של Unsplash Inc. Yahoo, CoinGecko,
+        Open-Meteo, OpenStreetMap ו-DuckDuckGo שייכים לבעליהם. השימוש בהם ב-WindoM ובאתר זה נועד רק לציין את השירותים
+        שאליהם התוסף מתחבר. WindoM הוא פרויקט עצמאי של יחיד. הוא אינו קשור לאף אחת מהחברות האלה, אינו ממומן על ידן ואינו
+        מאושר על ידן. רישיון MIT חל על הקוד; הוא אינו מתיר להציג fork כתוסף WindoM הרשמי.
+      </p>
+
+      <h2>12. זכויות יוצרים ותלונות על תוכן</h2>
+      <p>
+        WindoM אינו מארח תוכן משתמשים פומבי. תמונות רקע ומשימות נשארות בדפדפן שלך, וההגדרות שמסונכרנות פרטיות לחשבון
+        שלך. התמונות המוצגות מגיעות מ-Unsplash, האחראית להן. אם לדעתך משהו שמוצג ב-WindoM, או קוד במאגר שלו, מפר את
+        זכויות היוצרים שלך, יש לכתוב אל <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> עם הנושא
+        &quot;Copyright&quot;, לזהות את היצירה ואת המקום שבו היא מופיעה, ונבחן זאת בהקדם. תלויות הקוד הפתוח והרישיונות
+        שלהן מפורטות ב
+        <a
+          href="https://github.com/YehudaBriskman/WindoM/blob/main/THIRD_PARTY_NOTICES.md"
+          target="_blank"
+          rel="noopener"
+        >
+          הודעות הצד השלישי
+        </a>
+        .
+      </p>
+
+      <h2>13. פרטיות</h2>
       <p>
         השימוש שלך ב-WindoM כפוף גם ל<Link to="/he/privacy">מדיניות הפרטיות</Link> שלנו, המסבירה אילו נתונים נאספים,
         כיצד נעשה בהם שימוש, ומהן זכויותיך לגביהם. בשימוש ב-WindoM אתה מסכים למדיניות הפרטיות.
       </p>
 
-      <h2>12. סיום</h2>
+      <h2>14. סיום</h2>
       <p>
         באפשרותך להפסיק להשתמש ב-WindoM בכל עת על ידי הסרת התוסף. אם יש לך חשבון, אפשר למחוק אותו ואת כל הנתונים הקשורים
         אליו לצמיתות דרך <strong>Settings → Account → Delete account</strong>.
@@ -213,23 +296,29 @@ export function Terms() {
         אינו משפיע על נתונים שנשמרו מקומית - אלה נשארים בדפדפן שלך עד שתסיר את התוסף או תנקה את נתוני הדפדפן.
       </p>
 
-      <h2>13. שינויים בתנאים אלה</h2>
+      <h2>15. שינויים בתנאים אלה</h2>
       <p>
         ייתכן שנעדכן תנאים אלה מעת לעת. כאשר נעשה זאת, נעדכן את תאריך "עודכן לאחרונה" בראש העמוד. עבור שינויים מהותיים,
         נעשה מאמצים סבירים ליידע את המשתמשים (לדוגמה, באמצעות הודעה בתוסף). המשך השימוש ב-WindoM לאחר כניסת השינויים
         לתוקף מהווה הסכמה לתנאים המעודכנים.
       </p>
 
-      <h2>14. הדין החל</h2>
+      <h2>16. כללי</h2>
+      <p>
+        אם חלק מתנאים אלה יימצא בלתי אכיף, שאר התנאים יישארו בתוקף. אי-אכיפה של הוראה בזמן מסוים אינה ויתור עליה. תנאים
+        אלה ומדיניות הפרטיות הם ההסכם המלא בינינו לבינך בנוגע ל-WindoM. הנוסח האנגלי הוא הקובע; הנוסח העברי הוא תרגום
+        לנוחות הקריאה.
+      </p>
+
+      <h2>17. הדין החל</h2>
       <p>
         תנאים אלה כפופים לדיני מדינת ישראל, ללא תחולת כללי ברירת הדין שלה. כל מחלוקת הנובעת מתנאים אלה או מהשימוש שלך
         ב-WindoM תהיה נתונה לסמכות השיפוט הבלעדית של בתי המשפט המוסמכים בישראל.
       </p>
 
-      <h2>15. יצירת קשר</h2>
+      <h2>18. יצירת קשר</h2>
       <p>
-        לשאלות בנוגע לתנאים אלה, ניתן לפנות אלינו בכתובת{' '}
-        <a href="mailto:yehudabriskman@windom.app">yehudabriskman@windom.app</a>.
+        לשאלות בנוגע לתנאים אלה, ניתן לפנות אלינו בכתובת <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
       </p>
     </DocsLayout>
   );

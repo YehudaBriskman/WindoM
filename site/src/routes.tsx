@@ -40,6 +40,7 @@ import { Spotify as SpotifyGuide } from './pages/guide/Spotify';
 import { Spotify as SpotifyGuideHe } from './pages/he/guide/Spotify';
 import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
+import { Accessibility } from './pages/Accessibility';
 import { Support } from './pages/Support';
 import { Contact } from './pages/Contact';
 import { LocalSetup } from './pages/LocalSetup';
@@ -47,6 +48,7 @@ import { Install as InstallHe } from './pages/he/Install';
 import { Guide as GuideHe } from './pages/he/Guide';
 import { Privacy as PrivacyHe } from './pages/he/Privacy';
 import { Terms as TermsHe } from './pages/he/Terms';
+import { Accessibility as AccessibilityHe } from './pages/he/Accessibility';
 import { Support as SupportHe } from './pages/he/Support';
 import { Contact as ContactHe } from './pages/he/Contact';
 import { LocalSetup as LocalSetupHe } from './pages/he/LocalSetup';
@@ -385,6 +387,16 @@ export const ROUTES: SiteRoute[] = [
     description: 'The terms governing use of the WindoM hosted service and the published Chrome extension.',
     twinOf: '/terms',
   },
+  {
+    path: '/accessibility',
+    group: 'Legal',
+    blurb: 'Where accessibility work stands',
+    element: <Accessibility />,
+    locale: 'en',
+    title: 'Accessibility Statement',
+    description: 'The state of accessibility work on WindoM and this site, and how to report a problem.',
+    twinOf: '/accessibility',
+  },
 
   // ── Hebrew ──────────────────────────────────────────────────────────────
   {
@@ -656,6 +668,16 @@ export const ROUTES: SiteRoute[] = [
     title: 'תנאי שימוש',
     description: 'התנאים החלים על השימוש בשירות WindoM ובתוסף המפורסם ל-Chrome.',
     twinOf: '/terms',
+  },
+  {
+    path: '/he/accessibility',
+    group: 'משפטי',
+    blurb: 'מצב עבודת הנגישות',
+    element: <AccessibilityHe />,
+    locale: 'he',
+    title: 'הצהרת נגישות',
+    description: 'מצב עבודת הנגישות ב-WindoM ובאתר, ואיך לדווח על בעיה.',
+    twinOf: '/accessibility',
   },
 ];
 
