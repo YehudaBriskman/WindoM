@@ -3,7 +3,7 @@ import { RouterProvider, createMemoryRouter } from 'react-router';
 import { ROUTES, legacyPathOf, titleFor, type SiteRoute } from './routes';
 import { RouteChrome } from './components/RouteChrome';
 import { NotFound } from './pages/NotFound';
-import { AUTHOR } from './lib/site';
+import { AUTHOR, FEATURES, GITHUB_URL, PROJECT_PAGE, STORE_URL } from './lib/site';
 // The extension's own version, so the structured data cannot lag a release.
 // It was a hardcoded string that every release had to remember to bump.
 import manifest from '../../web/manifest.json' with { type: 'json' };
@@ -83,48 +83,81 @@ function headFor(route: SiteRoute): string {
       ].join('\n')
     : '';
 
-  const structured =
-    route.path === '/'
-      ? `    <script type="application/ld+json">${JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'SoftwareApplication',
-          name: 'WindoM',
-          applicationCategory: 'BrowserApplication',
-          operatingSystem: 'Chrome',
-          url: ORIGIN,
-          description: route.description,
-          softwareVersion: manifest.version,
-          license: 'https://opensource.org/licenses/MIT',
-          isAccessibleForFree: true,
-          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-          author: {
-            '@type': 'Person',
-            '@id': AUTHOR.id,
-            name: AUTHOR.name,
-            alternateName: AUTHOR.alternateName,
-            url: AUTHOR.url,
-            sameAs: AUTHOR.sameAs,
-          },
-          downloadUrl: 'https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb',
-          privacyPolicy: `${ORIGIN}/privacy`,
-        })}</script>`
-      : '';
+  const app = {
+    '@type': 'SoftwareApplication',
+    '@id': `${ORIGIN}/#app`,
+    name: 'WindoM',
+    alternateName: ['Windom', 'WindoM new tab'],
+    applicationCategory: 'BrowserApplication',
+    applicationSubCategory: 'New tab page',
+    operatingSystem: 'Chrome',
+    url: ORIGIN,
+    image: image,
+    description: route.description,
+    featureList: FEATURES,
+    inLanguage: ['en', 'he'],
+    softwareVersion: manifest.version,
+    license: 'https://opensource.org/licenses/MIT',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: {
+      '@type': 'Person',
+      '@id': AUTHOR.id,
+      name: AUTHOR.name,
+      alternateName: AUTHOR.alternateName,
+      url: AUTHOR.url,
+      sameAs: AUTHOR.sameAs,
+    },
+    downloadUrl: STORE_URL,
+    installUrl: STORE_URL,
+    softwareHelp: { '@type': 'CreativeWork', url: `${ORIGIN}/guide` },
+    sameAs: [STORE_URL, GITHUB_URL, PROJECT_PAGE],
+    privacyPolicy: `${ORIGIN}/privacy`,
+  };
+  const website = {
+    '@type': 'WebSite',
+    '@id': `${ORIGIN}/#website`,
+    url: ORIGIN,
+    name: 'WindoM',
+    alternateName: ['Windom', 'windom.app'],
+    inLanguage: ['en', 'he'],
+    publisher: { '@id': AUTHOR.id },
+  };
+  // Every other page says where it sits. Breadcrumbs are true of the route
+  // table and nothing else, so they are derived from it rather than authored.
+  const breadcrumbs = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'WindoM', item: ORIGIN },
+      { '@type': 'ListItem', position: 2, name: route.title, item: canonical },
+    ],
+  };
+  const graph = route.path === '/' ? [app, website] : [breadcrumbs];
+  const structured = `    <script type="application/ld+json">${JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': graph,
+  })}</script>`;
 
   return [
     `    <title>${escapeHtml(title)}</title>`,
     `    <meta name="description" content="${escapeHtml(route.description)}" />`,
     `    <link rel="canonical" href="${canonical}" />`,
     alternates,
+    `    <meta name="author" content="${AUTHOR.name}" />`,
+    '    <meta name="robots" content="index, follow, max-image-preview:large" />',
     '    <meta property="og:type" content="website" />',
+    `    <meta property="og:locale" content="${route.locale === 'he' ? 'he_IL' : 'en_US'}" />`,
     '    <meta property="og:site_name" content="WindoM" />',
     `    <meta property="og:title" content="${escapeHtml(title)}" />`,
     `    <meta property="og:description" content="${escapeHtml(route.description)}" />`,
     `    <meta property="og:url" content="${canonical}" />`,
     `    <meta property="og:image" content="${image}" />`,
+    '    <meta property="og:image:alt" content="The WindoM new tab: clock, greeting and quick links over a full-bleed wallpaper" />',
     '    <meta name="twitter:card" content="summary_large_image" />',
     `    <meta name="twitter:title" content="${escapeHtml(title)}" />`,
     `    <meta name="twitter:description" content="${escapeHtml(route.description)}" />`,
     `    <meta name="twitter:image" content="${image}" />`,
+    '    <meta name="twitter:image:alt" content="The WindoM new tab: clock, greeting and quick links over a full-bleed wallpaper" />',
     structured,
   ]
     .filter(Boolean)
