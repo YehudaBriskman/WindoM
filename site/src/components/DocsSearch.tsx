@@ -15,6 +15,7 @@ const UI = {
     failed: 'Search is unavailable. The documentation sidebar still lists every page.',
     hint: 'to search',
     results: 'Search results',
+    count: (n: number) => (n === 1 ? '1 result' : `${n} results`),
   },
   he: {
     open: 'חיפוש בתיעוד',
@@ -25,6 +26,7 @@ const UI = {
     failed: 'החיפוש אינו זמין. סרגל הצד עדיין מציג את כל העמודים.',
     hint: 'לחיפוש',
     results: 'תוצאות חיפוש',
+    count: (n: number) => (n === 1 ? 'תוצאה אחת' : `${n} תוצאות`),
   },
 } as const;
 
@@ -370,12 +372,29 @@ export function DocsSearch({ locale }: { locale: Locale }) {
                     setActive(0);
                   }}
                   role="combobox"
+                  aria-label={t.placeholder}
+                  aria-autocomplete="list"
                   aria-expanded={results.length > 0}
-                  aria-controls="docs-search-results"
+                  aria-controls={results.length > 0 ? 'docs-search-results' : undefined}
                   aria-activedescendant={results[active] ? `docs-search-${active}` : undefined}
                   autoComplete="off"
                   spellCheck={false}
                 />
+              </div>
+
+              {/* Always mounted: a live region has to exist before its text
+                  changes, or the first announcement is lost. Carries the
+                  count, and the loading / empty / failed notes below. */}
+              <div className="sr-only" role="status" aria-live="polite">
+                {status === 'failed'
+                  ? t.failed
+                  : status === 'loading'
+                    ? t.loading
+                    : query.trim()
+                      ? results.length
+                        ? t.count(results.length)
+                        : t.empty
+                      : ''}
               </div>
 
               {status === 'failed' ? (

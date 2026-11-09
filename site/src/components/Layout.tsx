@@ -69,6 +69,7 @@ export function Layout({ children, eyebrow, title, subtitle, variant = 'page', d
             <Link to="/local-setup">Local Setup</Link>
             <Link to="/privacy">Privacy</Link>
             <Link to="/terms">Terms</Link>
+            <Link to="/accessibility">Accessibility</Link>
             <a href={STORE_URL}>Chrome Web Store</a>
             <a href={GITHUB_URL}>GitHub</a>
           </nav>
