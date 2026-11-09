@@ -62,6 +62,8 @@ const UI = {
     privacy: 'Privacy',
     terms: 'Terms',
     about: 'About',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
   },
   he: {
     home: 'דף הבית',
@@ -77,6 +79,8 @@ const UI = {
     privacy: 'פרטיות',
     terms: 'תנאים',
     about: 'אודות',
+    expandAll: 'פתיחת הכול',
+    collapseAll: 'סגירת הכול',
   },
 } as const;
 
@@ -110,6 +114,8 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
   const inThisLanguage = (to: string): string => translatedPath(to, locale) ?? to;
 
   const { headings, content } = anchorHeadings(children);
+  const collapsible = groupSections(content);
+  useOpenSectionOnHash();
   const { active, select } = useActiveHeading(headings.map((h) => h.id));
   const railList = useRef<HTMLUListElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -293,7 +299,19 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             {subtitle && <p className="updated">{subtitle}</p>}
           </div>
 
-          <div className="prose">{content}</div>
+          <div className="prose">
+            {collapsible.count >= 3 && (
+              <div className="section-tools">
+                <button type="button" onClick={() => setAllSections(true)}>
+                  {t.expandAll}
+                </button>
+                <button type="button" onClick={() => setAllSections(false)}>
+                  {t.collapseAll}
+                </button>
+              </div>
+            )}
+            {collapsible.node}
+          </div>
 
           {(prev || next) && (
             <nav className="docs-neighbours" aria-label={t.more}>
@@ -404,6 +422,70 @@ interface Heading {
  * Each heading also gains a link to itself, which is how someone cites one
  * clause of the privacy policy without describing where to scroll.
  */
+/**
+ * Wraps each top-level `h2` and what follows it in a native `<details open>`.
+ *
+ * Native, not a React toggle, so it works with no JavaScript, is keyboard and
+ * screen-reader operable for free (summary is a button), and the prerendered
+ * HTML is identical to what a reader sees. Every section starts open: closing
+ * is the reader's choice, and text inside a closed `details` is still in the
+ * document for search engines. The `h2` stays the heading, inside the summary,
+ * so the document outline and the contents rail are unchanged.
+ */
+function groupSections(content: ReactNode): { node: ReactNode; count: number } {
+  const nodes = Children.toArray(content);
+  const isH2 = (n: ReactNode) => isValidElement(n) && (n as ReactElement).type === 'h2';
+  if (nodes.filter(isH2).length < 3) return { node: content, count: 0 };
+
+  const out: ReactNode[] = [];
+  let count = 0;
+  let i = 0;
+  while (i < nodes.length && !isH2(nodes[i])) out.push(nodes[i++]);
+  while (i < nodes.length) {
+    const heading = nodes[i++] as ReactElement;
+    const body: ReactNode[] = [];
+    while (i < nodes.length && !isH2(nodes[i])) body.push(nodes[i++]);
+    count += 1;
+    out.push(
+      <details className="doc-section" open key={`section-${count}`}>
+        <summary>{heading}</summary>
+        <div className="doc-section-body">{body}</div>
+      </details>,
+    );
+  }
+  return { node: out, count };
+}
+
+/** Opens or closes every section, from the Expand all / Collapse all buttons. */
+function setAllSections(open: boolean) {
+  document.querySelectorAll<HTMLDetailsElement>('details.doc-section').forEach((d) => {
+    d.open = open;
+  });
+}
+
+/**
+ * A link to a heading inside a closed section would land on nothing. Open the
+ * section that holds the hash target on load and whenever the hash changes
+ * (the contents rail and the `#` anchors both change it).
+ */
+function useOpenSectionOnHash() {
+  useEffect(() => {
+    const open = () => {
+      const id = decodeURIComponent(window.location.hash.slice(1));
+      if (!id) return;
+      const el = document.getElementById(id);
+      const section = el?.closest('details.doc-section') as HTMLDetailsElement | null;
+      if (section && !section.open) {
+        section.open = true;
+        el?.scrollIntoView();
+      }
+    };
+    open();
+    window.addEventListener('hashchange', open);
+    return () => window.removeEventListener('hashchange', open);
+  }, []);
+}
+
 function anchorHeadings(children: ReactNode): { headings: Heading[]; content: ReactNode } {
   const headings: Heading[] = [];
   const seen = new Set<string>();
