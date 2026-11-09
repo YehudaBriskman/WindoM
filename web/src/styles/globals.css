@@ -1067,17 +1067,28 @@ input.clock-size-slider:focus-visible {
 }
 
 .dock-expand-icon {
+  /* A real <button> filling the collapsed pill. */
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  align-items: center;
+  justify-content: center;
   display: flex;
   color: white;
+  cursor: pointer;
   transition: opacity 0.15s ease;
-  pointer-events: none;
 }
 .dock-expandable.expanded .dock-expand-icon {
   opacity: 0;
+  pointer-events: none;
+}
+.dock-expandable .dock-expand-icon:focus-visible {
+  outline-offset: -3px;
 }
 
 .dock-expand-form {
@@ -1939,17 +1950,31 @@ input.clock-size-slider:focus-visible {
 }
 
 .sidebar-btn-icon {
+  /* A real <button> filling the collapsed glass pane, so the whole pane is the
+     hit area and it is keyboard-operable. */
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  font: inherit;
+  align-items: center;
+  justify-content: center;
   display: flex;
   color: white;
+  cursor: pointer;
   transition: opacity 0.15s ease;
-  pointer-events: none;
 }
 .sidebar-container.open .sidebar-btn-icon {
   opacity: 0;
+  pointer-events: none;
+}
+/* Inside the pane an outset ring would be clipped or drawn on the page. */
+.sidebar-container .sidebar-btn-icon:focus-visible {
+  outline-offset: -4px;
 }
 
 .sidebar-panel-content {
@@ -2213,17 +2238,31 @@ input.clock-size-slider:focus-visible {
 }
 
 .settings-icon {
+  /* A real <button> filling the collapsed glass pane, so the whole pane is the
+     hit area and it is keyboard-operable. */
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  font: inherit;
+  align-items: center;
+  justify-content: center;
   display: flex;
   color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
   transition: opacity 0.15s ease;
-  pointer-events: none;
 }
 .settings-container.open .settings-icon {
   opacity: 0;
+  pointer-events: none;
+}
+/* Inside the pane an outset ring would be clipped or drawn on the page. */
+.settings-container .settings-icon:focus-visible {
+  outline-offset: -4px;
 }
 
 .settings-inner {

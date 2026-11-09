@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { Pencil } from 'lucide-react';
 import { useFocus } from '../../hooks/useFocus';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useSaveStatus } from '../../hooks/useSaveStatus';
@@ -58,6 +59,7 @@ export function FocusInput() {
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             placeholder="Your main focus..."
+            aria-label="Your main focus"
             className="focus-input"
           />
         </>
@@ -76,6 +78,12 @@ export function FocusInput() {
           aria-pressed={completed}
         >
           {text}
+        </button>
+      )}
+      {!showInput && (
+        // Double-click is not available from the keyboard; this is.
+        <button type="button" onClick={startEditing} className="focus-edit-btn" aria-label="Edit main focus">
+          <Pencil size={14} aria-hidden="true" />
         </button>
       )}
       <div className="focus-save-status text-shadow-sm">

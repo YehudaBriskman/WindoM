@@ -100,6 +100,7 @@ export function BackgroundSettings() {
               type="text"
               defaultValue={settings.background.unsplashApiKey}
               placeholder="Paste your Access Key here"
+              aria-label="Unsplash Access Key"
               onChange={(e) => update('background', { unsplashApiKey: e.target.value })}
               className="settings-input glass-input"
             />
@@ -117,6 +118,7 @@ export function BackgroundSettings() {
               type="text"
               defaultValue={settings.background.unsplashCollectionId}
               placeholder="Collection ID"
+              aria-label="Unsplash Collection ID (optional)"
               onChange={(e) => update('background', { unsplashCollectionId: e.target.value })}
               className="settings-input glass-input"
             />

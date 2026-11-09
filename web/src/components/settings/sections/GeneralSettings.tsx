@@ -60,6 +60,7 @@ export function GeneralSettings({ onReset }: Props) {
           <label className="settings-label">Your Name:</label>
           <input
             type="text"
+            aria-label="Your name"
             value={settings.general.userName}
             placeholder="Friend"
             onChange={(e) => update('general', { userName: e.target.value || 'Friend' })}

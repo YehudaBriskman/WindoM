@@ -82,6 +82,7 @@ export function ClockSettings() {
         <div style={{ marginBottom: 16 }}>
           <input
             type="color"
+            aria-label="Clock colour"
             value={settings.clock.color ?? '#ffffff'}
             onChange={(e) => update('clock', { color: e.target.value })}
             className="clock-color-input"
@@ -91,6 +92,8 @@ export function ClockSettings() {
         <label className="settings-label">Size - {settings.clock.size ?? 120}px</label>
         <input
           type="range"
+          aria-label="Clock size"
+          aria-valuetext={`${settings.clock.size ?? 120} pixels`}
           min={60}
           max={180}
           step={4}

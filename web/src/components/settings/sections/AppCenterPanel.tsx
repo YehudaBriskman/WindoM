@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { X } from 'lucide-react';
+import { useModalFocus } from '../../../hooks/useModalFocus';
 import type { AppId } from './AppHub';
 import { CalendarSettings } from './CalendarSettings';
 import { SpotifySettings } from './SpotifySettings';
@@ -140,14 +141,9 @@ interface AppCenterPanelProps {
 export function AppCenterPanel({ appId, onClose }: AppCenterPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKey);
-    panelRef.current?.focus();
-    return () => document.removeEventListener('keydown', handleKey);
-  }, [onClose]);
+  // Escape is also handled by SettingsPanel (it closes the app centre first);
+  // useModalFocus adds the focus move-in, the Tab wrap and the focus return.
+  useModalFocus(panelRef, onClose);
 
   return (
     <>

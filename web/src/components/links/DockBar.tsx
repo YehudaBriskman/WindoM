@@ -12,6 +12,11 @@ const ROW_HEIGHT = 44;
 const MAX_ROWS = 3;
 const MAX_LINKS = MAX_ROWS * ITEMS_PER_ROW;
 
+// Smooth scrolling is motion: honour prefers-reduced-motion (WCAG 2.3.3).
+function scrollBehavior(): ScrollBehavior {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
 export function DockBar() {
   const glassRef = useLiquidGlass<HTMLDivElement>('dock');
   const { settings } = useSettings();
@@ -23,6 +28,8 @@ export function DockBar() {
   const [activeRow, setActiveRow] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const addButtonRef = useRef<HTMLButtonElement>(null);
+  const formWasOpen = useRef(false);
   const rowsRef = useRef<HTMLDivElement>(null);
   const nameId = useId();
   const urlId = useId();
@@ -35,7 +42,7 @@ export function DockBar() {
   }
 
   const scrollToRow = useCallback((index: number) => {
-    rowsRef.current?.scrollTo({ top: index * ROW_HEIGHT, behavior: 'smooth' });
+    rowsRef.current?.scrollTo({ top: index * ROW_HEIGHT, behavior: scrollBehavior() });
   }, []);
 
   // Track which row is visible based on scroll position
@@ -58,7 +65,7 @@ export function DockBar() {
       const direction = e.deltaY > 0 ? 1 : -1;
       setActiveRow((prev) => {
         const next = Math.max(0, Math.min(rows.length - 1, prev + direction));
-        rowsRef.current?.scrollTo({ top: next * ROW_HEIGHT, behavior: 'smooth' });
+        rowsRef.current?.scrollTo({ top: next * ROW_HEIGHT, behavior: scrollBehavior() });
         return next;
       });
     };
@@ -95,7 +102,14 @@ export function DockBar() {
   };
 
   useEffect(() => {
-    if (showForm) setTimeout(() => nameInputRef.current?.focus(), 50);
+    if (showForm) {
+      setTimeout(() => nameInputRef.current?.focus(), 50);
+    } else if (formWasOpen.current) {
+      // Closing (Add, Cancel, Escape) must not strand keyboard focus on <body>.
+      const active = document.activeElement;
+      if (!active || active === document.body) addButtonRef.current?.focus();
+    }
+    formWasOpen.current = showForm;
   }, [showForm]);
 
   useEffect(() => {
@@ -152,21 +166,37 @@ export function DockBar() {
         <div
           ref={containerRef}
           className={`dock-expandable${showForm ? ' expanded glass-panel' : ''}`}
-          onClick={
-            !showForm
-              ? (e) => {
-                  e.stopPropagation();
-                  setShowForm(true);
-                }
-              : undefined
-          }
+          onKeyDown={(e) => {
+            if (showForm && e.key === 'Escape') {
+              e.stopPropagation();
+              handleClose();
+              addButtonRef.current?.focus();
+            }
+          }}
         >
-          <div className="dock-expand-icon">
-            <Plus size={18} />
-          </div>
+          <button
+            ref={addButtonRef}
+            type="button"
+            className="dock-expand-icon"
+            aria-label="Add link"
+            aria-expanded={showForm}
+            inert={showForm}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowForm(true);
+            }}
+          >
+            <Plus size={18} aria-hidden="true" />
+          </button>
 
-          <form className="dock-expand-form" onClick={(e) => e.stopPropagation()} onSubmit={handleSubmit}>
-            <button type="button" className="dock-form-close" onClick={handleClose} aria-label="Close">
+          <form
+            className="dock-expand-form"
+            inert={!showForm}
+            aria-label="Add a link"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleSubmit}
+          >
+            <button type="button" className="dock-form-close" onClick={handleClose} aria-label="Cancel adding a link">
               <X size={16} />
             </button>
             <label htmlFor={nameId} className="sr-only">

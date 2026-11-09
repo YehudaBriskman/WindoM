@@ -47,7 +47,7 @@ export function TodoSection() {
 
   return (
     <div>
-      <h3 className="todo-title">Today's Tasks</h3>
+      <h2 className="todo-title">Today's Tasks</h2>
       <div className="todo-list">
         {todos.length === 0
           ? loaded && <p className="todo-empty">No tasks yet. Add one below.</p>

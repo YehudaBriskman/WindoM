@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, useId } from 'react';
 import {
   Search,
   Globe,
@@ -228,6 +228,8 @@ export function SearchOverlay() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [enginePickerOpen, setEnginePickerOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const listboxId = useId();
+  const openerRef = useRef<HTMLElement | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Command mode: any value that starts with '>'
@@ -285,8 +287,16 @@ export function SearchOverlay() {
   // Auto-focus when opened; delay state reset so exit animation plays fully
   useEffect(() => {
     if (open) {
+      if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
+        openerRef.current = document.activeElement;
+      }
       setTimeout(() => inputRef.current?.focus(), OVERLAY_OPEN_FOCUS_DELAY_MS);
     } else {
+      // The overlay goes inert when closed, which drops focus to <body>:
+      // hand it back to whatever had it before the overlay opened.
+      const active = document.activeElement;
+      if (openerRef.current?.isConnected && (!active || active === document.body)) openerRef.current.focus();
+      openerRef.current = null;
       const timer = setTimeout(() => {
         setValue('');
         setSuggestions([]);
@@ -405,15 +415,16 @@ export function SearchOverlay() {
     <div
       className={`search-overlay-backdrop${open ? ' open' : ''}`}
       dir="ltr"
+      inert={!open}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setOpen(false);
       }}
     >
-      <div className="search-overlay-box" role="dialog" aria-label="Search" onKeyDown={handleKeyDown}>
+      <div className="search-overlay-box" role="dialog" aria-modal="true" aria-label="Search" onKeyDown={handleKeyDown}>
         <div
           className={`search-overlay-input-row${showDropdown ? ' dropdown-open' : ''}${isCommandMode ? ' command-mode' : ''}`}
         >
-          <span className="search-bar-icon">
+          <span className="search-bar-icon" aria-hidden="true">
             {isCommandMode ? (
               <Terminal size={18} strokeWidth={1.8} />
             ) : isUrl ? (
@@ -436,6 +447,12 @@ export function SearchOverlay() {
             }}
             onKeyDown={handleKeyDown}
             placeholder={isCommandMode ? 'Type a command…' : 'Search or enter URL…'}
+            aria-label={isCommandMode ? 'Command' : 'Search or enter URL'}
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded={showDropdown}
+            aria-controls={listboxId}
+            aria-activedescendant={showDropdown && activeIdx >= 0 ? `${listboxId}-${activeIdx}` : undefined}
             className="search-bar-input"
             autoComplete="off"
             spellCheck={false}
@@ -485,10 +502,19 @@ export function SearchOverlay() {
         </div>
 
         {showDropdown && (
-          <div className="search-dropdown search-overlay-dropdown">
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-label="Suggestions"
+            className="search-dropdown search-overlay-dropdown"
+          >
             {visibleSuggestions.map((s, i) => (
               <button
                 key={`${s.kind}-${s.text}`}
+                id={`${listboxId}-${i}`}
+                role="option"
+                aria-selected={i === activeIdx}
+                tabIndex={-1}
                 className={`search-suggestion${i === activeIdx ? ' active' : ''}${s.kind === 'command' ? ' command' : ''}`}
                 onMouseEnter={() => setActiveIdx(i)}
                 onMouseLeave={() => setActiveIdx(-1)}

@@ -20,16 +20,17 @@ interface SettingsNavProps {
 
 export function SettingsNav({ active, onChange }: SettingsNavProps) {
   return (
-    <div className="settings-nav">
+    <nav className="settings-nav" aria-label="Settings sections">
       {TABS.map((tab) => (
         <button
           key={tab}
           onClick={() => onChange(tab)}
           className={`settings-nav-btn ${active === tab ? 'active' : ''}`}
+          aria-current={active === tab ? 'page' : undefined}
         >
           {LABELS[tab]}
         </button>
       ))}
-    </div>
+    </nav>
   );
 }

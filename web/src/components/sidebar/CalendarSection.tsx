@@ -24,10 +24,10 @@ export function CalendarSection() {
 
   return (
     <div>
-      <h3 className="calendar-title">Calendar</h3>
+      <h2 className="calendar-title">Calendar</h2>
       <div className="calendar-date">{dateStr}</div>
       <div>
-        <h4 className="calendar-upcoming-title">Upcoming</h4>
+        <h3 className="calendar-upcoming-title">Upcoming</h3>
         <div className="calendar-upcoming">
           {upcomingEvents.length > 0 ? (
             upcomingEvents.map((event) => <EventItem key={event.id} event={event} />)

@@ -618,3 +618,161 @@
     inset 2px 2px 0 -2px rgba(255, 255, 255, 0.5),
     inset 0 0 2px 1px rgba(255, 255, 255, 0.2);
 }
+
+/* ============================================================
+   Accessibility additions (WCAG 2.2 AA pass)
+   Last in the last stylesheet on purpose: these must win ties.
+   See web/ACCESSIBILITY.md for what is and is not verified.
+   ============================================================ */
+
+/* Skip link: first tab stop, visible only while focused (WCAG 2.4.1). */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: calc(var(--z-loader) + 1);
+  padding: 10px 16px;
+  border-radius: var(--r-control);
+  background: #000;
+  color: #fff;
+  font-size: 14px;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible {
+  transform: none;
+}
+/* The skip link moves focus to <main> programmatically; no ring needed there. */
+main:focus {
+  outline: none;
+}
+
+/* Keyboard path to "edit main focus" (double-click is mouse-only). */
+.focus-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+.focus-edit-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+/* Inputs that remove the browser outline get a visible indicator (2.4.7). */
+.dock-form-input:focus-visible,
+.search-bar-input:focus-visible,
+.link-editor-input:focus-visible,
+.editable-name:focus-visible,
+.focus-input:focus-visible,
+.settings-input:focus-visible,
+.settings-select:focus-visible,
+.todo-input:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+.focus-input:focus-visible {
+  border-bottom-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Target size (2.5.8, minimum 24x24 CSS px): small controls keep their look
+   and get an invisible, larger hit area. */
+.dock-item-remove::before,
+.todo-item-remove::before,
+.spotify-notice-dismiss::before,
+input[type='checkbox']::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+}
+.todo-item-remove,
+.spotify-notice-dismiss {
+  position: relative;
+}
+.photo-credit-like-btn {
+  min-width: 24px;
+  min-height: 24px;
+}
+.onboarding-dot,
+.dock-page-dot {
+  position: relative;
+}
+.onboarding-dot::before,
+.dock-page-dot::before {
+  content: '';
+  position: absolute;
+  inset: -9px -3px;
+}
+
+/* Credit line sits straight on the photo, so it gets more opacity than the
+   other chrome. Contrast against an arbitrary photo is NOT verified. */
+.photographer-credit {
+  color: rgba(255, 255, 255, 0.85);
+}
+.photographer-credit a {
+  color: rgba(255, 255, 255, 0.95);
+  text-decoration: underline;
+}
+
+/* Reduced motion (2.3.3, 2.2.2): no looping or entrance movement. */
+@media (prefers-reduced-motion: reduce) {
+  .app-loader-spinner,
+  .spotify-eq-bar,
+  .spotify-dock-disc.spinning,
+  .search-overlay-dropdown,
+  .onboarding-backdrop,
+  .onboarding-modal,
+  .spotify-notice,
+  .app-center-panel {
+    animation: none;
+  }
+  .search-overlay-box,
+  .tab-sidebar-panel {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* Windows High Contrast / forced colours: glass tints and shadows are
+   dropped by the browser, so make borders and focus come from system colours.
+   Not verified in a real forced-colors session. */
+@media (forced-colors: active) {
+  .glass-panel,
+  .glass-dock,
+  .glass-sidebar,
+  .settings-container,
+  .sidebar-container,
+  .dock-expandable,
+  .search-overlay-input-row,
+  .onboarding-modal,
+  .app-center-panel {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+  :focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .settings-icon:focus-visible,
+  .sidebar-btn-icon:focus-visible,
+  .dock-expand-icon:focus-visible {
+    outline-offset: -4px;
+  }
+  input[type='checkbox'] {
+    border: 1px solid ButtonText;
+  }
+  input[type='checkbox']:checked {
+    background: Highlight;
+  }
+  .skip-link {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}

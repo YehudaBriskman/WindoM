@@ -65,6 +65,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           <input
             type="text"
             readOnly
+            aria-label="Redirect URI"
             value={redirectUri}
             className="settings-input"
             style={{ flex: 1, fontSize: '12px', fontFamily: 'monospace', opacity: 0.8, cursor: 'text' }}
@@ -87,6 +88,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
         <input
           type="text"
           placeholder="Spotify Client ID"
+          aria-label="Spotify Client ID"
           value={clientIdInput}
           onChange={(e) => {
             setClientIdInput(e.target.value);
@@ -99,7 +101,7 @@ function NoClientIdState({ onSaved }: { onSaved: () => void }) {
           }}
         />
         {error && (
-          <p className="auth-field-error" style={{ marginBottom: '8px' }}>
+          <p className="auth-field-error" role="alert" style={{ marginBottom: '8px' }}>
             {error}
           </p>
         )}

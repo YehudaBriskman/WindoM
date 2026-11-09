@@ -115,6 +115,7 @@ export function StockSearch({ selected, onChange }: Props) {
         <input
           ref={inputRef}
           type="text"
+          aria-label="Search stocks"
           className="settings-input"
           placeholder={selected.length === 0 ? 'Search stocks, e.g. Apple, S&P 500, TSLA…' : 'Add another stock…'}
           value={query}

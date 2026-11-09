@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Image, Timer, Music, Calendar, Sparkles, ArrowRight, X } from 'lucide-react';
+
+import { useModalFocus } from '../../hooks/useModalFocus';
 
 interface Props {
   onComplete: () => Promise<void>;
@@ -44,6 +46,8 @@ const STEPS: Step[] = [
 
 export function OnboardingModal({ onComplete }: Props): React.ReactElement {
   const [step, setStep] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useModalFocus(dialogRef, () => void onComplete());
   const isLast = step === STEPS.length - 1;
   const current = STEPS[step];
 
@@ -61,15 +65,26 @@ export function OnboardingModal({ onComplete }: Props): React.ReactElement {
 
   return (
     <div className="onboarding-backdrop">
-      <div className="onboarding-modal" role="dialog" aria-modal="true" aria-label="Welcome to WindoM">
+      <div
+        ref={dialogRef}
+        className="onboarding-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="onboarding-title"
+        tabIndex={-1}
+      >
         <button className="onboarding-skip" onClick={() => void onComplete()} aria-label="Skip onboarding">
-          <X size={16} />
+          <X size={16} aria-hidden="true" />
         </button>
 
-        <div className="onboarding-icon">{current.icon}</div>
+        <div className="onboarding-icon" aria-hidden="true">
+          {current.icon}
+        </div>
 
-        <div className="onboarding-body">
-          <h2 className="onboarding-title">{current.title}</h2>
+        <div className="onboarding-body" aria-live="polite">
+          <h2 id="onboarding-title" className="onboarding-title">
+            {current.title}
+          </h2>
           <p className="onboarding-description">{current.description}</p>
         </div>
 
@@ -79,7 +94,8 @@ export function OnboardingModal({ onComplete }: Props): React.ReactElement {
               key={i}
               className={`onboarding-dot${i === step ? ' active' : ''}`}
               onClick={() => setStep(i)}
-              aria-label={`Go to step ${i + 1}`}
+              aria-label={`Go to step ${i + 1} of ${STEPS.length}`}
+              aria-current={i === step ? 'step' : undefined}
             />
           ))}
         </div>
