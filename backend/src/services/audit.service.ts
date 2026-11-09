@@ -3,6 +3,7 @@ import { db } from '../db/client.js';
 import { auditLogs, type AuditAction } from '../db/schema.js';
 import { parseDeviceLabel } from '../lib/device-label.js';
 import { logger } from '../lib/logger.js';
+import { purgeStaleSessions } from './session.service.js';
 import type { SessionMeta } from '../types/auth.types.js';
 
 /**
@@ -55,6 +56,12 @@ export async function recordAudit(action: AuditAction, entry: AuditEntry): Promi
     await purgeExpiredAuditLogs().catch((err: unknown) => {
       logger.error({ err }, 'audit: retention purge failed');
     });
+    // Same trigger for stale refresh sessions (expired/revoked past their grace period).
+    try {
+      await purgeStaleSessions();
+    } catch (err: unknown) {
+      logger.error({ err }, 'session: stale purge failed');
+    }
   }
 }
 

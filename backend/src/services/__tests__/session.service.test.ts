@@ -262,3 +262,31 @@ describe('rotateSessionAtomically', () => {
     expect(tx.insert).not.toHaveBeenCalled();
   });
 });
+
+describe('metadata digests', () => {
+  it('stores keyed HMAC digests, not plain SHA-256', async () => {
+    const { createHash } = await import('node:crypto');
+    const valuesSpy = vi.fn().mockResolvedValue(undefined);
+    mockDb.insert.mockReturnValue({ values: valuesSpy });
+
+    const { createSession } = await import('../session.service.js');
+    await createSession('user-1', { ip: '1.2.3.4', userAgent: 'test' });
+    const inserted = valuesSpy.mock.calls[0][0] as Record<string, string>;
+
+    expect(inserted['ip']).toMatch(/^[0-9a-f]{64}$/);
+    expect(inserted['ip']).not.toBe(createHash('sha256').update('1.2.3.4').digest('hex'));
+    expect(inserted['userAgent']).not.toBe(createHash('sha256').update('test').digest('hex'));
+  });
+});
+
+describe('purgeStaleSessions', () => {
+  it('deletes sessions past the grace period and reports the count', async () => {
+    const whereSpy = vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([{ id: 'a' }, { id: 'b' }]) });
+    (mockDb as unknown as { delete: unknown }).delete = vi.fn().mockReturnValue({ where: whereSpy });
+
+    const { purgeStaleSessions, SESSION_PURGE_GRACE_DAYS } = await import('../session.service.js');
+    expect(SESSION_PURGE_GRACE_DAYS).toBeGreaterThan(0);
+    expect(await purgeStaleSessions()).toBe(2);
+    expect(whereSpy).toHaveBeenCalledOnce();
+  });
+});

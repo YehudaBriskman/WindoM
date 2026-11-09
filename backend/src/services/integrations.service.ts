@@ -5,6 +5,7 @@ import type { OAuthProvider } from '../types/oauth.types.js';
 import { invalidateCalendarCache } from './calendar.service.js';
 import { invalidateNowPlayingCache } from './spotify.service.js';
 import { invalidateGithubCache } from './github.service.js';
+import { loadRevocableAccounts, revokeAccounts } from './provider-revoke.service.js';
 import { config } from '../config.js';
 
 export interface IntegrationsStatus {
@@ -38,7 +39,10 @@ export async function getIntegrations(userId: string): Promise<IntegrationsStatu
 }
 
 export async function unlinkProvider(userId: string, provider: OAuthProvider): Promise<void> {
+  const toRevoke = await loadRevocableAccounts(userId, provider).catch(() => []);
   await db.delete(oauthAccounts).where(and(eq(oauthAccounts.userId, userId), eq(oauthAccounts.provider, provider)));
+  // After the local delete, so a slow or failing provider can never block disconnecting.
+  await revokeAccounts(toRevoke);
 
   if (provider === 'google') {
     invalidateCalendarCache(userId);

@@ -9,7 +9,9 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { Writable } from 'node:stream';
 import { SpanKind, SpanStatusCode } from '@opentelemetry/api';
-import { logs, metrics, tracing } from '@opentelemetry/sdk-node';
+import * as logs from '@opentelemetry/sdk-logs';
+import * as metrics from '@opentelemetry/sdk-metrics';
+import * as tracing from '@opentelemetry/sdk-trace';
 import type { FastifyInstance } from 'fastify';
 import { startTelemetry, type Telemetry } from '../sdk.js';
 import {

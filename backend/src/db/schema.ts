@@ -29,7 +29,7 @@ export const refreshSessions = pgTable(
     userAgent: text('user_agent').notNull().default(''),
     /** Coarse "Browser · OS" parsed at sign-in/renewal; null for rows that predate it. */
     deviceLabel: text('device_label'),
-    /** SHA-256 hex of the client IP - stored hashed for anomaly detection, never as plaintext. */
+    /** HMAC-SHA-256 hex (server-keyed) of the client IP; rows before the switch hold plain SHA-256 - stored hashed for anomaly detection, never as plaintext. */
     ip: text('ip').notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
     renewalCount: integer('renewal_count').notNull().default(0),

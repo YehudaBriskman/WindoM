@@ -18,7 +18,8 @@
  * The records handed on are prototype-linked views with the scrubbed fields shadowed,
  * so the SDK's originals are never mutated.
  */
-import type { logs, tracing } from '@opentelemetry/sdk-node';
+import type * as logs from '@opentelemetry/sdk-logs';
+import type * as tracing from '@opentelemetry/sdk-trace';
 import type { Attributes, AttributeValue } from '@opentelemetry/api';
 import { redactUrlQuery } from '../lib/redact.js';
 
@@ -86,7 +87,8 @@ function isDroppedSpanKey(key: string): boolean {
 function scrubSpanValue(value: AttributeValue): AttributeValue {
   if (typeof value === 'string') return scrubString(value);
   if (Array.isArray(value)) {
-    return value.map((v) => (typeof v === 'string' ? scrubString(v) : v)) as AttributeValue;
+    const items: unknown[] = value;
+    return items.map((v) => (typeof v === 'string' ? scrubString(v) : v));
   }
   return value;
 }

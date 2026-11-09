@@ -8,7 +8,7 @@ const validEnv = {
   DATABASE_URL: 'postgresql://user:password@localhost:5432/windom',
   JWT_ACCESS_SECRET: 'a'.repeat(32),
   REFRESH_TOKEN_SECRET: 'b'.repeat(32),
-  TOKEN_ENC_KEY_BASE64: Buffer.alloc(32).toString('base64'),
+  TOKEN_ENC_KEY_BASE64: Buffer.from('0123456789abcdef0123456789ABCDEF').toString('base64'),
 };
 
 describe('backend security baseline', () => {
