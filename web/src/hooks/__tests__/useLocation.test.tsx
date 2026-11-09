@@ -11,7 +11,7 @@ import { WeatherSettings } from '../../components/settings/sections/WeatherSetti
 const update = vi.fn().mockResolvedValue(undefined);
 let location = '';
 vi.mock('../../contexts/SettingsContext', () => ({
-  useSettings: () => ({ settings: { weather: { show: true, unit: 'C', location, apiKey: '' } }, update }),
+  useSettings: () => ({ settings: { weather: { show: true, unit: 'C', location } }, update }),
 }));
 
 let permissionState: PermissionState = 'prompt';

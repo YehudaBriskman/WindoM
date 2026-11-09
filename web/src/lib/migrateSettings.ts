@@ -53,7 +53,6 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
       show: typeof l.showWeather === 'boolean' ? l.showWeather : d.weather.show,
       unit: isValidTempUnit(l.temperatureUnit) ? l.temperatureUnit : d.weather.unit,
       location: typeof l.location === 'string' ? l.location : d.weather.location,
-      apiKey: d.weather.apiKey, // legacy had no weather apiKey field
     },
     widgets: {
       showLinks: typeof l.showLinks === 'boolean' ? l.showLinks : d.widgets.showLinks,

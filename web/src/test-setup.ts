@@ -19,6 +19,7 @@ const chromeMock = {
     local: {
       get: vi.fn().mockResolvedValue({}),
       set: vi.fn().mockResolvedValue(undefined),
+      remove: vi.fn().mockResolvedValue(undefined),
       clear: vi.fn().mockResolvedValue(undefined),
     },
     onChanged: {
@@ -40,5 +41,6 @@ beforeEach(() => {
   chromeMock.storage.sync.remove.mockResolvedValue(undefined);
   chromeMock.storage.local.get.mockResolvedValue({});
   chromeMock.storage.local.set.mockResolvedValue(undefined);
+  chromeMock.storage.local.remove.mockResolvedValue(undefined);
   chromeMock.storage.local.clear.mockResolvedValue(undefined);
 });

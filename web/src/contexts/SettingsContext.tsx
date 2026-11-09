@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { syncStorage, localStore } from '../lib/chrome-storage';
 import { type Settings, defaultSettings } from '../types/settings';
+import { SECRETS_KEY, stripSecrets, extractSecrets, saveSecrets } from '../lib/secret-settings';
 import { loadLocalSettings } from '../lib/settings-load';
 import { subscribeToStore, notifyStore, getStoreSnapshot, pickSyncable, type SetSettings } from '../lib/settings-store';
 import { useSettingsBackendSync } from '../hooks/useSettingsBackendSync';
@@ -70,10 +71,10 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       const isFirstInstall = await syncStorage.get('isFirstInstall', true);
       if (isFirstInstall) {
-        await syncStorage.setMultiple({ ...defaultSettings, isFirstInstall: false } as unknown as Record<
-          string,
-          unknown
-        >);
+        await syncStorage.setMultiple({
+          ...stripSecrets(defaultSettings),
+          isFirstInstall: false,
+        } as unknown as Record<string, unknown>);
       }
 
       setLoaded(true);
@@ -103,14 +104,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       queuePush({ [section]: mergedSection } as Partial<Settings>);
 
-      const [saved] = await Promise.all([
+      const [saved, savedSecrets] = await Promise.all([
         syncStorage.setMultiple({
-          [section]: mergedSection,
+          [section]: stripSecrets({ [section]: mergedSection })[section],
           [KEY_TIMESTAMPS_STORAGE_KEY]: stamps,
         } as Record<string, unknown>),
+        saveSecrets(extractSecrets({ [section]: mergedSection })),
         markUnsynced([section as string]),
       ]);
-      return saved;
+      return saved && savedSecrets;
     },
     [queuePush, markUnsynced, stamp, setSettings],
   );
@@ -146,8 +148,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
       queuePush(patches);
 
-      const [saved] = await Promise.all([syncStorage.setMultiple(storageUpdate), markUnsynced(Object.keys(patches))]);
-      return saved;
+      const [saved, savedSecrets] = await Promise.all([
+        syncStorage.setMultiple(stripSecrets(storageUpdate)),
+        saveSecrets(extractSecrets(storageUpdate)),
+        markUnsynced(Object.keys(patches)),
+      ]);
+      return saved && savedSecrets;
     },
     [queuePush, markUnsynced, stamp, setSettings],
   );
@@ -156,7 +162,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     clearStamps();
     setSettings({ ...defaultSettings });
     await syncStorage.clear();
-    await syncStorage.setMultiple(defaultSettings as unknown as Record<string, unknown>);
+    await syncStorage.setMultiple(stripSecrets(defaultSettings) as unknown as Record<string, unknown>);
+    await localStore.remove(SECRETS_KEY);
     await localStore.set('windom_focus', defaultSettings.focus);
     // A reset is an edit like any other: the next sync uploads the defaults.
     await markUnsynced(Object.keys(pickSyncable(defaultSettings)));

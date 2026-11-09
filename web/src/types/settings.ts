@@ -31,6 +31,7 @@ export interface ClockSettings {
 
 export interface BackgroundSettings {
   // localBackground lives in chrome.storage.local (can be multi-MB data URL)
+  // unsplashApiKey is held in memory only: persisted in chrome.storage.local, never sync (lib/secret-settings.ts)
   source: 'unsplash' | 'local';
   unsplashApiKey: string;
   unsplashCollectionId: string;
@@ -40,7 +41,6 @@ export interface WeatherSettings {
   show: boolean;
   unit: 'F' | 'C';
   location: string;
-  apiKey: string;
 }
 
 export interface WidgetsSettings {
@@ -185,7 +185,6 @@ export const defaultSettings: Settings = {
     show: true,
     unit: 'F',
     location: '',
-    apiKey: '',
   },
   widgets: {
     showLinks: true,

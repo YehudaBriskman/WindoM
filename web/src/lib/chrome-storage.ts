@@ -108,6 +108,16 @@ export const localStore = {
     }
   },
 
+  async remove(key: string): Promise<boolean> {
+    try {
+      await chrome.storage.local.remove(key);
+      return true;
+    } catch (error) {
+      console.error(`Error removing local storage key "${key}":`, error);
+      return false;
+    }
+  },
+
   async clear(): Promise<boolean> {
     try {
       await chrome.storage.local.clear();
