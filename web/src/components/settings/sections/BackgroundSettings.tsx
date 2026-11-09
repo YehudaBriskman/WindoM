@@ -111,6 +111,7 @@ export function BackgroundSettings() {
               </a>{' '}
               → create an app → copy the Access Key.
             </small>
+            <small className="settings-hint">Stored on this device only; not synced.</small>
           </div>
           <div className="settings-group">
             <label className="settings-label">Unsplash Collection ID (optional):</label>

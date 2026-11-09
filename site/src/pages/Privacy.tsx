@@ -57,9 +57,13 @@ export function Privacy() {
         <li>Your display name</li>
         <li>
           Your dashboard settings - synced so preferences are consistent across your devices. This includes your display
-          name, your quick links (names and URLs), the city name you typed for weather and, if you entered them, your
-          own Unsplash access key and weather API key. They are stored as ordinary JSON in the database, not encrypted
-          field by field, and the two keys are left out of the data export. Todos, uploaded images and the finance
+          name, your quick links (names and URLs) and the city name you typed for weather. They are stored as ordinary
+          JSON in the database, not encrypted field by field. If you enter your own Unsplash access key, it is kept only
+          in this browser&apos;s extension storage on your device (<code>chrome.storage.local</code>). It is not synced
+          through your Google account, not sent to our servers and not included in the data export. The extension does
+          not encrypt that local storage, so it is protected only by your device and browser profile. Versions of the
+          extension before this change stored the key with the synced settings; the extension moves it to local storage
+          and removes it from the synced copy the next time it runs and syncs. Todos, uploaded images and the finance
           watchlist are not synced
         </li>
         <li>
@@ -289,7 +293,10 @@ export function Privacy() {
             <td>
               <strong>Unsplash</strong> (<code>api.unsplash.com</code>)
             </td>
-            <td>Search query / category, and the Unsplash access key you entered (as the API requires)</td>
+            <td>
+              Search query / category, and the Unsplash access key you entered, sent directly from your device (as the
+              API requires)
+            </td>
             <td>
               Fetch background images for the dashboard. The photographer's name and a link back to Unsplash are shown
               with each photo, as the Unsplash API guidelines require.

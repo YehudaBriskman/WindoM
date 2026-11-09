@@ -6,6 +6,7 @@
  * in the same tick as its own state (see `setSettings` there), so both agree.
  */
 import { type Settings, defaultSettings } from '../types/settings';
+import { stripSecrets } from './secret-settings';
 
 type StoreListener = () => void;
 const storeListeners = new Set<StoreListener>();
@@ -31,8 +32,9 @@ export function getStoreSnapshot(): Settings {
 export const SYNC_EXCLUDE = new Set<keyof Settings>(['focus']);
 
 export function pickSyncable(s: Partial<Settings>): Partial<Settings> {
-  return Object.fromEntries(
-    Object.entries(s).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
+  // API keys are device-only: never part of what reaches the backend.
+  return stripSecrets(
+    Object.fromEntries(Object.entries(s).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings))),
   ) as Partial<Settings>;
 }
 

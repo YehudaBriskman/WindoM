@@ -19,6 +19,7 @@ vi.mock('../../lib/chrome-storage', () => ({
   localStore: {
     get: vi.fn().mockImplementation((_k: unknown, def: unknown) => Promise.resolve(def)),
     set: vi.fn().mockResolvedValue(true),
+    remove: vi.fn().mockResolvedValue(true),
     clear: vi.fn().mockResolvedValue(true),
   },
 }));

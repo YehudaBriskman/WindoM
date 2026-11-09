@@ -24,6 +24,7 @@ import {
   getLegacyLocalUpdatedAt,
 } from '../lib/settings-sync';
 import { SYNC_EXCLUDE, pickSyncable, pickSections, type SetSettings } from '../lib/settings-store';
+import { stripSecrets, stripSectionSecrets } from '../lib/secret-settings';
 import { createLogger } from '../lib/logger';
 
 const log = createLogger('settings');
@@ -135,7 +136,9 @@ export function useSettingsBackendSync(
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { _updatedAt: _, ...rawBackendSettings } = data ?? {};
         const backendSettings = Object.fromEntries(
-          Object.entries(rawBackendSettings).filter(([k]) => k in defaultSettings),
+          Object.entries(rawBackendSettings)
+            .filter(([k]) => k in defaultSettings)
+            .map(([k, v]) => [k, stripSectionSecrets(k, v)]), // an old server copy must not overwrite the local key
         ) as Partial<Settings>;
 
         // Deep-merge backend sections into local (backend wins on conflicts)
@@ -161,8 +164,8 @@ export function useSettingsBackendSync(
           return result;
         });
 
-        const storable = Object.fromEntries(
-          Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings)),
+        const storable = stripSecrets(
+          Object.fromEntries(Object.entries(merged).filter(([k]) => !SYNC_EXCLUDE.has(k as keyof Settings))),
         );
         await syncStorage.setMultiple(storable as unknown as Record<string, unknown>);
 
