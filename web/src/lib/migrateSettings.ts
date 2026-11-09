@@ -59,7 +59,8 @@ export function migrateFlatToSectioned(legacy: LegacySettings): Settings {
       showLinks: typeof l.showLinks === 'boolean' ? l.showLinks : d.widgets.showLinks,
       showFocus: typeof l.showFocus === 'boolean' ? l.showFocus : d.widgets.showFocus,
       showQuotes: typeof l.quotesEnabled === 'boolean' ? l.quotesEnabled : d.widgets.showQuotes,
-      quoteSource: isValidQuoteSource(l.quoteSource) ? l.quoteSource : d.widgets.quoteSource,
+      // The API source was removed (its service is gone): any stored value, including 'api', becomes 'local'.
+      quoteSource: 'local',
       quickLinks: Array.isArray(l.quickLinks) ? l.quickLinks : d.widgets.quickLinks,
     },
     focus: {
@@ -123,10 +124,6 @@ function isValidBgSource(v: unknown): v is LegacySettings['backgroundSource'] {
 
 function isValidTempUnit(v: unknown): v is LegacySettings['temperatureUnit'] {
   return v === 'F' || v === 'C';
-}
-
-function isValidQuoteSource(v: unknown): v is LegacySettings['quoteSource'] {
-  return v === 'local' || v === 'api';
 }
 
 function isValidCalendarDays(v: unknown): v is LegacySettings['calendarDays'] {

@@ -14,34 +14,24 @@ export function Quotes() {
       <h2>Overview</h2>
 
       <p>
-        A quote sits at the bottom of the new tab and changes once a day. With API Quotes, click it for another one.
+        A quote sits at the bottom of the new tab. It is chosen from the date, so it changes once a day, and you can
+        click it to see a different one.
       </p>
       <p>
-        In Settings → <strong>Quotes</strong>, <strong>Show daily quotes</strong> turns it on or off, and{' '}
-        <strong>Quote Source</strong> chooses between <strong>Local Quotes</strong>, a collection that ships with the
-        extension, and <strong>API Quotes</strong>, fetched from the Quotable service.
+        In Settings → <strong>Quotes</strong>, <strong>Show daily quotes</strong> turns it on or off. The quotes come
+        from a collection that ships with the extension.
       </p>
+
       <h2>How it works</h2>
       <p>
-        The quote is shown as the text in quotation marks with the author on a line beneath it, preceded by a dash.
-        Where it comes from depends on <strong>Quote Source</strong>.
+        The quote is shown as the text in quotation marks with the author on a line beneath it, preceded by a dash. The
+        extension reads a collection bundled inside it, so no network request is made. The day's quote is chosen from
+        the date: every new tab opened on the same day shows the same quote, and the choice changes when the date does.
+        If the collection cannot be read, a short built-in list of five quotes is used instead.
       </p>
-      <ul>
-        <li>
-          <strong>Local Quotes</strong> - the extension reads a collection that ships inside it, so no network request
-          is made. The day's quote is chosen from the date: every new tab opened on the same day shows the same quote,
-          and the choice changes when the date does. If the collection cannot be read, a short built-in list of five
-          quotes is used instead.
-        </li>
-        <li>
-          <strong>API Quotes</strong> - each time the new tab loads, the extension asks the Quotable service for a
-          random quote. If that request fails, it falls back to a random quote from the local collection, so the space
-          is not left empty.
-        </li>
-      </ul>
       <p>
-        Whichever source you use, the quote fades out and in when it changes, and it refreshes by itself at local
-        midnight while the new tab stays open.
+        The quote fades out and in when it changes, and it refreshes by itself at local midnight while the new tab stays
+        open.
       </p>
 
       <h2>Every setting explained</h2>
@@ -51,10 +41,6 @@ export function Quotes() {
           the page and nothing is loaded for it.
         </li>
         <li>
-          <strong>Quote Source</strong> (Settings → Quotes) - <strong>Local Quotes</strong> is the default;{' '}
-          <strong>API Quotes</strong> switches to the Quotable service.
-        </li>
-        <li>
           <strong>Quotes</strong> under Settings → General → Widget Visibility - the same on/off switch as{' '}
           <strong>Show daily quotes</strong>, repeated alongside the other widgets for convenience.
         </li>
@@ -62,26 +48,21 @@ export function Quotes() {
 
       <h2>Clicking the quote</h2>
       <p>
-        The quote is a button: click it to ask for a new one. With <strong>API Quotes</strong>, every click fetches a
-        fresh random quote. With <strong>Local Quotes</strong>, the quote is picked from the date, so a click shows the
-        day's quote again rather than a different one. If you want variety within a day, use API Quotes.
+        The quote is a button: click it and a different quote from the same collection fades in. It is not saved, so the
+        day's quote is untouched. Open a new tab, or wait for midnight, and you are back to the quote chosen for that
+        date.
       </p>
 
       <h2>Where your data is stored and what leaves your device</h2>
       <ul>
         <li>
-          The settings above are saved with the rest of your WindoM settings. If you sign in to a WindoM account, they
-          are synced with your account like the other settings.
+          The on/off setting is saved with the rest of your WindoM settings. If you sign in to a WindoM account, it is
+          synced with your account like the other settings.
         </li>
         <li>
-          The day's local quote is remembered together with its date, so the same quote is shown for the rest of the
-          day.
+          The day's quote is remembered together with its date, so the same quote is shown for the rest of the day.
         </li>
-        <li>
-          With <strong>Local Quotes</strong>, nothing about quotes leaves your device. With <strong>API Quotes</strong>,
-          the extension contacts <code>api.quotable.io</code> to fetch a quote, which, like any web request, reveals
-          your IP address to that service. No text you have typed in WindoM is part of that request.
-        </li>
+        <li>Nothing about quotes leaves your device: there is no request to any service for them.</li>
       </ul>
       <p>
         The <Link to="/privacy">Privacy Policy</Link> lists every service the extension talks to.
@@ -89,14 +70,7 @@ export function Quotes() {
 
       <h2>Tips and good setups</h2>
       <ul>
-        <li>
-          Prefer <strong>Local Quotes</strong> if you want a page that loads the same way with no connection and no
-          third-party request.
-        </li>
-        <li>
-          Choose <strong>API Quotes</strong> if you like a different quote each time you open a tab; clicking the quote
-          gives you another one.
-        </li>
+        <li>Click the quote if today's does not suit you; the page goes back to the day's quote on the next tab.</li>
         <li>
           For a bare page, switch the quote off. Several <Link to="/guide/templates">templates</Link> show or hide it as
           part of their layout, and you can change the choice afterwards.
@@ -105,15 +79,18 @@ export function Quotes() {
 
       <h2>Common questions</h2>
       <p>
-        <strong>Can I add my own quotes?</strong> There is no setting for this. The local collection ships with the
-        extension and the API source is controlled by the service.
+        <strong>Can I add my own quotes?</strong> There is no setting for this. The collection ships with the extension.
       </p>
       <p>
-        <strong>Why is the quote the same every time I open a tab?</strong> You are on <strong>Local Quotes</strong>,
-        which shows one quote per day. Switch to API Quotes for a new one on every tab.
+        <strong>Why is the quote the same every time I open a tab?</strong> It is chosen from the date, so it stays the
+        same for the whole day. Click it for a different one.
       </p>
       <p>
         <strong>Can I choose a category or topic?</strong> No. There is no category filter.
+      </p>
+      <p>
+        <strong>What happened to API Quotes?</strong> The option fetched quotes from an outside service that is no
+        longer available, so it was removed. If it was selected, you now see quotes from the bundled collection.
       </p>
 
       <h2>Troubleshooting</h2>
@@ -122,12 +99,8 @@ export function Quotes() {
           <strong>No quote is shown</strong> - check that <strong>Show daily quotes</strong> is on in Settings → Quotes.
         </li>
         <li>
-          <strong>With API Quotes I keep seeing quotes from a small set</strong> - when the Quotable service cannot be
-          reached, the extension quietly uses the local collection instead. Check your connection and reload the tab.
-        </li>
-        <li>
-          <strong>Clicking the quote shows the same one</strong> - expected with <strong>Local Quotes</strong>; see
-          "Clicking the quote" above.
+          <strong>The same few quotes keep appearing</strong> - if the bundled collection cannot be read, the extension
+          uses a built-in list of five quotes. Reload the tab; if it persists, see <Link to="/support">Support</Link>.
         </li>
       </ul>
 
