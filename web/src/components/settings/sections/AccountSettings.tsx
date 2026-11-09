@@ -54,6 +54,7 @@ function DisplayNameField() {
           value={n.name}
           onChange={(e) => n.setName(e.target.value)}
           placeholder="Your name"
+          aria-label="Your name"
           className="settings-input"
           style={{ flex: 1 }}
           onKeyDown={(e) => e.key === 'Enter' && n.save()}
@@ -68,7 +69,11 @@ function DisplayNameField() {
         </button>
       </div>
       {n.message && (
-        <p className={n.saved ? 'auth-field-success' : 'auth-field-error'} style={{ marginBottom: '8px' }}>
+        <p
+          role={n.saved ? 'status' : 'alert'}
+          className={n.saved ? 'auth-field-success' : 'auth-field-error'}
+          style={{ marginBottom: '8px' }}
+        >
           {n.message}
         </p>
       )}
@@ -87,6 +92,7 @@ function PasswordChangeForm() {
       <input
         type="password"
         placeholder="Current password"
+        aria-label="Current password"
         value={pw.currentPw}
         onChange={(e) => pw.setCurrentPw(e.target.value)}
         autoComplete="current-password"
@@ -95,6 +101,7 @@ function PasswordChangeForm() {
       <input
         type="password"
         placeholder="New password (min 8 characters)"
+        aria-label="New password, minimum 8 characters"
         value={pw.newPw}
         onChange={(e) => pw.setNewPw(e.target.value)}
         autoComplete="new-password"
@@ -103,13 +110,22 @@ function PasswordChangeForm() {
       <input
         type="password"
         placeholder="Confirm new password"
+        aria-label="Confirm new password"
         value={pw.confirmPw}
         onChange={(e) => pw.setConfirmPw(e.target.value)}
         autoComplete="new-password"
         className="settings-input"
       />
-      {pw.error && <p className="auth-field-error">{pw.error}</p>}
-      {pw.message && <p className="auth-field-success">{pw.message}</p>}
+      {pw.error && (
+        <p className="auth-field-error" role="alert">
+          {pw.error}
+        </p>
+      )}
+      {pw.message && (
+        <p className="auth-field-success" role="status">
+          {pw.message}
+        </p>
+      )}
       <button className="settings-save-btn" disabled={!pw.canSubmit} onClick={pw.save}>
         {pw.saving ? 'Updating…' : 'Update password'}
       </button>
@@ -151,6 +167,7 @@ function DangerZone() {
               className="settings-input"
               type="password"
               placeholder="Enter your password to confirm"
+              aria-label="Your password, to confirm deletion"
               value={d.password}
               onChange={(e) => d.setPassword(e.target.value)}
               disabled={d.deleting}

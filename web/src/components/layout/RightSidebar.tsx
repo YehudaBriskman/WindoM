@@ -16,6 +16,20 @@ export function RightSidebar() {
   const { settings } = useSettings();
   const containerRef = useRef<HTMLDivElement>(null);
   useLiquidGlass<HTMLDivElement>('panel', containerRef);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  // Same pattern as SettingsPanel: focus in on open, back to the toggle on close.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (isOpen) {
+      container?.querySelector<HTMLElement>('.sidebar-content button, .sidebar-content input')?.focus();
+    } else if (wasOpen.current) {
+      const active = document.activeElement;
+      if (!active || active === document.body || container?.contains(active)) toggleRef.current?.focus();
+    }
+    wasOpen.current = isOpen;
+  }, [isOpen]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -43,20 +57,25 @@ export function RightSidebar() {
     <div
       ref={containerRef}
       className={`sidebar-container glass-panel ${isOpen ? 'open' : ''}`}
-      onClick={
-        !isOpen
-          ? (e) => {
-              e.stopPropagation();
-              toggle();
-            }
-          : undefined
-      }
+      role={isOpen ? 'dialog' : undefined}
+      aria-label={isOpen ? 'Sidebar' : undefined}
     >
-      <div className="sidebar-btn-icon">
-        <LayoutList size={20} />
-      </div>
+      <button
+        ref={toggleRef}
+        type="button"
+        className="sidebar-btn-icon"
+        aria-label="Open sidebar"
+        aria-expanded={isOpen}
+        inert={isOpen}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggle();
+        }}
+      >
+        <LayoutList size={20} aria-hidden="true" />
+      </button>
 
-      <div className="sidebar-panel-content">
+      <div className="sidebar-panel-content" inert={!isOpen}>
         <div className="sidebar-content">
           {settings.general.showHistory && (
             <ErrorBoundary name="History">

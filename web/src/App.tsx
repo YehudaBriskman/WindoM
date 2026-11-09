@@ -38,6 +38,9 @@ function Dashboard(): React.ReactElement {
   return (
     <>
       {/* Background zoom layer - separate element so transform:scale animates smoothly */}
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
       <div id="bg-zoom-layer" />
       <GlassFilters />
       <BackgroundOverlay />

@@ -7,7 +7,8 @@ import { FinanceDashboards } from '../finance/FinanceDashboards';
 
 export function CenterContent() {
   return (
-    <div className="center-content">
+    <main id="main-content" className="center-content" tabIndex={-1}>
+      <h1 className="sr-only">WindoM new tab</h1>
       <div className="center-content-inner">
         <ErrorBoundary name="Clock">
           <Clock />
@@ -25,6 +26,6 @@ export function CenterContent() {
       <ErrorBoundary name="Focus presets">
         <FocusPresets />
       </ErrorBoundary>
-    </div>
+    </main>
   );
 }

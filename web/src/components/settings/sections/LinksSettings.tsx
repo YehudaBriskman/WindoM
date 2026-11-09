@@ -42,6 +42,7 @@ export function LinksSettings() {
                 type="text"
                 value={link.name}
                 placeholder="Name"
+                aria-label={`Link ${i + 1} name`}
                 onChange={(e) => updateLink(i, { ...link, name: e.target.value })}
                 className="link-editor-input glass-input"
               />
@@ -49,12 +50,18 @@ export function LinksSettings() {
                 type="text"
                 value={link.url}
                 placeholder="URL"
+                aria-label={`Link ${i + 1} URL`}
                 aria-invalid={urlInvalid}
                 title="Enter an HTTP or HTTPS URL"
                 onChange={(e) => updateLink(i, { ...link, url: e.target.value })}
                 className={`link-editor-input glass-input${urlInvalid ? ' url-invalid' : ''}`}
               />
-              <button type="button" onClick={() => removeLink(i)} className="link-remove-btn" aria-label="Remove link">
+              <button
+                type="button"
+                onClick={() => removeLink(i)}
+                className="link-remove-btn"
+                aria-label={`Remove link ${i + 1}${link.name ? `: ${link.name}` : ''}`}
+              >
                 &times;
               </button>
             </div>

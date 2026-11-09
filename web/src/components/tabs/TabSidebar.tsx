@@ -115,10 +115,11 @@ export function TabSidebar() {
         className={`tab-sidebar-trigger tab-sidebar-trigger-${side}`}
         onMouseEnter={showSidebar}
         onMouseLeave={hideSidebar}
+        aria-hidden="true"
       />
 
       {/* Thin edge indicator badge (visible when sidebar is hidden) */}
-      {!visible && <div className={`tab-sidebar-edge tab-sidebar-edge-${side}`} />}
+      {!visible && <div className={`tab-sidebar-edge tab-sidebar-edge-${side}`} aria-hidden="true" />}
 
       {/* Sidebar panel */}
       <div
@@ -126,6 +127,11 @@ export function TabSidebar() {
         className={`tab-sidebar-panel tab-sidebar-panel-${side}${visible ? ' visible' : ''} glass-sidebar`}
         onMouseEnter={showSidebar}
         onMouseLeave={hideSidebar}
+        // Hover is not the only way in: tabbing onto a control slides the panel out.
+        onFocus={showSidebar}
+        onBlur={hideSidebar}
+        role="navigation"
+        aria-label="Browser tabs"
       >
         <button className="tab-sidebar-new-tab" onClick={handleNewTab} type="button">
           <Plus size={14} strokeWidth={2} />

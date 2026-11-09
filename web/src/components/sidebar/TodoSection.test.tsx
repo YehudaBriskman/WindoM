@@ -46,7 +46,7 @@ describe('TodoSection pending guard', () => {
     const write = deferred();
     hook.removeTodo.mockReturnValue(write.promise);
     render(<TodoSection />);
-    const remove = screen.getByRole('button', { name: 'Remove todo' }) as HTMLButtonElement;
+    const remove = screen.getByRole('button', { name: /^Remove task/ }) as HTMLButtonElement;
 
     fireEvent.click(remove);
     expect(remove.disabled).toBe(true);

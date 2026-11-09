@@ -12,16 +12,22 @@ interface TodoItemProps {
 export function TodoItem({ todo, pending = false, onToggle, onRemove }: TodoItemProps) {
   return (
     <div className="todo-item" aria-busy={pending || undefined}>
-      <input type="checkbox" checked={todo.completed} disabled={pending} onChange={() => onToggle(todo.id)} />
+      <input
+        type="checkbox"
+        aria-label={todo.text}
+        checked={todo.completed}
+        disabled={pending}
+        onChange={() => onToggle(todo.id)}
+      />
       <span className={`todo-item-text ${todo.completed ? 'completed' : ''}`}>{todo.text}</span>
       <button
         type="button"
         onClick={() => onRemove(todo.id)}
         className="todo-item-remove"
-        aria-label="Remove todo"
+        aria-label={`Remove task: ${todo.text}`}
         disabled={pending}
       >
-        <X size={14} />
+        <X size={14} aria-hidden="true" />
       </button>
     </div>
   );

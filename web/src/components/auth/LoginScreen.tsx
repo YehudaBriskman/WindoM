@@ -102,7 +102,7 @@ export function LoginScreen({ onSuccess }: Props) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {forgotSent ? (
-          <p className="auth-field-success">
+          <p className="auth-field-success" role="status">
             If that email is registered, a reset link is on its way. Check your inbox.
           </p>
         ) : (
@@ -110,6 +110,7 @@ export function LoginScreen({ onSuccess }: Props) {
             <input
               type="email"
               placeholder="Email address"
+              aria-label="Email address"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
@@ -119,7 +120,11 @@ export function LoginScreen({ onSuccess }: Props) {
               className="settings-input"
               style={{ fontFamily: 'inherit', fontSize: '14px' }}
             />
-            {fieldErrors.email && <p className="auth-field-error">{fieldErrors.email}</p>}
+            {fieldErrors.email && (
+              <p className="auth-field-error" role="alert">
+                {fieldErrors.email}
+              </p>
+            )}
             {error && <p className="auth-error">{error}</p>}
             <button type="submit" disabled={loading} className="settings-save-btn">
               {loading ? 'Sending…' : 'Send reset link'}
@@ -152,6 +157,8 @@ export function LoginScreen({ onSuccess }: Props) {
             <input
               type="text"
               placeholder="Your name"
+              aria-label="Your name"
+              autoComplete="name"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -160,12 +167,17 @@ export function LoginScreen({ onSuccess }: Props) {
               className="settings-input"
               style={{ fontFamily: 'inherit', fontSize: '14px' }}
             />
-            {fieldErrors.name && <p className="auth-field-error">{fieldErrors.name}</p>}
+            {fieldErrors.name && (
+              <p className="auth-field-error" role="alert">
+                {fieldErrors.name}
+              </p>
+            )}
           </>
         )}
         <input
           type="email"
           placeholder="Email address"
+          aria-label="Email address"
           value={email}
           onChange={(e) => {
             setEmail(e.target.value);
@@ -175,10 +187,15 @@ export function LoginScreen({ onSuccess }: Props) {
           className="settings-input"
           style={{ fontFamily: 'inherit', fontSize: '14px' }}
         />
-        {fieldErrors.email && <p className="auth-field-error">{fieldErrors.email}</p>}
+        {fieldErrors.email && (
+          <p className="auth-field-error" role="alert">
+            {fieldErrors.email}
+          </p>
+        )}
         <input
           type="password"
           placeholder="Password"
+          aria-label="Password"
           value={password}
           onChange={(e) => {
             setPassword(e.target.value);
@@ -188,7 +205,11 @@ export function LoginScreen({ onSuccess }: Props) {
           className="settings-input"
           style={{ fontFamily: 'inherit', fontSize: '14px' }}
         />
-        {fieldErrors.password && <p className="auth-field-error">{fieldErrors.password}</p>}
+        {fieldErrors.password && (
+          <p className="auth-field-error" role="alert">
+            {fieldErrors.password}
+          </p>
+        )}
 
         {mode === 'login' && (
           <button type="button" onClick={() => switchMode('forgot')} className="auth-forgot-link">

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Settings } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { SETTINGS_EVENT } from '../../lib/settings-events';
@@ -23,6 +23,22 @@ export function SettingsPanel() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [openAppId, setOpenAppId] = useState<AppId | null>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  // Keyboard users: opening moves focus to the first tab; closing returns it to
+  // the gear if it was inside the panel (WCAG 2.4.3). `inert` on the hidden
+  // content (below) keeps the invisible panel out of the tab order.
+  useEffect(() => {
+    const container = glassRef.current;
+    if (isOpen) {
+      container?.querySelector<HTMLElement>('.settings-nav-btn')?.focus();
+    } else if (wasOpen.current) {
+      const active = document.activeElement;
+      if (!active || active === document.body || container?.contains(active)) toggleRef.current?.focus();
+    }
+    wasOpen.current = isOpen;
+  }, [isOpen, glassRef]);
 
   useEffect(() => {
     const toggleHandler = () => {
@@ -110,15 +126,26 @@ export function SettingsPanel() {
       <div
         ref={glassRef}
         className={`settings-container glass-panel${isOpen ? ' open' : ''}`}
-        onClick={!isOpen ? () => setIsOpen(true) : undefined}
+        role={isOpen ? 'dialog' : undefined}
+        aria-label={isOpen ? 'Settings' : undefined}
       >
-        {/* Collapsed state: gear icon - direct child so it's always visible */}
-        <div className="settings-icon">
-          <Settings size={20} />
-        </div>
+        {/* Collapsed state: gear button - direct child so it's always visible.
+            A real button (it was a clickable div, unreachable by keyboard). */}
+        <button
+          ref={toggleRef}
+          type="button"
+          className="settings-icon"
+          aria-label="Open settings"
+          aria-expanded={isOpen}
+          inert={isOpen}
+          onClick={() => setIsOpen(true)}
+        >
+          <Settings size={20} aria-hidden="true" />
+        </button>
 
         {/* Expanded state: full panel content */}
-        <div className="settings-inner">
+        <div className="settings-inner" inert={!isOpen}>
+          <h2 className="sr-only">Settings</h2>
           <SettingsNav active={activeTab} onChange={setActiveTab} />
           <div className="settings-main">
             <div className="settings-body">

@@ -129,6 +129,7 @@ export function GitHubSettings() {
               type="password"
               className="settings-input"
               placeholder="ghp_..."
+              aria-label="GitHub personal access token"
               value={pat}
               onChange={(e) => setPat(e.target.value)}
               onKeyDown={(e) => {

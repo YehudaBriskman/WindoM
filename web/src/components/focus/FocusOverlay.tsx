@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
+import { useModalFocus } from '../../hooks/useModalFocus';
 import { useFocusTimer } from '../../contexts/FocusTimerContext';
 import { Clock } from '../clock/Clock';
 
@@ -34,8 +35,33 @@ export function FocusOverlay() {
 
   if (phase === 'idle') return null;
 
+  return <FocusOverlayBody phase={phase} remaining={remaining} dismissible={dismissible} stop={stop} />;
+}
+
+interface BodyProps {
+  phase: string;
+  remaining: string;
+  dismissible: boolean;
+  stop: () => void;
+}
+
+// Mounted only while focus mode is showing, so focus moves onto the Stop
+// button when it appears, stays inside while it is up (the page behind is
+// covered, so Tab must not wander into it), and returns to the opener after.
+function FocusOverlayBody({ phase, remaining, dismissible, stop }: BodyProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  useModalFocus(ref);
+
   return (
-    <div className={`focus-overlay ${phase}`} onClick={dismissible ? stop : undefined}>
+    <div
+      ref={ref}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Focus mode"
+      tabIndex={-1}
+      className={`focus-overlay ${phase}`}
+      onClick={dismissible ? stop : undefined}
+    >
       <Clock />
       <div className="focus-remaining text-shadow-sm">{remaining}</div>
       <button
