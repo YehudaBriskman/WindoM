@@ -36,6 +36,8 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "js": ["src/content/index.tsx"],
+      "all_frames": false,
+      "match_about_blank": false,
       "run_at": "document_end"
     }
   ],
