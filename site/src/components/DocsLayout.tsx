@@ -295,19 +295,45 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
      so the list closes itself once a link has been followed. */
   const narrow = useNarrow();
   const [navOpen, setNavOpen] = useState(false);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+
+  /* Focus goes into the drawer when it opens and back to its button when it
+     closes. Without this, the keyboard stayed on the button behind the scrim
+     and, after Escape, landed on whichever heading link came next. */
+  useEffect(() => {
+    if (!narrow) return;
+    if (navOpen) {
+      wasOpen.current = true;
+      const nav = navRef.current;
+      (
+        nav?.querySelector<HTMLElement>('a[aria-current="page"]') ?? nav?.querySelector<HTMLElement>('a, button')
+      )?.focus({
+        preventScroll: true,
+      });
+    } else if (wasOpen.current) {
+      wasOpen.current = false;
+      toggleRef.current?.focus({ preventScroll: true });
+    }
+  }, [narrow, navOpen]);
 
   /* The drawer is modal: the page behind it does not scroll, Escape closes it,
      and its links are out of the tab order while it is shut. */
   useEffect(() => {
     if (!narrow || !navOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    /* On <html>, not <body>: html carries `overflow-x: clip`, so a body
+       overflow is not propagated to the viewport. The body became its own
+       (non-scrolling) scroll container instead - the sticky bar stuck to it and
+       scrolled away with the page, and the page behind still scrolled. */
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setNavOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prev;
+      root.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
   }, [narrow, navOpen]);
@@ -347,6 +373,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
       <div className="docs-bar">
         <button
           type="button"
+          ref={toggleRef}
           className="docs-bar-toggle"
           onClick={toggleSidebar}
           aria-expanded={narrow ? navOpen : !collapsed}
@@ -480,7 +507,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             assistive technology move focus to a fragment target only when it
             can hold focus, so without it the skip link moves the viewport and
             the next Tab lands back in the nav it was meant to skip. */}
-        <main id="content" className="docs-main" tabIndex={-1}>
+        <main id="content" className="docs-main" tabIndex={-1} inert={narrow && navOpen}>
           <div className="docs-head" ref={headRef}>
             {eyebrow && <span className="eyebrow">{eyebrow}</span>}
             <h1>{title}</h1>
