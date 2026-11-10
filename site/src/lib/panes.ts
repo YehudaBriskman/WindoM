@@ -56,7 +56,7 @@ export interface PaneSpec {
    *
    * Here rather than in eight hand-written CSS rules, because the rules could
    * not see each other: adding two panes last round put `recent` on top of
-   * `finance` and `gmail` on top of `todos`, in both columns at once, and
+   * `finance` and `quote` on top of `todos`, in both columns at once, and
    * nothing could have caught it except looking. A single table can be read
    * down a column and checked.
    *
@@ -146,12 +146,12 @@ export const PANES: PaneSpec[] = [
     body: { kind: 'figure', figure: '3 open', small: true, lines: ['windom · release gate'] },
   },
   {
-    id: 'gmail',
-    label: 'Inbox',
+    id: 'quote',
+    label: 'Quote of the day',
     layer: 'mid',
     lift: 1.0,
     place: { top: '33%', side: 'right', inset: '6%' },
-    body: { kind: 'figure', figure: '2 new', small: true, lines: ['Unsplash · API limits'] },
+    body: { kind: 'figure', figure: 'Today', small: true, lines: ['Imagination is more important than knowledge'] },
   },
   {
     id: 'spotify',
