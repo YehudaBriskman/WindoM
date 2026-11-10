@@ -790,6 +790,11 @@
   }
 }
 
+/* WCAG 2.2.2: the pause control covers this loop too. */
+body.motion-paused .scroll-cue-rail::after {
+  animation: none;
+}
+
 @keyframes cue-fall {
   from {
     transform: translateY(-16px);

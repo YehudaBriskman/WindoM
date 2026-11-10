@@ -184,8 +184,8 @@ body:not(.motion-paused) .rise-4 {
 
 .motion-toggle {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  inset-inline-end: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
   z-index: 40;
   display: inline-flex;
   align-items: center;
@@ -204,6 +204,29 @@ body:not(.motion-paused) .rise-4 {
 
 .motion-toggle:hover {
   border-color: var(--accent);
+}
+
+/* On a phone the labelled pill covered copy and the stage's corner button.
+   It becomes a 44px icon-only circle; the label stays as the accessible name
+   (visually hidden, so the name is unchanged). */
+@media (max-width: 700px) {
+  .motion-toggle {
+    inline-size: 44px;
+    block-size: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+    inset-inline-end: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .motion-toggle-label {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────────────── */
