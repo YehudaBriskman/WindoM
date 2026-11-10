@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../../components/DocsLayout';
+import { GuideShot } from '../../../components/GuideShot';
 
 /**
  * The Hebrew guide page for one feature: הגדרת פורמט השעון, הסגנון, הצבע והגודל, הצגת התאריך ובחירת הברכה בלשונית החדשה של WindoM..
@@ -42,6 +43,12 @@ export function Clock() {
         <em>Friend</em>; אם מתחברים לחשבון שיש בו שם בזמן שעדיין כתוב Friend, השם הפרטי מחליף אותו. כדי להסתיר את הברכה,
         מכבים את <strong>Greeting</strong> תחת Settings → General → <strong>Widget Visibility</strong>.
       </p>
+      <GuideShot
+        shot="settings"
+        alt="חלונית ההגדרות של WindoM פתוחה בלשונית השעון, לצד שעון גדול בפורמט 24 שעות עם התאריך והברכה"
+        caption="הגדרות ← שעון, לצד השעון שהן שולטות בו."
+      />
+
       <h2>איך זה עובד</h2>
       <p>
         השעון קורא את השעה של המכשיר שלך ומתרענן בטיימר, כך שהוא לא צריך רשת ולא חשבון. הברכה נבחרת לפי השעה במכשיר:{' '}

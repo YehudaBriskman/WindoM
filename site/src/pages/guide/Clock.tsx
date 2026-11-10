@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../components/DocsLayout';
+import { GuideShot } from '../../components/GuideShot';
 
 /**
  * The guide page for one feature: Clock, Date & Greeting.
@@ -43,6 +44,12 @@ export function Clock() {
         while it still says that, your first name replaces it. To hide the greeting, turn off <strong>Greeting</strong>{' '}
         under Settings → General → <strong>Widget Visibility</strong>.
       </p>
+      <GuideShot
+        shot="settings"
+        alt="WindoM's Settings panel open on the Clock tab, beside a large 24-hour clock with the date and a greeting"
+        caption="Settings → Clock, next to the clock it controls."
+      />
+
       <h2>How it works</h2>
       <p>
         The clock reads your device's own time and redraws on a timer, so it needs no network and no account. The

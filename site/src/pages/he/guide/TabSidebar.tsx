@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../../components/DocsLayout';
+import { GuideShot } from '../../../components/GuideShot';
 
 /**
  * The Hebrew guide page for one feature: ראו ועברו ללשוניות הפתוחות מסרגל הצד של WindoM, מכל עמוד..
@@ -21,6 +22,12 @@ export function TabSidebar() {
         כדי להשתמש בקצה השמאלי במקום, פותחים את Settings → <strong>General</strong> → <strong>Tab Sidebar</strong>{' '}
         ובוחרים <strong>Left</strong>.
       </p>
+      <GuideShot
+        shot="sidebar"
+        alt="לשונית חדשה והסרגל הצדדי פתוח מימין: משימות להיום, לוח שנה ואירועים קרובים על רקע זריחה"
+        caption="הסרגל הצדדי פתוח בקצה הימני של לשונית חדשה."
+      />
+
       <h2>איך זה עובד</h2>
       <p>
         פס ברוחב של כ-15 פיקסלים עובר לאורך הקצה שבחרתם בלשונית החדשה. כשהסמן נכנס אליו, הפאנל נפתח; כשהסמן יוצא, הפאנל

@@ -753,3 +753,25 @@ a.feature-card:focus-visible {
 .fan-label {
   z-index: 1;
 }
+
+/* A screenshot in a guide page: framed like the landing page's, never wider
+   than the measure, and its height reserved by the width/height attributes so
+   the page does not shift when it arrives. */
+.guide-shot {
+  margin: var(--s-6) 0;
+}
+
+.guide-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 12px);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.3);
+}
+
+.guide-shot figcaption {
+  margin-top: var(--s-2);
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
