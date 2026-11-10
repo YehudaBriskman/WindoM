@@ -428,8 +428,16 @@
 }
 
 @media (max-width: 700px) {
+  /* Four 79px cards could not hold a tracked 'AFTERNOON' at a readable size
+     (it was clipped to 'AFTERNOO'). Two by two gives each ~170px. */
   .fan {
-    gap: 0.625rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .fan-card img {
+    aspect-ratio: 4 / 3;
   }
 
   .fan-card {
@@ -437,8 +445,9 @@
   }
 
   .fan-label {
-    left: var(--s-2);
-    font-size: 0.6rem;
+    left: var(--s-3);
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
   }
 }
 

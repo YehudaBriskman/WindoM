@@ -259,8 +259,10 @@ body.motion-paused .hero-cluster {
      ladder of media queries, and no width at which it is slightly wrong.
      The first declaration is the fallback for engines that reject the
      division; they keep it and drop the line below. */
+  --hs: 0.42;
+  --hs: calc(100cqw / (var(--preview-w) * 1px));
   transform: scale(0.42);
-  transform: scale(calc(100cqw / (var(--preview-w) * 1px)));
+  transform: scale(var(--hs));
   /* The picture takes no clicks; the focus control inside it takes its own
      back. Without this the whole frame swallowed the pointer, which is right
      for a product shot and wrong for the one thing in it you can operate. */
@@ -272,6 +274,21 @@ body.motion-paused .hero-cluster {
    else in the picture stays inert. */
 .hero-preview .glass-pane {
   pointer-events: auto;
+}
+
+/* The preview is drawn at 1440px and scaled down by --hs, so a preset button
+   at its natural size lands at ~18x12px on a phone. These sizes are set in
+   design pixels and divided by the scale, so what the finger or pointer sees
+   is at least 44px (WCAG 2.5.5) and the hint reads at 12px or more. */
+.hero-preview .stage-focus-preset {
+  min-inline-size: calc(44px / var(--hs));
+  min-block-size: calc(44px / var(--hs));
+  font-size: calc(14px / var(--hs));
+  padding-inline: calc(12px / var(--hs));
+}
+
+.hero-preview .stage-focus-hint {
+  font-size: calc(12px / var(--hs));
 }
 
 /* The stage must not pin inside the preview - it is a picture, not a scroll
@@ -337,7 +354,7 @@ body.motion-paused .hero-cluster {
      the row could lap well over it; now it is a tab with widgets along its
      bottom edge, and covering them hides the thing the card is there to
      show. */
-  margin: clamp(-1.75rem, -1.5vw, -1rem) 0 0;
+  margin: var(--s-4) 0 0;
   padding: 0;
   /* Deliberately flat, not preserve-3d. Coplanar cards lifted on translateZ
      inside a rotated 3D context make Blink's hit testing unreliable: probing
@@ -353,7 +370,7 @@ body.motion-paused .hero-cluster {
   padding: var(--s-4);
   border-radius: var(--r-md);
   border: 1px solid color-mix(in srgb, var(--border-strong) 80%, transparent);
-  background: color-mix(in srgb, var(--bg) 62%, transparent);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
   backdrop-filter: blur(18px) saturate(180%);
   /* Only the inner highlight that reads as a lit top edge. The drop shadow
      is gone: the lean is what gives the cluster depth, and a cast shadow
@@ -372,7 +389,7 @@ body.motion-paused .hero-cluster {
 .hero-facts li:hover {
   transform: translateY(-0.5rem) scale(1.035);
   border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -410,7 +427,9 @@ body.motion-paused .hero-facts li:hover {
 
 .hero-fact-body {
   font-size: 0.8rem;
-  color: var(--muted);
+  /* Was --muted (#7d7d9a): 3.5:1 on the translucent card over the wallpaper.
+     #b4b4cc on the 86% card clears 4.5:1 with room. */
+  color: #b4b4cc;
   line-height: 1.45;
 }
 
