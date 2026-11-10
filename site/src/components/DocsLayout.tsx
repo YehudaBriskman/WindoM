@@ -3,6 +3,7 @@ import {
   cloneElement,
   isValidElement,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -14,6 +15,14 @@ import { docsGroups, docsNeighbours, headingId, localeOf, translatedPath, type S
 import { SiteNav } from './SiteNav';
 import { DocsSearch } from './DocsSearch';
 import { useActiveHeading, useKeepActiveInView } from '../hooks/useActiveHeading';
+import { useReadingProgress } from '../hooks/useReadingProgress';
+import { navMemory } from '../lib/navMemory';
+
+/** `useLayoutEffect` warns nowhere in React 19, but it does nothing in the prerender either. */
+const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
+const sameMembers = (a: ReadonlySet<string>, b: ReadonlySet<string>) =>
+  a.size === b.size && [...a].every((x) => b.has(x));
 
 interface DocsLayoutProps {
   children: ReactNode;
@@ -113,20 +122,44 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
 
   const { headings, content } = anchorHeadings(children);
 
-  /* Sidebar groups the reader has folded. Open by default so the prerendered
-     HTML lists every page, and the group holding the current page is opened
-     again on navigation: arriving on a page inside a folded group would
-     otherwise leave "where am I" hidden. */
-  const [closedGroups, setClosedGroups] = useState<ReadonlySet<string>>(new Set());
-  const toggleGroup = (name: string) =>
-    setClosedGroups((prev) => {
-      const next = new Set(prev);
-      if (!next.delete(name)) next.add(name);
-      return next;
-    });
+  /* The trail uses the sidebar title, not the page's h1: the guide's heading is
+     "Using WindoM" and its group is "Using WindoM", which produced a crumb that
+     said the same thing twice. */
+  const current = docsGroups(locale)
+    .flatMap((g) => g.pages)
+    .find((pg) => pg.path === path);
+  const currentGroup = current?.group;
+
+  /* Sidebar groups the reader has folded, and whether the current page's own
+     section list is open. Remembered (lib/navMemory): each docs page mounts its
+     own layout, so state held here alone reset on every navigation and the whole
+     menu jumped open. The first render reads only the in-visit cache, never
+     storage, because on a hard load it is hydrating prerendered HTML with every
+     group open; `load` below applies what was saved once that is done. The group
+     holding the current page is always open on arrival: landing on a page inside
+     a folded group would otherwise hide "where am I". */
+  const [closedGroups, setClosedGroups] = useState<ReadonlySet<string>>(
+    () => new Set(navMemory.snapshot().closed.filter((g) => g !== currentGroup)),
+  );
+  const [sectionsOpen, setSectionsOpen] = useState(() => navMemory.snapshot().sections);
+
+  const toggleGroup = (name: string) => {
+    const next = new Set(closedGroups);
+    if (!next.delete(name)) next.add(name);
+    setClosedGroups(next);
+    navMemory.save({ closed: [...next] });
+  };
+  const toggleSections = () => {
+    setSectionsOpen(!sectionsOpen);
+    navMemory.save({ sections: !sectionsOpen });
+  };
   const { active, select } = useActiveHeading(headings.map((h) => h.id));
   const railList = useRef<HTMLUListElement>(null);
   const navRef = useRef<HTMLElement>(null);
+  const headRef = useRef<HTMLDivElement>(null);
+  const proseRef = useRef<HTMLDivElement>(null);
+  const railBar = useRef<HTMLDivElement>(null);
+  useReadingProgress(railBar, headRef, proseRef, path);
   useKeepActiveInView(railList, 'a[aria-current="location"]', active);
   useKeepActiveInView(navRef, '.docs-nav-sections a[aria-current="location"]', active);
 
@@ -140,18 +173,29 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
     .slice(0, activeIndex + 1)
     .filter((h) => h.level === 2)
     .pop()?.id;
-  const [sectionsOpen, setSectionsOpen] = useState(true);
   const { prev, next } = docsNeighbours(path);
-  /* The trail uses the sidebar title, not the page's h1: the guide's heading is
-     "Using WindoM" and its group is "Using WindoM", which produced a crumb that
-     said the same thing twice. */
-  const current = docsGroups(locale)
-    .flatMap((g) => g.pages)
-    .find((pg) => pg.path === path);
 
-  const currentGroup = current?.group;
+  /* A hard load: apply what was saved, before the first paint of this commit.
+     Runs on every mount but only reads storage the first time; within a visit
+     it finds the cache the state above was already built from and changes
+     nothing. */
+  useIsoLayoutEffect(() => {
+    const saved = navMemory.load();
+    const closed = new Set(saved.closed.filter((g) => g !== currentGroup));
+    setClosedGroups((now) => (sameMembers(now, closed) ? now : closed));
+    setSectionsOpen(saved.sections);
+    if (closed.size !== saved.closed.length) navMemory.save({ closed: [...closed] });
+    // Once, on mount: the page-change case is the effect below.
+  }, []);
+
+  /* A layout that stays mounted while the page changes still reopens the
+     group the new page is in. It reads the memory, not the closure: this
+     effect also runs in the commit that mounts the layout, before the saved
+     state has landed in this component's own state. */
   useEffect(() => {
     if (!currentGroup) return;
+    const saved = navMemory.snapshot();
+    if (saved.closed.includes(currentGroup)) navMemory.save({ closed: saved.closed.filter((g) => g !== currentGroup) });
     setClosedGroups((prev) => {
       if (!prev.has(currentGroup)) return prev;
       const next = new Set(prev);
@@ -159,6 +203,19 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
       return next;
     });
   }, [currentGroup, path]);
+
+  /* The sidebar scrolls on its own. Put it back where it was before this page
+     paints, then `useKeepActiveInView` moves it only if the current page is
+     out of view. Without this the sidebar returned to the top on every
+     navigation. */
+  useIsoLayoutEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    nav.scrollTop = navMemory.snapshot().scroll;
+    const remember = () => navMemory.setScroll(nav.scrollTop);
+    nav.addEventListener('scroll', remember, { passive: true });
+    return () => nav.removeEventListener('scroll', remember);
+  }, []);
 
   /**
    * Collapsed by choice, remembered.
@@ -198,6 +255,10 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
       <a className="skip-link" href="#content">
         Skip to content
       </a>
+      {/* How far through this page's text you are. Decorative: the page's own
+          scroll is the accessible readout, so it is hidden from assistive
+          technology rather than announced sixty times a second. */}
+      <div ref={railBar} className="reading-rail" aria-hidden="true" />
       <div className="ambient" aria-hidden="true" />
 
       <SiteNav current={path} locale={locale} />
@@ -281,7 +342,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
                             aria-expanded={sectionsOpen}
                             aria-controls="docs-nav-sections"
                             aria-label={t.sections}
-                            onClick={() => setSectionsOpen((o) => !o)}
+                            onClick={toggleSections}
                           >
                             <ChevronGlyph />
                           </button>
@@ -321,18 +382,20 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             can hold focus, so without it the skip link moves the viewport and
             the next Tab lands back in the nav it was meant to skip. */}
         <main id="content" className="docs-main" tabIndex={-1}>
-          <div className="docs-head">
+          <div className="docs-head" ref={headRef}>
             {eyebrow && <span className="eyebrow">{eyebrow}</span>}
             <h1>{title}</h1>
             {subtitle && <p className="updated">{subtitle}</p>}
           </div>
 
-          <div className="prose">{content}</div>
+          <div className="prose" ref={proseRef}>
+            {content}
+          </div>
 
           {(prev || next) && (
             <nav className="docs-neighbours" aria-label={t.more}>
-              {prev ? <NeighbourLink page={prev} rel="prev" label={t.prev} /> : <span />}
-              {next ? <NeighbourLink page={next} rel="next" label={t.next} /> : <span />}
+              {prev && <NeighbourLink page={prev} rel="prev" label={t.prev} here={currentGroup} />}
+              {next && <NeighbourLink page={next} rel="next" label={t.next} here={currentGroup} />}
             </nav>
           )}
         </main>
@@ -413,11 +476,60 @@ function ChevronGlyph() {
   );
 }
 
-function NeighbourLink({ page, rel, label }: { page: SiteRoute; rel: 'prev' | 'next'; label: string }) {
+/** Points to the inline end; the stylesheet turns it for "previous" and for Hebrew. */
+function ArrowGlyph() {
   return (
-    <Link className={`docs-neighbour is-${rel}`} to={page.path} rel={rel} viewTransition>
-      <span className="docs-neighbour-label">{label}</span>
+    <svg className="docs-neighbour-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path
+        d="M2 7h10M8 3l4 4-4 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/**
+ * One end of the previous/next pair.
+ *
+ * Says where the link goes, not just what it is called: the page's group when
+ * it is not the one the reader is in (so crossing from "Get started" into
+ * "Settings" is visible before the click), and the blurb the route table
+ * already holds. The accessible name is "Next: Clock", which contains both
+ * visible words as WCAG 2.5.3 asks, and leaves the blurb as supplementary text
+ * rather than reading it into every link name.
+ */
+function NeighbourLink({
+  page,
+  rel,
+  label,
+  here,
+}: {
+  page: SiteRoute;
+  rel: 'prev' | 'next';
+  label: string;
+  /** The group of the page being read. */
+  here?: string;
+}) {
+  const crossing = page.group && page.group !== here ? page.group : undefined;
+  return (
+    <Link
+      className={`docs-neighbour is-${rel}`}
+      to={page.path}
+      rel={rel}
+      viewTransition
+      aria-label={`${label}: ${page.title}`}
+    >
+      <span className="docs-neighbour-label">
+        {rel === 'prev' && <ArrowGlyph />}
+        <span>{label}</span>
+        {crossing && <span className="docs-neighbour-group">{crossing}</span>}
+        {rel === 'next' && <ArrowGlyph />}
+      </span>
       <span className="docs-neighbour-title">{page.title}</span>
+      {page.description && <span className="docs-neighbour-blurb">{page.description}</span>}
     </Link>
   );
 }
