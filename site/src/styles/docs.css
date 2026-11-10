@@ -269,7 +269,7 @@
 }
 
 .docs-nav-expander,
-.docs-nav-sections {
+.docs-nav-sections-wrap {
   display: none;
 }
 
@@ -278,8 +278,8 @@
     display: inline-flex;
   }
 
-  .docs-nav-sections:not([hidden]) {
-    display: block;
+  .docs-nav-sections-wrap {
+    display: grid;
   }
 }
 
@@ -1154,4 +1154,145 @@ html.docs-search-open {
   .docs-nav-group-toggle svg {
     transition: none;
   }
+}
+
+/* ── The tree moves ─────────────────────────────────────────────────────
+   Opening or folding a group, or a page's own sections, used to snap: the list
+   was `hidden` or not. Each is now a one-row grid whose row grows from 0fr to
+   1fr, the standard way to animate to an unknown height with no script measuring
+   it. A folded group is also `inert`, so its links leave the tab order and the
+   accessibility tree the moment it starts closing, and its content stays
+   `visibility: hidden` once the row has finished shrinking. Without JavaScript
+   every group is simply open. */
+
+.docs-collapse {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 280ms var(--ease);
+}
+
+.docs-collapse-inner {
+  min-height: 0;
+  overflow: hidden;
+  transition:
+    opacity 200ms var(--ease),
+    transform 280ms var(--ease);
+}
+
+.docs-collapse[data-open='false'] {
+  grid-template-rows: 0fr;
+}
+
+.docs-collapse[data-open='false'] .docs-collapse-inner {
+  opacity: 0;
+  transform: translateY(-6px);
+  visibility: hidden;
+  transition:
+    opacity 160ms var(--ease),
+    transform 280ms var(--ease),
+    visibility 0s linear 280ms;
+}
+
+/* The group header: a real target, with the page count at the far end and a
+   surface that answers the pointer. */
+.docs-nav-group-toggle {
+  min-block-size: 32px;
+  padding-inline: var(--s-2);
+  margin-inline-start: calc(var(--s-2) * -1);
+  inline-size: calc(100% + var(--s-2));
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.docs-nav-group-toggle:hover {
+  background: var(--surface);
+}
+
+.docs-nav-group-toggle:active {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.docs-nav-group-name {
+  flex: 1;
+  min-width: 0;
+  text-align: start;
+}
+
+.docs-nav-count {
+  flex: none;
+  min-inline-size: 1.5em;
+  padding: 0 0.4em;
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--muted);
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
+.docs-nav-group-toggle:hover .docs-nav-count,
+.docs-nav-group-toggle[aria-expanded='true'] .docs-nav-count {
+  color: var(--muted-strong);
+}
+
+.docs-nav-group-toggle[aria-expanded='true'] .docs-nav-count {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+/* Pressing a page nudges it toward where it is going; the bar on the current
+   page and on the section being read grows in rather than appearing. */
+.docs-nav-link:active {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.docs-nav-link::before {
+  transform-origin: center;
+}
+
+.docs-nav-link.is-current::before,
+.docs-nav-link.is-active::before {
+  animation: docs-bar-in 320ms var(--ease) both;
+}
+
+@keyframes docs-bar-in {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-collapse,
+  .docs-collapse-inner,
+  .docs-collapse[data-open='false'] .docs-collapse-inner {
+    transition: none;
+  }
+
+  .docs-nav-link.is-current::before,
+  .docs-nav-link.is-active::before {
+    animation: none;
+  }
+}
+
+body.motion-paused .docs-collapse,
+body.motion-paused .docs-collapse-inner,
+body.motion-paused .docs-collapse[data-open='false'] .docs-collapse-inner {
+  transition: none;
+}
+
+body.motion-paused .docs-nav-link.is-current::before,
+body.motion-paused .docs-nav-link.is-active::before {
+  animation: none;
 }

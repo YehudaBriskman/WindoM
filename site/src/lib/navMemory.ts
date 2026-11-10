@@ -29,6 +29,9 @@
 
 export interface NavMemory {
   closed: string[];
+  /** Nothing has been saved: the reader has never opened or closed a group, so the default applies
+   *  (only the group holding the current page open). Never stored; read from the absence of `closed`. */
+  fresh: boolean;
   sections: boolean;
   scroll: number;
 }
@@ -38,7 +41,7 @@ export const NAV_KEY = 'windom-docs-nav';
 /** More groups than the docs will ever have; a bound on what a bad value can cost. */
 const MAX_CLOSED = 40;
 
-export const emptyNav = (): NavMemory => ({ closed: [], sections: true, scroll: 0 });
+export const emptyNav = (): NavMemory => ({ closed: [], fresh: true, sections: true, scroll: 0 });
 
 /** Tolerant of anything: a value from an older build, or one edited by hand. */
 export function parseNav(raw: string | null | undefined): NavMemory {
@@ -52,13 +55,14 @@ export function parseNav(raw: string | null | undefined): NavMemory {
   }
   if (typeof value !== 'object' || value === null) return empty;
   const v = value as Record<string, unknown>;
+  const fresh = !Array.isArray(v.closed);
   const closed = Array.isArray(v.closed)
     ? [...new Set(v.closed.filter((g): g is string => typeof g === 'string' && g.length > 0 && g.length < 200))].slice(
         0,
         MAX_CLOSED,
       )
     : [];
-  return { closed, sections: typeof v.sections === 'boolean' ? v.sections : true, scroll: 0 };
+  return { closed, fresh, sections: typeof v.sections === 'boolean' ? v.sections : true, scroll: 0 };
 }
 
 export function serializeNav(memory: NavMemory): string {
@@ -72,6 +76,8 @@ export interface NavStorage {
 }
 
 export interface NavMemoryStore {
+  /** True once `load` has read storage; before that `snapshot` is only the empty default. */
+  loaded(): boolean;
   snapshot(): NavMemory;
   load(): NavMemory;
   save(patch: Partial<Omit<NavMemory, 'scroll'>>): void;
@@ -90,6 +96,7 @@ export function createNavMemory(storage: () => NavStorage | null): NavMemoryStor
   };
 
   return {
+    loaded: () => memory !== null,
     snapshot: () => memory ?? emptyNav(),
 
     /** Reads storage once; every later call returns the cache. */
@@ -99,7 +106,7 @@ export function createNavMemory(storage: () => NavStorage | null): NavMemoryStor
     },
 
     save(patch) {
-      memory = { ...(memory ?? emptyNav()), ...patch };
+      memory = { ...(memory ?? emptyNav()), ...patch, fresh: false };
       try {
         storage()?.setItem(NAV_KEY, serializeNav(memory));
       } catch {
@@ -115,3 +122,22 @@ export function createNavMemory(storage: () => NavStorage | null): NavMemoryStor
 
 /** The real one. `localStorage` is read lazily because the prerender has none. */
 export const navMemory = createNavMemory(() => (typeof localStorage === 'undefined' ? null : localStorage));
+
+/**
+ * Which groups are folded, given what is remembered.
+ *
+ * A reader who has never touched the tree gets every group folded except the one
+ * holding the page they are on: the sidebar then shows all the section headings
+ * at a glance, instead of the first two groups and a scroll to find the rest.
+ * Once they have opened or closed anything, their own list wins. Either way the
+ * current page's group is open - arriving on a page inside a folded group would
+ * hide "where am I".
+ */
+export function resolveClosed(
+  saved: Pick<NavMemory, 'closed' | 'fresh'>,
+  groups: readonly string[],
+  current?: string,
+): Set<string> {
+  const closed = saved.fresh ? groups : saved.closed;
+  return new Set(closed.filter((g) => g !== current));
+}

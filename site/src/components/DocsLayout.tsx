@@ -18,7 +18,8 @@ import { SiteNav } from './SiteNav';
 import { DocsSearch } from './DocsSearch';
 import { useActiveHeading, useKeepActiveInView } from '../hooks/useActiveHeading';
 import { useReadingProgress } from '../hooks/useReadingProgress';
-import { navMemory } from '../lib/navMemory';
+import { navMemory, resolveClosed } from '../lib/navMemory';
+import { nearestScrollTop } from '../lib/scrollspy';
 import { writeProse } from './Written';
 
 /** `useLayoutEffect` warns nowhere in React 19, but it does nothing in the prerender either. */
@@ -162,22 +163,46 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
      group open; `load` below applies what was saved once that is done. The group
      holding the current page is always open on arrival: landing on a page inside
      a folded group would otherwise hide "where am I". */
-  const [closedGroups, setClosedGroups] = useState<ReadonlySet<string>>(
-    () => new Set(navMemory.snapshot().closed.filter((g) => g !== currentGroup)),
+  const groupNames = docsGroups(locale).map((g) => g.group);
+  const [closedGroups, setClosedGroups] = useState<ReadonlySet<string>>(() =>
+    /* Before the first `load` there is nothing remembered and the HTML being
+       hydrated has every group open; after it (a later page of this visit) the
+       remembered state is rendered on the very first frame. */
+    navMemory.loaded() ? resolveClosed(navMemory.snapshot(), groupNames, currentGroup) : new Set(),
   );
   const [sectionsOpen, setSectionsOpen] = useState(() => navMemory.snapshot().sections);
 
-  const toggleGroup = (name: string) => {
+  const toggleGroup = (name: string, index: number) => {
     const next = new Set(closedGroups);
-    if (!next.delete(name)) next.add(name);
+    const opening = next.delete(name);
+    if (!opening) next.add(name);
     setClosedGroups(next);
     navMemory.save({ closed: [...next] });
+    if (opening) revealGroup(index);
   };
   const toggleSections = () => {
     setSectionsOpen(!sectionsOpen);
     navMemory.save({ sections: !sectionsOpen });
   };
   const { active, select } = useActiveHeading(headings.map((h) => h.id));
+  /* A group opened near the foot of the sidebar grows below the fold. Once its
+     height has finished animating, bring its last page into view - by scrolling
+     the sidebar itself, never the page (`scrollIntoView` would move both). */
+  const revealGroup = (index: number) => {
+    window.setTimeout(() => {
+      const nav = navRef.current;
+      const last = nav?.querySelector(`#docs-nav-tree-${index} > li:last-child`);
+      if (!nav || !last) return;
+      const box = nav.getBoundingClientRect();
+      const item = last.getBoundingClientRect();
+      const to = nearestScrollTop(nav.scrollTop, nav.clientHeight, item.top - box.top + nav.scrollTop, item.height, 12);
+      if (to !== null)
+        nav.scrollTo({
+          top: to,
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
+    }, 300);
+  };
   const railList = useRef<HTMLUListElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const headRef = useRef<HTMLDivElement>(null);
@@ -205,10 +230,12 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
      nothing. */
   useIsoLayoutEffect(() => {
     const saved = navMemory.load();
-    const closed = new Set(saved.closed.filter((g) => g !== currentGroup));
+    const closed = resolveClosed(saved, groupNames, currentGroup);
     setClosedGroups((now) => (sameMembers(now, closed) ? now : closed));
+    /* The default is written down the first time it is shown, so that moving to
+       another group later opens that group without folding this one again. */
+    if (saved.fresh || closed.size !== saved.closed.length) navMemory.save({ closed: [...closed] });
     setSectionsOpen(saved.sections);
-    if (closed.size !== saved.closed.length) navMemory.save({ closed: [...closed] });
     // Once, on mount: the page-change case is the effect below.
   }, []);
 
@@ -345,70 +372,83 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
                   className="docs-nav-group-toggle"
                   aria-expanded={!closedGroups.has(groupName)}
                   aria-controls={`docs-nav-tree-${gi}`}
-                  onClick={() => toggleGroup(groupName)}
+                  onClick={() => toggleGroup(groupName, gi)}
                 >
                   <ChevronGlyph />
-                  <span>{groupName}</span>
+                  <span className="docs-nav-group-name">{groupName}</span>
+                  <span className="docs-nav-count" aria-hidden="true">
+                    {pages.length}
+                  </span>
                 </button>
               </p>
-              <ul
-                className="docs-nav-tree"
-                id={`docs-nav-tree-${gi}`}
-                aria-labelledby={`docs-nav-label-${gi}`}
-                hidden={closedGroups.has(groupName)}
+              <div
+                className="docs-collapse"
+                data-open={!closedGroups.has(groupName)}
+                inert={closedGroups.has(groupName)}
               >
-                {pages.map((page) => {
-                  const isCurrent = page.path === path;
-                  const nested = isCurrent && sections.length > 1;
-                  return (
-                    <li key={page.path} className={nested ? 'has-sections' : undefined}>
-                      <div className="docs-nav-row">
-                        <Link
-                          to={page.path}
-                          className={`docs-nav-link${isCurrent ? ' is-current' : ''}`}
-                          aria-current={isCurrent ? 'page' : undefined}
-                          viewTransition
-                        >
-                          {page.title}
-                        </Link>
-                        {nested && (
-                          <button
-                            type="button"
-                            className="docs-nav-expander"
-                            aria-expanded={sectionsOpen}
-                            aria-controls="docs-nav-sections"
-                            aria-label={t.sections}
-                            onClick={toggleSections}
-                          >
-                            <ChevronGlyph />
-                          </button>
-                        )}
-                      </div>
-                      {nested && (
-                        <ul
-                          className="docs-nav-tree docs-nav-sections"
-                          id="docs-nav-sections"
-                          aria-label={t.sections}
-                          hidden={!sectionsOpen}
-                        >
-                          {sections.map((h) => (
-                            <li key={h.id}>
-                              <a
-                                href={`#${h.id}`}
-                                className={`docs-nav-link${h.id === activeSection ? ' is-active' : ''}`}
-                                aria-current={h.id === activeSection ? 'location' : undefined}
-                                onClick={() => select(h.id)}
+                <div className="docs-collapse-inner">
+                  <ul className="docs-nav-tree" id={`docs-nav-tree-${gi}`} aria-labelledby={`docs-nav-label-${gi}`}>
+                    {pages.map((page) => {
+                      const isCurrent = page.path === path;
+                      const nested = isCurrent && sections.length > 1;
+                      return (
+                        <li key={page.path} className={nested ? 'has-sections' : undefined}>
+                          <div className="docs-nav-row">
+                            <Link
+                              to={page.path}
+                              className={`docs-nav-link${isCurrent ? ' is-current' : ''}`}
+                              aria-current={isCurrent ? 'page' : undefined}
+                              viewTransition
+                            >
+                              {page.title}
+                            </Link>
+                            {nested && (
+                              <button
+                                type="button"
+                                className="docs-nav-expander"
+                                aria-expanded={sectionsOpen}
+                                aria-controls="docs-nav-sections"
+                                aria-label={t.sections}
+                                onClick={toggleSections}
                               >
-                                {h.text}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
+                                <ChevronGlyph />
+                              </button>
+                            )}
+                          </div>
+                          {nested && (
+                            <div
+                              className="docs-collapse docs-nav-sections-wrap"
+                              data-open={sectionsOpen}
+                              inert={!sectionsOpen}
+                            >
+                              <div className="docs-collapse-inner">
+                                <ul
+                                  className="docs-nav-tree docs-nav-sections"
+                                  id="docs-nav-sections"
+                                  aria-label={t.sections}
+                                >
+                                  {sections.map((h) => (
+                                    <li key={h.id}>
+                                      <a
+                                        href={`#${h.id}`}
+                                        className={`docs-nav-link${h.id === activeSection ? ' is-active' : ''}`}
+                                        aria-current={h.id === activeSection ? 'location' : undefined}
+                                        onClick={() => select(h.id)}
+                                      >
+                                        {h.text}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
             </div>
           ))}
         </nav>
