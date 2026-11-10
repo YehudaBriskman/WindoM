@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { highlight, search, type IndexedPage, type SearchIndex } from './search.ts';
+import { highlight, search, suggestions, type IndexedPage, type SearchIndex } from './search.ts';
 
 /**
  * Run with `npm test` - plain `node --test`, which strips the types itself, so
@@ -45,12 +45,13 @@ describe('search: a page title does not qualify every section (#401)', () => {
 
   it('still lets the title add score to a section that matched on its own', () => {
     const results = search(index, 'button', 'en');
-    // Every guide step mentions it in the body, and none of them twice.
-    assert.equal(results.length, 8);
+    // Every guide step mentions it in the body, and none of them twice; one
+    // page may hold three rows, not eight.
+    assert.equal(results.length, 3);
     assert.ok(results.every((r) => r.page.p === '/guide'));
   });
 
-  it('represents a page by its matching sections or by its name, never both', () => {
+  it('leads with the page named after the query, then its matching sections', () => {
     const titled = page('/support', 'Support', [
       ['', '', 'Help.'],
       ['contact-support', 'Contact support', 'Email us.'],
@@ -58,7 +59,56 @@ describe('search: a page title does not qualify every section (#401)', () => {
     const results = search({ v: 1, pages: [titled] }, 'support', 'en');
     assert.deepEqual(
       results.map((r) => r.to),
-      ['/support#contact-support'],
+      ['/support', '/support#contact-support'],
+    );
+  });
+
+  it('puts the page called Keyboard Shortcuts above an FAQ that mentions shortcuts (#514)', () => {
+    const faq = page('/guide/faq', 'FAQ', [
+      ['', '', 'Hi.'],
+      ['shortcuts', 'Can I change the shortcuts?', 'Yes.'],
+    ]);
+    const keys = page('/guide/shortcuts', 'Keyboard Shortcuts', [
+      ['', '', 'Keys.'],
+      ['global', 'The global shortcut', 'Ctrl.'],
+    ]);
+    const [top, second] = search({ v: 1, pages: [faq, keys] }, 'shortcut', 'en');
+    assert.equal(top?.to, '/guide/shortcuts');
+    assert.equal(second?.to, '/guide/shortcuts#global');
+  });
+
+  it('keeps a page to three rows so other pages get a turn', () => {
+    const many = page('/a', 'Alpha', [
+      ['', '', ''],
+      ...Array.from({ length: 6 }, (_, i): [string, string, string] => [`s${i}`, 'widget', 'x']),
+    ]);
+    const other = page('/b', 'Beta', [['', '', 'a widget here']]);
+    const results = search({ v: 1, pages: [many, other] }, 'widget', 'en');
+    assert.equal(results.filter((r) => r.page.p === '/a').length, 3);
+    assert.ok(results.some((r) => r.page.p === '/b'));
+  });
+
+  it('wants two characters before it returns anything', () => {
+    assert.deepEqual(search(index, 'x', 'en'), []);
+    assert.deepEqual(search(index, ' b ', 'en'), []);
+  });
+
+  it('suggests the pages it knows, in order, for the current language only', () => {
+    const idx: SearchIndex = {
+      v: 1,
+      pages: [
+        page('/support', 'Support', [['', '', 'Help.']]),
+        page('/install', 'Install', [['', '', 'Get it.']]),
+        { p: '/he/install', t: 'התקנה', l: 'he', s: [{ id: '', h: '', x: 'x' }] },
+      ],
+    };
+    assert.deepEqual(
+      suggestions(idx, 'en').map((r) => r.to),
+      ['/install', '/support'],
+    );
+    assert.deepEqual(
+      suggestions(idx, 'he').map((r) => r.to),
+      ['/he/install'],
     );
   });
 

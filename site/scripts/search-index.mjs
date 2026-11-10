@@ -28,6 +28,9 @@ function textOf(html) {
   return decode(
     html
       .replace(/<a\b[^>]*class="heading-anchor"[\s\S]*?<\/a>/g, ' ')
+      // Cells of one row joined with a dash, so a table row reads as a phrase
+      // ("Keys - What it does") rather than a run of unrelated words.
+      .replace(/<\/t[dh]>\s*(?=<t[dh]\b)/g, ' - ')
       .replace(/<[^>]*>/g, ' '),
   )
     .replace(/\s+/g, ' ')

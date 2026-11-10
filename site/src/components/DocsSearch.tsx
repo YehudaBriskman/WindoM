@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
 import type { Locale } from '../routes';
-import { highlight, search, tokenize, type Result, type SearchIndex } from '../lib/search';
+import { highlight, MIN_QUERY, search, suggestions, tokenize, type Result, type SearchIndex } from '../lib/search';
 
 /** The strings the dialog contributes, in both languages. */
 const UI = {
@@ -15,6 +15,9 @@ const UI = {
     failed: 'Search is unavailable. The documentation sidebar still lists every page.',
     hint: 'to search',
     results: 'Search results',
+    close: 'Close search',
+    suggested: 'Suggested pages',
+    tooShort: 'Type at least 2 characters.',
     count: (n: number) => (n === 1 ? '1 result' : `${n} results`),
   },
   he: {
@@ -26,6 +29,9 @@ const UI = {
     failed: 'החיפוש אינו זמין. סרגל הצד עדיין מציג את כל העמודים.',
     hint: 'לחיפוש',
     results: 'תוצאות חיפוש',
+    close: 'סגירת החיפוש',
+    suggested: 'עמודים מוצעים',
+    tooShort: 'יש להקליד לפחות 2 תווים.',
     count: (n: number) => (n === 1 ? 'תוצאה אחת' : `${n} תוצאות`),
   },
 } as const;
@@ -254,7 +260,16 @@ export function DocsSearch({ locale }: { locale: Locale }) {
     return () => document.removeEventListener('focusin', onFocusIn);
   }, [open]);
 
-  const results: Result[] = index && query.trim() ? search(index, query, locale) : [];
+  const trimmed = query.trim();
+  /* An empty box offers a few pages rather than a blank panel; one character is
+     told to say more instead of being matched against everything. */
+  const results: Result[] = !index
+    ? []
+    : !trimmed
+      ? suggestions(index, locale)
+      : trimmed.length < MIN_QUERY
+        ? []
+        : search(index, query, locale);
   const tokens = tokenize(query);
 
   // The selected row scrolled into view, because selection moves with the arrow
@@ -267,6 +282,9 @@ export function DocsSearch({ locale }: { locale: Locale }) {
   const go = (result: Result) => {
     hide();
     navigate(result.to, { viewTransition: true });
+    // After a beat: closing the dialog returns focus to the trigger in an effect,
+    // and this has to land after that rather than be undone by it.
+    window.setTimeout(() => focusDestination(result.to), 60);
   };
 
   /**
@@ -380,6 +398,9 @@ export function DocsSearch({ locale }: { locale: Locale }) {
                   autoComplete="off"
                   spellCheck={false}
                 />
+                <button type="button" className="docs-search-close" aria-label={t.close} onClick={hide}>
+                  <CloseGlyph />
+                </button>
               </div>
 
               {/* Always mounted: a live region has to exist before its text
@@ -390,7 +411,7 @@ export function DocsSearch({ locale }: { locale: Locale }) {
                   ? t.failed
                   : status === 'loading'
                     ? t.loading
-                    : query.trim()
+                    : trimmed.length >= MIN_QUERY
                       ? results.length
                         ? t.count(results.length)
                         : t.empty
@@ -401,20 +422,24 @@ export function DocsSearch({ locale }: { locale: Locale }) {
                 <p className="docs-search-note">{t.failed}</p>
               ) : status === 'loading' ? (
                 <p className="docs-search-note">{t.loading}</p>
-              ) : query.trim() && !results.length ? (
+              ) : trimmed && trimmed.length < MIN_QUERY ? (
+                <p className="docs-search-note">{t.tooShort}</p>
+              ) : trimmed && !results.length ? (
                 <p className="docs-search-note">{t.empty}</p>
               ) : (
-                <ul
-                  className="docs-search-results"
-                  id="docs-search-results"
-                  role="listbox"
-                  ref={list}
-                  aria-label={t.results}
-                >
-                  {results.map((result, i) => {
-                    const [before, match, after] = highlight(result.excerpt, tokens);
-                    return (
-                      /*
+                <>
+                  {!trimmed && results.length > 0 && <p className="docs-search-label">{t.suggested}</p>}
+                  <ul
+                    className="docs-search-results"
+                    id="docs-search-results"
+                    role="listbox"
+                    ref={list}
+                    aria-label={t.results}
+                  >
+                    {results.map((result, i) => {
+                      const [before, match, after] = highlight(result.excerpt, tokens);
+                      return (
+                        /*
                       An option, not a button. A listbox row is selected by
                       `aria-activedescendant` from the input that owns the
                       listbox, so making each row a tab stop would put focus
@@ -422,35 +447,69 @@ export function DocsSearch({ locale }: { locale: Locale }) {
                       pattern exists to avoid. The click handler is for the
                       mouse; the keyboard gets here through Enter on the panel.
                     */
-                      <li
-                        key={result.to + i}
-                        id={`docs-search-${i}`}
-                        role="option"
-                        aria-selected={i === active}
-                        className={`docs-search-result${i === active ? ' is-active' : ''}`}
-                        onMouseEnter={() => setActive(i)}
-                        onClick={() => go(result)}
-                      >
-                        <span className="docs-search-crumb">
-                          {result.page.g ? `${result.page.g} · ` : ''}
-                          {result.page.t}
-                        </span>
-                        <span className="docs-search-heading">{result.heading}</span>
-                        <span className="docs-search-excerpt">
-                          {before}
-                          {match && <mark>{match}</mark>}
-                          {after}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
+                        <li
+                          key={result.to + i}
+                          id={`docs-search-${i}`}
+                          role="option"
+                          aria-selected={i === active}
+                          className={`docs-search-result${i === active ? ' is-active' : ''}`}
+                          onMouseEnter={() => setActive(i)}
+                          onClick={() => go(result)}
+                        >
+                          <span className="docs-search-crumb">
+                            {result.page.g ? `${result.page.g} · ` : ''}
+                            {result.page.t}
+                          </span>
+                          <span className="docs-search-heading">{result.heading}</span>
+                          <span className="docs-search-excerpt">
+                            {before}
+                            {match && <mark>{match}</mark>}
+                            {after}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
               )}
             </div>
           </div>,
           document.body,
         )}
     </>
+  );
+}
+
+/**
+ * After choosing a result, focus goes to where it led.
+ *
+ * Closing the dialog hands focus back to the trigger, and the navigation then
+ * replaces the page under it, so a keyboard or screen-reader user was left on
+ * the body of a page they had not yet read. The destination is the heading the
+ * result named, or the page's main region. It waits until the new page is
+ * actually in the document (its own entry in the sidebar is the sign), because
+ * focusing the old page's elements just before they unmount does nothing.
+ */
+function focusDestination(to: string, attempt = 0): void {
+  const [path, hash] = to.split('#');
+  const ready =
+    window.location.pathname === path &&
+    document.querySelector('.docs-nav-link.is-current')?.getAttribute('href') === path;
+  if (!ready) {
+    if (attempt < 40) window.setTimeout(() => focusDestination(to, attempt + 1), 50);
+    return;
+  }
+  const target = (hash && document.getElementById(hash)) || document.getElementById('content');
+  if (!target) return;
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
+}
+
+function CloseGlyph() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M2.5 2.5l9 9M11.5 2.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
   );
 }
 

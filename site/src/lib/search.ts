@@ -58,6 +58,13 @@ const BODY_HIT = 2;
 const TITLE_HIT = 4;
 /** A heading that begins with what you typed is almost always the one you want. */
 const PREFIX_BONUS = 6;
+/** Fewer than this and a query matches too much to mean anything ("x" hit eight irrelevant sections). */
+export const MIN_QUERY = 2;
+/**
+ * Rows one page may take. Eight rows from a single page is a list of that page's
+ * sections, not a search result; capped, the other pages that match get a turn.
+ */
+const PER_PAGE = 3;
 
 /**
  * Results for a query, best first, within one language.
@@ -85,7 +92,7 @@ const PREFIX_BONUS = 6;
 export function search(index: SearchIndex, query: string, locale: Locale, limit = 8): Result[] {
   const tokens = tokenize(query);
   const [first] = tokens;
-  if (first === undefined) return [];
+  if (first === undefined || query.trim().length < MIN_QUERY) return [];
 
   const results: Result[] = [];
 
@@ -130,17 +137,52 @@ export function search(index: SearchIndex, query: string, locale: Locale, limit 
       });
     }
 
-    // Guarded on `matchedSections` so a page is either represented by the
-    // sections that answered or by its own name, never by both.
-    if (!matchedSections && tokens.every((token) => title.includes(token))) {
-      const whole = pageResult(page, title, tokens.length, first);
+    // A page named after the query is itself an answer. With no matching
+    // section it stands in for them; with some, it still leads them, because
+    // searching "shortcut" should offer "Keyboard Shortcuts" before an FAQ
+    // that merely mentions the word.
+    if (tokens.every((token) => title.includes(token))) {
+      const whole = pageResult(page, title, tokens.length, first, matchedSections > 0);
       if (whole) results.push(whole);
     }
   }
 
   // Ties broken by document order, which the index is already in, so the
   // earlier of two equally good sections wins. `sort` is stable.
-  return results.sort((a, b) => b.score - a.score).slice(0, limit);
+  return groupByPage(results.sort((a, b) => b.score - a.score)).slice(0, limit);
+}
+
+/**
+ * Rows regrouped so each page's rows sit together, pages in order of their best
+ * row, and no page holds more than PER_PAGE of them.
+ */
+function groupByPage(sorted: Result[]): Result[] {
+  const groups = new Map<string, Result[]>();
+  for (const result of sorted) {
+    const rows = groups.get(result.page.p);
+    if (!rows) groups.set(result.page.p, [result]);
+    else if (rows.length < PER_PAGE) rows.push(result);
+  }
+  return [...groups.values()].flat();
+}
+
+/** Where a first-time reader most likely wants to go, as English paths. */
+const SUGGESTED = ['/install', '/guide', '/guide/shortcuts', '/local-setup', '/support'];
+
+/**
+ * A few pages to offer before anything has been typed, so an empty box is a
+ * menu rather than a blank panel. Whatever of SUGGESTED the index holds for
+ * this language, in that order.
+ */
+export function suggestions(index: SearchIndex, locale: Locale): Result[] {
+  const out: Result[] = [];
+  for (const path of SUGGESTED) {
+    const wanted = locale === 'en' ? path : `/${locale}${path}`;
+    const page = index.pages.find((p) => p.l === locale && p.p === wanted);
+    const whole = page && pageResult(page, page.t.toLowerCase(), 1, '', false);
+    if (whole) out.push(whole);
+  }
+  return out;
 }
 
 /**
@@ -152,10 +194,18 @@ export function search(index: SearchIndex, query: string, locale: Locale, limit 
  * a section about what you typed is a better answer than a page merely named
  * after it.
  *
+ * `leads` lifts it above the page's own matching sections.
+ *
  * Null for a page the index recorded with no sections at all - it has no
  * excerpt to show, and a row with an empty body reads as a broken result.
  */
-function pageResult(page: IndexedPage, title: string, tokenCount: number, first: string): Result | null {
+function pageResult(
+  page: IndexedPage,
+  title: string,
+  tokenCount: number,
+  first: string,
+  leads: boolean,
+): Result | null {
   const [intro] = page.s;
   if (!intro) return null;
 
@@ -165,7 +215,11 @@ function pageResult(page: IndexedPage, title: string, tokenCount: number, first:
     section: intro,
     heading: page.t,
     excerpt: intro.x,
-    score: tokenCount * TITLE_HIT + (title.startsWith(first) ? PREFIX_BONUS : 0),
+    // Leading: above any section the same words could earn (14 a word, plus the
+    // prefix bonus). Otherwise: below them, as before.
+    score: leads
+      ? tokenCount * (HEADING_HIT + BODY_HIT + TITLE_HIT) + PREFIX_BONUS + 1
+      : tokenCount * TITLE_HIT + (title.startsWith(first) ? PREFIX_BONUS : 0),
   };
 }
 
