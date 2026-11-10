@@ -142,6 +142,10 @@ function measure({ fullBleed, tolerance }) {
   for (const el of document.body.querySelectorAll('*')) {
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) continue;
+    // A box that is not rendered visibly - the phone sidebar drawer parked
+    // off-screen while shut is `visibility: hidden` - cannot be seen, scrolled
+    // to or tapped, so it is not an overhang a visitor can meet.
+    if (getComputedStyle(el).visibility === 'hidden') continue;
     const past = Math.max(rect.right - vw, -rect.left);
     if (past <= tolerance) continue;
     if (exempt && el.closest(exempt)) continue;
