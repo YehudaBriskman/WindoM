@@ -318,45 +318,174 @@
 /* ── Previous / next ────────────────────────────────────────────────── */
 
 .docs-neighbours {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-4);
   margin-top: 3.5rem;
   padding-top: 1.75rem;
   border-top: 1px solid var(--border);
 }
 
+/* Each end names its own column, so a first or last page, which has only one
+   of the two, still sits at its own end instead of sliding to the other.
+   Grid columns follow the reading direction, so none of this needs a Hebrew
+   override. */
 .docs-neighbour {
   display: flex;
   flex-direction: column;
   gap: var(--s-1);
+  min-block-size: 5.5rem;
   padding: 0.875rem 1.125rem;
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   text-decoration: none;
-  max-width: 48%;
-  transition: border-color var(--dur-fast) var(--ease);
+  transition:
+    border-color var(--dur-fast) var(--ease),
+    background-color var(--dur-fast) var(--ease);
 }
 
-.docs-neighbour:hover {
-  border-color: var(--border-strong);
+.docs-neighbour.is-prev {
+  grid-column: 1;
 }
 
 .docs-neighbour.is-next {
-  margin-left: auto;
-  text-align: right;
+  grid-column: 2;
+  align-items: flex-end;
+  text-align: end;
+}
+
+.docs-neighbour:hover,
+.docs-neighbour:focus-visible {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+
+.docs-neighbour:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .docs-neighbour-label {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
   font-size: 0.72rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
+.docs-neighbour:hover .docs-neighbour-label,
+.docs-neighbour:focus-visible .docs-neighbour-label {
+  color: var(--accent);
+}
+
+/* Present only when the link leaves the group being read. */
+.docs-neighbour-group {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+.docs-neighbour-group::before {
+  content: '·';
+  margin-inline-end: var(--s-2);
+}
+
+/* The arrow is drawn pointing to the inline end. "Previous" points the other
+   way, and in Hebrew each of them points the other way again. */
+.docs-neighbour-arrow {
+  flex: none;
+}
+
+.docs-neighbour.is-prev .docs-neighbour-arrow,
+.docs[dir='rtl'] .docs-neighbour.is-next .docs-neighbour-arrow {
+  transform: scaleX(-1);
+}
+
+.docs[dir='rtl'] .docs-neighbour.is-prev .docs-neighbour-arrow {
+  transform: none;
+}
+
 .docs-neighbour-title {
   color: var(--text);
   font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* What the page is, in two lines at most, so a link says where it leads
+   without becoming a card of its own. */
+.docs-neighbour-blurb {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* One column on a phone, and "Next" first: a reader who has just finished the
+   page wants the way forward under their thumb, not below a link back. */
+@media (max-width: 36rem) {
+  .docs-neighbours {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .docs-neighbour.is-prev,
+  .docs-neighbour.is-next {
+    grid-column: 1;
+  }
+
+  .docs-neighbour.is-next {
+    order: -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-neighbour {
+    transition: none;
+  }
+}
+
+/* ── Reading rail ───────────────────────────────────────────────────────
+   A hairline across the very top that fills as the page's text is read.
+   `--read` (0..1) is written by useReadingProgress and is the only thing that
+   moves it. No transition on purpose: easing a position readout makes it lie
+   about where you are, and it is a readout rather than an animation, so it
+   keeps working under reduced motion. It grows from the inline start, which is
+   the right edge in Hebrew. */
+
+.reading-rail {
+  position: fixed;
+  inset-inline: 0;
+  inset-block-start: 0;
+  block-size: 2px;
+  z-index: 90;
+  pointer-events: none;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(var(--read, 0));
+}
+
+.docs[dir='rtl'] .reading-rail {
+  transform-origin: right center;
+}
+
+@media print {
+  .reading-rail {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .reading-rail {
+    background: Highlight;
+  }
 }
 
 /* ── Narrow ─────────────────────────────────────────────────────────── */
