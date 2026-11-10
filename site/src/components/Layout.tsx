@@ -32,7 +32,9 @@ export function Layout({ children, eyebrow, title, subtitle, variant = 'page', d
       </a>
       <div className="ambient" aria-hidden="true" />
 
-      <SiteNav />
+      {/* The home page names itself so the bar can offer its Hebrew twin; the
+          other pages here are not in the route table's twin pairs. */}
+      <SiteNav current={variant === 'home' ? '/' : undefined} />
 
       {variant === 'page' && (
         <header className="page-header">

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../components/DocsLayout';
+import { DAY } from '../../lib/day';
 import { AUTHOR, GITHUB_URL, STORE_URL } from '../../lib/site';
 
 /**
@@ -25,9 +26,24 @@ export function Home() {
         ציטוט יומי, חיפוש בלשוניות ובהיסטוריה ומחירי מניות וקריפטו. אפשר לחבר גם את Google Calendar, את GitHub ואת
         Spotify עם חשבון WindoM חינמי. רוב הדברים עובדים מיד אחרי ההתקנה, בלי חשבון.
       </p>
-      <p>
-        <a href={STORE_URL}>התקנה מחנות האינטרנט של Chrome</a>
-      </p>
+      <div className="btn-row home-cta">
+        <a className="btn btn-primary" href={STORE_URL}>
+          התקנה מחנות האינטרנט של Chrome
+        </a>
+        <Link className="btn btn-secondary" to="/he/guide">
+          מה אפשר לעשות עם זה
+        </Link>
+      </div>
+
+      <figure className="home-proof">
+        <img
+          src={DAY.afternoon.wallpaper}
+          width="1920"
+          height="1155"
+          alt="אחד מארבעת הרקעים של WindoM: קרני שמש על פני מים פתוחים. הרקע מתחלף לפי שעות היום."
+          decoding="async"
+        />
+      </figure>
 
       <h2>להתחיל</h2>
       <ul>
