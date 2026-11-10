@@ -78,7 +78,7 @@ export function MotionToggle({ paused, onToggle }: { paused: boolean; onToggle: 
     // well would read as "Play motion, pressed" - the state said twice, backwards.
     <button type="button" className="motion-toggle" onClick={onToggle} aria-pressed={paused}>
       <span aria-hidden="true">{paused ? '▶' : '❙❙'}</span>
-      Pause motion
+      <span className="motion-toggle-label">Pause motion</span>
     </button>
   );
 }
