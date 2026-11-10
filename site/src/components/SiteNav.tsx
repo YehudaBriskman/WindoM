@@ -69,12 +69,13 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
                was missing too. The hash item never matches either way, which is
                right - /#updates is a section of the home page, not a page. */
               const isCurrent = to === current;
+              const isWithin = !isCurrent && inSection(link.also, current);
               return (
                 <Link
                   key={link.path}
-                  className={`nav-link${isCurrent ? ' is-current' : ''}`}
+                  className={`nav-link${isCurrent || isWithin ? ' is-current' : ''}`}
                   to={to}
-                  aria-current={isCurrent ? 'page' : undefined}
+                  aria-current={isCurrent ? 'page' : isWithin ? 'true' : undefined}
                   onClick={() => setOpen(false)}
                   viewTransition
                 >
@@ -110,6 +111,16 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
       {open && <div className="nav-scrim" aria-hidden="true" onClick={() => setOpen(false)} />}
     </>
   );
+}
+
+/**
+ * Whether `current` is one of an item's own pages, in either language.
+ * `current` is the page's real path, so the Hebrew prefix is dropped first.
+ */
+function inSection(also: string[] | undefined, current: string | undefined): boolean {
+  if (!also || !current) return false;
+  const path = current.replace(/^\/he(?=\/|$)/, '') || '/';
+  return also.some((entry) => (entry.endsWith('/*') ? path.startsWith(entry.slice(0, -1)) : path === entry));
 }
 
 /**

@@ -56,44 +56,44 @@ export function Guide() {
         <Link to="/he/install">התקנה</Link>.
       </div>
       <div className="feature-grid">
-        <div className="feature-card">
+        <Link className="feature-card" to="/he/guide/clock" viewTransition>
           <div className="feature-card-title">שעון וברכה</div>
           <div className="feature-card-desc">12/24 שעות, סגנון, צבע, גודל ותאריך. תמיד פעיל, ללא חשבון.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/background" viewTransition>
           <div className="feature-card-title">רקע</div>
           <div className="feature-card-desc">תמונות מובנות, תמונות משלך, או Unsplash. נשמר מקומית.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/links" viewTransition>
           <div className="feature-card-title">קישורים מהירים</div>
           <div className="feature-card-desc">האתרים שהכי בשימוש, נעוצים בסרגל הדוק בחלק העליון.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/todos" viewTransition>
           <div className="feature-card-title">משימות</div>
           <div className="feature-card-desc">רשימת משימות בסרגל הצד. ללא חשבון.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/focus" viewTransition>
           <div className="feature-card-title">מצב פוקוס</div>
           <div className="feature-card-desc">מגדירים את המיקוד העיקרי, ואז ספירה לאחור שמסתירה את כל השאר.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/search" viewTransition>
           <div className="feature-card-title">חיפוש</div>
           <div className="feature-card-desc">קיצור מקלדת אחד בכל דף: לשוניות, היסטוריה והאינטרנט.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/weather" viewTransition>
           <div className="feature-card-title">מזג אוויר</div>
           <div className="feature-card-desc">טמפרטורה ומצב מזג אוויר בזמן אמת. ללא מפתח API, ללא חשבון.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/calendar" viewTransition>
           <div className="feature-card-title">Google Calendar</div>
           <div className="feature-card-desc">אירועים קרובים בסרגל הצד. דורש חשבון + אישור Google.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/he/guide/spotify" viewTransition>
           <div className="feature-card-title">Spotify</div>
           <div className="feature-card-desc">
             מה מתנגן עכשיו, כפתורי נגינה ושירים מובילים. דורש חשבון + אפליקציית Spotify Developer חינמית.
           </div>
-        </div>
+        </Link>
       </div>
       <p>
         משהו לא מתנהג כמו שמתואר כאן? ב<Link to="/he/support">דף התמיכה</Link> יש פתרונות לתקלות הנפוצות. מי שרוצה להריץ

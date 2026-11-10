@@ -64,6 +64,12 @@ export function localeOf(path: string): Locale {
 export interface NavLink {
   path: string;
   label: string;
+  /**
+   * English paths that belong to this item without being it, so the bar still
+   * says where you are on a page the item does not itself point at. A
+   * trailing `/*` takes the whole subtree.
+   */
+  also?: string[];
 }
 
 /**
@@ -81,9 +87,9 @@ export interface NavLink {
  * Docker and Postgres; developers reach that page from the sidebar and footer.
  */
 export const NAV_LINKS: NavLink[] = [
-  { path: '/guide', label: 'Guide' },
-  { path: '/support', label: 'Support' },
-  { path: '/install', label: 'Docs' },
+  { path: '/guide', label: 'Guide', also: ['/guide/*'] },
+  { path: '/support', label: 'Support', also: ['/contact', '/about'] },
+  { path: '/install', label: 'Docs', also: ['/local-setup'] },
   { path: '/#updates', label: 'Changelog' },
 ];
 
