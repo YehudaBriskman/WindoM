@@ -10,6 +10,7 @@ import '../styles/hero.css';
 import '../styles/docs.css';
 import '../styles/stage.css';
 import '../styles/motion.css';
+import '../styles/written.css';
 
 /**
  * One entry for the whole site, replacing thirteen.

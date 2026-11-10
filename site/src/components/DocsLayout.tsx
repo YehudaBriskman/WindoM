@@ -17,6 +17,7 @@ import { DocsSearch } from './DocsSearch';
 import { useActiveHeading, useKeepActiveInView } from '../hooks/useActiveHeading';
 import { useReadingProgress } from '../hooks/useReadingProgress';
 import { navMemory } from '../lib/navMemory';
+import { writeProse } from './Written';
 
 /** `useLayoutEffect` warns nowhere in React 19, but it does nothing in the prerender either. */
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
@@ -120,7 +121,8 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
    */
   const inThisLanguage = (to: string): string => translatedPath(to, locale) ?? to;
 
-  const { headings, content } = anchorHeadings(children);
+  const { headings, content: anchored } = anchorHeadings(children);
+  const content = writeProse(anchored);
 
   /* The trail uses the sidebar title, not the page's h1: the guide's heading is
      "Using WindoM" and its group is "Using WindoM", which produced a crumb that

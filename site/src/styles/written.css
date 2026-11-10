@@ -1,0 +1,131 @@
+/*
+ * `pen`: what `components/Written.tsx` does to a word, and every way out of
+ * it. Ported from the portfolio's `Written.module.css` by way of ai-team-site;
+ * the numbers are the original's, the colours are WindoM's.
+ *
+ * The component makes the words and hands each one its slice of the clock;
+ * everything a reader sees is here.
+ */
+
+/*
+ * The reading window, written once here and as `READING` in `lib/penClock.ts`
+ * (a test holds the two equal): a paragraph starts being written when its top
+ * reaches 68% of the window's height and is finished when its bottom reaches 38%.
+ */
+:root {
+  --read-from: 0.68;
+  --read-to: 0.38;
+}
+
+/*
+ * The paragraph owns the timeline and every word in it reads that one. Not
+ * `view()` on each word: on an inline box `view()` resolves to the block the
+ * box is laid out in, so every word would share one progress.
+ */
+.written {
+  view-timeline: --written-clock block;
+  view-timeline-inset: calc(var(--read-to) * 100vh) calc((1 - var(--read-from)) * 100vh);
+  --pen-muted: 0.25;
+  /* The ink a finished word lands on. A word sets its own colour (an inline
+     span's colour applies to it, and the link round it would otherwise win),
+     so each ground names the ink it should land on: body copy, list text and
+     links keep the colours they had. */
+  --pen-ink: var(--text);
+}
+
+.prose li.written {
+  --pen-ink: var(--muted-strong);
+}
+
+.written a {
+  --pen-ink: var(--accent);
+}
+
+.written a:hover {
+  --pen-ink: var(--accent2);
+}
+
+/*
+ * THE FINISHED STATE IS FULL INK, AND IT IS THE BASE RULE.
+ * `color` and nothing else: no display, no white-space, no position. The word
+ * stays an inline box, which keeps bidi and line breaking untouched. A
+ * browser, a print, or a reader that cannot run the effect gets this.
+ */
+.written-word {
+  color: var(--pen-ink);
+
+  animation-name: written-pen;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  animation-timeline: --written-clock;
+  /* This word's slice of the clock, scaled into the block's turn (`--pen-lead`,
+     `--pen-span`, written by the sequencer). Backwards fill holds muted before
+     the slice, forwards fill holds ink after it, so scrolling up un-writes in
+     exactly the reverse order. */
+  animation-range: cover calc(var(--pen-lead, 0%) + var(--pen-from, 0%) * var(--pen-span, 1)) cover
+    calc(var(--pen-lead, 0%) + var(--pen-to, 100%) * var(--pen-span, 1));
+}
+
+@keyframes written-pen {
+  from {
+    color: color-mix(in srgb, var(--pen-ink) calc(var(--pen-muted) * 100%), transparent);
+  }
+  to {
+    color: var(--pen-ink);
+  }
+}
+
+/*
+ * A paragraph outside the reading zone is parked: `Written.tsx` marks one not
+ * reached yet `below` and one already passed `above`. Each drops its animation
+ * and holds the colour its fill would hold there anyway, so the frame cost is
+ * the paragraphs being read rather than every paragraph on the page. Only while
+ * the effect is running; the conditions are restated because the `below` rule
+ * sets a colour.
+ */
+@supports (animation-timeline: view()) {
+  @media screen and (prefers-reduced-motion: no-preference) {
+    body:not(.motion-paused) .written[data-pen='below'] .written-word {
+      animation: none;
+      color: color-mix(in srgb, var(--pen-ink) calc(var(--pen-muted) * 100%), transparent);
+    }
+
+    body:not(.motion-paused) .written[data-pen='above'] .written-word {
+      animation: none;
+    }
+  }
+}
+
+/*
+ * The ways out. Each cancels the animation outright and lands on the base
+ * rule, which is full ink, never on frame zero, which is muted.
+ */
+@supports not (animation-timeline: view()) {
+  .written-word {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .written-word {
+    animation: none;
+  }
+}
+
+body.motion-paused .written-word {
+  animation: none;
+}
+
+@media print {
+  .written-word {
+    animation: none;
+  }
+}
+
+/* High contrast: a faded word is a word the reader's own colours did not choose. */
+@media (forced-colors: active) {
+  .written-word {
+    animation: none;
+    color: inherit;
+  }
+}
