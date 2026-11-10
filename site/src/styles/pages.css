@@ -173,12 +173,46 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Cells stay on one line and scroll, rather than being crushed into columns a
-   word wide - which is what makes a narrow table unreadable rather than just
-   narrow. */
+/* The first column (a key, a name, a permission) stays on one line. Every
+   other cell wraps: prose descriptions used to run on one line and make
+   tables 3,000px wide, cut mid-word at the column edge with no hint. They keep
+   a floor so a phone gets a readable column and a scroll rather than a sliver. */
 .prose th,
 .prose td {
   white-space: nowrap;
+}
+
+.prose th:not(:first-child),
+.prose td:not(:first-child) {
+  white-space: normal;
+  min-width: 12rem;
+}
+
+/* The scroller the docs shell wraps a table in (DocsLayout). Edge shadows
+   appear on whichever side has more to reveal, so sideways content is never
+   invisible; they are symmetric, so the Hebrew pages need no override. */
+.table-scroll {
+  margin: var(--s-5) 0;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background:
+    linear-gradient(to right, var(--bg) 30%, transparent) left center / 2rem 100% no-repeat local,
+    linear-gradient(to left, var(--bg) 30%, transparent) right center / 2rem 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(0 0 0 / 0.55), transparent) left center / 0.75rem 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(0 0 0 / 0.55), transparent) right center / 0.75rem 100% no-repeat
+      scroll;
+}
+
+.table-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.table-scroll table {
+  display: table;
+  overflow: visible;
+  margin: 0;
 }
 
 .prose th,

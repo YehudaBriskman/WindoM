@@ -13,7 +13,12 @@ export function EnvTable({ locale }: { locale: 'en' | 'he' }) {
       : { variable: 'Variable', description: 'Description', required: 'Required' };
 
   return (
-    <div className="table-wrap">
+    <div
+      className="table-scroll"
+      role="region"
+      tabIndex={0}
+      aria-label={`${head.variable} / ${head.description} / ${head.required}`}
+    >
       <table>
         <thead>
           <tr>
