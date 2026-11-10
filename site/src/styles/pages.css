@@ -124,7 +124,7 @@
 .prose ul,
 .prose ol {
   padding-inline-start: 1.375rem;
-  color: var(--muted-strong);
+  color: var(--text);
 }
 
 .prose li {

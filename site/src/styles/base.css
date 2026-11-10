@@ -198,6 +198,13 @@ h3 {
   margin: 0 0 var(--s-4);
 }
 
+/* Negative tracking is a Latin display-type refinement. Hebrew has no such
+   optical correction to make: it only closes the gaps between letters that
+   are already tight. */
+:is(:lang(he), [dir='rtl']) :is(h1, h2, h3) {
+  letter-spacing: normal;
+}
+
 h1 {
   font-size: clamp(2.8rem, 7vw, 5.4rem);
   font-weight: 700;

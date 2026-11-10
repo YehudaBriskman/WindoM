@@ -297,10 +297,13 @@
 }
 
 /* A readable measure without being a narrow ribbon. `ch` tracks the font, so
-   this stays right if the type scale changes. */
+   this stays right if the type scale changes. 82ch ran to roughly 100
+   characters a line in Inter (about 8px each at 16px, not the 10px a `ch`
+   suggests); 60ch lands near 74, the top of the 65-75 range readers are
+   known to cope with, and the width it gives up stays as margin. */
 .docs-main .prose,
 .docs-main .docs-head {
-  max-width: 82ch;
+  max-width: 60ch;
 }
 
 .docs-head {
@@ -311,6 +314,24 @@
 
 .docs-head h1 {
   margin: 0 0 var(--s-2);
+  /* The page-heading role: a document title, not the landing hero. The
+     display size (up to 5.4rem) belongs to the hero alone; here the title is
+     about twice the 24px section heading rather than 3.6x. */
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+}
+
+.docs[dir='rtl'] .docs-head h1 {
+  letter-spacing: normal;
+}
+
+/* List text and its bold lead-ins read at the same strength as the paragraphs
+   around them. `muted` is for captions; a "Time Format" label dimmer than the
+   sentence next to it inverts the emphasis it was bolded for. (The pen colours
+   list items through its own variable, so that is what is set here.) */
+.docs-main .prose li.written {
+  --pen-ink: var(--text);
 }
 
 /* Anchored headings sit clear of the top when jumped to. */
