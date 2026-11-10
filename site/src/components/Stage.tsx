@@ -1,4 +1,4 @@
-import { STAGES, DAY, type Pane } from '../lib/day';
+import { STAGES, DAY, wallpaperSrcSet, type Pane } from '../lib/day';
 import { DOCK, QUOTE, panesInLayer, type PaneBody, type PaneSpec } from '../lib/panes';
 import type { DayCycle } from '../hooks/useDayCycle';
 import { useFocusDemo } from '../hooks/useFocusDemo';
@@ -64,6 +64,10 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
             className={`stage-wallpaper${s === cycle.stage ? ' is-active' : ''}`}
             style={{ '--wall-at': wallArrives(i) } as React.CSSProperties}
             src={DAY[s].wallpaper}
+            srcSet={wallpaperSrcSet(s)}
+            /* The hero's copy is a scaled-down picture in a half-width
+               column; the pinned stage owns the viewport. */
+            sizes={interactive ? '(min-width: 901px) 46vw, 100vw' : '100vw'}
             alt=""
             loading={s === cycle.stage ? 'eager' : 'lazy'}
             decoding="async"
