@@ -296,6 +296,22 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
   const narrow = useNarrow();
   const [navOpen, setNavOpen] = useState(false);
 
+  /* The drawer is modal: the page behind it does not scroll, Escape closes it,
+     and its links are out of the tab order while it is shut. */
+  useEffect(() => {
+    if (!narrow || !navOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setNavOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [narrow, navOpen]);
+
   const toggleSidebar = () => {
     if (narrow) {
       setNavOpen((o) => !o);
@@ -363,7 +379,14 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
             accent bar on that line, and the current page's own sections have a
             second chevron. Groups start open so the prerendered HTML lists every
             page, and the group holding the current page reopens on navigation. */}
-        <nav className="docs-nav" id="docs-nav" aria-label="Documentation" ref={navRef}>
+        <button
+          type="button"
+          className="docs-scrim"
+          aria-label={t.toggle}
+          tabIndex={-1}
+          onClick={() => setNavOpen(false)}
+        />
+        <nav className="docs-nav" id="docs-nav" aria-label="Documentation" ref={navRef} inert={narrow && !navOpen}>
           {docsGroups(locale).map(({ group: groupName, pages }, gi) => (
             <div className="docs-nav-group" key={groupName}>
               <p className="docs-nav-label" id={`docs-nav-label-${gi}`}>
