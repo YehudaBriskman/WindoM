@@ -16,7 +16,7 @@ export const STAGES = ['morning', 'afternoon', 'evening', 'night'] as const;
 export type Stage = (typeof STAGES)[number];
 
 /** Every widget the stage can show. Each maps to a real part of the extension. */
-export type Pane = 'weather' | 'todos' | 'calendar' | 'spotify' | 'finance' | 'github' | 'gmail' | 'recent' | 'focus';
+export type Pane = 'weather' | 'todos' | 'calendar' | 'spotify' | 'finance' | 'github' | 'quote' | 'recent' | 'focus';
 
 export interface DayStage {
   stage: Stage;
@@ -43,7 +43,7 @@ export const DAY: Record<Stage, DayStage> = {
     tint: 'var(--dawn)',
     headline: 'Your day, before you ask for it',
     body: 'Open a tab and today is already there: what is on, what is due, and what the weather is doing. Nothing to click.',
-    spotlight: ['calendar', 'todos', 'weather', 'gmail'],
+    spotlight: ['calendar', 'todos', 'weather', 'quote'],
   },
   afternoon: {
     stage: 'afternoon',
