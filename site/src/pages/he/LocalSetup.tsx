@@ -37,7 +37,7 @@ export function LocalSetup() {
         <div className="step-body">
           <p>שכפול המאגר.</p>
           <pre>
-            <code>git clone https://github.com/YehudaBriskman/WindoM.git cd WindoM</code>
+            <code>git clone https://github.com/YehudaBriskman/WindoM.git{'\n'}cd WindoM</code>
           </pre>
         </div>
       </div>
@@ -46,7 +46,7 @@ export function LocalSetup() {
         <div className="step-body">
           <p>התקנת התלויות של התוסף.</p>
           <pre>
-            <code>cd web npm install</code>
+            <code>cd web{'\n'}npm install</code>
           </pre>
         </div>
       </div>
@@ -161,7 +161,9 @@ export function LocalSetup() {
         <div className="step-body">
           <p>בניית התוסף כך שיפנה לשרת המקומי.</p>
           <pre>
-            <code>cd web npm install npm run build</code>
+            <code>
+              cd web{'\n'}npm install{'\n'}npm run build
+            </code>
           </pre>
           <p>
             כתובת השרת כברירת מחדל היא כבר <code>http://localhost:8080</code>, כך שאין צורך בשינויים.

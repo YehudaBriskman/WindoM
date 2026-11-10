@@ -32,7 +32,7 @@ export function LocalSetup() {
         <div className="step-body">
           <p>Clone the repository.</p>
           <pre>
-            <code>git clone https://github.com/YehudaBriskman/WindoM.git cd WindoM</code>
+            <code>git clone https://github.com/YehudaBriskman/WindoM.git{'\n'}cd WindoM</code>
           </pre>
         </div>
       </div>
@@ -41,7 +41,7 @@ export function LocalSetup() {
         <div className="step-body">
           <p>Install dependencies for the extension.</p>
           <pre>
-            <code>cd web npm install</code>
+            <code>cd web{'\n'}npm install</code>
           </pre>
         </div>
       </div>
@@ -152,7 +152,9 @@ export function LocalSetup() {
         <div className="step-body">
           <p>Build the extension pointing at your local backend.</p>
           <pre>
-            <code>cd web npm install npm run build</code>
+            <code>
+              cd web{'\n'}npm install{'\n'}npm run build
+            </code>
           </pre>
           <p>
             The default backend URL is already <code>http://localhost:8080</code> so no changes are needed.

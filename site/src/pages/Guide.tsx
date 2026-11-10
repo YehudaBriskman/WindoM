@@ -57,46 +57,46 @@ export function Guide() {
         with <Link to="/install">Install</Link>.
       </div>
       <div className="feature-grid">
-        <div className="feature-card">
+        <Link className="feature-card" to="/guide/clock" viewTransition>
           <div className="feature-card-title">Clock &amp; Greeting</div>
           <div className="feature-card-desc">12h / 24h, style, color, size, date. Always on, no account needed.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/background" viewTransition>
           <div className="feature-card-title">Background</div>
           <div className="feature-card-desc">Built-in photos, your own images, or Unsplash. Stored locally.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/links" viewTransition>
           <div className="feature-card-title">Quick Links</div>
           <div className="feature-card-desc">Pin your most-used sites to the dock bar at the top.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/todos" viewTransition>
           <div className="feature-card-title">Todos</div>
           <div className="feature-card-desc">A task list in the sidebar. No account needed.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/focus" viewTransition>
           <div className="feature-card-title">Focus Mode</div>
           <div className="feature-card-desc">Set your main focus, then a countdown that hides everything else.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/search" viewTransition>
           <div className="feature-card-title">Search</div>
           <div className="feature-card-desc">One shortcut on any page: tabs, history and the web.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/weather" viewTransition>
           <div className="feature-card-title">Weather</div>
           <div className="feature-card-desc">Live temperature and conditions. No API key, no account.</div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/calendar" viewTransition>
           <div className="feature-card-title">Google Calendar</div>
           <div className="feature-card-desc">
             Upcoming events in the sidebar. Needs an account + Google authorization.
           </div>
-        </div>
-        <div className="feature-card">
+        </Link>
+        <Link className="feature-card" to="/guide/spotify" viewTransition>
           <div className="feature-card-title">Spotify</div>
           <div className="feature-card-desc">
             Now playing, playback controls and top tracks. Needs an account + a free Spotify Developer app.
           </div>
-        </div>
+        </Link>
       </div>
       <p>
         Something not behaving as described here? <Link to="/support">Support</Link> covers the problems that come up

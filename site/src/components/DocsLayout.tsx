@@ -13,6 +13,7 @@ import {
 import { Link } from 'react-router';
 import { STORE_URL, GITHUB_URL, CONTACT_EMAIL, AUTHOR } from '../lib/site';
 import { docsGroups, docsNeighbours, headingId, localeOf, translatedPath, type SiteRoute } from '../lib/docs';
+import { CopyButton } from './CopyButton';
 import { SiteNav } from './SiteNav';
 import { DocsSearch } from './DocsSearch';
 import { useActiveHeading, useKeepActiveInView } from '../hooks/useActiveHeading';
@@ -83,6 +84,8 @@ const UI = {
     prev: 'Previous',
     next: 'Next',
     toggle: 'Toggle navigation',
+    copy: 'Copy',
+    copied: 'Copied',
     guide: 'User Guide',
     support: 'Support',
     localSetup: 'Local Setup',
@@ -99,6 +102,8 @@ const UI = {
     prev: 'הקודם',
     next: 'הבא',
     toggle: 'הצגה או הסתרה של הניווט',
+    copy: 'העתקה',
+    copied: 'הועתק',
     guide: 'מדריך למשתמש',
     support: 'תמיכה',
     localSetup: 'הרצה מקומית',
@@ -138,7 +143,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
    */
   const inThisLanguage = (to: string): string => translatedPath(to, locale) ?? to;
 
-  const { headings, content: anchored } = anchorHeadings(children);
+  const { headings, content: anchored } = anchorHeadings(children, { copy: t.copy, copied: t.copied });
   const content = writeProse(anchored);
 
   /* The trail uses the sidebar title, not the page's h1: the guide's heading is
@@ -582,7 +587,10 @@ interface Heading {
  * Each heading also gains a link to itself, which is how someone cites one
  * clause of the privacy policy without describing where to scroll.
  */
-function anchorHeadings(children: ReactNode): { headings: Heading[]; content: ReactNode } {
+function anchorHeadings(
+  children: ReactNode,
+  copyText: { copy: string; copied: string },
+): { headings: Heading[]; content: ReactNode } {
   const headings: Heading[] = [];
   const seen = new Set<string>();
 
@@ -601,6 +609,16 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
       return (
         <div className="table-scroll" role="region" tabIndex={0} aria-label={tableLabel(element) || undefined}>
           {walked}
+        </div>
+      );
+    }
+
+    /* A code block gets a copy control, set in its corner. */
+    if (element.type === 'pre') {
+      return (
+        <div className="code-block">
+          {walked}
+          <CopyButton text={rawText(element.props.children)} label={copyText.copy} done={copyText.copied} />
         </div>
       );
     }
@@ -636,6 +654,15 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
   };
 
   return { headings, content: walk(children) };
+}
+
+/** The text of a code block exactly as written: nothing inserted between nodes. */
+function rawText(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === 'boolean') return '';
+  if (typeof node === 'string' || typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(rawText).join('');
+  if (isValidElement(node)) return rawText((node.props as { children?: ReactNode }).children);
+  return '';
 }
 
 /** A table's column headings, joined, as the accessible name of its scroller. */
