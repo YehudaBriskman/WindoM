@@ -300,14 +300,19 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
      and its links are out of the tab order while it is shut. */
   useEffect(() => {
     if (!narrow || !navOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    /* On <html>, not <body>: html carries `overflow-x: clip`, so a body
+       overflow is not propagated to the viewport. The body became its own
+       (non-scrolling) scroll container instead - the sticky bar stuck to it and
+       scrolled away with the page, and the page behind still scrolled. */
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setNavOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => {
-      document.body.style.overflow = prev;
+      root.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
     };
   }, [narrow, navOpen]);
