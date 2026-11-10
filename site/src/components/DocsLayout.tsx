@@ -6,6 +6,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
   type ReactElement,
 } from 'react';
@@ -36,6 +37,22 @@ interface DocsLayoutProps {
 }
 
 const SIDEBAR_KEY = 'windom-docs-sidebar';
+
+/** Where the sidebar stops being a column and becomes a list above the page. */
+const NARROW = '(max-width: 760px)';
+
+/** Whether the viewport is phone-narrow. False on the server and the first render. */
+function useNarrow(): boolean {
+  return useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia(NARROW);
+      mq.addEventListener('change', notify);
+      return () => mq.removeEventListener('change', notify);
+    },
+    () => window.matchMedia(NARROW).matches,
+    () => false,
+  );
+}
 
 /**
  * The stored sidebar choice, once it has been read.
@@ -239,7 +256,19 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
     if (rememberedCollapsed) setCollapsed(true);
   }, []);
 
+  /* On a phone the sidebar is closed until asked for, whatever the remembered
+     choice: a first-time reader arriving from search should land on the page,
+     not on a 1,400px link list. It is a separate flag so the desktop choice is
+     neither read nor overwritten by it, and every navigation remounts the shell,
+     so the list closes itself once a link has been followed. */
+  const narrow = useNarrow();
+  const [navOpen, setNavOpen] = useState(false);
+
   const toggleSidebar = () => {
+    if (narrow) {
+      setNavOpen((o) => !o);
+      return;
+    }
     setCollapsed((was) => {
       const next = !was;
       rememberedCollapsed = next;
@@ -253,7 +282,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
   };
 
   return (
-    <div dir={dir} className={`docs${collapsed ? ' is-collapsed' : ''}`}>
+    <div dir={dir} className={`docs${collapsed ? ' is-collapsed' : ''}${navOpen ? ' is-nav-open' : ''}`}>
       <a className="skip-link" href="#content">
         Skip to content
       </a>
@@ -272,7 +301,7 @@ export function DocsLayout({ children, path, eyebrow, title, subtitle, dir = 'lt
           type="button"
           className="docs-bar-toggle"
           onClick={toggleSidebar}
-          aria-expanded={!collapsed}
+          aria-expanded={narrow ? navOpen : !collapsed}
           aria-controls="docs-nav"
           aria-label={t.toggle}
         >

@@ -530,6 +530,11 @@
   .docs-nav-group + .docs-nav-group {
     margin-top: 1.125rem;
   }
+
+  /* Closed until the bar's toggle opens it, so the first screen is the page. */
+  .docs:not(.is-nav-open) .docs-nav {
+    display: none;
+  }
 }
 
 /* Anchored headings clear the sticky nav when jumped to, rather than landing
