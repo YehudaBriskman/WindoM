@@ -743,8 +743,99 @@
 
 @media (max-width: 760px) {
   .docs-bar {
-    top: 2.75rem;
     padding: 0 var(--s-4);
+  }
+}
+
+/* One sticky bar, not two. On a phone, and in landscape where 111px of chrome
+   was 28% of the screen, the site nav scrolls away with the page and only the
+   breadcrumb bar stays. The nav keeps its positioned context (the menu drawer
+   hangs off it) and the tokens the panels, anchor clearance and rail reading
+   line are built from are redefined, so all of them follow. */
+@media (max-width: 760px), (max-height: 500px) {
+  .docs {
+    --nav-h: 0px;
+    /* A custom property is resolved where it is declared, so the sum has to be
+       restated here for the zero above to reach it. */
+    --chrome-h: var(--bar-h);
+  }
+
+  .docs .site-nav {
+    position: relative;
+  }
+
+  .docs-bar {
+    top: 0;
+  }
+}
+
+/* Touch-sized controls: a 44px hit area on the glyphs that were 14 to 33px. */
+@media (max-width: 760px) {
+  .docs-bar-toggle {
+    width: 2.75rem;
+    height: 2.75rem;
+    margin-inline-start: calc(var(--s-2) * -1);
+  }
+
+  .docs-crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+
+  /* One row, whatever the trail: the page title gives way (with an ellipsis)
+     before the bar grows a second line over the page. */
+  .docs-crumbs {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .docs-crumbs ol {
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .docs-crumbs li {
+    flex-shrink: 0;
+  }
+
+  .docs-crumbs li[aria-current='page'] {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
+/* The group is context rather than a destination, and the first thing to go
+   when the bar is a phone wide. */
+@media (max-width: 480px) {
+  .docs-crumbs li:nth-child(2):not(:last-child) {
+    display: none;
+  }
+
+  .docs-search-trigger {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    justify-content: center;
+  }
+}
+
+/* A hover-only "#" cannot be found or pressed on a touch screen: show it
+   quietly, and give it a larger hit area without changing the line it sits in. */
+.heading-anchor {
+  position: relative;
+}
+
+.heading-anchor::after {
+  content: '';
+  position: absolute;
+  inset-block: -1rem;
+  inset-inline: -1.1rem;
+}
+
+@media (pointer: coarse) {
+  .heading-anchor {
+    opacity: 0.5;
   }
 }
 

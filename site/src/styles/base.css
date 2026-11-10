@@ -628,6 +628,25 @@ body.stage-owns-view .site-nav:focus-within {
     border-bottom: 1px solid var(--border);
   }
 
+  /* The menu scrolls on its own when the screen is shorter than the list,
+     rather than running off the bottom of a landscape phone. */
+  .site-nav-links.is-open {
+    max-height: calc(100dvh - 4rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .nav-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 45;
+    background: rgb(0 0 0 / 0.55);
+  }
+
+  .nav-toggle {
+    min-width: 2.75rem;
+  }
+
   .site-nav-links.is-open .nav-link {
     padding: 0.6875rem var(--s-3);
   }
