@@ -300,6 +300,13 @@
   margin-bottom: 10px;
 }
 
+@media (max-width: 700px) {
+  /* 10.9px on a phone; mock-UI labels are still text a reader reads. */
+  .day-stage .pane-label {
+    font-size: 0.75rem;
+  }
+}
+
 .pane-figure {
   font-family: var(--display);
   font-size: 2.4rem;
