@@ -46,63 +46,69 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
   }, [open]);
 
   return (
-    <header className="site-nav">
-      <div className="site-nav-inner">
-        <Link className="site-nav-brand" to="/">
-          <WindoMMark />
-          {SITE.name}
-        </Link>
+    <>
+      <header className="site-nav">
+        <div className="site-nav-inner">
+          <Link className="site-nav-brand" to="/">
+            <WindoMMark />
+            {SITE.name}
+          </Link>
 
-        {/* Hidden from the accessibility tree when collapsed rather than merely
+          {/* Hidden from the accessibility tree when collapsed rather than merely
             off screen, so a screen reader is not offered links it cannot reach. */}
-        <nav className={`site-nav-links${open ? ' is-open' : ''}`} aria-label={t.main} id="site-nav-links">
-          {NAV_LINKS.map((link) => {
-            // A hash link stays on the home page; the rest follow the language.
-            const to = link.path.startsWith('/#')
-              ? link.path
-              : ((locale === 'he' ? translatedPath(link.path, 'he') : undefined) ?? link.path);
-            /* Against `to`, not `link.path`. `current` is the page's real path,
+          <nav className={`site-nav-links${open ? ' is-open' : ''}`} aria-label={t.main} id="site-nav-links">
+            {NAV_LINKS.map((link) => {
+              // A hash link stays on the home page; the rest follow the language.
+              const to = link.path.startsWith('/#')
+                ? link.path
+                : ((locale === 'he' ? translatedPath(link.path, 'he') : undefined) ?? link.path);
+              /* Against `to`, not `link.path`. `current` is the page's real path,
                so on /he/guide the untranslated /guide could never match it and
                no item was marked at all: a screen-reader user on the Hebrew
                site was told nothing about where they were, and the highlight
                was missing too. The hash item never matches either way, which is
                right - /#updates is a section of the home page, not a page. */
-            const isCurrent = to === current;
-            return (
-              <Link
-                key={link.path}
-                className={`nav-link${isCurrent ? ' is-current' : ''}`}
-                to={to}
-                aria-current={isCurrent ? 'page' : undefined}
-                onClick={() => setOpen(false)}
-                viewTransition
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-        </nav>
+              const isCurrent = to === current;
+              return (
+                <Link
+                  key={link.path}
+                  className={`nav-link${isCurrent ? ' is-current' : ''}`}
+                  to={to}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  onClick={() => setOpen(false)}
+                  viewTransition
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-        <div className="site-nav-end">
-          {current && <LocaleSwitch path={current} locale={locale} />}
+          <div className="site-nav-end">
+            {current && <LocaleSwitch path={current} locale={locale} />}
 
-          <a className="site-nav-icon" href={GITHUB_URL} aria-label={t.github} rel="noreferrer">
-            <GitHubMark />
-          </a>
+            <a className="site-nav-icon" href={GITHUB_URL} aria-label={t.github} rel="noreferrer">
+              <GitHubMark />
+            </a>
 
-          <button
-            type="button"
-            className="nav-toggle"
-            aria-expanded={open}
-            aria-controls="site-nav-links"
-            aria-label={open ? t.close : t.open}
-            onClick={() => setOpen((v) => !v)}
-          >
-            <span className={`nav-toggle-bars${open ? ' is-open' : ''}`} aria-hidden="true" />
-          </button>
+            <button
+              type="button"
+              className="nav-toggle"
+              aria-expanded={open}
+              aria-controls="site-nav-links"
+              aria-label={open ? t.close : t.open}
+              onClick={() => setOpen((v) => !v)}
+            >
+              <span className={`nav-toggle-bars${open ? ' is-open' : ''}`} aria-hidden="true" />
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      {/* Outside the header: its backdrop filter would make a fixed child
+        position against the bar instead of the viewport. A tap anywhere on it
+        closes the menu, which until now stayed open over the page. */}
+      {open && <div className="nav-scrim" aria-hidden="true" onClick={() => setOpen(false)} />}
+    </>
   );
 }
 
