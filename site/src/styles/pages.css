@@ -640,3 +640,23 @@
   word-break: break-all;
   user-select: all;
 }
+
+/* ── Hebrew home: the proof picture under the install button ─────────── */
+
+.home-cta {
+  margin-block: var(--s-5);
+}
+
+.home-proof {
+  margin: 0 0 var(--s-6);
+}
+
+.home-proof img {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}

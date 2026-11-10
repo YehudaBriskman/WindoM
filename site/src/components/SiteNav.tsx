@@ -11,6 +11,16 @@ interface SiteNavProps {
 }
 
 /**
+ * Accessible names for the bar's own controls, per language. The menu button
+ * and the landmark were hard-coded English, so a screen reader on a Hebrew
+ * page announced "Open menu" beside Hebrew neighbours (#512).
+ */
+const UI = {
+  en: { main: 'Main', open: 'Open menu', close: 'Close menu', github: `${SITE.name} on GitHub` },
+  he: { main: 'ראשי', open: 'פתיחת התפריט', close: 'סגירת התפריט', github: `${SITE.name} ב-GitHub` },
+} as const;
+
+/**
  * The bar across the top of every page.
  *
  * Rendered by both shells rather than by each page, so there is one definition
@@ -19,6 +29,7 @@ interface SiteNavProps {
  */
 export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
   const [open, setOpen] = useState(false);
+  const t = UI[locale];
 
   /**
    * A menu left open across a navigation is a menu covering the page you asked
@@ -44,7 +55,7 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
 
         {/* Hidden from the accessibility tree when collapsed rather than merely
             off screen, so a screen reader is not offered links it cannot reach. */}
-        <nav className={`site-nav-links${open ? ' is-open' : ''}`} aria-label="Main" id="site-nav-links">
+        <nav className={`site-nav-links${open ? ' is-open' : ''}`} aria-label={t.main} id="site-nav-links">
           {NAV_LINKS.map((link) => {
             // A hash link stays on the home page; the rest follow the language.
             const to = link.path.startsWith('/#')
@@ -75,7 +86,7 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
         <div className="site-nav-end">
           {current && <LocaleSwitch path={current} locale={locale} />}
 
-          <a className="site-nav-icon" href={GITHUB_URL} aria-label={`${SITE.name} on GitHub`} rel="noreferrer">
+          <a className="site-nav-icon" href={GITHUB_URL} aria-label={t.github} rel="noreferrer">
             <GitHubMark />
           </a>
 
@@ -84,7 +95,7 @@ export function SiteNav({ current, locale = 'en' }: SiteNavProps) {
             className="nav-toggle"
             aria-expanded={open}
             aria-controls="site-nav-links"
-            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-label={open ? t.close : t.open}
             onClick={() => setOpen((v) => !v)}
           >
             <span className={`nav-toggle-bars${open ? ' is-open' : ''}`} aria-hidden="true" />
