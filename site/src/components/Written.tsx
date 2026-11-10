@@ -5,6 +5,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
   type CSSProperties,
   type HTMLAttributes,
   type ReactElement,
@@ -372,16 +373,27 @@ const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayout
 
 export default function Written({ as = 'p', className = '', children, ...rest }: WrittenProps) {
   const ref = useRef<HTMLElement>(null);
+  /* THE WORDS ARE SPLIT ON THE CLIENT, AFTER HYDRATION, AND NEVER IN THE
+     PRERENDERED HTML. A paragraph written as one span per word is not text a
+     crawler, a reader's browser without scripts, or Google's OAuth reviewer can
+     match a phrase against ("Limited Use" is no longer in the page), and the
+     post-deploy check that reads /privacy without JavaScript caught exactly that.
+     Both the prerender and the first client render therefore emit the children
+     as they arrived, so hydration agrees; the layout effect below splits them
+     before the first paint, only where the effect can run at all. */
+  const [split, setSplit] = useState(false);
 
   useIsoLayoutEffect(() => {
     const el = ref.current;
-    return el ? watch(el) : undefined;
+    if (!el || !canRun()) return;
+    setSplit(true);
+    return watch(el);
   }, []);
 
   const Tag = as as 'p';
   return (
     <Tag {...rest} ref={ref as Ref<HTMLParagraphElement>} className={`written ${className}`.trimEnd()} data-written="">
-      {splitAll(children)}
+      {split ? splitAll(children) : children}
     </Tag>
   );
 }
@@ -389,7 +401,7 @@ export default function Written({ as = 'p', className = '', children, ...rest }:
 /*
  * Gives a docs page's prose the pen: every paragraph and list item becomes a
  * `Written` of the same element, with the same props. Walks the element tree,
- * as `anchorHeadings` does, so the prerendered HTML already has the words in
+ * as `anchorHeadings` does, so the prerendered HTML has the text
  * their spans and hydration finds the same markup.
  *
  * Left alone: anything in a table (legal clauses and settings tables are read
