@@ -594,6 +594,17 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
     const walked =
       element.props.children !== undefined ? cloneElement(element, undefined, walk(element.props.children)) : element;
 
+    /* A table that can outgrow its column scrolls inside a focusable, named
+       region. The region is a wrapper, not the table itself: `role=region` on
+       a <table> would replace its table semantics. */
+    if (element.type === 'table') {
+      return (
+        <div className="table-scroll" role="region" tabIndex={0} aria-label={tableLabel(element) || undefined}>
+          {walked}
+        </div>
+      );
+    }
+
     const level = element.type === 'h2' ? 2 : element.type === 'h3' ? 3 : 0;
     if (level === 0) return walked;
 
@@ -625,6 +636,20 @@ function anchorHeadings(children: ReactNode): { headings: Heading[]; content: Re
   };
 
   return { headings, content: walk(children) };
+}
+
+/** A table's column headings, joined, as the accessible name of its scroller. */
+function tableLabel(node: ReactNode): string {
+  const found: string[] = [];
+  const visit = (n: ReactNode) => {
+    if (Array.isArray(n)) return n.forEach(visit);
+    if (!isValidElement(n)) return;
+    const { children } = n.props as { children?: ReactNode };
+    if (n.type === 'th') found.push(textOf(children));
+    else visit(children);
+  };
+  visit(node);
+  return found.filter(Boolean).join(' / ');
 }
 
 /**
