@@ -889,6 +889,45 @@ html.docs-search-open {
   display: none;
 }
 
+.docs-search-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-inline-end: calc(var(--s-3) * -1);
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  color: var(--muted-strong);
+  cursor: pointer;
+}
+
+.docs-search-close:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.docs-search-close:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.docs-search-label {
+  margin: 0;
+  padding: 0.625rem var(--s-4) 0;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+:lang(he) .docs-search-label {
+  letter-spacing: 0;
+}
+
 .docs-search-note {
   margin: 0;
   padding: 1.125rem var(--s-4);
