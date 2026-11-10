@@ -188,6 +188,9 @@ export function Home() {
             <li className="panel">
               <h3>1 · Add to Chrome</h3>
               <p className="muted">Install from the Chrome Web Store. No account, no sign-up.</p>
+              <a className="btn btn-primary step-cta" href={STORE_URL}>
+                Add to Chrome
+              </a>
             </li>
             <li className="panel">
               <h3>2 · Open a new tab</h3>
@@ -236,6 +239,16 @@ export function Home() {
               <p className="muted">{item.a}</p>
             </details>
           ))}
+          {/* The page used to end on 'View source'. After the questions is
+              where a reader who has read everything decides. */}
+          <div className="btn-row closing-cta">
+            <a className="btn btn-primary" href={STORE_URL}>
+              Add to Chrome
+            </a>
+            <Link className="btn btn-secondary" to="/guide">
+              See what it does
+            </Link>
+          </div>
         </div>
       </section>
 

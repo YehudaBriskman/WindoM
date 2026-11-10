@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../components/DocsLayout';
+import { Wallpapers } from '../../components/Wallpapers';
 
 /**
  * The guide page for one feature: Backgrounds.
@@ -16,6 +17,7 @@ export function Background() {
         photos from Unsplash. The choice is under Settings → <strong>Background</strong> →{' '}
         <strong>Background Source</strong>.
       </p>
+      <Wallpapers />
       <h2>Option A - Built-in and your own images</h2>
       <div className="step">
         <div className="step-num">1</div>

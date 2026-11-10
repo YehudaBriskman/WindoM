@@ -406,6 +406,13 @@
     order: 0;
   }
 
+  /* `.beat-left .beat-wrap` out-ranks `.beat-wrap` above, so without this the
+     left beat kept its two columns on a phone and the settings screenshot
+     shrank to a 126px thumbnail beside a 165px column. */
+  .beat-left .beat-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   /* No room for the tilt at this width, and a rotated frame costs legibility
      the moment the screenshot is small. */
   .beat-frame,
@@ -452,7 +459,7 @@
 
 .fan-label {
   position: absolute;
-  left: var(--s-3);
+  inset-inline-start: var(--s-3);
   bottom: 0.625rem;
   font-size: 0.7rem;
   letter-spacing: 0.22em;
@@ -659,4 +666,35 @@
   object-fit: cover;
   border-radius: var(--r-md);
   border: 1px solid var(--border);
+}
+
+/* ── Calls to action after the first screen ─────────────────────────── */
+
+.step-cta {
+  margin-block-start: var(--s-4);
+  justify-content: center;
+}
+
+.closing-cta {
+  margin-block-start: var(--s-6);
+}
+
+/* Hebrew has no case and tracking breaks its letterforms; and a dark foot on
+   each card keeps the label legible over bright water or snow. */
+[dir='rtl'] .fan-label {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.fan-card::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  block-size: 3.25rem;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}
+
+.fan-label {
+  z-index: 1;
 }

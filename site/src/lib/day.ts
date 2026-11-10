@@ -150,3 +150,13 @@ export function clockForProgress(progress: number): string {
   date.setMinutes(minutes);
   return formatClock(date);
 }
+
+/**
+ * `srcset` for a stage's wallpaper: the 1920px original plus 640 and 1280px
+ * copies (`day-<stage>-640.webp`). The original was being sent to 76-377px
+ * slots; the browser now picks by slot width and screen density.
+ */
+export function wallpaperSrcSet(stage: Stage): string {
+  const base = DAY[stage].wallpaper.replace(/\.webp$/, '');
+  return `${base}-640.webp 640w, ${base}-1280.webp 1280w, ${base}.webp 1920w`;
+}

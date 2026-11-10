@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../../components/DocsLayout';
+import { Wallpapers } from '../../../components/Wallpapers';
 
 /**
  * The Hebrew guide page for one feature: רקעים מובנים, תמונות משלכם או צילומי Unsplash כרקע הלשונית החדשה ב-WindoM..
@@ -15,6 +16,7 @@ export function Background() {
         WindoM מגיע עם סט תמונות מובנות ולא צריך ממך כלום. אפשר לעבור לתמונות משלך, או לתמונות מ-Unsplash. הבחירה נמצאת
         ב-Settings → <strong>Background</strong> → <strong>Background Source</strong>.
       </p>
+      <Wallpapers locale="he" />
       <h2>אפשרות א - תמונות מובנות ותמונות משלך</h2>
       <div className="step">
         <div className="step-num">1</div>

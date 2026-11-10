@@ -706,6 +706,14 @@
 
 .story-beat {
   grid-area: 1 / 1;
+  /* A scrim of its own: the copy used to sit straight on the wallpaper, and on
+     the evening photograph's lit windows and foliage lines of it lost contrast.
+     A soft dark glass keeps the same ~7:1 under any of the four. */
+  padding: var(--s-3) var(--s-4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--r-md);
+  background: linear-gradient(180deg, rgba(6, 6, 14, 0.5), rgba(6, 6, 14, 0.62));
+  backdrop-filter: blur(10px);
   opacity: 0;
   transform: translateY(14px);
   filter: blur(6px);

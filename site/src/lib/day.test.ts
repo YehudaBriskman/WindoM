@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { clockForProgress, STAGE_CLOCK, STAGES, stageForHour } from './day.ts';
+import { clockForProgress, STAGE_CLOCK, STAGES, stageForHour, wallpaperSrcSet } from './day.ts';
 
 /** Plain `node --test`; see search.test.ts. */
 
@@ -48,5 +48,14 @@ describe('clockForProgress', () => {
     for (const p of [0, 1]) {
       assert.match(clockForProgress(p), /^([01]\d|2[0-3]):[0-5]\d$/);
     }
+  });
+});
+
+describe('wallpaperSrcSet', () => {
+  it('lists the 640 and 1280 variants and the original by width', () => {
+    assert.equal(
+      wallpaperSrcSet('evening'),
+      '/images/day-evening-640.webp 640w, /images/day-evening-1280.webp 1280w, /images/day-evening.webp 1920w',
+    );
   });
 });
