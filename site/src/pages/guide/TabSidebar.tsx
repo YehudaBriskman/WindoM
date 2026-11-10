@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DocsLayout } from '../../components/DocsLayout';
+import { GuideShot } from '../../components/GuideShot';
 
 /**
  * The guide page for one feature: Tab Sidebar.
@@ -22,6 +23,12 @@ export function TabSidebar() {
         To use the left edge instead, open Settings → <strong>General</strong> → <strong>Tab Sidebar</strong> and choose{' '}
         <strong>Left</strong>.
       </p>
+      <GuideShot
+        shot="sidebar"
+        alt="A new tab with the sidebar slid out on the right: today's tasks, a calendar and upcoming events over a sunrise wallpaper"
+        caption="The sidebar slid out on the right edge of a new tab."
+      />
+
       <h2>How it works</h2>
       <p>
         A strip about 15 pixels wide runs along the chosen edge of the new tab. When the pointer enters it, the panel
