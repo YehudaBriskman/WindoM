@@ -227,6 +227,7 @@ export function SearchOverlay() {
   const [activeIdx, setActiveIdx] = useState(-1);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [enginePickerOpen, setEnginePickerOpen] = useState(false);
+  const enginePillRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listboxId = useId();
   const openerRef = useRef<HTMLElement | null>(null);
@@ -369,12 +370,6 @@ export function SearchOverlay() {
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        inputRef.current?.focus();
-        return;
-      }
-
       if (e.key === 'Escape') {
         if (dropdownOpen) {
           setDropdownOpen(false);
@@ -406,6 +401,42 @@ export function SearchOverlay() {
     [dropdownOpen, suggestions, commandSuggestions, activeIdx, go, isCommandMode],
   );
 
+  /**
+   * Keys that reach the dialog from anywhere inside it. Tab wraps between the
+   * dialog's own controls - it used to send every Tab back to the input, which
+   * left the engine picker and the clear button unreachable by keyboard.
+   * Escape from a control other than the input (the input handles its own)
+   * closes the engine picker first, then the overlay.
+   */
+  const handleBoxKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Escape' && e.target !== inputRef.current) {
+        e.preventDefault();
+        if (enginePickerOpen) {
+          setEnginePickerOpen(false);
+          enginePillRef.current?.focus();
+        } else setOpen(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const controls = Array.from(
+        e.currentTarget.querySelectorAll<HTMLElement>('input:not([disabled]), button:not([disabled])'),
+      );
+      if (controls.length === 0) return;
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      const active = document.activeElement ?? (e.target as Element);
+      if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    },
+    [enginePickerOpen],
+  );
+
   const isUrl = !isCommandMode && !!resolveAsUrl(value);
   const visibleSuggestions = isCommandMode ? commandSuggestions : suggestions;
   const showDropdown = isCommandMode ? commandSuggestions.length > 0 : dropdownOpen && suggestions.length > 0;
@@ -420,7 +451,13 @@ export function SearchOverlay() {
         if (e.target === e.currentTarget) setOpen(false);
       }}
     >
-      <div className="search-overlay-box" role="dialog" aria-modal="true" aria-label="Search" onKeyDown={handleKeyDown}>
+      <div
+        className="search-overlay-box"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        onKeyDown={handleBoxKeyDown}
+      >
         <div
           className={`search-overlay-input-row${showDropdown ? ' dropdown-open' : ''}${isCommandMode ? ' command-mode' : ''}`}
         >
@@ -459,6 +496,7 @@ export function SearchOverlay() {
           />
           <div className="search-engine-pill-wrapper">
             <button
+              ref={enginePillRef}
               className="search-engine-pill"
               onClick={() => setEnginePickerOpen((p) => !p)}
               type="button"
@@ -474,8 +512,11 @@ export function SearchOverlay() {
                   <button
                     key={eng}
                     className={`search-engine-option${settings.general.searchEngine === eng ? ' active' : ''}`}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
+                    aria-pressed={settings.general.searchEngine === eng}
+                    // Keeps the input from blurring on a pointer press; the
+                    // choice itself is on click, so Enter and Space work too.
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
                       update('general', { searchEngine: eng });
                       setEnginePickerOpen(false);
                       inputRef.current?.focus();

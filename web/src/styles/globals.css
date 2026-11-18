@@ -227,10 +227,17 @@ body {
   z-index: var(--z-wallpaper);
   transform-origin: center center;
   transform: scale(1);
-  transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-#bg-zoom-layer.zoomed {
-  transform: scale(1.12);
+/* Focus mode pushes the whole viewport in by 12% over 3s. That is exactly the
+   large, full-screen motion prefers-reduced-motion asks to avoid, so under
+   that preference the wallpaper simply stays put. */
+@media (prefers-reduced-motion: no-preference) {
+  #bg-zoom-layer {
+    transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  #bg-zoom-layer.zoomed {
+    transform: scale(1.12);
+  }
 }
 #bg-zoom-layer::after {
   content: '';
@@ -4821,6 +4828,12 @@ body.focus-exiting .sidebar-container {
   flex-direction: column;
   overflow: hidden;
   animation: onboarding-slide-up 0.25s var(--spring-gentle);
+}
+
+/* Focus lands on the panel itself when it opens, so a screen reader reads its
+   name; the container is not a control and needs no ring. */
+.guide-panel:focus {
+  outline: none;
 }
 
 .guide-panel-header {

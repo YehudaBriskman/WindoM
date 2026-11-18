@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { HelpCircle, X, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { SETTINGS_EVENT } from '../../lib/settings-events';
 
@@ -237,11 +237,46 @@ function GuideSectionItem({
 
 // ── Root component ────────────────────────────────────────────────────────────
 
+/**
+ * A non-modal dialog: the page stays usable beside it, so it is not
+ * `aria-modal` and does not trap Tab. What it owes a keyboard user instead:
+ * focus moves into it on open, Escape closes it, focus goes back to the `?`
+ * button, and the button says whether the panel is open. A click outside
+ * closes it too (light dismiss), without moving focus.
+ */
 export function GuidePanel(): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const open = useCallback(() => setIsOpen(true), []);
   const close = useCallback(() => setIsOpen(false), []);
+  const closeAndReturnFocus = useCallback(() => {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    panelRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      closeAndReturnFocus();
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (panelRef.current?.contains(target) || triggerRef.current?.contains(target)) return;
+      close();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [isOpen, close, closeAndReturnFocus]);
 
   function openFullGuide(): void {
     window.open(GUIDE_URL, '_blank', 'noopener,noreferrer');
@@ -254,13 +289,27 @@ export function GuidePanel(): React.ReactElement {
 
   return (
     <>
-      <button className="guide-btn" onClick={open} aria-label="Help & Guide">
+      <button
+        ref={triggerRef}
+        className="guide-btn"
+        onClick={isOpen ? closeAndReturnFocus : open}
+        aria-label="Help & Guide"
+        aria-expanded={isOpen}
+        aria-controls="guide-panel"
+      >
         <HelpCircle size={18} />
       </button>
 
       {isOpen && (
         <>
-          <div className="guide-panel" role="dialog" aria-modal="true" aria-label="WindoM Guide">
+          <div
+            ref={panelRef}
+            id="guide-panel"
+            className="guide-panel"
+            role="dialog"
+            aria-label="WindoM Guide"
+            tabIndex={-1}
+          >
             <div className="guide-panel-header">
               <div>
                 <div className="guide-panel-title">Help &amp; Guide</div>
@@ -272,7 +321,7 @@ export function GuidePanel(): React.ReactElement {
                   , bottom-left.
                 </div>
               </div>
-              <button className="guide-panel-close" onClick={close} aria-label="Close guide">
+              <button className="guide-panel-close" onClick={closeAndReturnFocus} aria-label="Close guide">
                 <X size={16} />
               </button>
             </div>
