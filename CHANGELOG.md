@@ -7,6 +7,43 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.8.1] - 2026-11-18
+
+An extension and website release. The server is unchanged apart from its
+version number. No schema migrations. The extension asks for three host
+permissions fewer.
+
+### Fixed
+- **The extension no longer tells websites about your other tabs.** The
+  background worker sent the title and address of every open tab to the
+  content script on every web page you had open, on every tab change. Nothing
+  used it; it is gone, along with the copy it kept in local storage. (#542)
+- **A web page could close WindoM tabs.** The duplicate-new-tab check matched
+  any address containing `newtab.html`; it now matches only WindoM's own page.
+  (#542)
+- **Help & Guide panel** takes focus when opened, closes on Escape or a click
+  outside, and returns focus to the `?` button. (#543)
+- **Search overlay:** Tab reaches the search-engine picker and the clear
+  button, Enter and Space choose an engine, Escape closes the picker before
+  the overlay, and Arrow Down no longer skips a suggestion. (#543)
+- The focus-mode wallpaper zoom respects the reduced-motion setting. (#543)
+
+### Removed
+- Host permissions the code never used: Google's favicon service, Yahoo
+  Finance `query2` and `api.github.com`. (#542)
+
+### Website
+- The Privacy Policy's permission table matches the code again (English and
+  Hebrew). (#542)
+- The sitemap dates every page from its git history. (#540)
+- The home page fetches one hero image at high priority instead of two, and
+  its screenshots no longer shift the text below them. (#544)
+- Docs: animated sidebar tree and phone drawer, search improvements, copy
+  buttons, reading rail, and screenshots on the Clock and Tab Sidebar pages.
+  (#505, #516-#532)
+
+---
+
 ## [1.8.0] - 2026-11-09
 
 The extension and the server both change. No schema migrations. The extension
