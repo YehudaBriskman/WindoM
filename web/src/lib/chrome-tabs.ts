@@ -5,9 +5,6 @@
  */
 import { hasChromeApi, isContentScript, sendTabCommand } from './chrome-runtime';
 
-/** chrome.storage.local key the background worker keeps the tab list under. */
-export const TABS_SNAPSHOT_KEY = '_windom_tabs';
-
 /** Whether this context can query tabs directly. */
 export function canQueryTabs(): boolean {
   return hasChromeApi && !!chrome.tabs?.query;
@@ -30,12 +27,6 @@ export function onTabsChanged(cb: () => void): () => void {
     chrome.tabs.onUpdated?.removeListener(onUpdated);
     chrome.tabs.onRemoved?.removeListener(onRemoved);
   };
-}
-
-/** The tab list the background worker last stored. Unvalidated: check it before use. */
-export async function readTabsSnapshot(): Promise<unknown> {
-  const result = await chrome.storage.local.get(TABS_SNAPSHOT_KEY);
-  return result[TABS_SNAPSHOT_KEY];
 }
 
 /** Activates a tab and, when its window is known, focuses that window. */

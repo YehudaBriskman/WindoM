@@ -12,7 +12,7 @@ import { CONTACT_EMAIL } from '../lib/site';
  */
 export function Privacy() {
   return (
-    <DocsLayout path="/privacy" eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: November 9, 2026">
+    <DocsLayout path="/privacy" eyebrow="Legal" title="Privacy Policy" subtitle="Last updated: November 18, 2026">
       <p>
         WindoM is a Chrome extension that replaces your new tab page with a personal productivity dashboard. This policy
         explains exactly what data we collect, what stays entirely on your device, and how we use it. We do not
@@ -261,7 +261,8 @@ export function Privacy() {
               <code>identity</code>
             </td>
             <td>
-              Launch the Spotify PKCE OAuth flow via <code>chrome.identity.launchWebAuthFlow</code>.
+              Open the sign-in window for Google sign-in, Google Calendar and Spotify via{' '}
+              <code>chrome.identity.launchWebAuthFlow</code>.
             </td>
           </tr>
         </tbody>
@@ -269,10 +270,10 @@ export function Privacy() {
       <p>
         Besides the permissions above, WindoM declares access to the hosts of the services in the table below (needed so
         the browser lets the extension call them) and runs a content script on web pages (<code>http</code> and{' '}
-        <code>https</code>) so that the sidebar can be opened on top of the page you are viewing. That script draws the
-        sidebar and reads one thing from the page, whether its text direction is left-to-right or right-to-left. It does
-        not read, store or send the content of the pages you visit. WindoM loads no code from a remote server: all of
-        its code ships inside the extension package.
+        <code>https</code>) so that the search overlay can be opened on top of the page you are viewing. That script
+        draws the overlay and reads one thing from the page, whether its text direction is left-to-right or
+        right-to-left. It does not read, store or send the content of the pages you visit. WindoM loads no code from a
+        remote server: all of its code ships inside the extension package.
       </p>
       <h2>Third-party APIs called directly by the extension</h2>
       <p>
@@ -336,7 +337,7 @@ export function Privacy() {
           </tr>
           <tr>
             <td>
-              <strong>Yahoo Finance</strong> (<code>query1/query2.finance.yahoo.com</code>)
+              <strong>Yahoo Finance</strong> (<code>query1.finance.yahoo.com</code>)
             </td>
             <td>Stock ticker symbols you added</td>
             <td>Fetch real-time stock prices for the Finance widget</td>
@@ -369,8 +370,8 @@ export function Privacy() {
             <td>
               <strong>DuckDuckGo</strong> (<code>duckduckgo.com</code>)
             </td>
-            <td>Domain name</td>
-            <td>Fallback favicon source for quick links</td>
+            <td>The text you type in the search box</td>
+            <td>Search suggestions while you type</td>
           </tr>
           <tr>
             <td>

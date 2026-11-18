@@ -13,21 +13,32 @@ const tabs = {
   duplicate: vi.fn(),
   get: vi.fn(),
   update: vi.fn(),
+  query: vi.fn(),
   onActivated: { addListener: vi.fn() },
   onUpdated: { addListener: vi.fn() },
   onRemoved: { addListener: vi.fn() },
   onCreated: { addListener: vi.fn() },
 };
 let listener: Listener;
+const onInstalled = vi.fn<(cb: () => void) => void>();
+const storageRemove = vi.fn();
 const ownSender = { id: 'windom', tab: { id: 0 } } as chrome.runtime.MessageSender;
 
 beforeEach(async () => {
   vi.resetAllMocks();
   vi.resetModules();
   for (const fn of [tabs.create, tabs.remove, tabs.duplicate, tabs.update]) fn.mockResolvedValue(undefined);
+  storageRemove.mockResolvedValue(undefined);
+  tabs.query = vi.fn();
   tabs.get.mockResolvedValue({ pinned: false });
   vi.stubGlobal('chrome', {
-    runtime: { id: 'windom', onMessage: { addListener }, onSuspend: { addListener: vi.fn() } },
+    runtime: {
+      id: 'windom',
+      getURL: (path: string) => `chrome-extension://windom/${path}`,
+      onMessage: { addListener },
+      onInstalled: { addListener: onInstalled },
+    },
+    storage: { local: { remove: storageRemove } },
     tabs,
   });
   await import('./index');
@@ -121,5 +132,43 @@ describe('background message boundary', () => {
     listener({ type: 'WINDOM_CMD_CLOSE_TAB' }, ownSender, respond);
     await waitFor(() => expect(respond).toHaveBeenCalledWith({ ok: false }));
     expect(respond).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('tab events', () => {
+  type OnUpdated = (
+    tabId: number,
+    changeInfo: { status?: string },
+    tab: { url?: string; windowId: number },
+  ) => Promise<void>;
+  const onUpdated = () => tabs.onUpdated.addListener.mock.calls[0][0] as OnUpdated;
+  const NEWTAB = 'chrome-extension://windom/newtab.html';
+
+  it('no longer broadcasts the tab list on tab events', () => {
+    for (const event of [tabs.onActivated, tabs.onRemoved, tabs.onCreated]) {
+      expect(event.addListener).not.toHaveBeenCalled();
+    }
+  });
+
+  it('drops the tab snapshot earlier versions stored', () => {
+    onInstalled.mock.calls[0][0]();
+    expect(storageRemove).toHaveBeenCalledWith('_windom_tabs');
+  });
+
+  it('closes an older WindoM new tab when a new one loads', async () => {
+    tabs.query.mockResolvedValue([
+      { id: 1, url: NEWTAB },
+      { id: 2, url: NEWTAB },
+      { id: 3, url: 'https://example.com/' },
+    ]);
+    await onUpdated()(2, { status: 'loading' }, { url: NEWTAB, windowId: 0 });
+    expect(tabs.remove).toHaveBeenCalledTimes(1);
+    expect(tabs.remove).toHaveBeenCalledWith(1);
+  });
+
+  it('ignores a website whose path contains newtab.html', async () => {
+    await onUpdated()(5, { status: 'loading' }, { url: 'https://example.com/newtab.html', windowId: 0 });
+    expect(tabs.query).not.toHaveBeenCalled();
+    expect(tabs.remove).not.toHaveBeenCalled();
   });
 });

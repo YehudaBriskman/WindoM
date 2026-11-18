@@ -33,22 +33,3 @@ export type TabSnapshot = Pick<chrome.tabs.Tab, 'id' | 'windowId' | 'active' | '
 export function isTabId(value: unknown): value is number {
   return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 }
-
-/** Validate only fields consumed by the sidebar, including persisted snapshots. */
-export function isTabSnapshotList(value: unknown): value is TabSnapshot[] {
-  return (
-    Array.isArray(value) &&
-    value.every(
-      (tab: unknown) =>
-        isRecord(tab) &&
-        isTabId(tab.id) &&
-        isTabId(tab.windowId) &&
-        typeof tab.active === 'boolean' &&
-        ['title', 'url', 'favIconUrl'].every((key) => tab[key] === undefined || typeof tab[key] === 'string'),
-    )
-  );
-}
-
-export function parseTabsChanged(value: unknown): TabSnapshot[] | null {
-  return isRecord(value) && value.type === 'WINDOM_TABS_CHANGED' && isTabSnapshotList(value.tabs) ? value.tabs : null;
-}
