@@ -200,6 +200,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
+        with:
+          # Full history: the build dates each sitemap URL by the last commit
+          # to its page, and refuses a shallow clone in CI rather than dating
+          # every page to today.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v7
