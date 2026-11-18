@@ -1,15 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Plus } from 'lucide-react';
 import { useSettings } from '../../contexts/SettingsContext';
-import {
-  isOwnExtensionSender,
-  isTabSnapshotList,
-  parseTabsChanged,
-  type TabSnapshot,
-} from '../../lib/runtime-messages';
+import type { TabSnapshot } from '../../lib/runtime-messages';
 import { useLiquidGlass } from '../../hooks/useLiquidGlass';
-import { hasChromeApi, isContentScript, onRuntimeMessage } from '../../lib/chrome-runtime';
-import { canQueryTabs, createTab, focusTab, onTabsChanged, queryTabs, readTabsSnapshot } from '../../lib/chrome-tabs';
+import { hasChromeApi, isContentScript } from '../../lib/chrome-runtime';
+import { canQueryTabs, createTab, focusTab, onTabsChanged, queryTabs } from '../../lib/chrome-tabs';
 
 interface TabEntry {
   id: number;
@@ -51,41 +46,16 @@ export function TabSidebar() {
     }
   }, [normalizeTabs]);
 
-  // Extension page mode (newtab): query tabs and listen to tab events directly
+  // Mounted only on the new tab page (App.tsx), which can use chrome.tabs
+  // directly. There used to be a content-script mode fed by a background
+  // broadcast of every tab's URL and title to every website; nothing mounted
+  // it there, so the broadcast was removed rather than kept alive for it.
   useEffect(() => {
     if (isContentScript) return;
     loadTabs();
     if (!hasChromeApi) return;
     return onTabsChanged(() => loadTabs());
   }, [loadTabs]);
-
-  // Content script mode: read from storage and listen for messages from background
-  useEffect(() => {
-    if (!isContentScript || !hasChromeApi) return;
-    let active = true;
-    let receivedUpdate = false;
-
-    // Initial load from storage snapshot set by background worker
-    readTabsSnapshot()
-      .then((stored) => {
-        if (active && !receivedUpdate && isTabSnapshotList(stored)) setTabs(normalizeTabs(stored));
-      })
-      .catch(() => {});
-
-    // Live updates via message from background service worker
-    const onMessage = (message: unknown, sender: chrome.runtime.MessageSender) => {
-      if (!isOwnExtensionSender(sender)) return;
-      const updated = parseTabsChanged(message);
-      if (!updated) return;
-      receivedUpdate = true;
-      setTabs(normalizeTabs(updated));
-    };
-    const unsubscribe = onRuntimeMessage(onMessage);
-    return () => {
-      active = false;
-      unsubscribe();
-    };
-  }, [normalizeTabs]);
 
   const showSidebar = () => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);

@@ -1,28 +1,25 @@
-/** Background service worker - manages tab state and broadcasts to content scripts */
+/** Background service worker - closes duplicate new tabs and runs tab commands for content scripts */
 import { isOwnExtensionSender, isTabId, parseTabCommand } from '../lib/runtime-messages';
-import { TABS_SNAPSHOT_KEY } from '../lib/chrome-tabs';
 
-let suspended = false;
-chrome.runtime.onSuspend.addListener(() => {
-  suspended = true;
+/** The tab list earlier versions mirrored into storage on every tab event. */
+const LEGACY_TABS_SNAPSHOT_KEY = '_windom_tabs';
+
+// Earlier versions, on every tab event (each title, favicon and load-status change)
+// queried all tabs, stored them, and sent every tab's URL and title to the
+// content script on every open website. No content script read it - the tab
+// sidebar is mounted only on the new tab page, which asks chrome.tabs itself -
+// so it was browsing history handed to untrusted renderers for nothing. Drop
+// the stored copy on update.
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.storage.local.remove(LEGACY_TABS_SNAPSHOT_KEY).catch(() => {});
 });
 
-async function broadcastTabsChanged() {
-  if (suspended) return;
-  const tabs = await chrome.tabs.query({});
-  await chrome.storage.local.set({ [TABS_SNAPSHOT_KEY]: tabs });
-
-  for (const tab of tabs) {
-    if (tab.id === null || tab.id === undefined) continue;
-    chrome.tabs.sendMessage(tab.id, { type: 'WINDOM_TABS_CHANGED', tabs }).catch(() => {});
-  }
-}
-
-chrome.tabs.onActivated.addListener(() => broadcastTabsChanged());
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Close any older WindoM newtab in the same window when a new one loads (#47)
-  if (changeInfo.status === 'loading' && tab.url?.includes('/newtab.html')) {
-    const newtabUrl = `chrome-extension://${chrome.runtime.id}/newtab.html`;
+  // Close any older WindoM newtab in the same window when a new one loads (#47).
+  // Compared exactly: a website whose path merely contains "/newtab.html" must
+  // not close the user's new tabs.
+  const newtabUrl = chrome.runtime.getURL('newtab.html');
+  if (changeInfo.status === 'loading' && tab.url?.split(/[?#]/)[0] === newtabUrl) {
     const tabs = await chrome.tabs.query({ windowId: tab.windowId });
     for (const other of tabs) {
       if (other.id && other.id !== tabId && other.url === newtabUrl) {
@@ -30,10 +27,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       }
     }
   }
-  broadcastTabsChanged();
 });
-chrome.tabs.onRemoved.addListener(() => broadcastTabsChanged());
-chrome.tabs.onCreated.addListener(() => broadcastTabsChanged());
 
 // Handle tab-management commands forwarded from content scripts.
 // Content scripts in MV3 cannot call chrome.tabs.* directly.

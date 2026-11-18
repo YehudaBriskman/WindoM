@@ -21,7 +21,7 @@ export function Privacy() {
       path="/he/privacy"
       eyebrow="משפטי"
       title="מדיניות פרטיות"
-      subtitle="עודכן לאחרונה: 9 בנובמבר 2026"
+      subtitle="עודכן לאחרונה: 18 בנובמבר 2026"
       dir="rtl"
     >
       <div className="callout">
@@ -272,7 +272,8 @@ export function Privacy() {
               <code>identity</code>
             </td>
             <td>
-              הפעלת זרימת ה-OAuth מסוג PKCE של Spotify דרך <code>chrome.identity.launchWebAuthFlow</code>.
+              פתיחת חלון ההתחברות של Google, של Google Calendar ושל Spotify דרך{' '}
+              <code>chrome.identity.launchWebAuthFlow</code>.
             </td>
           </tr>
         </tbody>
@@ -280,10 +281,10 @@ export function Privacy() {
 
       <p>
         מעבר להרשאות שלמעלה, WindoM מצהיר על גישה למארחים של השירותים שבטבלה שלהלן (כדי שהדפדפן יתיר לתוסף לפנות אליהם)
-        ומריץ סקריפט תוכן בדפי אינטרנט (<code>http</code> ו-<code>https</code>) כדי שאפשר יהיה לפתוח את סרגל הצד מעל הדף
-        שבו אתה צופה. הסקריפט מצייר את סרגל הצד וקורא מהדף דבר אחד בלבד: אם כיוון הטקסט שלו משמאל לימין או מימין לשמאל.
-        הוא אינו קורא, שומר או שולח את תוכן הדפים שבהם אתה מבקר. WindoM אינו טוען קוד משרת מרוחק: כל הקוד שלו נמצא בתוך
-        חבילת התוסף.
+        ומריץ סקריפט תוכן בדפי אינטרנט (<code>http</code> ו-<code>https</code>) כדי שאפשר יהיה לפתוח את שכבת החיפוש מעל
+        הדף שבו אתה צופה. הסקריפט מצייר את שכבת החיפוש וקורא מהדף דבר אחד בלבד: אם כיוון הטקסט שלו משמאל לימין או מימין
+        לשמאל. הוא אינו קורא, שומר או שולח את תוכן הדפים שבהם אתה מבקר. WindoM אינו טוען קוד משרת מרוחק: כל הקוד שלו
+        נמצא בתוך חבילת התוסף.
       </p>
 
       <h2>ממשקים חיצוניים שהתוסף פונה אליהם ישירות</h2>
@@ -345,7 +346,7 @@ export function Privacy() {
           </tr>
           <tr>
             <td>
-              <strong>Yahoo Finance</strong> (<code>query1/query2.finance.yahoo.com</code>)
+              <strong>Yahoo Finance</strong> (<code>query1.finance.yahoo.com</code>)
             </td>
             <td>סימולי המניות שהוספת</td>
             <td>משיכת מחירי מניות בזמן אמת עבור ווידג'ט הפיננסים</td>
@@ -378,8 +379,8 @@ export function Privacy() {
             <td>
               <strong>DuckDuckGo</strong> (<code>duckduckgo.com</code>)
             </td>
-            <td>שם דומיין</td>
-            <td>מקור גיבוי לסמלי אתר עבור הקישורים המהירים</td>
+            <td>הטקסט שאתה מקליד בתיבת החיפוש</td>
+            <td>הצעות חיפוש בזמן ההקלדה</td>
           </tr>
           <tr>
             <td>
