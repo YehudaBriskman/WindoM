@@ -69,7 +69,12 @@ export function Stage({ cycle, animated, interactive = false }: StageProps) {
                column; the pinned stage owns the viewport. */
             sizes={interactive ? '(min-width: 901px) 46vw, 100vw' : '100vw'}
             alt=""
-            loading={s === cycle.stage ? 'eager' : 'lazy'}
+            /* Only the hero's visible wallpaper is the page's largest paint.
+               The second, scroll-story stage starts below the fold: eager
+               there made React emit a second 100vw preload that competed
+               with the hero for bandwidth. */
+            loading={interactive && s === cycle.stage ? 'eager' : 'lazy'}
+            fetchPriority={interactive && s === cycle.stage ? 'high' : undefined}
             decoding="async"
           />
         ))}

@@ -138,7 +138,7 @@ export function Home() {
           </>
         }
         body="Tasks you add in a line, and the calendar you already keep, stacked in one sidebar. It opens from the tab you were going to open anyway."
-        image="/images/shot-sidebar.webp"
+        shot="sidebar"
         alt="The WindoM sidebar showing today's tasks above a list of upcoming calendar events"
         caption="Tasks and Google Calendar, in the sidebar."
       />
@@ -152,7 +152,7 @@ export function Home() {
           </>
         }
         body="Clock style, font weight, date format, which widgets appear at all. Turn off everything you do not want and the tab is just a photograph and the time."
-        image="/images/shot-settings.webp"
+        shot="settings"
         alt="The WindoM settings panel open on the Clock section, showing format, style, colour, size and date options"
         caption="Settings, open on the clock."
       />

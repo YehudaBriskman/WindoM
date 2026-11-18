@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
+import { SHOTS, type Shot } from '../lib/shots';
 
 interface BeatProps {
   eyebrow: string;
   title: ReactNode;
   body: string;
-  /** Path under /images. A real screenshot of the extension, never a mock-up. */
-  image: string;
+  /** A real screenshot of the extension, never a mock-up. */
+  shot: Shot;
   alt: string;
   caption: string;
   /** Which side the screenshot sits on. Alternating them keeps the page moving. */
@@ -21,7 +22,8 @@ interface BeatProps {
  * language as the stage, so the page reads as one idea rather than a hero
  * followed by a brochure.
  */
-export function Beat({ eyebrow, title, body, image, alt, caption, side = 'right' }: BeatProps) {
+export function Beat({ eyebrow, title, body, shot, alt, caption, side = 'right' }: BeatProps) {
+  const s = SHOTS[shot];
   return (
     <section className={`section beat beat-${side}`}>
       <div className="wrap beat-wrap">
@@ -36,7 +38,7 @@ export function Beat({ eyebrow, title, body, image, alt, caption, side = 'right'
               page as a grey rectangle. */}
           <span className="beat-splash" aria-hidden="true" />
           <div className="beat-frame">
-            <img src={image} alt={alt} loading="lazy" decoding="async" />
+            <img src={s.src} width={s.width} height={s.height} alt={alt} loading="lazy" decoding="async" />
           </div>
           <figcaption>{caption}</figcaption>
         </figure>
