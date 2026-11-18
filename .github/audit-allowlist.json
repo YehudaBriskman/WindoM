@@ -1,0 +1,12 @@
+{
+  "$comment": "Advisories npm audit may report without failing CI. Read by .github/scripts/npm-audit.mjs. Every entry needs a reason it is unreachable and an expiry; an expired entry fails the audit. Remove an entry as soon as a patched version is installable.",
+  "advisories": [
+    {
+      "id": "GHSA-fc5q-39xc-vjpf",
+      "packages": ["picomatch"],
+      "expires": "2026-12-31",
+      "added": "2026-11-18",
+      "reason": "ReDoS in picomatch <=4.0.7; 4.0.7 is the newest release, so there is no fix to install (npm's suggested fix is a downgrade to vite 6 / vitest 3). Reached only through dev tooling - vite, vitest, tinyglobby, typescript-eslint, lint-staged - matching glob patterns written in our own config, never user input. `npm audit --omit=dev` is clean in site, web, backend and the root."
+    }
+  ]
+}

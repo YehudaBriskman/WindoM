@@ -192,7 +192,14 @@ jobs:
           echo "TOKEN_ENC_KEY_BASE64=$(openssl rand -base64 32 | tr -d '\n')" >> "$GITHUB_ENV"
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        # The gate checks out the release commit; a tag cut before the
+        # wrapper existed has no .github/scripts/npm-audit.mjs, so fall back.
+        run: |
+          if [ -f ../.github/scripts/npm-audit.mjs ]; then
+            node ../.github/scripts/npm-audit.mjs
+          else
+            npm audit --audit-level=high
+          fi
 
       - name: Format check
         run: npm run format:check
@@ -258,7 +265,14 @@ jobs:
         run: git diff --exit-code -- package-lock.json
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        # The gate checks out the release commit; a tag cut before the
+        # wrapper existed has no .github/scripts/npm-audit.mjs, so fall back.
+        run: |
+          if [ -f ../.github/scripts/npm-audit.mjs ]; then
+            node ../.github/scripts/npm-audit.mjs
+          else
+            npm audit --audit-level=high
+          fi
 
       - name: Format check
         run: npm run format:check
