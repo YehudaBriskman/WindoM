@@ -88,7 +88,7 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: node ../.github/scripts/npm-audit.mjs
 
       - name: Test release safeguards
         run: node --test ../.github/scripts/*.test.mjs
@@ -152,7 +152,7 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: node ../.github/scripts/npm-audit.mjs
 
       - name: Format check
         run: npm run format:check
@@ -212,7 +212,7 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: node ../.github/scripts/npm-audit.mjs
 
       - name: Format check
         run: npm run format:check

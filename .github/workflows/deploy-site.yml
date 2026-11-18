@@ -61,7 +61,7 @@ jobs:
       # Everything ci.yml's site job checks on a pull request, so this build -
       # the one that is uploaded - is the only site validation main needs.
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: node ../.github/scripts/npm-audit.mjs
 
       - name: Format check
         run: npm run format:check
