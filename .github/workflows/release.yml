@@ -487,7 +487,9 @@ jobs:
   # come from this repo's CHANGELOG.md and web/manifest.json (see
   # WindoM-app/website, scripts/fetch-product.sh). It rebuilds nightly anyway;
   # this makes a release show up in minutes. Needs WEBSITE_DISPATCH_TOKEN: a
-  # fine-grained token on WindoM-app/website with Actions: read & write.
+  # fine-grained token on WindoM-app/website with Actions: read & write. It starts
+  # the deploy with workflow_dispatch: the repository_dispatch endpoint would need
+  # Contents: write, which could push code to the website.
   # Skipped, not failed, when the secret is absent - the release already shipped.
   notify-website:
     name: Notify website
@@ -498,11 +500,11 @@ jobs:
     env:
       WEBSITE_DISPATCH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
     steps:
-      - name: Dispatch product-release
+      - name: Redeploy the website
         if: env.WEBSITE_DISPATCH_TOKEN != ''
         env:
           GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
-        run: gh api repos/WindoM-app/website/dispatches -f event_type=product-release -f "client_payload[tag]=$RELEASE_TAG"
+        run: gh workflow run deploy-site.yml -R WindoM-app/website --ref main"
       - name: No token configured
         if: env.WEBSITE_DISPATCH_TOKEN == ''
         run: echo "::notice::WEBSITE_DISPATCH_TOKEN is not set; windom.app will pick this release up on its nightly build."
