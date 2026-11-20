@@ -4,7 +4,7 @@ Thanks for your interest in contributing. Here is everything you need to know.
 
 ## Before you start
 
-- Check the [open issues](https://github.com/YehudaBriskman/WindoM/issues) to see if someone is already working on the same thing.
+- Check the [open issues](https://github.com/WindoM-app/windom/issues) to see if someone is already working on the same thing.
 - For large changes, open an issue first to discuss the approach before writing code.
 - For small fixes (typos, minor bugs), just open a pull request directly.
 
@@ -19,9 +19,9 @@ npm install                                            # at the repo root: insta
 git config blame.ignoreRevsFile .git-blame-ignore-revs # git blame skips mass-reformat commits
 ```
 
-The root `package.json` holds only the git hook tooling (husky and lint-staged). `backend/`, `web/` and `site/` still install separately, each with `npm install` in its own directory, and the hook uses each one's own ESLint and Prettier - so install the workspaces you commit to.
+The root `package.json` holds only the git hook tooling (husky and lint-staged). `backend/` and `web/` still install separately, each with `npm install` in its own directory, and the hook uses each one's own ESLint and Prettier - so install the workspaces you commit to.
 
-The pre-commit hook runs `eslint --fix` and `prettier --write` on the staged files under `backend/src`, `web/src` and `site/src` only, and re-stages the fixes. It does not type-check or run tests. A lint error it cannot fix stops the commit. In an emergency, `git commit --no-verify` skips it; CI runs the same checks anyway.
+The pre-commit hook runs `eslint --fix` and `prettier --write` on the staged files under `backend/src` and `web/src` only, and re-stages the fixes. It does not type-check or run tests. A lint error it cannot fix stops the commit. In an emergency, `git commit --no-verify` skips it; CI runs the same checks anyway.
 
 ## Making changes
 
@@ -38,13 +38,14 @@ The pre-commit hook runs `eslint --fix` and `prettier --write` on the staged fil
 ```
 web/        Chrome extension (React + Vite + TypeScript)
 backend/    API server (Fastify + Drizzle + PostgreSQL)
-site/       windom.app - Vite + React, deployed to GitHub Pages by workflow
 ```
+
+The website (windom.app) lives in [WindoM-app/website](https://github.com/WindoM-app/website). It reads this repo's `CHANGELOG.md` and `web/manifest.json` at build time, and mirrors `backend/.env.example` by hand: if you change env vars or add a feature, open a matching PR there.
 
 ## Code style
 
 - TypeScript everywhere - no implicit `any`.
-- Follow the existing patterns in each package. All three ship ESLint and Prettier with one shared Prettier style: run `npm run lint` and `npm run format` in `backend/`, `web/` or `site/`. CI fails on `npm run format:check`.
+- Follow the existing patterns in each package. Both ship ESLint and Prettier with one shared Prettier style: run `npm run lint` and `npm run format` in `backend/`, `web/` or `site/`. CI fails on `npm run format:check`.
 - For the extension, keep new components in `web/src/components/` and new hooks in `web/src/hooks/`.
 - For CSS, use the existing classes from `globals.css`. Do not add Tailwind utility classes for backgrounds, borders, or shadows.
 
@@ -52,7 +53,7 @@ site/       windom.app - Vite + React, deployed to GitHub Pages by workflow
 
 Every migration must be **backward-compatible with the previous release**: the app version currently in production has to keep working against the migrated schema.
 
-This is not a style preference. Migrations run in Fly's `release_command` *before* the new release's health check, and if that check fails the release workflow automatically redeploys the previous image ([#228](https://github.com/YehudaBriskman/WindoM/issues/228)). It does **not** revert migrations. So the previous image will run against your new schema.
+This is not a style preference. Migrations run in Fly's `release_command` *before* the new release's health check, and if that check fails the release workflow automatically redeploys the previous image ([#228](https://github.com/WindoM-app/windom/issues/228)). It does **not** revert migrations. So the previous image will run against your new schema.
 
 - Allowed in one release: add a table, add a nullable column or one with a default, add an index, widen a type.
 - Not allowed in one release: drop or rename a table or column, add `NOT NULL` without a default, narrow a type, change what an existing column means.
@@ -62,8 +63,8 @@ Generate migrations with `npx drizzle-kit generate` in `backend/` and commit the
 
 ## Reporting bugs
 
-Use the [bug report template](https://github.com/YehudaBriskman/WindoM/issues/new?template=bug_report.md).
+Use the [bug report template](https://github.com/WindoM-app/windom/issues/new?template=bug_report.md).
 
 ## Suggesting features
 
-Use the [feature request template](https://github.com/YehudaBriskman/WindoM/issues/new?template=feature_request.md).
+Use the [feature request template](https://github.com/WindoM-app/windom/issues/new?template=feature_request.md).

@@ -13,10 +13,10 @@ with the hour. Most of it works the moment you install it, with no account.
 [![Install from the Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-Install-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
 [![windom.app](https://img.shields.io/badge/windom.app-Visit-6366f1?style=for-the-badge)](https://windom.app)
 
-[![Version](https://img.shields.io/github/v/release/YehudaBriskman/WindoM?style=flat-square&label=version&color=7b9ef5)](CHANGELOG.md)
+[![Version](https://img.shields.io/github/v/release/WindoM-app/windom?style=flat-square&label=version&color=7b9ef5)](CHANGELOG.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-7b9ef5?style=flat-square)](LICENSE)
 [![Users](https://img.shields.io/chrome-web-store/users/comcnbccalbfcegbmaemancbhgpijkpb?style=flat-square&label=users&color=22c55e)](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
-[![Issues](https://img.shields.io/github/issues/YehudaBriskman/WindoM?style=flat-square&color=ef4444)](https://github.com/YehudaBriskman/WindoM/issues)
+[![Issues](https://img.shields.io/github/issues/WindoM-app/windom?style=flat-square&color=ef4444)](https://github.com/WindoM-app/windom/issues)
 
 **Notes & releases:** [yehudabriskman.com/blog/area/windom](https://yehudabriskman.com/blog/area/windom) — what each release changed and why
 
@@ -101,13 +101,11 @@ will need Node 22 or newer, and Docker if you want the backend.
 | **State** | `chrome.storage.sync` for settings, `chrome.storage.local` for tokens and caches |
 | **Backend** | Fastify 5, Drizzle ORM, PostgreSQL 17, hosted on Fly.io |
 | **Auth** | JWT with refresh-token rotation; third-party tokens encrypted at rest with AES-256-GCM |
-| **Site** | React Router, prerendered to static HTML, deployed to GitHub Pages |
 
 ```
-WindoM/
+windom/
 ├── web/        Chrome extension
 ├── backend/    Fastify API
-├── site/       windom.app
 └── .github/    CI, release and deploy workflows
 ```
 
@@ -133,8 +131,8 @@ extension contacts and what is sent to each.
 Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md).
 
-- [Report a bug](https://github.com/YehudaBriskman/WindoM/issues)
-- [Suggest a feature](https://github.com/YehudaBriskman/WindoM/discussions)
+- [Report a bug](https://github.com/WindoM-app/windom/issues)
+- [Suggest a feature](https://github.com/WindoM-app/windom/discussions)
 - [Review it on the Chrome Web Store](https://chromewebstore.google.com/detail/windom/comcnbccalbfcegbmaemancbhgpijkpb)
 
 ---
@@ -143,7 +141,7 @@ Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) 
 
 | | |
 |---|---|
-| Website | [windom.app](https://windom.app) |
+| Website | [windom.app](https://windom.app), source in [WindoM-app/website](https://github.com/WindoM-app/website) |
 | User guide | [windom.app/guide](https://windom.app/guide) |
 | Support | [windom.app/support](https://windom.app/support) |
 | Local setup | [windom.app/local-setup](https://windom.app/local-setup) |

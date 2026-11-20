@@ -481,3 +481,28 @@ jobs:
           url=$(gh release view "$RELEASE_TAG" --json url --jq .url)
           latest=$(gh release list --limit 20 --json tagName,isLatest --jq '.[] | select(.isLatest) | .tagName')
           echo "$url latest=$([ "$latest" = "$RELEASE_TAG" ] && echo true || echo false)"
+
+  # ── Tell the website ──────────────────────────────────────────────────────
+  # windom.app's release feed and the extension version in its structured data
+  # come from this repo's CHANGELOG.md and web/manifest.json (see
+  # WindoM-app/website, scripts/fetch-product.sh). It rebuilds nightly anyway;
+  # this makes a release show up in minutes. Needs WEBSITE_DISPATCH_TOKEN: a
+  # fine-grained token on WindoM-app/website with Actions: read & write.
+  # Skipped, not failed, when the secret is absent - the release already shipped.
+  notify-website:
+    name: Notify website
+    needs: github-release
+    if: needs.github-release.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      WEBSITE_DISPATCH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+    steps:
+      - name: Dispatch product-release
+        if: env.WEBSITE_DISPATCH_TOKEN != ''
+        env:
+          GH_TOKEN: ${{ secrets.WEBSITE_DISPATCH_TOKEN }}
+        run: gh api repos/WindoM-app/website/dispatches -f event_type=product-release -f "client_payload[tag]=$RELEASE_TAG"
+      - name: No token configured
+        if: env.WEBSITE_DISPATCH_TOKEN == ''
+        run: echo "::notice::WEBSITE_DISPATCH_TOKEN is not set; windom.app will pick this release up on its nightly build."

@@ -57,25 +57,6 @@ updates:
         exclude-patterns: ['typescript']
         update-types: [major]
 
-  # The site was added after this file and was never covered, so its
-  # dependencies have never been updated by anything.
-  - package-ecosystem: npm
-    directory: /site
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
-    groups:
-      site-security:
-        applies-to: security-updates
-        patterns: ['*']
-      site-compatible:
-        patterns: ['*']
-        update-types: [minor, patch]
-      site-majors:
-        patterns: ['*']
-        exclude-patterns: ['typescript']
-        update-types: [major]
-
   - package-ecosystem: github-actions
     directory: /
     schedule:

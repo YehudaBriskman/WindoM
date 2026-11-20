@@ -2,19 +2,20 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { changedComponents, componentsOf, diffRange } from './changed-components.mjs';
 
-const none = { backend: false, web: false, site: false };
-const all = { backend: true, web: true, site: true };
+const none = { backend: false, web: false };
+const all = { backend: true, web: true };
 const A = 'a'.repeat(40);
 const B = 'b'.repeat(40);
 
 test('each tree selects only itself', () => {
   assert.deepEqual(changedComponents(['backend/src/app.ts']), { ...none, backend: true });
   assert.deepEqual(changedComponents(['web/src/main.tsx']), { ...none, web: true });
-  assert.deepEqual(changedComponents(['site/src/pages/guide.tsx']), { ...none, site: true });
+  // The site moved to WindoM-app/website: nothing here builds it any more.
+  assert.deepEqual(changedComponents(['site/src/pages/guide.tsx']), none);
 });
 
 test('a change across trees selects each of them', () => {
-  assert.deepEqual(changedComponents(['backend/a.ts', 'site/b.tsx']), { backend: true, web: false, site: true });
+  assert.deepEqual(changedComponents(['backend/a.ts', 'web/b.tsx']), { backend: true, web: true });
 });
 
 // The release scripts' tests run inside the backend job, and a workflow can
@@ -36,10 +37,10 @@ test('files no build reads select nothing', () => {
   assert.deepEqual(changedComponents([]), none);
 });
 
-// The site's release feed is parsed from it at build time (#374), so a
-// changelog edit can break the site build.
-test('the changelog belongs to the site', () => {
-  assert.deepEqual(changedComponents(['CHANGELOG.md']), { ...none, site: true });
+// The website repo reads CHANGELOG.md from main, but that is its job to check
+// (it builds nightly and on each release), not this repo's CI.
+test('the changelog selects nothing', () => {
+  assert.deepEqual(changedComponents(['CHANGELOG.md']), none);
 });
 
 // A prefix match on "web" would also catch "website/"; it must be the directory.
