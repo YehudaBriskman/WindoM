@@ -1,7 +1,7 @@
 {
   "name": "windom-repo",
   "private": true,
-  "description": "Repo-level git hooks only. backend/, web/ and site/ each install independently from their own lockfile.",
+  "description": "Repo-level git hooks only. backend/ and web/ each install independently from their own lockfile.",
   "scripts": {
     "prepare": "husky"
   },

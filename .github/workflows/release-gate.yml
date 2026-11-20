@@ -362,14 +362,17 @@ jobs:
       # release's trivy_<version>_checksums.txt.
       - name: Install Trivy from its GitHub release
         env:
-          GH_TOKEN: ${{ github.token }}
           TRIVY_VERSION: 0.70.0
           TRIVY_SHA256: 8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9
         run: |
           dir="$RUNNER_TEMP/trivy"
           mkdir -p "$dir"
           tarball="trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
-          gh release download "v${TRIVY_VERSION}" -R aquasecurity/trivy -p "$tarball" -D "$dir"
+          # Plain download, not `gh release download`: the API path is refused with HTTP 403
+          # (aquasecurity has an IP allow list, 2026-11-20); the public asset URL is not, and the
+          # SHA-256 below is what makes the file trustworthy either way.
+          curl -fsSL --retry 3 -o "${dir}/${tarball}" \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/${tarball}"
           echo "${TRIVY_SHA256}  ${dir}/${tarball}" | sha256sum -c -
           tar -xzf "${dir}/${tarball}" -C "$dir" trivy
           echo "$dir" >> "$GITHUB_PATH"

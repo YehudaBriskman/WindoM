@@ -6,21 +6,20 @@ import { pathToFileURL } from 'node:url';
  * Which CI components a change touches, so CI checks those and skips the rest.
  *
  * Measured on main's last 120 commits (2026-11-03): 68 touched exactly one of
- * backend / web / site, yet every one ran all three suites, including a
- * Postgres-backed backend run for a CSS change to the marketing site.
+ * backend / web / site (the site has since moved to WindoM-app/website), yet every one ran
+ * all three suites, including a Postgres-backed backend run for a CSS change to the
+ * marketing site.
  *
  * The rules lean towards running. Anything under .github/ (the workflows, and
  * the release scripts whose tests run in the backend job) runs everything. So
  * does a change no rule recognises inside a component's tree. Only files no
- * build reads (README, docs/, LICENSE...) select nothing. The one file outside
- * a component's own directory that a build reads is CHANGELOG.md: the site
- * parses its release feed from it (#374).
+ * build reads (README, docs/, LICENSE...) select nothing.
  *
  * A skipped job counts as passing for a required status check, so the
  * required "Backend" and "Web" checks still gate every PR.
  */
 
-export const COMPONENTS = ['backend', 'web', 'site'];
+export const COMPONENTS = ['backend', 'web'];
 
 const ALL = Object.freeze(Object.fromEntries(COMPONENTS.map((c) => [c, true])));
 
@@ -32,11 +31,10 @@ export function componentsOf(file) {
   if (file.startsWith('.github/') || file === '.gitattributes') return COMPONENTS;
   if (file.startsWith('backend/') || file === 'docker-compose.yml' || file === '.env.example') return ['backend'];
   if (file.startsWith('web/')) return ['web'];
-  if (file.startsWith('site/') || file === 'CHANGELOG.md') return ['site'];
   return [];
 }
 
-/** @param {string[]} files @returns {{backend: boolean, web: boolean, site: boolean}} */
+/** @param {string[]} files @returns {{backend: boolean, web: boolean}} */
 export function changedComponents(files) {
   const out = Object.fromEntries(COMPONENTS.map((c) => [c, false]));
   for (const f of files) for (const c of componentsOf(f)) out[c] = true;
